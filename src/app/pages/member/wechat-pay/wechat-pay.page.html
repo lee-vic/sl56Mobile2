@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>微信支付</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="payHistory()">
+        支付记录
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="my-head">
+    <div class="total-amount">{{data?.TotalAmount}}</div>
+    <div class="total-text">支付金额(元)</div>
+  </div>
+  <div class="my-head1" *ngIf="data?.WXPaymentCommission">
+    <div class="head-col">
+      <div>{{data?.Amount==""?"0":data?.Amount}}</div>
+      <div>运费(元)</div>
+    </div>
+    <div class="head-col">
+      <div>{{data?.Commission}}</div>
+      <div>手续费(元)</div>
+    </div>
+  </div>
+
+  <ion-list style="clear: both;">
+    <ion-item>
+      <ion-label>运费金额</ion-label>
+      <ion-input type="number" placeholder="请输入运费金额" [(ngModel)]="data.Amount" (ngModelChange)="amountChange()">
+      </ion-input>
+    </ion-item>
+
+    <ion-item *ngIf="data?.Amount1>0">
+      <ion-label>自动放货</ion-label>
+      <ion-toggle [(ngModel)]="data.IsRelease" [disabled]="amountInputDisable"></ion-toggle>
+    </ion-item>
+
+
+    <ion-item detail (click)="showDesc(1)">
+      <ion-label>支付说明</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-list>
+    <ion-item>
+      <ion-label>{{allSelected?'反选':'全选'}}</ion-label>
+      <ion-checkbox (ionChange)="onAllClick()" [(ngModel)]="allSelected" slot="start"></ion-checkbox>
+    </ion-item>
+    <ion-item *ngFor="let item of data?.ReceiveGoodsDetailList">
+      <ion-label>{{item.ReferenceNumber}}</ion-label>
+      <ion-checkbox [(ngModel)]="item.Selected" (ionChange)="selectChange()" slot="start"></ion-checkbox>
+      <ion-note slot="end">{{item.Amount}}元</ion-note>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-button expand="full" class="my-button" (click)="payClick()">支付</ion-button>
+</ion-footer>

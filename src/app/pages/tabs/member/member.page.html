@@ -1,0 +1,117 @@
+<ion-header translucent *ngIf="!isLogin">
+  <ion-toolbar>
+    <ion-title>登录</ion-title>
+    <ion-buttons slot="primary">
+      <ion-button href="#">
+        忘记密码?
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [ngClass]="{'my-content':isLogin}">
+  <div *ngIf="!isLogin">
+    <form (ngSubmit)="doLogin(authForm.value)" [formGroup]="authForm" novalidate>
+      <ion-list lines="full" class="ion-no-margin ion-no-padding">
+        <ion-item>
+          <ion-label position="stacked">用户名 <ion-text color="danger">*</ion-text>
+          </ion-label>
+          <ion-input type="text" formControlName="username" value="it_test" placeholder="请输入用户名或者手机号码"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">密码 <ion-text color="danger">*</ion-text>
+          </ion-label>
+          <ion-input type="text" formControlName="password" value="1234abcd" placeholder="请输入密码 区分大小写"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>记住我</ion-label>
+          <ion-checkbox checked slot="start" formControlName="rememberMe"></ion-checkbox>
+        </ion-item>
+      </ion-list>
+      <div class="ion-padding">
+        <ion-button expand="block" type="submit" class="ion-no-margin" [disabled]="!authForm.valid">登录</ion-button>
+      </div>
+
+    </form>
+  </div>
+  <div *ngIf="isLogin">
+
+    <div class="user-heder-1">
+      <ion-grid id="titlte">
+        <ion-row class="ion-align-items-center">
+          <ion-col col-4 class="ion-align-self-center">
+            <div class="ion-float-left">
+
+              <img src="assets/imgs/member-14.png" style="width:20px;height:20px;">
+            </div>
+            <div class="ion-float-left" id="name">{{username}}</div>
+          </ion-col>
+          <ion-col col-4 class="ion-align-self-center " class="ion-text-center">
+            <img src="assets/imgs/member-16.png" style="width:35px;height:35px;">
+
+          </ion-col>
+          <ion-col col-4 class="ion-align-self-center" class="ion-text-right">
+
+
+            <img [src]="userInfo?.UnReadMessageCount>0?'assets/imgs/member-21.png':'assets/imgs/member-15.png'"
+              style="width:20px;height:20px;" (click)="openMessage()" *ngIf="customerType==0">
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-2 class="ion-text-center">
+
+          </ion-col>
+          <ion-col col-8 class="ion-text-center">
+
+            <ion-button  id="btnPerson" (click)="openChat()" fill="clear">
+              我的客服专员
+              <ion-icon name="arrow-forward"></ion-icon>
+            </ion-button>
+          </ion-col>
+          <ion-col col-2 class="ion-text-center">
+
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid id="info">
+        <ion-row class="ion-align-items-center">
+          <ion-col col-4>
+            <div class="ion-text-center">
+              <div class="title">{{userInfo?.Amount}}</div>
+              欠款金额(元)
+            </div>
+          </ion-col>
+          <ion-col col-4>
+            <div class="ion-text-center">
+
+              <div class="title"> {{userInfo?.Quantity1}}</div>
+              待确认运单
+
+            </div>
+          </ion-col>
+          <ion-col col-4 class="ion-text-center">
+            <div class="title"> {{userInfo?.Quantity2}}</div>
+            问题件
+          </ion-col>
+        </ion-row>
+
+      </ion-grid>
+    </div>
+    <ion-grid id="menu-grid">
+      <ion-row *ngFor="let row of menus.rows" class="row">
+        <ion-col *ngFor="let item of row.items" class="col">
+          <div (click)="menuClick(item)" class="ion-text-center">
+            <div>
+              <img [src]="item.image" style="max-width:1.5rem;height:auto;"> </div>
+            <div class="menu-title">{{item.title}}</div>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+  
+      <ion-button expand="full"  (click)="logOff()" *ngIf="isLogin" class="ion-margin-top">退出登录</ion-button>
+    
+  </div>
+</ion-content>

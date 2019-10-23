@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-button (click)="goBack()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+    <ion-title>交货记录</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div class="ion-padding-top" style="background-color: #fff;"></div>
+    <ion-toolbar>
+        <ion-searchbar placeholder="原、转单号，国家，报价，运输方式，类型，子单号" (ionInput)="searchItems()"></ion-searchbar>
+      </ion-toolbar>
+      <ion-list *ngFor="let item of items" lines="none">
+        <ion-item class="bottom-border">
+          <ion-label> 原单号:{{item.ReferenceNumber}}</ion-label>
+          <ion-note slot="end">转单号:{{item.TrackNumber}}</ion-note>
+        </ion-item>
+        <ion-item detail class="item-last" (click)="detail(item)">
+            <ion-label> <h3>{{item.PriceName}}</h3>
+          <p>计费重:{{item.Weight}}Kg</p>
+          <p>交货日期:{{item.Date}}</p></ion-label>
+          <ion-note  slot="end" class="ion-margin-vertical">{{item.Amount |currency:'CNY'}}</ion-note>
+        </ion-item>
+      </ion-list>
+      <ion-infinite-scroll (ionInfinite)="scrollItems($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+</ion-content>

@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    
+    <ion-buttons slot="end">
+      <ion-button>
+        忘记密码？
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content padding>
+  <form (ngSubmit)="doLogin(authForm.value)" [formGroup]="authForm" novalidate>
+
+    <h1>登录</h1>
+
+    <ion-item>
+      <ion-label stacked color="dark">用户名</ion-label>
+      <ion-input type="text" formControlName="username" value="" placeholder="请输入用户名或者手机号码"></ion-input>
+
+    </ion-item>
+    <ion-item>
+      <ion-label stacked color="dark">密码</ion-label>
+      <ion-input type="password" formControlName="password" value="" placeholder="请输入密码 区分大小写"></ion-input>
+    </ion-item>
+    <!-- <ion-item>
+      <ion-label>绑定微信</ion-label>
+      <ion-checkbox checked="true" formControlName="isBind"></ion-checkbox>
+    </ion-item> -->
+    <ion-button   expand="block" type="submit" [disabled]="!authForm.valid">登录</ion-button>
+
+
+  </form>
+  <!-- <ion-button  (click)="getCookie()">
+    Cookie
+   </ion-button> -->
+</ion-content>

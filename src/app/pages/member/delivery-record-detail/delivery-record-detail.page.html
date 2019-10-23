@@ -1,0 +1,154 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>交货记录</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment [(ngModel)]="tab" mode="md" class="my-content-ios" scrollable>
+    <ion-segment-button value="1">
+      基本信息
+    </ion-segment-button>
+    <ion-segment-button value="2">
+      规格
+    </ion-segment-button>
+    <ion-segment-button value="3">
+      轨迹信息
+    </ion-segment-button>
+    <ion-segment-button value="4">
+      费用明细
+    </ion-segment-button>
+    <ion-segment-button value="5">
+      待跟进问题
+    </ion-segment-button>
+  </ion-segment>
+  <div [ngSwitch]="tab" class="ion-padding-top">
+    <div *ngSwitchCase="1">
+      <ion-list>
+        <ion-item>
+          <ion-label>原单号</ion-label>
+          <ion-note slot="end">{{data?.ObjectNo}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>目的地</ion-label>
+          <ion-note slot="end">{{data?.CountryName}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>费用(元)</ion-label>
+          <ion-note slot="end">{{data?.TotalAmount}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>计费重(KG)</ion-label>
+          <ion-note slot="end">{{data?.Weight}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>件数</ion-label>
+          <ion-note slot="end">{{data?.Piece}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>转单号</ion-label>
+          <ion-note slot="end">{{data?.TrackNumber}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>运输方式</ion-label>
+          <ion-note slot="end">{{data?.ModeOfTransportName}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>类型</ion-label>
+          <ion-note slot="end">{{data?.ProductType}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>操作员</ion-label>
+          <ion-note slot="end">{{data?.OperationName}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>总单号</ion-label>
+          <ion-note slot="end">{{data?.ReceiveGoodsNo}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>日期</ion-label>
+          <ion-note slot="end">{{data?.Date}}</ion-note>
+        </ion-item>
+      </ion-list>
+    </div>
+    <div *ngSwitchCase="2">
+      <ion-list *ngFor="let item of data?.Sizes">
+        <ion-item>
+          <ion-label>编号</ion-label>
+          <ion-note slot="end">{{item?.Seq}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>实重(KG)</ion-label>
+          <ion-note slot="end">{{item?.ActualWeight}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>体积重(KG)</ion-label>
+          <ion-note slot="end">{{item?.VolumeWeight}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>计费重(KG)</ion-label>
+          <ion-note slot="end">{{item?.ChargeableWeight}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>长</ion-label>
+          <ion-note slot="end">{{item?.Length}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>宽</ion-label>
+          <ion-note slot="end">{{item?.Width}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>高</ion-label>
+          <ion-note slot="end">{{item?.Height}}</ion-note>
+        </ion-item>
+      </ion-list>
+    </div>
+    <div *ngSwitchCase="3">
+      <ion-list>
+
+        <ion-item *ngFor="let item of data?.Tracks">
+          <ion-label>
+            <h2>{{item?.Date}}</h2>
+            <p>{{item?.Location}}</p>
+            <p>{{item?.Activity}}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+    <div *ngSwitchCase="4">
+      <ion-list>
+
+        <ion-item *ngFor="let item of data?.AccountReceivableDetails">
+
+          <ion-label>
+            <h3>{{item?.Name}}</h3>
+            <p>{{item?.Remark}}</p>
+          </ion-label>
+          <ion-note slot="end">{{item?.Amount|currency:'CNY'}}</ion-note>
+        </ion-item>
+      </ion-list>
+    </div>
+    <div *ngSwitchCase="5">
+      <ion-list>
+
+        <ion-item *ngFor="let item of data?.Problems">
+          <ion-label>
+            <h3>{{item?.Name}}</h3>
+            <p>{{item?.Remark}}</p>
+          </ion-label>
+          <ion-note slot="end">{{item?.StatusName}}</ion-note>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</ion-content>
+<!-- <ion-footer>
+  <ion-toolbar>
+    <button ion-button full (click)="chat()">联系客服</button>
+  </ion-toolbar>
+</ion-footer> -->

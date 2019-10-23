@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-button (click)="goBack()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+    <ion-title>偏远查询</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <form (ngSubmit)="doQuery(myForm.value)" [formGroup]="myForm">
+      <ion-list>
+        <ion-item>
+          <ion-label>运输方式</ion-label>
+          <ion-select interface="popover" formControlName="ModeOfTransportTypeId">
+            <ion-select-option *ngFor="let item of modeOfTransportTypeList" [value]="item.Id" [selected]="item.Id==0">{{item.Name}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+       
+        <ion-item>
+          <ion-label>国家</ion-label>
+          <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()" (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
+            [(ngModel)]="countryInput" clearInput="true" placeholder="国家二字代码、中文名"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="showCountryList">
+          <ion-list style="width: 100%;">
+            <ion-item *ngFor="let item of countrySearch" (click)="countryItemClick(item)">{{item.Name}}</ion-item>
+          </ion-list>
+        </ion-item>
+        <ion-item>
+          <ion-label>邮编</ion-label>
+          <ion-input type="text" formControlName="postalCode" clearInput="true"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>城市</ion-label>
+          <ion-input type="text" formControlName="city" clearInput="true"></ion-input>
+        </ion-item>
+        
+        <ion-button expand="block" type="submit" [disabled]="!myForm.valid">查询</ion-button>
+      </ion-list>
+    </form>
+  </ion-content>

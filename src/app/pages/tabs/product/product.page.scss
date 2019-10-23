@@ -1,0 +1,53 @@
+
+    .product-title{
+        border-left:solid 0.5rem #9ecdfe;
+        padding-left: 0.6rem;
+    }
+    .product-1{
+        font-weight: bold;
+
+    }
+    
+    .product-item{
+        padding-top: 1.5rem;
+    }
+    .my-button{
+        width: 100%;
+        height: 3rem;
+        border-radius:0;
+        padding: 0;
+        margin: 0;
+        color: #444444;
+    }
+    .my-button-current{
+        background-color: #9ecdfe;
+    }
+    [col-3]{
+        padding: 0;
+    }
+    ion-grid{
+        border: solid 1px #444444;
+      
+        padding: 3px;
+   
+    }
+   
+    .dot-box{
+     
+        width: 20px;
+        height: 19px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .dot{
+        width: 10px;
+        height: 10px;
+        background-color: #9ecdfe;
+        border-radius: 50%;
+    }
+    .clear {
+        clear: both;
+        }
+   
+  
+

@@ -1,0 +1,1 @@
+export const apiUrl:string="https://api.sl56.com/api";

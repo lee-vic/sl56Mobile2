@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-button (click)="goBack()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+    <ion-title>支付说明</ion-title>
+    
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-card>
+
+
+        <ion-card-header>
+            输入模式
+          </ion-card-header>
+      <ion-card-content>
+          列表未选择任何项时，进入手动输入模式。此模式系统根据您支付的金额进行放货(按交货时间先后)
+      </ion-card-content>
+  
+    </ion-card>
+    <ion-card>
+  
+        <ion-card-header>
+            选择模式
+          </ion-card-header>
+  
+      <ion-card-content>
+          列表选中任意一项时，不可手动输入金额，进入选择模式。此模式根据你的选择来进行放货
+      </ion-card-content>
+  
+    </ion-card>
+</ion-content>

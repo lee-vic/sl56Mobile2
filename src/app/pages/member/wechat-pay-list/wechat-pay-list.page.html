@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-button (click)="goBack()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+    <ion-title>支付记录</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list *ngFor="let item of items" lines="full">
+      <ion-item>
+        <ion-label>交易单号</ion-label>
+        <ion-note slot="end">{{item.ObjectNo}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>当前状态</ion-label>
+        <ion-note slot="end">{{item.Status}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>运费</ion-label>
+        <ion-note slot="end">￥{{item.FreightAmount}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>手续费</ion-label>
+        <ion-note slot="end">￥{{item.CommissionAmount}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>付款金额</ion-label>
+        <ion-note slot="end">￥{{item.TotalAmount}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>支付时间</ion-label>
+        <ion-note slot="end">{{item.Date}}</ion-note>
+      </ion-item>
+    </ion-list>
+    <ion-infinite-scroll (ionInfinite)="getItems()">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </ion-content>

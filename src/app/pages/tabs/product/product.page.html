@@ -1,0 +1,147 @@
+<!--
+  Generated template for the ProductPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+
+
+<ion-content class="ion-padding-start ion-padding-end">
+
+  <ion-segment [(ngModel)]="tab">
+    <ion-segment-button value="1">
+      国际快件
+    </ion-segment-button>
+    <ion-segment-button value="2">
+      国际空运
+    </ion-segment-button>
+    <ion-segment-button value="3">
+      广深莞汽运
+    </ion-segment-button>
+
+  </ion-segment>
+  <div [ngSwitch]="tab" class="ion-padding-top">
+    <div *ngSwitchCase="1">
+
+      <ion-grid >
+        <ion-row>
+          <ion-col col-3>
+            <button ion-button (click)="gotoDHL()" class="my-button" [ngClass]="{'my-button-current':currentProduct==1}" clear>DHL</button>
+          </ion-col>
+          <ion-col col-3>
+            <button ion-button (click)="gotoFedEx()" class="my-button" [ngClass]="{'my-button-current':currentProduct==2}" clear>FedEx</button>
+          </ion-col>
+          <ion-col col-3>
+            <button ion-button (click)="gotoUPS()" class="my-button" [ngClass]="{'my-button-current':currentProduct==3}" clear>UPS</button>
+          </ion-col>
+          <ion-col col-3>
+            <button ion-button (click)="gotoTNT()" class="my-button" [ngClass]="{'my-button-current':currentProduct==4}" clear>TNT</button>
+          </ion-col>
+        </ion-row>
+
+      </ion-grid>
+      <div class="product-item" #DHL>
+
+        <div class="product-title">
+          <h4>DHL 国际快递</h4>
+        </div>
+        <img src="assets/imgs/product-1.png">
+        <div class="ion-padding-top">
+          <h5>DHL国际快件服务有以下系列</h5>
+        </div>
+        <p>
+          <span class="product-1">DHL国际快件代理价：</span>
+          <span>此报价为香港DHL国际快件代理系列价目，一般按原快件信息出口和清关，不会更换原始的发件人信息和发票的发件人信息。</span>
+        </p>
+        <p>
+          <span class="product-1">DSL国际快件价：</span>
+          <span>整合以各种形式或名义与香港DHL合作的速递资源，此种形式走货，会更改发件人信息和发票的发件人信息可能导致目的地清关出问题。本价格系列设计以国家和重量段唯一为准则一般比DHL国际快件代理价低廉。 </span>
+        </p>
+        <p>
+          <span class="product-1">DHL国际快件代理价：</span>
+          <span>为中国出口的DHL代理价格，一般发件信息须与代理账号所在城市信息 。</span>
+        </p>
+      </div>
+      <div class="product-item" #FedEx>
+        <div class="product-title">
+          <h4>FedEx国际快递 </h4>
+        </div>
+        <img src="assets/imgs/product-2.png">
+        <p>联邦快递隶属于美国联邦快递集团(FedEx Corp.)，是集团快递运输业务的中坚力量。</p>
+        <p>联邦快递集团为遍及全球的顾客和企业提供涵盖运输、电子商务和商业运作等一系列的全面服务。作为一个久负盛名的企业品牌，联邦快递集团通过相互竞争和协调管理的运营模式，提供了一套综合的商务应用解决方案，使其年收入高达320亿美元。</p>
+        <p>联邦快递集团激励旗下超过26万名员工和承包商高度关注安全问题，恪守品行道德和职业操守的最高标准，并最大程度满足客户和社会的需求，使其屡次被评为全球最受尊敬和最可信赖的雇主。</p>
+        <p>联邦快递(FedEx Express)联邦快递是全球最具规模的快递运输公司，为全球超过220个国家及地区提供快捷、可靠的快递服务。联邦快递设有环球航空及陆运网络，通常只需一至两个工作日，就能迅速运送时限紧迫的货件，而且确保准时送达。</p>
+      </div>
+      <div class="product-item" #UPS>
+        <div class="product-title">
+          <h4>UPS国际快递</h4>
+        </div>
+        <img src="assets/imgs/product-3.png">
+        <p>UPS快递作为世界上最大的快递承运商与包裹递送公司，网点分布全球如苏州UPS快递、昆山UPS快递，同时也是专业的运输、物流服务的领导者。</p>
+        <p>UPS快递于1907 年作为一家信使公司成立于美国，通过明确地致力于支持全球商业的目标，UPS 如今已发展到拥有 300 亿美元资产的大公司。如今的 UPS，或者称为联合包裹服务公司，是一家全球性的公司，其商标是世界上最知名、最值得景仰的商标之一。作为世界上最大的快递承运商与包裹递送公司，同时也是专业的运输、物流、资本与电子商务服务的领导性的提供者。
+          UPS 起源于1907 年在美国西雅图成立的一家信差公司，以传递信件以及为零售店运送包裹起家。由于以最好的服务、最低的价格为业务原则，逐渐在整个美国西岸打开局面。到30 年代，UPS 的服务已遍布所有西部大城市，并开发了第一个机械包裹分拣系统。50
+          年代，UPS 取得了公共运输承运人的权利，将自己的包裹递送业务从零售店扩展到普通居民，从而成为美国邮政的直接竞争对手。</p>
+      </div>
+      <div class="product-item" #TNT>
+        <div class="product-title">
+          <h4>TNT国际快递</h4>
+        </div>
+        <img src="assets/imgs/product-4.png">
+        <p>TNT集团是全球领先的快递和邮政服务提供商，总部设在荷兰。</p>
+        <p>TNT快递成立于1946年，其国际网络覆盖世界200多个国家，提供一系列独一无二的全球整合性物流解决方案。此外，TNT还为澳大利亚以及欧洲、亚洲的许多主要国家提供业界领先的全国范围快递服务。</p>
+        <p>TNT拥有43架飞机、2万辆货车，全球子公司近1000家，员工超过4万人。TNT同时还拥有数量众多的技术先进的分拣中心和完善齐全的设备资源，竭诚为客户提供业界最快捷、最可信赖的门到门送递服务。</p>
+        <p>早在1988年，TNT就已进入中国市场。目前，TNT为客户提供从定时的门到门快递服务和供应链管理，到直邮服务的整合业务解决方案。TNT在中国拥有25直属运营分支机构，3个全功能国际口岸和近3000名员工，服务范围覆盖中国500多个城市。</p>
+      </div>
+    </div>
+    <div *ngSwitchCase="2">
+      <div class="product-title" class="ion-margin-top">
+        <h4>国际空运</h4>
+      </div>
+      <img src="assets/imgs/product-5.png" class="ion-padding-bottom">
+      <div>
+        <div class="dot-box ion-float-left">
+          <div class="dot"></div>
+        </div>
+        <div class="ion-float-left" style="font-weight:bold;">深圳市升蓝物流有限公司</div>
+        <p class="clear" style="padding-top:5px;">成立于2002年，目前己经形成了较为完善的国际/国内货运及空运网络，我们专注于国际货物运输,物流服务,包括国际空运，国际快递，国际专线服务。公司拥有优惠的国际空运价格，并提供安全可靠的保障。</p>
+      </div>
+      <div>
+        <div  class="dot-box ion-float-left">
+          <div class="dot"></div>
+        </div>
+        <div class="ion-float-left"style="font-weight:bold;">专业的国际快递空运服务商品牌</div>
+        <p class="clear" style="padding-top:5px;">提供深圳国际空运、广州国际空运、港台国际空运，国际空运价格、国际快递服务、国际快递价格、DHL快递 DHL代理 UPS快递 UPS代理 TNT快递 TNT代理 FEDEX快递 FEDEX代理等. </p>
+      </div>
+      <div>
+        <div  class="dot-box ion-float-left">
+          <div class="dot"></div>
+        </div>
+        <div class="ion-float-left" style="font-weight:bold;">
+          高素质、国际化水平的团队
+        </div>
+        <p class="clear" style="padding-top:5px;">为您量身订做物流方案,提供一次到位的全方位国际空运解决方案，可以接收全国各地外销货品, 对各种物品均有强势出口的能力。 经多年的努力和规范化操作，我司实现了国际空运市场销售服务、航班配载、货物安检、装机卸机、货物仓储、远程派送等操作的一条龙国际空运服务，服务水平与国际标准接轨。
+        </p>
+      </div>
+      <div class="product-title ion-margin-top">
+        <h4>特色服务</h4>
+      </div>
+      <img src="assets/imgs/product-6.png" class="ion-padding-bottom">
+      <p>1.提供全球100多个国家和地区,200多个城市的货物空运进出口全程运输服务。</p>
+      <p>2.提供由中国各城市机场出发航班，直飞或转飞空运服务遍布全球。</p>
+      <p>3.提供卡车航班，陆空无缝中转服务。</p>
+      <p>4.提供由中国各城市机场到达货物的清关派送服务</p>
+      <p>5.提供全方位的空运、快递、货运“提---运---送”一站式门对门国际空运服务。</p>
+      <p>6.提供DHL国际快递大货代理专项服务。</p>
+      <p>7.提供香港深圳之间货物的快递进出口服务。</p>
+      <p>8.提供大宗货物空运专线快递服务、提供国际空运最优惠代理价格，包括：DHL快递代理, UPS代理，DHL深圳,UPS深圳,TNT深圳,FEDEX深圳,深圳快递,深圳UPS代理,深圳FEDEX代理,TNT快递,UPS快递,FEDEX快递,EMS快递,深圳DHL快递,DHL代理快递,深圳联邦代理,深圳TNT快递代理,深圳EMS,深圳UPS代理公司,深圳FEDEX代理,深圳速递,DHL国际快递,
+        DHL代理公司,深圳UPS，深圳TNT，深圳FEDEX等。</p>
+    </div>
+    <div *ngSwitchCase="3">
+      <div class="product-title" class="ion-margin-top">
+        <h4>广深莞汽运</h4>
+      </div>
+      <img src="assets/imgs/product-7.png" class="ion-padding-bottom">
+      <p>广深莞汽运-提供广州、深圳、东莞卡车货运空运全程无缝中转服务,专业代理深圳、广州、东莞、TNT快递、DHL国际快递、UPS快递、FedEx快递、Ems快递、国际专线等全球多种快递业务。</p>
+    </div>
+  </div>
+</ion-content>

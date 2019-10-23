@@ -1,0 +1,52 @@
+<ion-content>
+  <div>
+    <ion-slides pager autoplay="3000" loop="true">
+
+      <ion-slide *ngFor="let slide of slides">
+        <img [src]="slide.image" />
+      </ion-slide>
+
+
+
+    </ion-slides>
+  </div>
+
+  <ion-grid>
+
+    <ion-row>
+      <ion-col col-12>
+        <h4>产品业务</h4>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col *ngFor="let product of products">
+        <div (click)="openProduct(product)">
+          <img [src]="product.image" />
+        </div>
+      </ion-col>
+
+    </ion-row>
+  </ion-grid>
+  <ion-list no-lines>
+    <ion-list-header>
+      <h2>升蓝动态</h2>
+    </ion-list-header>
+
+      <ion-item button detail *ngFor="let item of news" lines="none" (click)="openNews(item)">
+        <ion-thumbnail item-start>
+          <img [src]="item.image">
+        </ion-thumbnail>
+        <ion-label>
+            <h2 class="ion-text-left">{{item.title}}</h2>
+            <p class="ion-text-left">{{item.description}}</p> 
+        </ion-label>
+        
+        <!-- <button ion-item (click)="openNews(item)">
+           
+            <h2 class="ion-text-left">{{item.title}}</h2>
+            <p class="ion-text-left">{{item.description}}</p> 
+        </button>-->
+      </ion-item>
+
+  </ion-list>
+</ion-content>
