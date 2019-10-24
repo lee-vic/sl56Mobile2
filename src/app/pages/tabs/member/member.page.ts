@@ -44,8 +44,8 @@ export class MemberPage implements OnInit {
     private cookieService: CookieService,
     public loadingCtrl: LoadingController) {
     this.authForm = new FormGroup({
-      username:new FormControl('it_test',Validators.required),
-      password: new FormControl('1234abcd',Validators.required),
+      username:new FormControl('',Validators.required),
+      password: new FormControl('',Validators.required),
       clientType:new FormControl(''),
       userType:new FormControl(0,Validators.required),
       rememberMe:new FormControl(true,Validators.required),

@@ -5,7 +5,7 @@ import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'ng2-signalr';
 import { Location } from '@angular/common';
 import { CookieService } from 'ngx-cookie-service';
-var WeixinJSBridge;
+declare var WeixinJSBridge: any;
 @Component({
   selector: 'app-wechat-pay',
   templateUrl: './wechat-pay.page.html',
@@ -141,30 +141,32 @@ export class WechatPayPage implements OnInit,OnDestroy {
     }
     else {
       this.payByH5();
+     
     }
   }
   payByJsApi() {
     this.data.TradeType = "JSAPI";
     this.loadingCtrl.create({
       message: '请稍后...'
-    }).then(p => p.present());
+    }).then(p => {
+      p.present();
+      this.service.pay(this.data).subscribe(res => {
 
-    this.service.pay(this.data).subscribe(res => {
-
-      this.loadingCtrl.dismiss();
-      let jsApiParam = JSON.parse(res.Data);
-      this.callpay(jsApiParam);
-
-    }, (err) => {
-      this.loadingCtrl.dismiss();
-      this.toastCtrl.create({
-        message: err.message,
-        position: 'middle',
-        duration: 3000
-      }).then(p => p.present());
-
-
+        this.loadingCtrl.dismiss();
+        let jsApiParam = JSON.parse(res.Data);
+        this.callpay(jsApiParam);
+  
+      }, (err) => {
+        this.loadingCtrl.dismiss();
+        this.toastCtrl.create({
+          message: err.message,
+          position: 'middle',
+          duration: 3000
+        }).then(p => p.present());
+      });
     });
+
+   
   }
   payByH5() {
     this.data.TradeType = "MWEB";
@@ -204,23 +206,15 @@ export class WechatPayPage implements OnInit,OnDestroy {
   }
   callpay(jsApiParam) {
     if (typeof WeixinJSBridge == "undefined") {
-      console.log("undefined");
       if (document.addEventListener) {
         document.addEventListener('WeixinJSBridgeReady', this.jsApiCall, false);
       }
-
-      // else if (document.attachEvent) {
-      //   document.attachEvent('WeixinJSBridgeReady', this.jsApiCall);
-      //   document.attachEvent('onWeixinJSBridgeReady',this.jsApiCall);
-      // }
     }
     else {
-      console.log("jsApiCall");
       this.jsApiCall(jsApiParam);
     }
   }
   jsApiCall(jsApiParam) {
-
     WeixinJSBridge.invoke(
       'getBrandWCPayRequest',
       jsApiParam,//josn串

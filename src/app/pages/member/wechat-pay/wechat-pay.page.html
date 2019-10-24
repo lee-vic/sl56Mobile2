@@ -33,7 +33,7 @@
   <ion-list style="clear: both;">
     <ion-item>
       <ion-label>运费金额</ion-label>
-      <ion-input type="number" placeholder="请输入运费金额" [(ngModel)]="data.Amount" (ngModelChange)="amountChange()">
+      <ion-input type="number" placeholder="请输入运费金额" [(ngModel)]="data.Amount" (ngModelChange)="amountChange()" [disabled]="amountInputDisable">
       </ion-input>
     </ion-item>
 
