@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { WechatPay } from 'src/app/interfaces/wechat-pay';
 import { WechatPayListService } from 'src/app/providers/wechat-pay-list.service';
 import { LoadingController, IonInfiniteScroll } from '@ionic/angular';
-import { Location } from '@angular/common';
+
 
 @Component({
   selector: 'app-wechat-pay-list',
@@ -16,7 +16,7 @@ export class WechatPayListPage implements OnInit {
   @ViewChild(IonInfiniteScroll,{static:true}) infiniteScroll: IonInfiniteScroll;
   constructor(
     public service: WechatPayListService,
-    private location: Location,
+
     public loadingCtrl: LoadingController,
     ) {
  
@@ -42,7 +42,5 @@ export class WechatPayListPage implements OnInit {
       this.isBusy = false;
     });
   }
-  goBack() {
-    this.location.back();
-  }
+
 }

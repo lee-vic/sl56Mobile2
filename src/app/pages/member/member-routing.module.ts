@@ -26,10 +26,14 @@ const routes: Routes = [ {
   },
   { path: 'confirmation', loadChildren:()=>import("./confirmation/confirmation.module").then(m=>m.ConfirmationPageModule)},
   { path: 'wechat-pay',  loadChildren:()=> import('./wechat-pay/wechat-pay.module').then(m=>m.WechatPayPageModule) },
-  { path: 'wechat-pay-list', loadChildren: './wechat-pay-list/wechat-pay-list.module#WechatPayListPageModule' },
-  { path: 'remote', loadChildren: './remote/remote.module#RemotePageModule' },
-  { path: 'wechat-pay-description', loadChildren: './wechat-pay-description/wechat-pay-description.module#WechatPayDescriptionPageModule' },
-
+  { path: 'wechat-pay-list', loadChildren:()=>import('./wechat-pay-list/wechat-pay-list.module').then(m=>m.WechatPayListPageModule) },
+  { path: 'remote', loadChildren:()=>import('./remote/remote.module').then(m=>m.RemotePageModule) },
+  { path: 'wechat-pay-description', loadChildren:()=>import('./wechat-pay-description/wechat-pay-description.module').then(m=>m.WechatPayDescriptionPageModule) },
+  { path: 'chat/:id', loadChildren:()=>import('./chat/chat.module').then(p=>p.ChatPageModule) },
+  { path: 'unread-message-list', loadChildren:()=>import("./unread-message-list/unread-message-list.module").then(m=>m.UnreadMessageListPageModule) },
+  { path: 'wechat-binding', loadChildren:()=>import('.//wechat-binding/wechat-binding.module').then(p=>p.WechatBindingPageModule) },
+  { path: 'return-list', loadChildren: ()=> import('./return-list/return-list.module').then(m=>m.ReturnListPageModule) },
+  { path: 'return-apply', loadChildren:()=>import('./return-apply/return-apply.module').then(m=>m.ReturnApplyPageModule) },
 ];
 
 @NgModule({

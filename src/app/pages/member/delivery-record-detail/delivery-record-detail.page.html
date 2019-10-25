@@ -1,16 +1,19 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
-        <ion-icon name="arrow-back"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>交货记录</ion-title>
+      <ion-buttons slot="start">
+          <ion-back-button></ion-back-button>
+        </ion-buttons>
+    <ion-title>运单详情</ion-title>
+    <ion-buttons slot="end" >
+        <ion-button (click)="applyReturn()" *ngIf="!isReturn">
+          申请退货
+        </ion-button>
+      </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-segment [(ngModel)]="tab" mode="md" class="my-content-ios" scrollable>
+  <ion-segment [(ngModel)]="tab" class="my-content-ios" scrollable>
     <ion-segment-button value="1">
       基本信息
     </ion-segment-button>

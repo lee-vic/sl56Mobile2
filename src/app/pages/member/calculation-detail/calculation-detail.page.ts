@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Location } from '@angular/common';
+
 
 @Component({
   selector: 'app-calculation-detail',
@@ -9,12 +9,10 @@ import { Location } from '@angular/common';
 export class CalculationDetailPage implements OnInit {
   data:any;
   tab="1";
-  constructor( private location: Location,) { }
+  constructor( ) { }
 
   ngOnInit() {
     this.data=JSON.parse(localStorage.getItem("CalculationDetail"));
   }
-  goBack() {
-    this.location.back();
-  }
+ 
 }

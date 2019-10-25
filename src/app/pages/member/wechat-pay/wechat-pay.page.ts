@@ -3,7 +3,6 @@ import { ToastController, AlertController, LoadingController } from '@ionic/angu
 import { Router } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'ng2-signalr';
-import { Location } from '@angular/common';
 import { CookieService } from 'ngx-cookie-service';
 declare var WeixinJSBridge: any;
 @Component({
@@ -20,7 +19,6 @@ export class WechatPayPage implements OnInit,OnDestroy {
   constructor(public toastCtrl: ToastController,
     public alertCtrl: AlertController,
     public loadingCtrl: LoadingController,
-    private location: Location,
     private signalR: SignalR,
     private cookieService: CookieService,
     public service: WechatPayService,
@@ -236,9 +234,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
   showDesc(val) {
     this.router.navigateByUrl("/member/wechat-pay-description");
   }
-  goBack() {
-    this.location.back();
-  }
+ 
   payHistory(){
     this.router.navigateByUrl("/member/wechat-pay-list");
   }

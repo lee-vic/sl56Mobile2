@@ -17,7 +17,7 @@ export function createConfig(): SignalRConfiguration {
   c.hubName = 'chatHub';
 
   c.url = 'https://signalr.sl56.com/signalr/hubs';
-  c.logging = true;
+  c.logging = false;
   c.withCredentials=true;
   
   // >= v5.0.0
@@ -32,7 +32,9 @@ export function createConfig(): SignalRConfiguration {
   entryComponents: [],
   imports: [
     BrowserModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({
+      backButtonText:"返回",
+    }),
     HttpClientModule,
     AppRoutingModule,
     SignalRModule.forRoot(createConfig)

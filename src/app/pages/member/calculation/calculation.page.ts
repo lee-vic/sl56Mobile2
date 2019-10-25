@@ -5,7 +5,6 @@ import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-calculation',
@@ -35,7 +34,7 @@ export class CalculationPage implements OnInit {
     public toastCtrl: ToastController,
     private router: Router,
     public countryAutoCompleteService:CountryAutoCompleteService,
-    private location: Location,
+
     public service: CalculationService) {
     this.myForm = this.formBuilder.group({
       ModeOfTransportId: ['0', Validators.required],
@@ -138,8 +137,6 @@ export class CalculationPage implements OnInit {
       }
     });
   }
-  goBack() {
-    this.location.back();
-  }
+
 
 }

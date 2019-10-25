@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>微信绑定管理</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let item of list">
+      <ion-label>{{item.Name}}</ion-label>
+      <ion-button slot="end" fill="outline" (click)="onItemDeleteClick(item)">解除绑定</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

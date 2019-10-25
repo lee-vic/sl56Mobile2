@@ -1,16 +1,14 @@
 <ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start" *ngIf="canGoback">
-          <ion-button (click)="goBack()">
-            <ion-icon name="arrow-back"></ion-icon>
-          </ion-button>
-        </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
     <ion-title>运单确认</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <div class="ion-padding-top" style="background-color: #fff;"></div>
-  <ion-toolbar   >
+  <ion-toolbar>
     <ion-searchbar placeholder="请输入单号" (ionInput)="getItems($event)"></ion-searchbar>
   </ion-toolbar>
   <ion-list *ngFor="let item of searchList" lines="none">
@@ -47,12 +45,12 @@
 <ion-footer>
   <ion-toolbar>
     <ion-buttons>
-        <ion-checkbox (ionChange)="onAllClick()" [(ngModel)]="allSelected" style="margin-left: 0.5rem;"></ion-checkbox>
+      <ion-checkbox (ionChange)="onAllClick()" [(ngModel)]="allSelected" style="margin-left: 0.5rem;"></ion-checkbox>
       <ion-label style="margin-left: 0.5rem;">{{allSelected?'反选':'全选'}}</ion-label>
-     
-    </ion-buttons> 
 
-  
+    </ion-buttons>
+
+
 
     <ion-buttons slot="primary">
       <ion-button (click)="onConfirmClick()">
@@ -61,5 +59,5 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  
+
 </ion-footer>

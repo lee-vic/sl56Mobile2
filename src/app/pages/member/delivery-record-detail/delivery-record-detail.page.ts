@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DeliveryRecordDetailService } from 'src/app/providers/delivery-record-detail.service';
-import { Location } from '@angular/common';
 import {  ActivatedRoute } from '@angular/router';
+import { NavController } from '@ionic/angular';
 @Component({
   selector: 'app-delivery-record-detail',
   templateUrl: './delivery-record-detail.page.html',
@@ -12,7 +12,7 @@ export class DeliveryRecordDetailPage implements OnInit {
   id:any;
   tab="1";
   isReturn=true;
-  constructor( public service:DeliveryRecordDetailService,public location:Location,  private route: ActivatedRoute) { }
+  constructor(public navCtrl: NavController,  public service:DeliveryRecordDetailService, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.id = +this.route.snapshot.paramMap.get('id');
@@ -33,10 +33,7 @@ export class DeliveryRecordDetailPage implements OnInit {
    });
   }
   applyReturn(){
-    // this.navCtrl.push(UserReturnApplyPage, {
-    //   id: this.id,
-    //   type:0
-    // });
+    this.navCtrl.navigateForward("/member/return-apply",{queryParams:{id:this.data.ObjectId,type:0}})
   }
   chat(){
     // this.navCtrl.push(UserChatPage, {
@@ -45,8 +42,5 @@ export class DeliveryRecordDetailPage implements OnInit {
     //   messageType:1
     // });
   }
-  goBack() {
-    this.location.back();
-  }
-
+  
 }

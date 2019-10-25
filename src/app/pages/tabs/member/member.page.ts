@@ -23,11 +23,11 @@ export class MemberPage implements OnInit {
     { title: "查看报价", image: "assets/imgs/member-10.png", type:[0],url:"" },
     { title: "修改密码", image: "assets/imgs/member-11.png", type:[0],url:""},
     { title: "子账号管理", image: "assets/imgs/member-12.png", type:[0],url:""},
-    { title: "微信绑定", image: "assets/imgs/member-13.png", type:[0,1],url:"" },
+    { title: "微信绑定", image: "assets/imgs/member-13.png", type:[0,1],url:"/member/wechat-binding" },
     { title: "回单上传", image: "assets/imgs/member-17.png",type:[0,1] ,url:""},
     { title: "问题跟进", image: "assets/imgs/member-18.png", type:[0,1],url:"" },
     { title: "业务公告", image: "assets/imgs/member-19.png",type:[0] ,url:""},
-    { title: "退货管理", image: "assets/imgs/member-20.png", type:[0,1],url:"" },
+    { title: "退货管理", image: "assets/imgs/member-20.png", type:[0,1],url:"/member/return-list" },
     { title: "测试", image: "assets/imgs/member-20.png", type:[0,1] ,url:""}
   ];
   menus:Menus;
@@ -71,6 +71,9 @@ export class MemberPage implements OnInit {
 
   
   }
+  ionViewDidEnter(){
+    console.log("ionViewDidEnter");
+  }
   doLogin(formValue) {
 
    
@@ -93,7 +96,7 @@ export class MemberPage implements OnInit {
     let toast = await this.toastCtrl.create({
       message: msg,
       position: 'middle',
-      duration: 3000
+      duration: 2000
     });
     toast.present();
   }
@@ -175,6 +178,13 @@ export class MemberPage implements OnInit {
     this.userService.logOff().subscribe(res => {
       this.setLogin(false);
     });
+  }
+  openMessage(){
+    this.router.navigateByUrl("/member/unread-message-list");
+  }
+  openChat(){
+   //this.router.navigateByUrl("/member/chat/0");
+   this.router.navigate(["/member","chat",0])
   }
  
 }

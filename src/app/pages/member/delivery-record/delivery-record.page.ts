@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
 import { IonSearchbar,IonInfiniteScroll } from '@ionic/angular';
-import { Location } from '@angular/common';
 import { DeliveryRecordService } from 'src/app/providers/delivery-record.service';
 import { Router } from '@angular/router';
 
@@ -16,14 +15,12 @@ export class DeliveryRecordPage implements OnInit {
 
   @ViewChild(IonInfiniteScroll,{static:true}) infiniteScroll: IonInfiniteScroll;
   @ViewChild(IonSearchbar,{static:true}) searchbar: IonSearchbar;
-  constructor(private location: Location,public service: DeliveryRecordService,  private router: Router,) { }
+  constructor(public service: DeliveryRecordService,  private router: Router,) { }
 
   ngOnInit() {
     this.getItems("",false);
   }
-  goBack() {
-    this.location.back();
-  }
+ 
   searchItems() {
 
   

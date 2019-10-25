@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Location } from '@angular/common';
+
 import { Router } from '@angular/router';
 @Component({
   selector: 'app-calculation-list',
@@ -8,14 +8,12 @@ import { Router } from '@angular/router';
 })
 export class CalculationListPage implements OnInit {
   calculateResultList:any;
-  constructor(  private router: Router,private location: Location) { }
+  constructor(  private router: Router) { }
 
   ngOnInit() {
     this.calculateResultList=JSON.parse(localStorage.getItem("CalculationResult"));
   }
-  goBack() {
-    this.location.back();
-  }
+ 
   detail(item){
     localStorage.setItem("CalculationDetail",JSON.stringify(item));
     this.router.navigateByUrl("/member/calculation/calculation-detail");

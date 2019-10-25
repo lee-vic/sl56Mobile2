@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'src/app/providers/confirmation.service';
 import { ToastController, AlertController, LoadingController } from '@ionic/angular';
-import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -19,7 +18,6 @@ export class ConfirmationPage implements OnInit {
     public toastCtrl: ToastController, 
     public alertCtrl: AlertController, 
     public loadingCtrl: LoadingController,
-    private location: Location,
     private router: Router
     ) { }
 
@@ -126,7 +124,4 @@ export class ConfirmationPage implements OnInit {
     // });
   }
 
-  goBack() {
-    this.location.back();
-  }
 }

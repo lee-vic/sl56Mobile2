@@ -3,7 +3,6 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { CountryService } from 'src/app/providers/country.service';
 import { RemoteService } from 'src/app/providers/remote.service';
-import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-remote',
@@ -24,7 +23,6 @@ export class RemotePage implements OnInit {
     public service: RemoteService,
     public countryService: CountryService,
     public formBuilder: FormBuilder,
-    public location:Location,
     public loadingCtrl: LoadingController,
     public toastCtrl: ToastController,
     public alertCtrl: AlertController,
@@ -110,7 +108,5 @@ export class RemotePage implements OnInit {
      
     });
   }
-  goBack() {
-    this.location.back();
-  }
+ 
 }

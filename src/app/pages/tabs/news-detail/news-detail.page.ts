@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Notice } from 'src/app/interfaces/notice';
 import { NoticeService } from 'src/app/providers/notice.service';
 import { ActivatedRoute } from '@angular/router';
-import { Location } from '@angular/common';
+
 
 @Component({
   selector: 'app-news-detail',
@@ -20,11 +20,8 @@ export class NewsDetailPage implements OnInit {
   }
 
   constructor(
-    private service: NoticeService, public activeRoute: ActivatedRoute, private location: Location) {
+    private service: NoticeService, public activeRoute: ActivatedRoute) {
     this.id = Number(this.activeRoute.snapshot.paramMap.get('id'));
   }
-  goBack() {
-    this.location.back();
-  }
-
+ 
 }

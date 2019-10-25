@@ -1,9 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
-        <ion-icon name="arrow-back"></ion-icon>
-      </ion-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>价格计算</ion-title>
   </ion-toolbar>
@@ -21,7 +19,7 @@
   <div [ngSwitch]="calculateMode" class="ion-margin-top">
     <div *ngSwitchCase="1">
       <form (ngSubmit)="doCalculate(myForm.value)" [formGroup]="myForm">
-        <ion-list >
+        <ion-list>
 
           <ion-item>
             <ion-label>货物类型</ion-label>
