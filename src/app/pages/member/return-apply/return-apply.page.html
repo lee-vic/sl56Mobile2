@@ -1,9 +1,50 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>return-apply</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>申请退货</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="history()">
+        历史提货人
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <form (ngSubmit)="doSubmit(applyForm.value)" [formGroup]="applyForm" novalidate>
 
+    <ion-list>
+
+      <ion-item>
+        <ion-label fixed>退货单号</ion-label>
+        <ion-input type="text" formControlName="ReferenceNumber" readonly="true"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label fixed>提货人名</ion-label>
+        <ion-input type="text" formControlName="PersonName"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label fixed>身份证号</ion-label>
+        <ion-input type="text" formControlName="IDCardNumber"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label fixed>车牌号码</ion-label>
+        <ion-input type="text" formControlName="PlateNumber"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label fixed>提货日期</ion-label>
+        <ion-datetime displayFormat="YYYY-MM-DD" pickerFormat="YYYY-MM-DD" formControlName="RequiredDate">
+        </ion-datetime>
+      </ion-item>
+      <ion-item>
+        <ion-label fixed>其它备注</ion-label>
+        <ion-input type="text" formControlName="Remark"></ion-input>
+      </ion-item>
+    </ion-list>
+    <ion-button #btnSubmit expand="full" type="submit" [disabled]="!applyForm.valid">提交</ion-button>
+  </form>
 </ion-content>
+

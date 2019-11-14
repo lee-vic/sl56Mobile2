@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-back-button></ion-back-button>
+        </ion-buttons>
+    <ion-title>问题跟进</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <div class="ion-padding-top" style="background-color: #fff;"></div>
+  
+        <ion-searchbar placeholder="原、转单号，国家，报价，运输方式，类型，子单号" (ionInput)="searchItems()"></ion-searchbar>
+      
+      <ion-list *ngFor="let item of items" lines="none">
+        <ion-item class="bottom-border">
+          <ion-label>单号:{{item.No}}</ion-label>
+          <ion-button slot="end" outline (click)="detail(item)">查看详情</ion-button>
+         
+        </ion-item>
+        <ion-item detail (click)="problemDetail(item.Id,pro.ObjectId)" *ngFor="let pro of item.ProblemList">
+            <ion-label>   {{pro.ObjectName}}</ion-label>
+       
+        </ion-item>
+      </ion-list>
+      <ion-infinite-scroll (ionInfinite)="scrollItems($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+</ion-content>

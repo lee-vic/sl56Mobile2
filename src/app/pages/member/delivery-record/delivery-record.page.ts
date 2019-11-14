@@ -34,7 +34,9 @@ export class DeliveryRecordPage implements OnInit {
    
     this.service.loadList(this.currentPageIndex, key).subscribe(res => {
       let flag = res.length < 10;
-      //this.infiniteScroll.enable(!flag);
+      if(flag){
+        this.infiniteScroll.disabled=true;
+      }
       for (var i = 0; i < res.length; i++) {
         this.items.push(res[i]);
       }

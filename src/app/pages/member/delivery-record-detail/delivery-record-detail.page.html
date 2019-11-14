@@ -1,14 +1,14 @@
 <ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
     <ion-title>运单详情</ion-title>
-    <ion-buttons slot="end" >
-        <ion-button (click)="applyReturn()" *ngIf="!isReturn">
-          申请退货
-        </ion-button>
-      </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="applyReturn()" *ngIf="!isReturn">
+        申请退货
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

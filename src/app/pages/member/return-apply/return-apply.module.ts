@@ -6,6 +6,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { ReturnApplyPage } from './return-apply.page';
+import { ReturnApplyHistoryPageModule } from '../return-apply-history/return-apply-history.module';
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
+    ReturnApplyHistoryPageModule,
     RouterModule.forChild(routes)
   ],
   declarations: [ReturnApplyPage]

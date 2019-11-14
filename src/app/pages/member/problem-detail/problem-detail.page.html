@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>问题详情</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-list>
+        <ion-item>
+          <ion-label>问题名称</ion-label>
+          <ion-note slot="end">{{data?.Problem?.ObjectName}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>处理期限</ion-label>
+          <ion-note slot="end">{{data?.Problem?.EndDate}}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>备注</ion-label>
+          <ion-note slot="end">{{data?.Problem?.Remark}}</ion-note>
+        </ion-item>
+      </ion-list>
+</ion-content>

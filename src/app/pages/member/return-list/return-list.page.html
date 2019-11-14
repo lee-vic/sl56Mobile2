@@ -10,16 +10,16 @@
 <ion-content>
   <ion-segment [(ngModel)]="tab">
     <ion-segment-button value="1">
-      已完成
+        <ion-label>已完成</ion-label>
+   
     </ion-segment-button>
     <ion-segment-button value="2">
-      退货中
-      <ion-badge item-end *ngIf="items2.length>0">{{items2.length}}</ion-badge>
+     
+      <ion-label> 退货中</ion-label>
+    
+     
     </ion-segment-button>
-    <ion-segment-button value="3">
-      退货通知
-      <ion-badge item-end *ngIf="items3.length>0">{{items3.length}}</ion-badge>
-    </ion-segment-button>
+   
 
   </ion-segment>
   <div [ngSwitch]="tab">
@@ -47,45 +47,26 @@
       </ion-infinite-scroll>
     </div>
 
-    <div *ngSwitchCase="2" class="ion-padding-top">
-      <ion-list *ngFor="let item of items2">
+    <div *ngSwitchCase="2" class="ion-padding-top bg">
+      <ion-list *ngFor="let item of items2" lines="none">
 
-        <button ion-item class="bottom-border">
+        <ion-item  class="bottom-border">
           <ion-label>单号</ion-label>
-          <ion-note item-end>{{item.ReferenceNumber}}</ion-note>
-        </button>
+          <ion-note slot="end">{{item.ReferenceNumber}}</ion-note>
+        </ion-item>
         <ion-item>
           <ion-label>申请时间</ion-label>
-          <ion-note item-end>{{item.CreateAt}}</ion-note>
+          <ion-note slot="end">{{item.CreateAt}}</ion-note>
         </ion-item>
         <ion-item [class.bottom-border]="item.ApplyType==0">
           <ion-label>当前状态</ion-label>
-          <ion-note item-end>{{item.Remark}}</ion-note>
+          <ion-note slot="end">{{item.Remark}}</ion-note>
         </ion-item>
         <ion-item class="item-last" *ngIf="item.ApplyType==0">
-          <button ion-button item-end outline (click)="cancelApply(item)">取消申请</button>
+          <ion-button slot="end" fill="outline" (click)="cancelApply(item)">取消申请</ion-button>
         </ion-item>
       </ion-list>
     </div>
-    <div *ngSwitchCase="3" class="ion-padding-top">
-      <ion-list *ngFor="let item of items3">
 
-        <button ion-item class="bottom-border">
-          <ion-label>单号</ion-label>
-          <ion-note item-end>{{item.ReferenceNumber}}</ion-note>
-        </button>
-        <ion-item>
-          <ion-label>通知时间</ion-label>
-          <ion-note item-end>{{item.CreateAt}}</ion-note>
-        </ion-item>
-        <ion-item class="bottom-border">
-          <ion-label>退货原因</ion-label>
-          <ion-note item-end>{{item.Remark}}</ion-note>
-        </ion-item>
-        <ion-item class="item-last">
-          <button ion-button item-end outline (click)="fill(item)">马上处理</button>
-        </ion-item>
-      </ion-list>
-    </div>
   </div>
 </ion-content>

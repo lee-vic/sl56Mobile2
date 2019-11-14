@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { NavController, AlertController, ToastController, ModalController, NavParams } from '@ionic/angular';
+import { NavController, AlertController, ToastController, ModalController, NavParams, IonButton } from '@ionic/angular';
 import { ReturnService } from 'src/app/providers/return.service';
 import { ActivatedRoute } from '@angular/router';
+import { ReturnApplyHistoryPage } from '../return-apply-history/return-apply-history.page';
 
 @Component({
   selector: 'app-return-apply',
@@ -10,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./return-apply.page.scss'],
 })
 export class ReturnApplyPage implements OnInit {
-
+  @ViewChild('btnSubmit',{static:true}) btnSubmit: IonButton;
   id: any;
   data: any;
   type: any;
@@ -57,9 +58,8 @@ export class ReturnApplyPage implements OnInit {
     public modalCtrl: ModalController,
     private route: ActivatedRoute
     ) {
-     this.type=this.route.snapshot.paramMap.get("type");
+     this.type=this.route.snapshot.queryParams.type;
      this.id= this.route.snapshot.paramMap.get("id");
-  
     this.applyForm = this.formBuilder.group({
       PersonName: ['', Validators.required],
       IDCardNumber: ['', [Validators.required, Validators.minLength(18), Validators.maxLength(18)]],
@@ -85,7 +85,9 @@ export class ReturnApplyPage implements OnInit {
 
   }
   doApply(form) {
+    this.btnSubmit.disabled=true;
     this.service.apply1(form).subscribe(res => {
+      this.btnSubmit.disabled=false;
       if (res.IsSuccess == false) {
         this.alertCtrl.create({
           header: '提示',
@@ -99,7 +101,10 @@ export class ReturnApplyPage implements OnInit {
           message: '您的退货申请已成功提交',
           duration: 3000,
           position: 'middle',
-        }).then(p=>p.present());
+        }).then(p=>{
+          p.present();
+          this.navCtrl.back();
+        });
        
       }
     });
@@ -125,14 +130,25 @@ export class ReturnApplyPage implements OnInit {
     });
   }
   history() {
-    // let historyPage = this.modalCtrl.create(UserReturnApplyHistoryPage);
-    // historyPage.onDidDismiss(data => {
-    //   let vals = data.val.split(' ');
-    //   this.applyForm.controls["PersonName"].setValue(vals[0]);
-    //   this.applyForm.controls["IDCardNumber"].setValue(vals[1]);
-    //   if (vals.length > 2)
-    //     this.applyForm.controls["PlateNumber"].setValue(vals[2]);
-    // });
-    // historyPage.present();
+    this.presentModal();
+  }
+  async presentModal() {
+
+    const modal = await this.modalCtrl.create({
+      component: ReturnApplyHistoryPage
+    });
+    modal.onDidDismiss().then((ev)=>{
+      let val=ev.data['val'];
+      if(val!=undefined){
+        let vals = val.split(' ');
+        this.applyForm.controls["PersonName"].setValue(vals[0]);
+        this.applyForm.controls["IDCardNumber"].setValue(vals[1]);
+        if (vals.length > 2)
+          this.applyForm.controls["PlateNumber"].setValue(vals[2]);
+      }
+
+        
+    });
+    return await modal.present();
   }
 }

@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>提货人历史记录</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list *ngIf="items.length>0">
+    <ion-radio-group  [(ngModel)]="currentItem">
+        <ion-list-header>
+            请选择
+          </ion-list-header>
+        
+          <ion-item *ngFor="let item of items" >
+            <ion-label>{{item}}</ion-label>
+            <ion-radio slot="start" value={{item}}></ion-radio>
+          </ion-item>
+    </ion-radio-group>
+  </ion-list>
+ 
+</ion-content>
+<ion-footer>
+   
+        <ion-button expand="full" (click)="select()">确定</ion-button>
+   
+  </ion-footer>

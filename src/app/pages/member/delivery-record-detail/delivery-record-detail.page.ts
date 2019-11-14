@@ -33,7 +33,7 @@ export class DeliveryRecordDetailPage implements OnInit {
    });
   }
   applyReturn(){
-    this.navCtrl.navigateForward("/member/return-apply",{queryParams:{id:this.data.ObjectId,type:0}})
+    this.navCtrl.navigateForward("/member/return-apply/"+this.data.ObjectId,{queryParams:{type:0}})
   }
   chat(){
     // this.navCtrl.push(UserChatPage, {

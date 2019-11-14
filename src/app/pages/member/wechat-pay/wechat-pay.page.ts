@@ -10,7 +10,7 @@ declare var WeixinJSBridge: any;
   templateUrl: './wechat-pay.page.html',
   styleUrls: ['./wechat-pay.page.scss'],
 })
-export class WechatPayPage implements OnInit,OnDestroy {
+export class WechatPayPage implements OnInit, OnDestroy {
   data: any = {};
   openId: any;
   allSelected: boolean = true;
@@ -25,7 +25,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
     private router: Router, ) { }
 
   ngOnInit(): void {
-    this.openId=this.cookieService.get("OpenId");
+    this.openId = this.cookieService.get("OpenId");
     this.loadingCtrl.create({
       message: '请稍后...'
     }).then(p => {
@@ -33,17 +33,17 @@ export class WechatPayPage implements OnInit,OnDestroy {
       this.service.getList(this.openId).subscribe(res => {
         this.data = res;
         if (this.data.ReceiveGoodsDetailList.length > 0) {
-  
+
           this.amountInputDisable = true;
-  
-  
+
+
         }
         else {
           this.amountInputDisable = false;
         }
         this.loadingCtrl.dismiss();
-  
-  
+
+
       }, (error) => {
         this.loadingCtrl.dismiss();
         this.toastCtrl.create({
@@ -52,7 +52,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
           duration: 1500
         }).then(p => p.present());
       });
-  
+
     });
 
     this.signalRConnection = this.signalR.createConnection();
@@ -75,7 +75,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
         }
       });
     });
-   
+
 
 
   }
@@ -85,12 +85,12 @@ export class WechatPayPage implements OnInit,OnDestroy {
 
 
   onAllClick() {
-    if(this.data!=undefined&&this.data.ReceiveGoodsDetailList!=undefined){
+    if (this.data != undefined && this.data.ReceiveGoodsDetailList != undefined) {
       this.data.ReceiveGoodsDetailList.forEach(element => {
         element.Selected = this.allSelected;
       });
     }
-    
+
   }
   selectChange() {
     let selectedAmount: number = 0;
@@ -102,7 +102,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
       selectedAmount = selectedAmount + parseFloat(item.Amount)
       selectedList.push(item.Id);
     });
-    
+
     this.data.Amount = (selectedAmount + this.data.Amount1).toFixed(2);
     this.data.SelectIdList = selectedList.toString();
     if (selectedList.length > 0) {
@@ -139,7 +139,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
     }
     else {
       this.payByH5();
-     
+
     }
   }
   payByJsApi() {
@@ -151,9 +151,18 @@ export class WechatPayPage implements OnInit,OnDestroy {
       this.service.pay(this.data).subscribe(res => {
 
         this.loadingCtrl.dismiss();
-        let jsApiParam = JSON.parse(res.Data);
-        this.callpay(jsApiParam);
-  
+        if (res.Success){
+          let jsApiParam = JSON.parse(res.Data);
+          this.callpay(jsApiParam);
+        }
+        else {
+          this.toastCtrl.create({
+            message: res.ErrMsg,
+            position: 'middle',
+            duration: 3000
+          }).then(p => p.present());
+        }
+
       }, (err) => {
         this.loadingCtrl.dismiss();
         this.toastCtrl.create({
@@ -164,7 +173,7 @@ export class WechatPayPage implements OnInit,OnDestroy {
       });
     });
 
-   
+
   }
   payByH5() {
     this.data.TradeType = "MWEB";
@@ -176,6 +185,13 @@ export class WechatPayPage implements OnInit,OnDestroy {
       this.loadingCtrl.dismiss();
       if (res.Success)
         location.href = res.PayUrl;
+      else {
+        this.toastCtrl.create({
+          message: res.ErrMsg,
+          position: 'middle',
+          duration: 3000
+        }).then(p => p.present());
+      }
     }, (err) => {
       this.loadingCtrl.dismiss();
       this.toastCtrl.create({
@@ -234,8 +250,8 @@ export class WechatPayPage implements OnInit,OnDestroy {
   showDesc(val) {
     this.router.navigateByUrl("/member/wechat-pay-description");
   }
- 
-  payHistory(){
+
+  payHistory() {
     this.router.navigateByUrl("/member/wechat-pay-list");
   }
 }

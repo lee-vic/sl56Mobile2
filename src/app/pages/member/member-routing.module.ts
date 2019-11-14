@@ -33,7 +33,10 @@ const routes: Routes = [ {
   { path: 'unread-message-list', loadChildren:()=>import("./unread-message-list/unread-message-list.module").then(m=>m.UnreadMessageListPageModule) },
   { path: 'wechat-binding', loadChildren:()=>import('.//wechat-binding/wechat-binding.module').then(p=>p.WechatBindingPageModule) },
   { path: 'return-list', loadChildren: ()=> import('./return-list/return-list.module').then(m=>m.ReturnListPageModule) },
-  { path: 'return-apply', loadChildren:()=>import('./return-apply/return-apply.module').then(m=>m.ReturnApplyPageModule) },
+  { path: 'return-apply/:id', loadChildren:()=>import('./return-apply/return-apply.module').then(m=>m.ReturnApplyPageModule) },
+  { path: 'problem-list', loadChildren:()=>import('./problem-list/problem-list.module').then(m=>m.ProblemListPageModule) },
+  { path: 'problem-detail/:id', loadChildren:()=>import('./problem-detail/problem-detail.module').then(m=>m.ProblemDetailPageModule)},
+ 
 ];
 
 @NgModule({
