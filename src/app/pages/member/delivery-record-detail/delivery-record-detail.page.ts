@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DeliveryRecordDetailService } from 'src/app/providers/delivery-record-detail.service';
-import {  ActivatedRoute } from '@angular/router';
+import {  ActivatedRoute, NavigationExtras, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 @Component({
   selector: 'app-delivery-record-detail',
@@ -12,7 +12,7 @@ export class DeliveryRecordDetailPage implements OnInit {
   id:any;
   tab="1";
   isReturn=true;
-  constructor(public navCtrl: NavController,  public service:DeliveryRecordDetailService, private route: ActivatedRoute) { }
+  constructor(public navCtrl: NavController, private router: Router, public service:DeliveryRecordDetailService, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.id = +this.route.snapshot.paramMap.get('id');
@@ -36,11 +36,13 @@ export class DeliveryRecordDetailPage implements OnInit {
     this.navCtrl.navigateForward("/member/return-apply/"+this.data.ObjectId,{queryParams:{type:0}})
   }
   chat(){
-    // this.navCtrl.push(UserChatPage, {
-    //   receiveGoodsDetailId: this.data.ObjectId,
-    //   messages:this.data.ChatRecords,
-    //   messageType:1
-    // });
+    let extras:NavigationExtras={
+      state:{
+        receiveGoodsDetailId: this.data.ObjectId,
+       messages:this.data.ChatRecords,
+      }
+    }
+    this.router.navigate(["/member/chat/1"],extras)
   }
   
 }

@@ -138,8 +138,15 @@ export class WechatPayPage implements OnInit, OnDestroy {
       this.payByJsApi();
     }
     else {
-      this.payByH5();
-
+      //this.payByH5();
+      this.alertCtrl.create({
+        header: '提示',
+        subHeader:"暂不支持此支付方式",
+        message: "请使用我司公众号、小程序、PC版本网站进行支付",
+        buttons: [{
+          text: "确定",
+        }]
+      }).then(p=>p.present());
     }
   }
   payByJsApi() {

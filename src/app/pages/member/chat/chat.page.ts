@@ -5,7 +5,7 @@ import { apiUrl } from 'src/app/global';
 import { ProblemService } from 'src/app/providers/problem.service';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
 
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat',
@@ -41,21 +41,30 @@ export class ChatPage implements OnInit, OnDestroy {
     public service: ProblemService,
     public imService: InstantMessageService,
     public toastCtrl: ToastController,
- 
+    private router: Router,
     private route: ActivatedRoute
     ) {
-     this.messageType =parseInt(this.route.snapshot.paramMap.get('id'));
-    // this.receiveGoodsDetailId = navParams.get("receiveGoodsDetailId");
-    // this.problemId = navParams.get("problemId");
-    // this.messages = navParams.get("messages");
-    // this.attachmentTypeId=navParams.get("attachmentTypeId");
-    if(this.messageType==1){
-      this.showFileUploadButton=true;
-    }
-    else if(this.messageType==2&&this.attachmentTypeId!='null'){
-      this.showFileUploadButton=true;
-    }
-    this.processMessages();
+      this.messageType =parseInt(this.route.snapshot.paramMap.get('id'));
+      this.route.queryParams.subscribe(params=>{
+        if(this.router.getCurrentNavigation().extras.state){
+          let data=this.router.getCurrentNavigation().extras.state;
+          this.receiveGoodsDetailId=data.receiveGoodsDetailId;
+          this.problemId = data.problemId;
+          this.messages = data.messages;
+          this.attachmentTypeId=data.attachmentTypeId;
+          console.log(this.attachmentTypeId);
+        }
+        if(this.messageType==1){
+          this.showFileUploadButton=true;
+        }
+        else if(this.messageType==2&&this.attachmentTypeId!=undefined){
+          this.showFileUploadButton=true;
+        }
+        this.processMessages();
+      });
+    
+    
+   
 
   }
   ngOnDestroy(): void {
