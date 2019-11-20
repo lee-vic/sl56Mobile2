@@ -122,7 +122,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   calculateAmount() {
     let tempAmount: number = 0;
-    if (this.data.Amount != "")
+    if (this.data.Amount != ""&&this.data.Amount!=null)
       tempAmount = parseFloat(this.data.Amount);
     if (this.data.WXPaymentCommission) {
       this.data.Commission = (tempAmount * this.data.WXPaymentCommissionRate).toFixed(2);
@@ -133,20 +133,32 @@ export class WechatPayPage implements OnInit, OnDestroy {
     this.data.TotalAmount = (tempAmount + parseFloat(this.data.Commission)).toFixed(2);
   }
   payClick() {
-    //微信浏览器
-    if (this.IsMicroMessenger()) {
-      this.payByJsApi();
-    }
-    else {
-      //this.payByH5();
+    if (this.data.TotalAmount < 0.01) {
       this.alertCtrl.create({
         header: '提示',
-        subHeader:"暂不支持此支付方式",
-        message: "请使用我司公众号、小程序、PC版本网站进行支付",
+        subHeader: "金额错误",
+        message: "支付金额必须大于等于0.01元",
         buttons: [{
           text: "确定",
         }]
-      }).then(p=>p.present());
+      }).then(p => p.present());
+    }
+    else {
+      //微信浏览器
+      if (this.IsMicroMessenger()) {
+        this.payByJsApi();
+      }
+      else {
+        //this.payByH5();
+        this.alertCtrl.create({
+          header: '提示',
+          subHeader: "暂不支持此支付方式",
+          message: "请使用我司公众号、小程序、PC版本网站进行支付",
+          buttons: [{
+            text: "确定",
+          }]
+        }).then(p => p.present());
+      }
     }
   }
   payByJsApi() {
@@ -158,7 +170,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
       this.service.pay(this.data).subscribe(res => {
 
         this.loadingCtrl.dismiss();
-        if (res.Success){
+        if (res.Success) {
           let jsApiParam = JSON.parse(res.Data);
           this.callpay(jsApiParam);
         }
