@@ -36,6 +36,7 @@ const routes: Routes = [ {
   { path: 'return-apply/:id', loadChildren:()=>import('./return-apply/return-apply.module').then(m=>m.ReturnApplyPageModule) },
   { path: 'problem-list', loadChildren:()=>import('./problem-list/problem-list.module').then(m=>m.ProblemListPageModule) },
   { path: 'problem-detail/:id', loadChildren:()=>import('./problem-detail/problem-detail.module').then(m=>m.ProblemDetailPageModule)},
+  { path: 'reset-password', loadChildren:()=>import('./reset-password/reset-password.module').then(m=>m.ResetPasswordPageModule) },
  
 ];
 

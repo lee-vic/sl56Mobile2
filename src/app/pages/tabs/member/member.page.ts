@@ -49,7 +49,9 @@ export class MemberPage implements OnInit {
       clientType:new FormControl(''),
       userType:new FormControl(0,Validators.required),
       rememberMe:new FormControl(true,Validators.required),
-      isBind:new FormControl(true,Validators.required)
+      isBind:new FormControl(true,Validators.required),
+      openId:new FormControl(''),
+      unionId:new FormControl(''),
     });
    }
 
@@ -71,6 +73,9 @@ export class MemberPage implements OnInit {
 
   
   }
+  forgetPasswordClick(){
+    this.router.navigateByUrl("/member/reset-password");
+  }
   ionViewDidEnter(){
     console.log("ionViewDidEnter");
   }
@@ -78,8 +83,10 @@ export class MemberPage implements OnInit {
 
    
     this.showLoading("请稍后...");
-    if(this.plt.is("mobileweb")){
+    if(this.plt.is("mobileweb")||this.plt.is("desktop")){
       formValue.clientType=1;
+      formValue.openId=this.cookieService.get('OpenId');
+      formValue.unionId=this.cookieService.get('UnionId');
     }
     this.userService.auth(formValue).subscribe((res)=>{
       this.setLogin("true"===res.toString());

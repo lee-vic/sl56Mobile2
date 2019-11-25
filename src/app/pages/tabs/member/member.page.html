@@ -1,8 +1,9 @@
 <ion-header translucent *ngIf="!isLogin">
   <ion-toolbar>
+     
     <ion-title>登录</ion-title>
     <ion-buttons slot="primary">
-      <ion-button href="#">
+      <ion-button (click)="forgetPasswordClick()">
         忘记密码?
       </ion-button>
     </ion-buttons>

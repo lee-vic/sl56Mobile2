@@ -35,11 +35,7 @@ export class LoginPage implements OnInit {
 
   ngOnInit() {
   }
-  forgetPasswordClick(){
-    // let loginModalPage= this.modalCtrl.create(UserForgotPasswordPage);
-   
-    // loginModalPage.present();
-  }
+ 
   doLogin(formValue) {
 
     this.loadingCtrl.create({
@@ -77,6 +73,9 @@ export class LoginPage implements OnInit {
      
     });
 
+  }
+  forgetPasswordClick(){
+    this.router.navigateByUrl("/member/reset-password");
   }
   getCookie(){
     console.log(this.plt.platforms())
