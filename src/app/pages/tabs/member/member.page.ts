@@ -18,7 +18,7 @@ export class MemberPage implements OnInit {
     { title: "偏远查询", image: "assets/imgs/member-3.png", type:[0,1],url:"/member/remote" },
     { title: "运单确认", image: "assets/imgs/member-5.png", type:[0] ,url:"/member/confirmation"},
     { title: "交货记录", image: "assets/imgs/member-6.png", type:[0,1],url:"/member/delivery-record/list" },
-    { title: "模板下载", image: "assets/imgs/member-7.png", type:[0,1] ,url:""},
+    { title: "模板下载", image: "assets/imgs/member-7.png", type:[0,1] ,url:"/member/template-list"},
     { title: "微信支付", image: "assets/imgs/member-8.png",type:[0,1] ,url:"/member/wechat-pay"},
     { title: "查看报价", image: "assets/imgs/member-10.png", type:[0],url:"" },
     { title: "修改密码", image: "assets/imgs/member-11.png", type:[0],url:""},

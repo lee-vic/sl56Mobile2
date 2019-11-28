@@ -37,6 +37,7 @@ const routes: Routes = [ {
   { path: 'problem-list', loadChildren:()=>import('./problem-list/problem-list.module').then(m=>m.ProblemListPageModule) },
   { path: 'problem-detail/:id', loadChildren:()=>import('./problem-detail/problem-detail.module').then(m=>m.ProblemDetailPageModule)},
   { path: 'reset-password', loadChildren:()=>import('./reset-password/reset-password.module').then(m=>m.ResetPasswordPageModule) },
+  { path: 'template-list', loadChildren:()=>import('./template-list/template-list.module').then(m=>m.TemplateListPageModule)}
  
 ];
 
