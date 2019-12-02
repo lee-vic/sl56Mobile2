@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-back-button></ion-back-button>
+        </ion-buttons>
+    <ion-title>查看报价</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+    <ion-list *ngFor="let item of items">
+      <ion-item>
+        <h4>{{item.Name}}</h4>
+        <ion-note slot="end">{{item.ModeOfTransportName}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <p>生效时间</p>
+        <ion-note slot="end">{{item.StartDate}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <p>失效时间</p>
+        <ion-note slot="end">{{item.EndDate}}</ion-note>
+      </ion-item>
+    </ion-list>
+  
+    <ion-infinite-scroll (ionInfinite)="getItems($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </ion-content>
+  <ion-footer>
+
+  
+    <ion-button href="{{downloadUrl}}" expand="full" *ngIf="allowDownload">下载完整报价</ion-button>
+
+ 
+  </ion-footer>

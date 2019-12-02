@@ -20,9 +20,9 @@ export class MemberPage implements OnInit {
     { title: "交货记录", image: "assets/imgs/member-6.png", type:[0,1],url:"/member/delivery-record/list" },
     { title: "模板下载", image: "assets/imgs/member-7.png", type:[0,1] ,url:"/member/template-list"},
     { title: "微信支付", image: "assets/imgs/member-8.png",type:[0,1] ,url:"/member/wechat-pay"},
-    { title: "查看报价", image: "assets/imgs/member-10.png", type:[0],url:"" },
-    { title: "修改密码", image: "assets/imgs/member-11.png", type:[0],url:""},
-    { title: "子账号管理", image: "assets/imgs/member-12.png", type:[0],url:""},
+    { title: "查看报价", image: "assets/imgs/member-10.png", type:[0],url:"/member/price-list" },
+    { title: "修改密码", image: "assets/imgs/member-11.png", type:[0],url:"/member/modify-password"},
+    { title: "子账号管理", image: "assets/imgs/member-12.png", type:[0],url:"/member/sub-account"},
     { title: "微信绑定", image: "assets/imgs/member-13.png", type:[0,1],url:"/member/wechat-binding" },
     { title: "回单上传", image: "assets/imgs/member-17.png",type:[0,1] ,url:""},
     { title: "问题跟进", image: "assets/imgs/member-18.png", type:[0,1],url:"/member/problem-list" },
@@ -123,10 +123,13 @@ export class MemberPage implements OnInit {
     if(val){
       this.setUsername();
       this.getUserInfo();
+     
        this.customerType=parseInt(this.cookieService.get('CustomerType'));
+     
       if(isNaN(this.customerType)){
         this.customerType=0;
       }
+     
     
       let tempMenus=this.allMenus.filter(p=>{
         return p.type.indexOf(this.customerType)>-1;

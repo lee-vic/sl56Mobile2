@@ -37,8 +37,13 @@ const routes: Routes = [ {
   { path: 'problem-list', loadChildren:()=>import('./problem-list/problem-list.module').then(m=>m.ProblemListPageModule) },
   { path: 'problem-detail/:id', loadChildren:()=>import('./problem-detail/problem-detail.module').then(m=>m.ProblemDetailPageModule)},
   { path: 'reset-password', loadChildren:()=>import('./reset-password/reset-password.module').then(m=>m.ResetPasswordPageModule) },
-  { path: 'template-list', loadChildren:()=>import('./template-list/template-list.module').then(m=>m.TemplateListPageModule)}
- 
+  { path: 'template-list', loadChildren:()=>import('./template-list/template-list.module').then(m=>m.TemplateListPageModule)},
+  { path: 'price-list', loadChildren: ()=>import('./price-list/price-list.module').then(m=>m.PriceListPageModule) },
+  { path: 'modify-password', loadChildren:()=>import('./modify-password/modify-password.module').then(m=>m.ModifyPasswordPageModule) },
+  { path: 'sub-account', loadChildren: ()=>import('./sub-account/sub-account.module').then(m=>m.SubAccountPageModule)},
+  { path: 'sub-account-detail/:id', loadChildren:()=>import('./sub-account-detail/sub-account-detail.module').then(p=>p.SubAccountDetailPageModule) },
+
+  
 ];
 
 @NgModule({

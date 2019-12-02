@@ -1,0 +1,80 @@
+<ion-header>
+  <ion-toolbar>
+      <ion-buttons slot="start">
+          <ion-back-button></ion-back-button>
+        </ion-buttons>
+    <ion-title>{{title}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <form novalidate [formGroup]="myForm" (ngSubmit)="onSubmit(myForm.value)">
+        <ion-list>
+          <ion-item>
+            <ion-label>名称</ion-label>
+            <ion-input type="text" value="" placeholder="帐号名称，便于你的管理" formControlName="objectname" [(ngModel)]="data.ObjectName"></ion-input>
+          </ion-item>
+          <div class="validation-errors ion-padding-start">
+            <div *ngFor="let validation of validation_messages.objectname">
+              <ng-container>
+                <div class="error-message" *ngIf="myForm.get('objectname').hasError(validation.type) && (myForm.get('objectname').dirty || myForm.get('objectname').touched)">
+                  {{validation.message}}
+                </div>
+              </ng-container>
+            </div>
+          </div>
+          <ion-item>
+            <ion-label>帐号</ion-label>
+            <ion-input type="text" value="" placeholder="登录本系统的账户，限字母和数字" formControlName="objectno" [(ngModel)]="data.ObjectNo"></ion-input>
+          </ion-item>
+          <div class="validation-errors ion-padding-start">
+              <div *ngFor="let validation of validation_messages.objectno">
+                <ng-container>
+                  <div class="error-message" *ngIf="myForm.get('objectno').hasError(validation.type) && (myForm.get('objectno').dirty || myForm.get('objectno').touched)">
+                    {{validation.message}}
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          <ion-item *ngIf="isNew">
+            <ion-label>密码</ion-label>
+            <ion-input type="password" value="" placeholder="登录本系统的密码，区分大小写" formControlName="password" [(ngModel)]="data.Password"></ion-input>
+          </ion-item>
+          <div class="validation-errors ion-padding-start">
+              <div *ngFor="let validation of validation_messages.password">
+                <ng-container>
+                  <div class="error-message" *ngIf="myForm.get('password').hasError(validation.type) && (myForm.get('password').dirty || myForm.get('password').touched)">
+                    {{validation.message}}
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          <ion-item *ngIf="!isNew">
+            <ion-label>密码</ion-label>
+            <ion-input type="password" value="" placeholder="更改密码请直接输入" formControlName="password1" [(ngModel)]="data.Password1"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>报价折扣</ion-label>
+            <ion-input type="number" placeholder="查询价格时对于我公司公开价的系数" formControlName="discount" [(ngModel)]="data.Discount"></ion-input>
+          </ion-item>
+          <div class="validation-errors ion-padding-start">
+              <div *ngFor="let validation of validation_messages.discount">
+                <ng-container>
+                  <div class="error-message" *ngIf="myForm.get('discount').hasError(validation.type) && (myForm.get('discount').dirty || myForm.get('discount').touched)">
+                    {{validation.message}}
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+        </ion-list>
+        <div padding-left padding-right>
+          <ion-button expand="block" type="submit" [disabled]="myForm.invalid">保存</ion-button>
+    
+        </div>
+    
+      </form>
+      <div padding-left padding-right *ngIf="!isNew">
+    
+        <ion-button expand="block" fill="outline" (click)="delete()">删除</ion-button>
+      </div>
+</ion-content>

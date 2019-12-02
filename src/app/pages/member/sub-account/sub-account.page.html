@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>子账号管理</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="add()">
+        新增
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="full">
+    <ion-item detail button *ngFor="let item of items" (click)="detail(item)">
+
+      <ion-label>{{item.ObjectNo}}</ion-label>
+      <ion-note slot="end">{{item.ObjectName}}</ion-note>
+    </ion-item>
+
+  </ion-list>
+</ion-content>
