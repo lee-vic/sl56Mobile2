@@ -4,6 +4,8 @@ import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { TabsService } from './providers/tabs.service';
+import { JPush } from '@jiguang-ionic/jpush/ngx';
+
 
 @Component({
   selector: 'app-root',
@@ -15,6 +17,7 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     public tabs: TabsService,
+    private jpush:JPush,
     private statusBar: StatusBar
   ) {
     this.initializeApp();
@@ -24,6 +27,8 @@ export class AppComponent {
     this.platform.ready().then(() => {
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+      this.jpush.init();
+      this.jpush.setDebugMode(true);
     });
   }
 }

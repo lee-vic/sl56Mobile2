@@ -12,6 +12,10 @@ import { HttpClientModule } from '@angular/common/http';
 import { TabsService } from './providers/tabs.service';
 import { SignalRModule } from 'ng2-signalr';
 import { SignalRConfiguration } from 'ng2-signalr';
+import { JPush } from '@jiguang-ionic/jpush/ngx';
+
+
+
 export function createConfig(): SignalRConfiguration {
   const c = new SignalRConfiguration();
   c.hubName = 'chatHub';
@@ -43,6 +47,7 @@ export function createConfig(): SignalRConfiguration {
     StatusBar,
     SplashScreen,
     TabsService,
+    JPush,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

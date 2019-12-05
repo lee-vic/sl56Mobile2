@@ -94,6 +94,10 @@ export class MemberPage implements OnInit {
       if(!this.isLogin){
         this.showToast('用户名或者密码错误，请重试');
       }
+      else{
+        localStorage.setItem("username",formValue.username);
+      }
+      
     },(err)=>{
       this.showToast(err.message);
     });
@@ -115,8 +119,15 @@ export class MemberPage implements OnInit {
     this.loading.present();
   }
   setUsername() {
-    if (this.cookieService.get('Username') != "")
+
+    if(this.plt.is("hybrid")){
+      this.username=localStorage.getItem("username");
+    }
+    else{
+      if (this.cookieService.get('Username') != "")
       this.username = this.cookieService.get('Username');
+    }
+  
   }
   setLogin(val:boolean){
     this.isLogin=val;
