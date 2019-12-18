@@ -25,7 +25,7 @@ const routes: Routes = [ {
     } ]
   },
   { path: 'confirmation', loadChildren:()=>import("./confirmation/confirmation.module").then(m=>m.ConfirmationPageModule)},
-  { path: 'wechat-pay',  loadChildren:()=> import('./wechat-pay/wechat-pay.module').then(m=>m.WechatPayPageModule) },
+  { path: 'wechat-pay/:id',  loadChildren:()=> import('./wechat-pay/wechat-pay.module').then(m=>m.WechatPayPageModule) },
   { path: 'wechat-pay-list', loadChildren:()=>import('./wechat-pay-list/wechat-pay-list.module').then(m=>m.WechatPayListPageModule) },
   { path: 'remote', loadChildren:()=>import('./remote/remote.module').then(m=>m.RemotePageModule) },
   { path: 'wechat-pay-description', loadChildren:()=>import('./wechat-pay-description/wechat-pay-description.module').then(m=>m.WechatPayDescriptionPageModule) },

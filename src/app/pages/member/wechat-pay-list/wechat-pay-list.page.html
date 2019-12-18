@@ -19,15 +19,15 @@
       </ion-item>
       <ion-item>
         <ion-label>运费</ion-label>
-        <ion-note slot="end">￥{{item.FreightAmount}}</ion-note>
+        <ion-note slot="end">{{item.FreightAmount|currency:'CNY'}}</ion-note>
       </ion-item>
       <ion-item>
         <ion-label>手续费</ion-label>
-        <ion-note slot="end">￥{{item.CommissionAmount}}</ion-note>
+        <ion-note slot="end">{{item.CommissionAmount|currency:'CNY'}}</ion-note>
       </ion-item>
       <ion-item>
         <ion-label>付款金额</ion-label>
-        <ion-note slot="end">￥{{item.TotalAmount}}</ion-note>
+        <ion-note slot="end">{{item.TotalAmount|currency:'CNY'}}</ion-note>
       </ion-item>
       <ion-item>
         <ion-label>支付时间</ion-label>

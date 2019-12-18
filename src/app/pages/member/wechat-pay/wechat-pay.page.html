@@ -14,17 +14,17 @@
 
 <ion-content>
   <div class="my-head">
-    <div class="total-amount">{{data?.TotalAmount}}</div>
-    <div class="total-text">支付金额(元)</div>
+    <div class="total-amount">{{data?.TotalAmount|currency:'CNY'}}</div>
+    <div class="total-text">支付金额</div>
   </div>
   <div class="my-head1" *ngIf="data?.WXPaymentCommission">
     <div class="head-col">
-      <div>{{data?.Amount==""?"0":data?.Amount}}</div>
-      <div>运费(元)</div>
+      <div>{{data?.Amount==""?"0":data?.Amount |currency:'CNY'}}</div>
+      <div>运费</div>
     </div>
     <div class="head-col">
-      <div>{{data?.Commission}}</div>
-      <div>手续费(元)</div>
+      <div>{{data?.Commission |currency:'CNY'}}</div>
+      <div>手续费</div>
     </div>
   </div>
 
@@ -54,7 +54,7 @@
     <ion-item *ngFor="let item of data?.ReceiveGoodsDetailList">
       <ion-label>{{item.ReferenceNumber}}</ion-label>
       <ion-checkbox [(ngModel)]="item.Selected" (ionChange)="selectChange()" slot="start"></ion-checkbox>
-      <ion-note slot="end">{{item.Amount}}元</ion-note>
+      <ion-note slot="end">{{item.Amount|currency:'CNY'}}</ion-note>
     </ion-item>
   </ion-list>
 </ion-content>

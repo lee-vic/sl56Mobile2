@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ToastController, AlertController, LoadingController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'ng2-signalr';
 import { CookieService } from 'ngx-cookie-service';
@@ -22,10 +22,17 @@ export class WechatPayPage implements OnInit, OnDestroy {
     private signalR: SignalR,
     private cookieService: CookieService,
     public service: WechatPayService,
-    private router: Router, ) { }
+    private router: Router,
+    private route: ActivatedRoute) {
+    //公众号
+    this.route.queryParams.subscribe(p => {
+      if (p && p.openid) {
+        this.openId = p.openid;
+      }
+    });
+  }
 
   ngOnInit(): void {
-    this.openId = this.cookieService.get("OpenId");
     this.loadingCtrl.create({
       message: '请稍后...'
     }).then(p => {
@@ -33,16 +40,12 @@ export class WechatPayPage implements OnInit, OnDestroy {
       this.service.getList(this.openId).subscribe(res => {
         this.data = res;
         if (this.data.ReceiveGoodsDetailList.length > 0) {
-
           this.amountInputDisable = true;
-
-
         }
         else {
           this.amountInputDisable = false;
         }
         this.loadingCtrl.dismiss();
-
 
       }, (error) => {
         this.loadingCtrl.dismiss();
@@ -122,7 +125,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   calculateAmount() {
     let tempAmount: number = 0;
-    if (this.data.Amount != ""&&this.data.Amount!=null)
+    if (this.data.Amount != "" && this.data.Amount != null)
       tempAmount = parseFloat(this.data.Amount);
     if (this.data.WXPaymentCommission) {
       this.data.Commission = (tempAmount * this.data.WXPaymentCommissionRate).toFixed(2);
@@ -149,15 +152,15 @@ export class WechatPayPage implements OnInit, OnDestroy {
         this.payByJsApi();
       }
       else {
-        //this.payByH5();
-        this.alertCtrl.create({
-          header: '提示',
-          subHeader: "暂不支持此支付方式",
-          message: "请使用我司公众号、小程序、PC版本网站进行支付",
-          buttons: [{
-            text: "确定",
-          }]
-        }).then(p => p.present());
+        this.payByH5();
+        // this.alertCtrl.create({
+        //   header: '提示',
+        //   subHeader: "暂不支持此支付方式",
+        //   message: "请使用我司公众号、小程序、PC版本网站进行支付",
+        //   buttons: [{
+        //     text: "确定",
+        //   }]
+        // }).then(p => p.present());
       }
     }
   }
