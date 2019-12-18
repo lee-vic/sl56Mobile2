@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>业务公告</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="full">
+    <ion-item detail (click)="openDetail(item)" *ngFor="let item of items">
+      <ion-label class="ion-text-wrap">
+        <p>{{item.CreateAt}}</p>
+        <ion-text>
+          <h3>{{item.Title}}</h3>
+        </ion-text>
+        <p>{{item.Summary}}</p>
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+  <ion-infinite-scroll (ionInfinite)="getItems()">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

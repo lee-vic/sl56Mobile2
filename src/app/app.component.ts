@@ -25,10 +25,14 @@ export class AppComponent {
 
   initializeApp() {
     this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-      this.jpush.init();
-      this.jpush.setDebugMode(true);
+     
+      if(this.platform.is("hybrid")){
+        this.statusBar.styleDefault();
+        this.splashScreen.hide();
+        this.jpush.init();
+        this.jpush.setDebugMode(true);
+      }
+      
     });
   }
 }

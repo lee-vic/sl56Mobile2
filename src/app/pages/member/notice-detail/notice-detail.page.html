@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>公告详情</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h3>{{notice?.Title}}</h3>
+  <p>发表于{{notice?.CreateAt}}</p>
+  <hr>
+  <div [innerHTML]="notice?.Summary"></div>
+</ion-content>

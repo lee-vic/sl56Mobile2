@@ -42,8 +42,9 @@ const routes: Routes = [ {
   { path: 'modify-password', loadChildren:()=>import('./modify-password/modify-password.module').then(m=>m.ModifyPasswordPageModule) },
   { path: 'sub-account', loadChildren: ()=>import('./sub-account/sub-account.module').then(m=>m.SubAccountPageModule)},
   { path: 'sub-account-detail/:id', loadChildren:()=>import('./sub-account-detail/sub-account-detail.module').then(p=>p.SubAccountDetailPageModule) },
-
-  
+  { path: 'notice-list', loadChildren:()=>import('./notice-list/notice-list.module').then(m=>m.NoticeListPageModule)},
+  { path: 'notice-detail/:id', loadChildren: ()=>import('./notice-detail/notice-detail.module').then(m=>m.NoticeDetailPageModule) },
+  { path: 'bank-slips', loadChildren: ()=>import('./bank-slips/bank-slips.module').then(m=>m.BankSlipsPageModule) },
 ];
 
 @NgModule({
