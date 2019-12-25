@@ -24,12 +24,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
     public service: WechatPayService,
     private router: Router,
     private route: ActivatedRoute) {
-    //公众号
-    this.route.queryParams.subscribe(p => {
-      if (p && p.openid) {
-        this.openId = p.openid;
-      }
-    });
+      this.openId =this.route.snapshot.paramMap.get('id');
   }
 
   ngOnInit(): void {
@@ -46,6 +41,26 @@ export class WechatPayPage implements OnInit, OnDestroy {
           this.amountInputDisable = false;
         }
         this.loadingCtrl.dismiss();
+        this.signalRConnection = this.signalR.createConnection();
+        this.signalRConnection.status.subscribe((p) => console.warn(p.name));
+        this.signalRConnection.start().then((c) => {
+          let listener = c.listenFor("messageReceived");
+          listener.subscribe((msg: any) => {
+            let obj = JSON.parse(msg);
+            if (obj.MsgContent == "True") {
+              this.payHistory();
+              // this.navCtrl.push(UserWechatPayListPage);
+            }
+            else {
+              this.toastCtrl.create({
+                message: "支付失败",
+                position: 'middle',
+                duration: 1500
+              }).then(p => p.present());
+    
+            }
+          });
+        });
 
       }, (error) => {
         this.loadingCtrl.dismiss();
@@ -58,26 +73,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
     });
 
-    this.signalRConnection = this.signalR.createConnection();
-    this.signalRConnection.status.subscribe((p) => console.warn(p.name));
-    this.signalRConnection.start().then((c) => {
-      let listener = c.listenFor("messageReceived");
-      listener.subscribe((msg: any) => {
-        let obj = JSON.parse(msg);
-        if (obj.MsgContent == "True") {
-          this.payHistory();
-          // this.navCtrl.push(UserWechatPayListPage);
-        }
-        else {
-          this.toastCtrl.create({
-            message: "支付失败",
-            position: 'middle',
-            duration: 1500
-          }).then(p => p.present());
-
-        }
-      });
-    });
+   
 
 
 

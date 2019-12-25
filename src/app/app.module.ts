@@ -13,6 +13,7 @@ import { TabsService } from './providers/tabs.service';
 import { SignalRModule } from 'ng2-signalr';
 import { SignalRConfiguration } from 'ng2-signalr';
 import { JPush } from '@jiguang-ionic/jpush/ngx';
+import { CodePush } from '@ionic-native/code-push/ngx';
 
 
 
@@ -48,6 +49,7 @@ export function createConfig(): SignalRConfiguration {
     SplashScreen,
     TabsService,
     JPush,
+    CodePush,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

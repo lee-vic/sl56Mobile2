@@ -175,13 +175,9 @@ export class MemberPage implements OnInit {
       
     }
     else {
-      if(this.IsMicroMessenger()&&item.page==""){
-        
-        this.showToast('请使用公众号导航菜单"会员中心-微信支付"进行支付');
-      }
-      else{
+      
         this.router.navigateByUrl(item.url);
-      }
+     
         
     }
 

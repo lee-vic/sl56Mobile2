@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="io.ionic.starter" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <platform name="android">
+        <preference name="CodePushDeploymentKey" value="q0DBd6zgpLl3mAW540sxeEird33nZHE6wwxkmd" />
+    </platform>
     <name>升蓝物流</name>
-    <description>An awesome Ionic/Cordova app.</description>
+    <description>深圳市升蓝物流有限公司提供给合作伙伴使用的应用</description>
     <author email="2355568702@qq.com" href="http://www.sl56.com/">深圳市升蓝物流有限公司</author>
     <content src="index.html" />
     <access origin="*" />
