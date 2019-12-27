@@ -10,11 +10,6 @@
 <ion-content>
   <ion-list >
     <ion-item detail *ngFor="let item of calculateResultList" (click)="detail(item)">
-      <!-- <ion-label>
-        <h2>{{item.PriceNo}}</h2>
-        <p>{{item.ShortPriceName}}</p>
-      </ion-label>
-      <ion-note slot="end">￥{{item.TotalAmount}}</ion-note> -->
       <ion-label> 
           <h2>{{item.PriceNo}}</h2>
           <p>{{item.ShortPriceName}}</ion-label>

@@ -3,8 +3,8 @@ import{ Notice} from '../../../interfaces/notice';
 import{ NoticeTab} from '../../../interfaces/notice-tab';
 import { NoticeService } from '../../../providers/notice.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
-import { NewsDetailPage } from '../news-detail/news-detail.page';
+import { ModalController, NavController } from '@ionic/angular';
+
 @Component({
   selector: 'app-news',
   templateUrl: './news.page.html',
@@ -46,6 +46,7 @@ export class NewsPage implements OnInit {
   tabIndex = "2";
   constructor(  private service: NoticeService,
     private router: Router,
+    public navCtrl: NavController,
     public modalController: ModalController,
     public activeRoute: ActivatedRoute) {}
   ngOnInit(): void {
@@ -87,8 +88,7 @@ export class NewsPage implements OnInit {
  
   openDetail(item:Notice) {
 
-    this.router.navigate(["/app/tabs/news-details",item.NoticeId]);
-   
+    this.navCtrl.navigateForward("/member/notice-detail/"+item.NoticeId);
 
   }
   

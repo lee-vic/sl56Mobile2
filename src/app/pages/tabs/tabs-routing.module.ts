@@ -31,10 +31,7 @@ const routes: Routes = [
         redirectTo: 'news/2',
         pathMatch: "full"
       },
-      {
-        path: 'news-details/:id',
-        loadChildren: () => import('./news-detail/news-detail.module').then(m => m.NewsDetailPageModule)
-      },
+      
       {
         path: 'member',
         loadChildren: () => import('./member/member.module').then(m => m.MemberPageModule)
