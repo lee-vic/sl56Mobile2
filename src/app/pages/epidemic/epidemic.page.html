@@ -1,9 +1,90 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>epidemic</ion-title>
+    <ion-title>返深情况统计表</ion-title>
   </ion-toolbar>
+
 </ion-header>
 
-<ion-content>
+<ion-content fullscreen>
+  <form  (ngSubmit)="processForm(myForm.value)" [formGroup]="myForm" novalidate>
+    <ion-list lines="full" class="ion-no-margin ion-no-padding">
+      <ion-item>
+        <ion-label position="stacked">姓名 <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input required type="text"  formControlName="val1"></ion-input>
+      </ion-item>
 
+      <ion-item>
+        <ion-label position="stacked">性别<ion-text color="danger">*</ion-text></ion-label>
+        <ion-input required type="text" formControlName="val2"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">年龄<ion-text color="danger">*</ion-text></ion-label>
+        <ion-input required type="text" formControlName="val3"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">身份证号码<ion-text color="danger">*</ion-text></ion-label>
+        <ion-input required type="text" formControlName="val4"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">手机号码<ion-text color="danger">*</ion-text></ion-label>
+        <ion-input required type="text" formControlName="val5"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked" class="ion-text-wrap">春节期间居住地址（精确到具体地址，如北京市海淀区丹棱街5号1002房）<ion-text color="danger">*</ion-text></ion-label>
+        <ion-textarea required type="text" formControlName="val6"></ion-textarea>
+      </ion-item>
+     
+      <ion-item>
+        <ion-label position="stacked" class="ion-text-wrap">具体离深时间（格式:2020-02-02.如未离深则写“无”）<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-input required type="text" formControlName="val7"></ion-input>
+      </ion-item>
+
+
+      <ion-item>
+        <ion-label class="ion-text-wrap" position="stacked">返深时间（格式:2020-02-02.如不确定，可填写预计返深时间，尽量填写；如未离深则写“无”；如遇封城封村等情况，可写“交通管制待定”）<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-textarea required type="text" formControlName="val8"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap" position="stacked">2020年1月10日至今是否有接触过湖北籍人员；具体情况（如：有；1月3日有湖北籍朋友到访等等，越详尽越好<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-textarea required type="text" formControlName="val9"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap" position="stacked">2020年1月10日至今是否有以某种交通方式途经或到达湖北；具体情况（如：有；1月11日乘坐飞机从深圳到湖北武汉，1月18日返深等等，越详尽越好）<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-textarea required type="text"formControlName="val10"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap" position="stacked" >2020年1月10日至今是否有食用过野生动物<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-input required type="text" formControlName="val11"></ion-input>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label class="ion-text-wrap" position="stacked">目前是否有出现发热、咳嗽等疑似感染症状(如：发热，轻微咳嗽/或填写其他疑似感染的症状亦可）<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-textarea required type="text" formControlName="val12"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap" position="stacked">是否有其他情况需要反馈（有则在下方填写，无则写“无”）<ion-text color="danger">*</ion-text></ion-label>
+    
+        <ion-textarea required type="text" formControlName="val13"></ion-textarea>
+      </ion-item>
+      
+    </ion-list>
+
+    <div class="ion-padding">
+      <ion-button expand="block" type="submit" class="ion-no-margin"  [disabled]="!myForm.valid">提交</ion-button>
+    </div>
+  </form>
 </ion-content>
