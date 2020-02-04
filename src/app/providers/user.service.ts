@@ -81,4 +81,14 @@ export class UserService {
     let seq = this.http.get<User>(apiUrl + "/UserHome/Load", { withCredentials: true });
     return seq;
   }
+  logined(registrationId:string,platform:string){
+    let data = JSON.stringify({RegistrationId:registrationId,Platform:platform});
+    let seq = this.http.post<ResetPassword>(apiUrl + "/JPush/Logined", data, {
+      headers: {
+        "content-type": "application/json"
+      },
+      withCredentials: true
+    })
+    return seq;
+  }
 }

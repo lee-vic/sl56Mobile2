@@ -3,4 +3,7 @@ export interface User {
     Quantity1:string;
     Quantity2:string;
     UnReadMessageCount:number;
+    CustomerId:number;
+    CustomerNo:string;
+    Classify:number;
 }

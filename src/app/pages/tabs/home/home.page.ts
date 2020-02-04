@@ -36,6 +36,9 @@ export class HomePage  {
     },
     {
       image: "assets/imgs/home-slidebox-3.png",
+    },
+    {
+      image: "assets/imgs/home-slidebox-4.png",
     }
   ];
   products = [

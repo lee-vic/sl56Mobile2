@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, IonSearchbar, NavController } from '@ionic/angular';
 import { Problem } from 'src/app/interfaces/problem';
 import { ProblemService } from 'src/app/providers/problem.service';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -14,16 +15,26 @@ export class ProblemListPage implements OnInit {
   items: Array<Problem> = [];
   currentPageIndex: number = 1;
   isBusy: boolean = false;
+  problemId:number;
+  receiveGoodsDetailId:number;
   @ViewChild(IonInfiniteScroll,{ static: false }) infiniteScroll: IonInfiniteScroll;
   @ViewChild(IonSearchbar,{ static: false }) searchbar: IonSearchbar;
   ngOnInit(): void {
     this.getItems("",false);
+    if(this.problemId!=undefined){
+        this.problemDetail(this.receiveGoodsDetailId,this.problemId);
+    }
+   
+   
   }
 
   constructor(public navCtrl: NavController,
-
+    private route: ActivatedRoute,
     public service: ProblemService,
     ) {
+      this.problemId = this.route.snapshot.queryParams.problemId;
+      this.receiveGoodsDetailId = this.route.snapshot.queryParams.receiveGoodsDetailId;
+     
   }
 
  

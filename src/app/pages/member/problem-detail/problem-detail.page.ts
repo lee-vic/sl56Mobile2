@@ -10,12 +10,12 @@ import { ActivatedRoute, Router, NavigationExtras } from '@angular/router';
 })
 export class ProblemDetailPage implements OnInit {
 
-  receiveGoodsDetailId:Number;
-  problemId:Number;
-  data:any;
+  receiveGoodsDetailId: Number;
+  problemId: Number;
+  data: any;
   ngOnInit(): void {
     this.service.getProblemDetail(this.problemId).subscribe(res => {
-      this.data=res;
+      this.data = res;
       console.log(this.data);
     });
   }
@@ -24,28 +24,28 @@ export class ProblemDetailPage implements OnInit {
     private route: ActivatedRoute,
     public service: ProblemService,
     private router: Router,
-    ) {
-      this.problemId=this.route.snapshot.queryParams.problemid;
-     this.receiveGoodsDetailId=new Number(this.route.snapshot.paramMap.get("id")); 
-      //this.receiveGoodsDetailId=navParams.get("id");
-      //this.problemId=navParams.get("problemId");
-      console.log(this.receiveGoodsDetailId);
+  ) {
+    this.problemId = this.route.snapshot.queryParams.problemid;
+    this.receiveGoodsDetailId = new Number(this.route.snapshot.paramMap.get("id"));
+    //this.receiveGoodsDetailId=navParams.get("id");
+    //this.problemId=navParams.get("problemId");
+    console.log(this.receiveGoodsDetailId);
   }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad ProblemDetailPage');
   }
 
-  chat(){
-    let extras:NavigationExtras={
-      state:{
+  chat() {
+    let extras: NavigationExtras = {
+      state: {
         receiveGoodsDetailId: this.data.Id,
-        problemId:this.data.Problem.ObjectId,
-       messages:this.data.ChatRecords,
-       attachmentTypeId:this.data.Problem.AttachmentTypeId
+        problemId: this.data.Problem.ObjectId,
+        messages: this.data.ChatRecords,
+        attachmentTypeId: this.data.Problem.AttachmentTypeId
       }
     }
-    this.router.navigate(["/member/chat/2"],extras)
+    this.router.navigate(["/member/chat/2"], extras)
   }
 
 }

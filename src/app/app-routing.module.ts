@@ -15,7 +15,8 @@ const routes: Routes = [
     path:"member",
     loadChildren:()=>import('./pages/member/member.module').then(m=>m.MemberModule)
   },
-  { path: 'login', loadChildren: './pages/login/login.module#LoginPageModule' }
+  { path: 'login', loadChildren: './pages/login/login.module#LoginPageModule' },
+  { path: 'epidemic', loadChildren: './pages/epidemic/epidemic.module#EpidemicPageModule' }
 ];
 
 @NgModule({
