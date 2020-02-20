@@ -138,7 +138,7 @@ export class MemberPage implements OnInit {
         return p.type.indexOf(this.customerType) > -1;
       });
       let rowIndex = 0;
-     
+      this.menus.rows = [];
       for (var i = 0; i < tempMenus.length; i++) {
         if (i % 3 == 0) {
           let newRow = new MenuRow();

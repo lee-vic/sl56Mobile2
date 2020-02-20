@@ -1,3 +1,5 @@
 ionic cordova run android
 ionic cordova build android --prod --release
-code-push release-cordova sl56Mobile android -d "Production"
+code-push release-cordova sl56Mobile android -d "Production" -m
+
+emulator -avd pixel_3_xl_api_28 -writable-system

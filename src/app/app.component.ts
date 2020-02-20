@@ -47,11 +47,11 @@ export class AppComponent {
 
           if (syncStatus == SyncStatus.DOWNLOADING_PACKAGE) {
 
-            // this.toastCtrl.create({
-            //   message: "发现新版本,正在下载更新",
-            //   position: 'middle',
-            //   duration: 3000
-            // }).then(p => p.present());
+            this.toastCtrl.create({
+              message: "发现新版本,正在下载更新",
+              position: 'middle',
+              duration: 3000
+            }).then(p => p.present());
           }
 
           if (syncStatus == SyncStatus.INSTALLING_UPDATE) {
@@ -65,11 +65,11 @@ export class AppComponent {
 
           if (syncStatus == SyncStatus.UPDATE_INSTALLED) {
 
-            // this.toastCtrl.create({
-            //   message: "更新已成功安装",
-            //   position: 'middle',
-            //   duration: 3000
-            // }).then(p => p.present());
+            this.toastCtrl.create({
+              message: "更新已成功安装",
+              position: 'middle',
+              duration: 3000
+            }).then(p => p.present());
           }
           if (syncStatus == SyncStatus.ERROR) {
             // alert("Code Push出现错误");

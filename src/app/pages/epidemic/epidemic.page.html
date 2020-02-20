@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>返深情况统计表</ion-title>
+    <ion-title>升蓝物流疫情防控调查表</ion-title>
   </ion-toolbar>
 
 </ion-header>
@@ -84,7 +84,7 @@
     </ion-list>
 
     <div class="ion-padding">
-      <ion-button expand="block" type="submit" class="ion-no-margin"  [disabled]="!myForm.valid">提交</ion-button>
+      <ion-button expand="block" type="submit" class="ion-no-margin"  [disabled]="!myForm.valid||isBusy">提交</ion-button>
     </div>
   </form>
 </ion-content>
