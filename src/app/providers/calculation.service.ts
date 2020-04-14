@@ -9,6 +9,13 @@ import { Observable } from 'rxjs';
 export class CalculationService {
 
   constructor(private http: HttpClient) { }
+  getPriceRuleTemplateInfoList(){
+    let seq=this.http.get(apiUrl + "/common/GetRuleList",{
+      withCredentials:true,
+      responseType:"json"
+    })
+    return seq;
+  }
   getModeOfTransportList(){
     
     let seq=this.http.get(apiUrl + "/common/GetModeOfTransportList",{

@@ -16,11 +16,13 @@ export class CalculationPage implements OnInit {
   countryList: any;
   modeOfTransportList: any;
   volumetricDivisorList: any;
+  priceRuleTemplateInfoList:any;
   countrySearch: any;
   modeOfTransportId: number;
   selectedCountry: any;
   countryInput: string;
   showCountryList: boolean = false;
+  selectRuleIds:Array<number>=[];
   public myForm: FormGroup;
   public loading: any;
 
@@ -54,6 +56,9 @@ export class CalculationPage implements OnInit {
     });
     this.service.getVolumetricDivisorList().subscribe(res => {
       this.volumetricDivisorList = res;
+    });
+    this.service.getPriceRuleTemplateInfoList().subscribe(res=>{
+      this.priceRuleTemplateInfoList=res;
     });
     this.countryProvider.getCoutryList()
       .subscribe((res) => {
@@ -106,6 +111,17 @@ export class CalculationPage implements OnInit {
       this.selectedCountry = this.countrySearch[0];
     }
   }
+  ruleChanged(item:any,e:CustomEvent){
+    let checked=e.detail.checked;
+    if(checked==true){
+      this.selectRuleIds.push(item.Id);
+    }
+    else{
+      this.selectRuleIds=this.selectRuleIds.filter(p=>p!==item.Id);
+    }
+
+    console.log(this.selectRuleIds) ;
+  }
   doCalculate(formValue) {
     if(this.selectedCountry==null)
       return;
@@ -116,6 +132,8 @@ export class CalculationPage implements OnInit {
     }).then((res)=>res.present());
    
     formValue.countryId = this.selectedCountry.Id;
+    formValue.selectRuleIds=this.selectRuleIds;
+    console.log(formValue);
     this.service.calculate(formValue).subscribe((res) => {
       this.loadingCtrl.dismiss();
      
@@ -136,6 +154,9 @@ export class CalculationPage implements OnInit {
      
       }
     });
+  }
+  segmentChanged(ev){
+    this.selectRuleIds=[]
   }
 
 
