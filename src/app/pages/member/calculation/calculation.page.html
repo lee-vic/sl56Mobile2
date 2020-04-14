@@ -41,16 +41,15 @@
 
             </ion-list>
           </ion-item>
-          <ion-item *ngFor="let item of priceRuleTemplateInfoList">
-            <ion-label>{{item.Name}}</ion-label>
-            <ion-checkbox (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
-          </ion-item>
           <ion-item>
             <ion-label>重量</ion-label>
             <ion-input type="number" formControlName="actualWeight"></ion-input>
           </ion-item>
+          <ion-item *ngFor="let item of priceRuleTemplateInfoList">
+            <ion-label>{{item.Name}}</ion-label>
+            <ion-checkbox (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
+          </ion-item>
           <ion-button expand="block" type="submit" [disabled]="!myForm.valid">计算</ion-button>
-
         </ion-list>
       </form>
     </div>
@@ -71,7 +70,7 @@
               <ion-select-option value="0">文件</ion-select-option>
             </ion-select>
           </ion-item>
-         
+
           <ion-item>
             <ion-label>国家</ion-label>
             <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
