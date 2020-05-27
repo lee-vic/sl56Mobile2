@@ -149,7 +149,7 @@ export class ChatPage implements OnInit, OnDestroy {
   sendMsg() {
     if (!this.editorMsg.trim()) return;
 
-    this.signalRConnection.invoke("sendToEmployee", this.receiveGoodsDetailId, this.editorMsg, 0, "", 0, "", this.problemId,0,null).then((data: any) => {
+    this.signalRConnection.invoke("sendToEmployee", this.receiveGoodsDetailId, this.editorMsg, 0, "", 0, "",0,null).then((data: any) => {
       this.pushNewMsg(this.editorMsg, 0, "", false, data, true);
       this.editorMsg = '';
     });
@@ -237,7 +237,7 @@ export class ChatPage implements OnInit, OnDestroy {
    
   }
   sendFileMsg(res:any) {
-    this.signalRConnection.invoke("sendToEmployee", this.receiveGoodsDetailId, res.Path, 1, res.Name, res.FileSize, "", this.problemId,0,null).then((data: any) => {
+    this.signalRConnection.invoke("sendToEmployee", this.receiveGoodsDetailId, res.Path, 1, res.Name, res.FileSize, "",0,null).then((data: any) => {
       console.log(data);
       if(data!=-1){
         this.pushNewMsg(res.Name,0,"",true,data,true);

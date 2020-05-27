@@ -1,0 +1,21 @@
+ion-content{
+    --background: #f7f7f7;
+}
+ion-list{
+    border-radius: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+ion-label{
+    margin-bottom: 0;
+    margin-top: 0;
+}
+ion-item{
+    --min-height:25px;
+}
+.item-native{
+    height: 13px !important;
+}
+ion-note{
+    height: 13px !important;
+}

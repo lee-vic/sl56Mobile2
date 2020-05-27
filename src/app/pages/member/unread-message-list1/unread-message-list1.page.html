@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>单号消息</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+
+  <ion-list lines="none" *ngFor="let item of items" (click)="detail(item)">
+    <ion-item>
+      <ion-label>{{ item.ObjectNo }}</ion-label>
+      <ion-note slot="end">2020-05-18</ion-note>
+    </ion-item>
+    <ion-item>
+      <ion-label>你好，这票件什么时候能提取？都特么一个多月了，你们都干什么吃的</ion-label>
+      <ion-badge slot="end" color="danger">{{item.Count}}</ion-badge>
+    </ion-item>
+  </ion-list>
+</ion-content>

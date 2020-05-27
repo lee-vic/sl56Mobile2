@@ -43,7 +43,7 @@
           <ion-col col-4 class="ion-align-self-center">
             <div class="ion-float-left">
 
-              <img src="assets/imgs/member-14.png" style="width:20px;height:20px;">
+              <img src="assets/imgs/member-14.png" style="width:30px;height:30px;">
             </div>
             <div class="ion-float-left" id="name">{{username}}</div>
           </ion-col>
@@ -51,11 +51,9 @@
             <img src="assets/imgs/member-16.png" style="width:35px;height:35px;">
 
           </ion-col>
-          <ion-col col-4 class="ion-align-self-center" class="ion-text-right">
-
-
-            <img [src]="userInfo?.UnReadMessageCount>0?'assets/imgs/member-21.png':'assets/imgs/member-15.png'"
-              style="width:20px;height:20px;" (click)="openMessage()" *ngIf="customerType==0">
+          <ion-col col-4 class="ion-align-self-center" class="ion-text-right" >
+              <img src="assets/imgs/member-15.png"  class="my-badge1" [ngStyle]="{'margin-right':userInfo?.UnReadMessageCount > 0? '12px;': ''}" (click)="openMessage()" *ngIf="customerType==0">
+              <div *ngIf="userInfo?.UnReadMessageCount>0" class="my-badge">{{userInfo?.UnReadMessageCount}}</div>
           </ion-col>
         </ion-row>
         <ion-row>

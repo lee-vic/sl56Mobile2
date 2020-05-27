@@ -30,10 +30,10 @@ export class UnreadMessageListPage implements OnInit {
   }
   detail(type){
     if(type==0){
-      this.router.navigateByUrl("/member/chat/1");
+      this.router.navigate(["/member", "chat", 0])
     }
     else{
-      // this.navCtrl.push(UserUnreadMessageList1Page)
+      this.router.navigate(["/member", "unread-message-list1"])
     }
   }
   ionViewDidEnter() {

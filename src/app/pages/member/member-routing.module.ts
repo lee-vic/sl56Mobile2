@@ -45,6 +45,7 @@ const routes: Routes = [ {
   { path: 'notice-list', loadChildren:()=>import('./notice-list/notice-list.module').then(m=>m.NoticeListPageModule)},
   { path: 'notice-detail/:id', loadChildren: ()=>import('./notice-detail/notice-detail.module').then(m=>m.NoticeDetailPageModule) },
   { path: 'bank-slips', loadChildren: ()=>import('./bank-slips/bank-slips.module').then(m=>m.BankSlipsPageModule) },
+  { path: 'unread-message-list1',loadChildren:()=>import('./unread-message-list1/unread-message-list1.module').then(m=>m.UnreadMessageList1PageModule)}
 ];
 
 @NgModule({

@@ -1,24 +1,35 @@
 <ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
     <ion-title>未读消息</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-    <ion-list lines="full">
-        <ion-item detail (click)="detail(0)">
-            <ion-label>售前咨询</ion-label>
-   
-          <ion-note slot="end">{{data?.Count2}}未读</ion-note>
-        </ion-item>
-      <ion-item detail (click)="detail(1)">
-        <ion-label>单号消息</ion-label>
-  
-        <ion-note slot="end">{{data?.Count1}}未读</ion-note>
-      </ion-item>
-     
-    </ion-list>
-  </ion-content>
+<ion-content class="ion-padding">
+  <ion-list lines="none">
+
+    <ion-item detail (click)="detail(0)">
+      <ion-thumbnail slot="start">
+        <img src="assets/imgs/unread-message-list-1.png">
+      </ion-thumbnail>
+      <ion-label>咨询业务</ion-label>
+      <ion-badge slot="end" color="danger">{{data?.Count2}}</ion-badge>
+    </ion-item>
+
+  </ion-list>
+  <ion-list lines="none" class="ion-margin-top">
+
+    <ion-item detail (click)="detail(1)">
+      <ion-thumbnail slot="start">
+        <img src="assets/imgs/unread-message-list-2.png">
+
+      </ion-thumbnail>
+      <ion-label>单号消息</ion-label>
+      <ion-badge slot="end" color="danger">{{data?.Count1}}</ion-badge>
+    </ion-item>
+
+
+  </ion-list>
+</ion-content>
