@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-unread-message-list',
@@ -22,6 +23,7 @@ export class UnreadMessageListPage implements OnInit {
   constructor(
     public service:InstantMessageService,
     private router: Router,
+    public toastCtrl: ToastController
      ) {
   }
 
@@ -30,10 +32,29 @@ export class UnreadMessageListPage implements OnInit {
   }
   detail(type){
     if(type==0){
-      this.router.navigate(["/member", "chat", 0])
+      if(this.data.Count1>0){
+        this.router.navigate(["/member", "chat", 0])
+      }
+      else{
+        this.toastCtrl.create({
+          message: "暂无未读消息",
+          position: 'middle',
+          duration: 1500
+        }).then(p => p.present());
+      }
+      
     }
     else{
-      this.router.navigate(["/member", "unread-message-list1"])
+      if(this.data.Count2>0){
+        this.router.navigate(["/member", "unread-message-list1"])
+      }
+      else{
+        this.toastCtrl.create({
+          message: "暂无未读消息",
+          position: 'middle',
+          duration: 1500
+        }).then(p => p.present());
+      }
     }
   }
   ionViewDidEnter() {

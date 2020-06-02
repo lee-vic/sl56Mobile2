@@ -33,7 +33,6 @@ export class ChatPage implements OnInit, OnDestroy {
   /**
    * 0:售前咨询
    * 1:单号消息
-   * 2:问题件消息
    */
   messageType: number;
   constructor(

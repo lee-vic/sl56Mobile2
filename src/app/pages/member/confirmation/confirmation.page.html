@@ -25,9 +25,11 @@
       <ion-label>
         <h2>{{item.PriceName}}</h2>
         <p>计费重:{{item.Weight}}Kg</p>
+        <p>货物属性:{{item.AttributeNames}}</p>
       </ion-label>
       <ion-note slot="end" class="ion-margin-vertical">￥{{item.Amount}}</ion-note>
     </ion-item>
+   
     <ion-item>
       {{item.Date}}
       <ion-button slot="end" outline (click)="onItemConfirmClick(item)">确认出货</ion-button>

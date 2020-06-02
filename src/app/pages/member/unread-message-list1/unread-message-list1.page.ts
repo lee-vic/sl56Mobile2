@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
+import { Router, NavigationExtras } from '@angular/router';
 
 @Component({
   selector: 'app-unread-message-list1',
@@ -8,7 +9,7 @@ import { InstantMessageService } from 'src/app/providers/instant-message.service
 })
 export class UnreadMessageList1Page implements OnInit {
   items:Array<any>=[];
-  constructor( public service:InstantMessageService,) { }
+  constructor( public service:InstantMessageService, private router: Router) { }
 
   ngOnInit() {
   }
@@ -18,11 +19,14 @@ export class UnreadMessageList1Page implements OnInit {
       console.log(this.items);
     });
   }
-  detail(item){
-    // this.navCtrl.push(UserChatPage, {
-    //   receiveGoodsDetailId: item.ReceiveGoodsDetailId,
-    //   messageType:1
-    // });
+ 
+  detail(data) {
+    let extras: NavigationExtras = {
+      state: {
+        receiveGoodsDetailId: data.ReceiveGoodsDetailId
+      }
+    }
+    this.router.navigate(["/member/chat/1"], extras)
   }
   ionViewDidEnter() {
     this.getData();

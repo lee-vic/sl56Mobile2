@@ -41,11 +41,11 @@ export class ProblemDetailPage implements OnInit {
       state: {
         receiveGoodsDetailId: this.data.Id,
         problemId: this.data.Problem.ObjectId,
-        messages: this.data.ChatRecords,
         attachmentTypeId: this.data.Problem.AttachmentTypeId
       }
     }
-    this.router.navigate(["/member/chat/2"], extras)
+ 
+    this.router.navigate(["/member/chat/1"], extras)
   }
 
 }

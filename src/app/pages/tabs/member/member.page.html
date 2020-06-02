@@ -53,7 +53,7 @@
           </ion-col>
           <ion-col col-4 class="ion-align-self-center" class="ion-text-right" >
               <img src="assets/imgs/member-15.png"  class="my-badge1" [ngStyle]="{'margin-right':userInfo?.UnReadMessageCount > 0? '12px;': ''}" (click)="openMessage()" *ngIf="customerType==0">
-              <div *ngIf="userInfo?.UnReadMessageCount>0" class="my-badge">{{userInfo?.UnReadMessageCount}}</div>
+              <div *ngIf="userInfo?.UnReadMessageCount>0" class="my-badge">{{userInfo?.UnReadMessageCount>99?'99':userInfo.UnReadMessageCount}}</div>
           </ion-col>
         </ion-row>
         <ion-row>
