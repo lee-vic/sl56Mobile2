@@ -86,8 +86,23 @@ export class ChatPage implements OnInit, OnDestroy {
       let listener = c.listenFor("messageReceived");
       listener.subscribe((msg: any) => {
         let obj = JSON.parse(msg);
-        this.currentEmployeeId=obj.MsgFrom;
-        this.appendMessage(obj);
+        if(obj.MsgType==6){
+
+        }
+        else if(obj.MsgType==7){
+
+        }
+        else if(obj.MsgType==8){
+
+        }
+        else if(obj.MsgType==9){
+
+        }
+        else{
+          this.currentEmployeeId=obj.MsgFrom;
+          this.appendMessage(obj);
+        }
+        
       });
     });
     if (this.messageType == 0) {

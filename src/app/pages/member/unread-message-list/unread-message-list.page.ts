@@ -32,7 +32,7 @@ export class UnreadMessageListPage implements OnInit {
   }
   detail(type){
     if(type==0){
-      if(this.data.Count1>0){
+      if(this.data.Count2>0){
         this.router.navigate(["/member", "chat", 0])
       }
       else{
@@ -45,7 +45,7 @@ export class UnreadMessageListPage implements OnInit {
       
     }
     else{
-      if(this.data.Count2>0){
+      if(this.data.Count1>0){
         this.router.navigate(["/member", "unread-message-list1"])
       }
       else{
