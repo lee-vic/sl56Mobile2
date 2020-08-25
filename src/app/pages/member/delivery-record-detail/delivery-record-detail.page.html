@@ -4,11 +4,7 @@
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>运单详情</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="applyReturn()" *ngIf="!isReturn">
-        申请退货
-      </ion-button>
-    </ion-buttons>
+   
   </ion-toolbar>
 </ion-header>
 
@@ -153,7 +149,8 @@
       </ion-list>
     </div>
   </div>
+  
 </ion-content>
 <ion-footer>
-  <ion-button expand="full"  (click)="chat()">联系客服</ion-button>
+  <ion-button expand="full"  (click)="chat()">功能选择</ion-button>
 </ion-footer>

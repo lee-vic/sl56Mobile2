@@ -25,6 +25,11 @@ export class ProblemService {
     let seq= this.http.get (apiUrl+"/Problem/GetProblemDetail",{ withCredentials:true,params:paras});
     return seq;
   }
+  addProblem(rgdId){
+    let data={"rgdId":rgdId,isMobileSite:true};
+    let seq= this.http.post<any>(apiUrl+"/Problem/AddProblem1",data,{ withCredentials:true});
+    return seq;
+  }
   upload(form){
     console.log(form);
     let seq= this.http.post<any>(apiUrl+"/DeliveryRecord/UploadAttachment",form,{ withCredentials:true});
