@@ -54,25 +54,22 @@ export class DeliveryRecordDetailPage implements OnInit {
     this.navCtrl.navigateForward("/member/return-apply/" + this.data.ObjectId, { queryParams: { type: 0 } })
   }
   chat() {
-
+    let extras: NavigationExtras = {
+      state: {
+        receiveGoodsDetailId: this.data.ObjectId,
+        messages: this.data.ChatRecords,
+      }
+    }
+    this.router.navigate(["/member/chat/1"], extras)
+    
+  }
+  more(){
     this.presentActionSheet();
   }
   async presentActionSheet() {
     const actionSheet = await this.actionSheetController.create({
       header: '请选择',
       buttons: [{
-        text: '联系客服',
-        role: 'destructive',
-        handler: () => {
-          let extras: NavigationExtras = {
-            state: {
-              receiveGoodsDetailId: this.data.ObjectId,
-              messages: this.data.ChatRecords,
-            }
-          }
-          this.router.navigate(["/member/chat/1"], extras)
-        }
-      }, {
         text: '我要退货',
         handler: () => {
           this.navCtrl.navigateForward("/member/return-apply/" + this.data.ObjectId, { queryParams: { type: 0 } })
@@ -94,14 +91,14 @@ export class DeliveryRecordDetailPage implements OnInit {
                 text: '确定',
                 handler: () => {
                   this.problemService.addProblem(this.id).subscribe(res => {
-                    if(res.Success==false){
+                    if (res.Success == false) {
                       this.toastCtrl.create({
                         message: res.Message,
                         position: 'middle',
                         duration: 2000
                       }).then(p => p.present());
                     }
-                    else{
+                    else {
                       this.toastCtrl.create({
                         message: "已成功扣件",
                         position: 'middle',

@@ -13,71 +13,71 @@ import { Router } from '@angular/router';
 export class LoginPage implements OnInit {
   public authForm: FormGroup;
 
-  public isLogin:boolean;
+  public isLogin: boolean;
   constructor(public formBuilder: FormBuilder,
     public toastCtrl: ToastController,
     public plt: Platform,
     private router: Router,
-    private userService:UserService,
+    private userService: UserService,
     private cookieService: CookieService,
-    public loadingCtrl: LoadingController,) { 
+    public loadingCtrl: LoadingController,) {
     this.authForm = this.formBuilder.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
-      clientType:['1'],
-      userType:['0'],
-      rememberMe:[true],
-      isBind:[true],
-      openId:[''],
-      unionId:['']
+      clientType: ['1'],
+      userType: ['0'],
+      rememberMe: [true],
+      isBind: [true],
+      openId: [''],
+      unionId: ['']
     });
   }
 
   ngOnInit() {
   }
- 
+
   doLogin(formValue) {
 
     this.loadingCtrl.create({
       message: '请稍后...',
-    }).then(p=>p.present());
-    if(this.plt.is("mobileweb")||this.plt.is("desktop")){
-      formValue.clientType=1;
-      formValue.openId=this.cookieService.get('OpenId');
-      formValue.unionId=this.cookieService.get('UnionId');
+    }).then(p => p.present());
+    if (this.plt.is("mobileweb") || this.plt.is("desktop")) {
+      formValue.clientType = 1;
+      formValue.openId = this.cookieService.get('OpenId');
+      formValue.unionId = this.cookieService.get('UnionId');
     }
-    this.userService.auth(formValue).subscribe((res)=>{
-      this.isLogin=("true"===res.toString());
-      console.log("aa"+this.cookieService.get('sl56Auth'));
+    this.userService.auth(formValue).subscribe((res: any) => {
+      this.isLogin =  res.success;
+      console.log("aa" + this.cookieService.get('sl56Auth'));
       this.loadingCtrl.dismiss();
-      
-      if(this.isLogin){
+
+      if (this.isLogin) {
         this.router.navigateByUrl(this.cookieService.get('State'));
         //this.navCtrl.push(this.cookieService.get('State'));
       }
-     else{
-     this.toastCtrl.create({
-        message: '用户名或者密码错误，请重试',
-        position: 'middle',
-        duration: 1500
-      }).then(p=>p.present());
+      else {
+        this.toastCtrl.create({
+          message: res.errMsg,
+          position: 'middle',
+          duration: 1500
+        }).then(p => p.present());
 
-    }
-    },(err)=>{
+      }
+    }, (err) => {
       this.loadingCtrl.dismiss();
-     this.toastCtrl.create({
+      this.toastCtrl.create({
         message: err.message,
         position: 'middle',
         duration: 3000
-      }).then(p=>p.present());
-     
+      }).then(p => p.present());
+
     });
 
   }
-  forgetPasswordClick(){
+  forgetPasswordClick() {
     this.router.navigateByUrl("/member/reset-password");
   }
-  getCookie(){
+  getCookie() {
     console.log(this.plt.platforms())
     console.log(this.cookieService.get('OpenId'));
     console.log(this.cookieService.get('UnionId'));

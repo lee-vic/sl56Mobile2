@@ -13,6 +13,12 @@ export class InstantMessageService {
     let seq = this.http.get<any>(apiUrl + "/InstantMessage/GetUnReadMessage", { withCredentials: true });
     return seq;
   }
+  getUnReadMessage1(customerId) {
+    let paras = new HttpParams()
+    .set("customerId", customerId);
+    let seq = this.http.get<any>(apiUrl + "/InstantMessage/GetUnReadMessage1", { withCredentials: true, params: paras });
+    return seq;
+  }
   /**
    * 单号消息
    */

@@ -1,7 +1,7 @@
 export class SubAccount{
     ObjectId:number;
-    ObjectNo:string;
-    ObjectName:string;
+    MobilePhone:string;
+    ContactName:string;
     Password:string;
     Password1:string;
     Discount:number;

@@ -15,7 +15,6 @@ export class ResetPasswordPage implements OnInit {
   tab:string="1";
   tab2Disabled:boolean=true;
   tab3Disabled:boolean=true;
-  tab4Disabled:boolean=true;
   public myForm1: FormGroup;
   public myForm2: FormGroup;
   public myForm3: FormGroup;
@@ -58,13 +57,14 @@ export class ResetPasswordPage implements OnInit {
    }
   
   ngOnInit() {
+    this.doNext1();
   }
-  doNext1(formValue){
-    this.service.forgotPassword(formValue.username).subscribe(res=>{
+  doNext1(){
+    this.service.forgotPassword().subscribe(res=>{
      
       if(res.Exists){
-        this.tab="2";
-        this.tab2Disabled=false;
+        // this.tab="2";
+        // this.tab2Disabled=false;
         this.data=res;
         //this.navCtrl.push(UserForgotPassword1Page,{data:res});
       }
@@ -98,6 +98,7 @@ export class ResetPasswordPage implements OnInit {
       this.btnDisabled = true;
       this.service.getCode(this.data).subscribe(res=>{
         if(res.Success){
+          this.data=res;
           let time: number = 60;
             let handle;
             setTimeout(() => {
@@ -131,7 +132,7 @@ export class ResetPasswordPage implements OnInit {
       console.log(res);
       if(res.Success){
         this.data=res;
-        this.tab="3";
+        this.tab="2";
         this.tab3Disabled=false;
         //this.navCtrl.push(UserForgotPassword2Page,{data:res});
       }
@@ -151,8 +152,8 @@ export class ResetPasswordPage implements OnInit {
     this.service.forgotPassword2(this.data).subscribe(res=>{
       console.log(res);
       if(res.Success){
-        this.tab="4";
-        this.tab4Disabled=false;
+        this.tab="3";
+        //this.tab4Disabled=false;
         // let toast = this.toastCtrl.create({
         //   message: "新密码已成功设置",
         //   position: 'middle',

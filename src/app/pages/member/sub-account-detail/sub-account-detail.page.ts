@@ -36,16 +36,15 @@ export class SubAccountDetailPage implements OnInit {
       this.isNew = false;
     }
     this.myForm = this.formBuilder.group({
-      objectname: ['', Validators.compose([
+      mobilephone: ['', Validators.compose([
         Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(16)
+        Validators.minLength(11),
+        Validators.maxLength(11)
       ])],
-      objectno: [{value:'',disabled:!this.isNew}, Validators.compose([
+      contactname: [{value:''}, Validators.compose([
         Validators.required,
         Validators.minLength(2),
-        Validators.maxLength(8),
-        Validators.pattern("^[0-9A-Za-z_]+$")
+        Validators.maxLength(32)
       ])],
         //赋值绕过表单验证
       password: ['1234abcd', Validators.compose([
@@ -61,16 +60,15 @@ export class SubAccountDetailPage implements OnInit {
     });
   }
   validation_messages={
-    "objectname":[
-      {type:"required",message:"名称必须输入"},
-      {type:"minlength",message:"名称至少为2位"},
-      {type:"maxlength",message:"名称不能超过16位"}
+    "mobilephone":[
+      {type:"required",message:"手机号码必须输入"},
+      {type:"minlength",message:"手机号码必须为11位"},
+      {type:"maxlength",message:"手机号码必须为11位"}
     ],
-    "objectno":[
-      {type:"required",message:"帐号必须输入"},
-      {type:"minlength",message:"帐号至少为2位"},
-      {type:"maxlength",message:"帐号不能超过8位"},
-      { type:"pattern",message:"账号只能包含字母、数字、下划线"}
+    "contactname":[
+      {type:"required",message:"姓名必须输入"},
+      {type:"minlength",message:"姓名至少为2位"},
+      {type:"maxlength",message:"姓名不能超过32位"},
     ],
     "password":[
       {type:"required",message:"登录密码不能为空"},
@@ -118,7 +116,21 @@ export class SubAccountDetailPage implements OnInit {
       });
     }
     else {
-      this.navCtrl.pop();
+      this.service.edit(this.data).subscribe(res => {
+        if (res.Success) {
+          this.navCtrl.pop();
+        }
+        else {
+          let toast = this.toastCtrl.create({
+            message: res.ErrMsg,
+            position: 'middle',
+            duration: 3000
+          }).then(p=>p.present());
+          
+        }
+
+      });
+      
     }
   }
   delete() {

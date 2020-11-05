@@ -26,9 +26,9 @@ export class RemotePage implements OnInit {
     public loadingCtrl: LoadingController,
     public toastCtrl: ToastController,
     public alertCtrl: AlertController,
- 
-   
-    ) {
+
+
+  ) {
     this.myForm = this.formBuilder.group({
       ModeOfTransportTypeId: ['1', Validators.required],
       countryId: ['', Validators.required],
@@ -44,7 +44,7 @@ export class RemotePage implements OnInit {
     this.countryService.getCoutryList().subscribe(res => {
       this.countryList = this.countrySearch = res;
     })
-   
+
   }
 
   ionViewDidLoad() {
@@ -96,17 +96,25 @@ export class RemotePage implements OnInit {
     console.log(formValue);
     this.service.Query(formValue).subscribe(res => {
       let title;
-      if (res)
-        title = "偏远";
-      else
-        title = "不偏远"
+      let message = '当前查询仅供参考';
+      if (res.Status == 0) {
+        if (res.IsRemote)
+          title = "偏远";
+        else
+          title = "不偏远"
+      }
+      else {
+        title = "查询失败";
+        message = res.Message;
+      }
+
       this.alertCtrl.create({
         header: title,
-        message: '当前查询仅供参考',
+        message: message,
         buttons: ['返回']
-      }).then(p=>p.present());
-     
+      }).then(p => p.present());
+
     });
   }
- 
+
 }

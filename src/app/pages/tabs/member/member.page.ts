@@ -17,7 +17,7 @@ export class MemberPage implements OnInit {
   allMenus: Array<Menu> = [
     { title: "价格查询", image: "assets/imgs/member-2.png", type: [0, 1], url: "/member/calculation" },
     { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
-    { title: "运单确认", image: "assets/imgs/member-5.png", type: [0], url: "/member/confirmation" },
+    { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
     { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
     { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0" },
@@ -93,15 +93,15 @@ export class MemberPage implements OnInit {
       formValue.openId = this.cookieService.get('OpenId');
       formValue.unionId = this.cookieService.get('UnionId');
     }
-    this.userService.auth(formValue).subscribe((res) => {
-      this.isLogin = ("true" === res.toString());
+    this.userService.auth(formValue).subscribe((res:any) => {
+      this.isLogin =  res.success;
       if (this.isLogin == true) {
         this.loginSuccess();
       }
 
       this.loading.dismiss();
       if (!this.isLogin) {
-        this.showToast('用户名或者密码错误，请重试');
+        this.showToast(res.errMsg);
       }
       // else {
       //   localStorage.setItem("username", formValue.username);

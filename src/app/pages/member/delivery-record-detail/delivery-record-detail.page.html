@@ -4,7 +4,7 @@
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>运单详情</ion-title>
-   
+
   </ion-toolbar>
 </ion-header>
 
@@ -149,8 +149,19 @@
       </ion-list>
     </div>
   </div>
-  
+
 </ion-content>
 <ion-footer>
-  <ion-button expand="full"  (click)="chat()">功能选择</ion-button>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button expand="full" (click)="chat()" color="primary">联系客服</ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button expand="full" (click)="more()" color="secondary">退货&暂扣</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <!-- <ion-button expand="full"  (click)="chat()">功能选择</ion-button> -->
+
 </ion-footer>

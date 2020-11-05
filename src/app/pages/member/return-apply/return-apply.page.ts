@@ -23,7 +23,7 @@ export class ReturnApplyPage implements OnInit {
         if (res.AllowApply == false) {
           let alert = this.alertCtrl.create({
             header: '提示',
-            message: res.Message,
+            message: res.ErrorMessage,
             buttons: [{
               text: "确定",
               role: "cancel",

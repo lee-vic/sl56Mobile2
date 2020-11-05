@@ -23,7 +23,7 @@ export class SubAccountService {
   }
   edit(data:SubAccount){
    
-    let seq= this.http.post(apiUrl+"/SubAccount/Edit",data,{ withCredentials:true});
+    let seq= this.http.post<SubAccount>(apiUrl+"/SubAccount/Edit",data,{ withCredentials:true});
     return seq;
   }
   create(data:SubAccount){

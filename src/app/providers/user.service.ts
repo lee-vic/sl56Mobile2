@@ -19,7 +19,7 @@ export class UserService {
         "content-type": "application/json"
       },
       withCredentials: true,
-      responseType: "text"
+      responseType: "json"
     })
     return seq;
   }
@@ -31,10 +31,9 @@ export class UserService {
     let seq = this.http.get(apiUrl + "/Account/LogOff", { withCredentials: true, responseType: "text" });
     return seq;
   }
-  forgotPassword(account:string){
-    let paras=new HttpParams()
-    .set("account",account)
-    let seq = this.http.get<ForgotPassword>(apiUrl + "/Account/ForgotPassword", { withCredentials: true,params:paras});
+  forgotPassword(){
+  
+    let seq = this.http.get<ForgotPassword>(apiUrl + "/Account/ForgotPassword", { withCredentials: true});
     return seq;
   }
   getCode(form:ForgotPassword){
