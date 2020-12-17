@@ -91,7 +91,7 @@ export class ReturnApplyPage implements OnInit {
       if (res.IsSuccess == false) {
         this.alertCtrl.create({
           header: '提示',
-          message: res.Message,
+          message: res.ErrorMessage,
           buttons: ['确定']
         }).then(p=>p.present());
    
