@@ -28,3 +28,8 @@ ion-toolbar{
     border-bottom: none !important;
 
 }
+.waitReturnCount{
+    position: absolute;
+    z-index: 999;
+    right: -10px;
+}

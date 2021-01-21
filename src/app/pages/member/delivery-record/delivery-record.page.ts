@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
-import { IonSearchbar,IonInfiniteScroll } from '@ionic/angular';
+import { IonSearchbar,IonInfiniteScroll,Events } from '@ionic/angular';
 import { DeliveryRecordService } from 'src/app/providers/delivery-record.service';
+import {ReturnService} from 'src/app/providers/return.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,15 +13,22 @@ import { Router } from '@angular/router';
 export class DeliveryRecordPage implements OnInit {
   items: Array<DeliveryRecord> = [];
   currentPageIndex: number = 1;
+  isShowCheckbox:boolean=false;
+  waitReturnCount:number=0;
 
   @ViewChild(IonInfiniteScroll,{static:true}) infiniteScroll: IonInfiniteScroll;
   @ViewChild(IonSearchbar,{static:true}) searchbar: IonSearchbar;
-  constructor(public service: DeliveryRecordService,  private router: Router,) { }
+  constructor(public service: DeliveryRecordService,  private router: Router,public returnService:ReturnService,public events:Events) { }
 
   ngOnInit() {
     this.getItems("",false);
+    this.getWaitingReturnList();
+    
+    this.events.subscribe('reloadWaitingReturn',() => {
+      this.getWaitingReturnList();
+    });
   }
- 
+
   searchItems() {
 
   
@@ -56,5 +64,32 @@ export class DeliveryRecordPage implements OnInit {
     // this.navCtrl.push(UserDeliveryRecordDetailPage, {
     //   id: item.Id
     // });
+  }
+  batchReturn(){
+    this.isShowCheckbox=!this.isShowCheckbox;
+    if(!this.isShowCheckbox){
+      let selectIds = this.items.filter(p=>p.Selected).map(p=>p.Id);
+      this.addWaitingReturnList(selectIds.toString());
+      this.items.forEach(p=>{p.Selected=false});
+    }
+  }
+  clickCheckBox(item:DeliveryRecord){
+    item.Selected=!item.Selected;
+  }
+  getWaitingReturnList(){
+    this.returnService.getWaitReturnList().subscribe(res=>{
+      this.waitReturnCount=res.length;
+    });
+  }
+  addWaitingReturnList(ids){
+    if(ids.length>0){
+      this.returnService.addToWaitReturnList(ids).subscribe(res=>{
+        this.getWaitingReturnList();
+      });
+    }
+  }
+  waitingReturnList(){
+    this.events.publish('reloadWaitingReturn');
+    this.router.navigate(["/member/return-waiting"]);
   }
 }

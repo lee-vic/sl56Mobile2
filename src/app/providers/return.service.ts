@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, JsonpClientBackend } from '@angular/common/http';
 import { apiUrl } from '../global';
 
 @Injectable({
@@ -53,6 +53,26 @@ export class ReturnService {
   }
   applyHistory(){
     let seq = this.http.get<Array<string>>(apiUrl + "/Return/ApplyHistory", { withCredentials: true });
+    return seq;
+  }
+  addToWaitReturnList(ids){
+    let paras = new HttpParams()
+      .set("ids",ids);
+    let seq = this.http.post<any>(apiUrl + "/Return/AddToWaitReturnList",null,{ withCredentials: true, params: paras });
+    return seq;
+  }
+  removeWaitReturnList(ids){
+    let paras = new HttpParams()
+      .set("ids",ids);
+    let seq = this.http.post<any>(apiUrl + "/Return/RemoveWaitReturnList",null,{withCredentials:true, params: paras });
+    return seq;
+  }
+  clearWaitReturnList(){
+    let seq = this.http.get<any>(apiUrl + "/Return/ClearWaitReturnList",{withCredentials:true});
+    return seq;
+  }
+  getWaitReturnList(){
+    let seq = this.http.get<Array<any>>(apiUrl + "/Return/GetWaitReturnList",{withCredentials:true});
     return seq;
   }
 }

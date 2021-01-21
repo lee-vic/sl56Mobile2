@@ -12,13 +12,13 @@ import { ReturnApplyHistoryPage } from '../return-apply-history/return-apply-his
 })
 export class ReturnApplyPage implements OnInit {
   @ViewChild('btnSubmit',{static:true}) btnSubmit: IonButton;
-  id: any;
+  ids: any;
   data: any;
   type: any;
   ngOnInit(): void {
     //客户主动申请填写提货人资料
     if (this.type == 0) {
-      this.service.apply(this.id).subscribe(res => {
+      this.service.apply(this.ids).subscribe(res => {
         this.data = res;
         if (res.AllowApply == false) {
           let alert = this.alertCtrl.create({
@@ -42,7 +42,7 @@ export class ReturnApplyPage implements OnInit {
     }
     //内部发起填写提货人资料
     else if (this.type == 1) {
-      this.service.fill(this.id).subscribe(res => {
+      this.service.fill(this.ids).subscribe(res => {
         this.applyForm.controls["RequiredDate"].setValue(res.RequiredDate);
         this.applyForm.controls["ReferenceNumber"].setValue(res.ReferenceNumber);
       });
@@ -58,8 +58,8 @@ export class ReturnApplyPage implements OnInit {
     public modalCtrl: ModalController,
     private route: ActivatedRoute
     ) {
-     this.type=this.route.snapshot.queryParams.type;
-     this.id= this.route.snapshot.paramMap.get("id");
+    this.type=this.route.snapshot.queryParams.type;
+    this.ids= this.route.snapshot.queryParams.ids;
     this.applyForm = this.formBuilder.group({
       PersonName: ['', Validators.required],
       IDCardNumber: ['', [Validators.required, Validators.minLength(18), Validators.maxLength(18)]],
@@ -67,8 +67,7 @@ export class ReturnApplyPage implements OnInit {
       Remark: [''],
       RequiredDate: [],
       ReferenceNumber: [],
-      IdList: [this.id],
-      WorkflowReturnGoodsId: [this.id]
+      IdList: this.ids
     });
   }
 

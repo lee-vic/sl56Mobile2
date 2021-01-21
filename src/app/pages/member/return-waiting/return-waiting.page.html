@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button (click)="back()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      待退货列表
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="edit()">{{isEdit?'完成':'管理'}}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list *ngFor="let item of items" lines="none" (click)="check(item)">
+    <ion-item class="bottom-border">
+	    <ion-checkbox checked={{item.Selected}} ></ion-checkbox>
+      <ion-label>{{item.ReferenceNumber}}</ion-label>
+    </ion-item>
+    <ion-item class="item-last">
+      <ion-label>
+        <h3>{{item.PriceName}}</h3>
+        <p>计费重:{{item.Weight}}Kg</p>
+        <p>交货日期:{{item.Date}}</p>
+      </ion-label>
+      <ion-note slot="end" class="ion-margin-vertical">{{item.Amount |currency:'CNY'}}</ion-note>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-checkbox #ckAll (click)="selectAll()" checked="false" [disabled]="!(items.length>0)"></ion-checkbox>
+      <ion-label>(全选)</ion-label>
+    </ion-buttons>
+    <ion-buttons slot="end" *ngIf="!isEdit">
+      <ion-button class="btn-rgd-return" (click)="goReturn()" [disabled]="!(selectedCount>0)">退货({{selectedCount}})</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end" *ngIf="isEdit">
+      <ion-button class="btn-rgd-return-clear" (click)="clear()">
+        <ion-icon name="flash"></ion-icon>
+        清空</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end" *ngIf="isEdit">
+      <ion-button class="btn-rgd-return-remove" (click)="remove()"  [disabled]="!(selectedCount>0)">移除</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

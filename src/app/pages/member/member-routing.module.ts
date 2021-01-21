@@ -33,7 +33,7 @@ const routes: Routes = [ {
   { path: 'unread-message-list', loadChildren:()=>import("./unread-message-list/unread-message-list.module").then(m=>m.UnreadMessageListPageModule) },
   { path: 'wechat-binding', loadChildren:()=>import('.//wechat-binding/wechat-binding.module').then(p=>p.WechatBindingPageModule) },
   { path: 'return-list', loadChildren: ()=> import('./return-list/return-list.module').then(m=>m.ReturnListPageModule) },
-  { path: 'return-apply/:id', loadChildren:()=>import('./return-apply/return-apply.module').then(m=>m.ReturnApplyPageModule) },
+  { path: 'return-apply', loadChildren:()=>import('./return-apply/return-apply.module').then(m=>m.ReturnApplyPageModule) },
   { path: 'problem-list', loadChildren:()=>import('./problem-list/problem-list.module').then(m=>m.ProblemListPageModule) },
   { path: 'problem-detail/:id', loadChildren:()=>import('./problem-detail/problem-detail.module').then(m=>m.ProblemDetailPageModule)},
   { path: 'reset-password', loadChildren:()=>import('./reset-password/reset-password.module').then(m=>m.ResetPasswordPageModule) },
@@ -45,7 +45,8 @@ const routes: Routes = [ {
   { path: 'notice-list', loadChildren:()=>import('./notice-list/notice-list.module').then(m=>m.NoticeListPageModule)},
   { path: 'notice-detail/:id', loadChildren: ()=>import('./notice-detail/notice-detail.module').then(m=>m.NoticeDetailPageModule) },
   { path: 'bank-slips', loadChildren: ()=>import('./bank-slips/bank-slips.module').then(m=>m.BankSlipsPageModule) },
-  { path: 'unread-message-list1',loadChildren:()=>import('./unread-message-list1/unread-message-list1.module').then(m=>m.UnreadMessageList1PageModule)}
+  { path: 'unread-message-list1',loadChildren:()=>import('./unread-message-list1/unread-message-list1.module').then(m=>m.UnreadMessageList1PageModule)},
+  { path: 'return-waiting',loadChildren:()=>import('./return-waiting/return-waiting.module').then(m=>m.ReturnWaitingModule),runGuardsAndResolvers:"always"}
 ];
 
 @NgModule({

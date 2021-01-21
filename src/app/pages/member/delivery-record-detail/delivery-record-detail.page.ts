@@ -51,7 +51,7 @@ export class DeliveryRecordDetailPage implements OnInit {
     });
   }
   applyReturn() {
-    this.navCtrl.navigateForward("/member/return-apply/" + this.data.ObjectId, { queryParams: { type: 0 } })
+    this.navCtrl.navigateForward("/member/return-apply", { queryParams: { type: 0,ids:this.data.ObjectId } })
   }
   chat() {
     let extras: NavigationExtras = {
@@ -72,7 +72,7 @@ export class DeliveryRecordDetailPage implements OnInit {
       buttons: [{
         text: '我要退货',
         handler: () => {
-          this.navCtrl.navigateForward("/member/return-apply/" + this.data.ObjectId, { queryParams: { type: 0 } })
+          this.navCtrl.navigateForward("/member/return-apply", { queryParams: { type: 0 ,ids:this.data.ObjectId} })
         }
       }, {
         text: '我要暂扣',

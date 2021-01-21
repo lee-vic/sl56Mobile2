@@ -3,6 +3,9 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
+	<ion-buttons slot="end">
+		<ion-button (click)="batchReturn()">{{isShowCheckbox?'完成':'批量退货'}}</ion-button>
+	</ion-buttons>
     <ion-title>交货记录</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -13,7 +16,8 @@
     <ion-searchbar placeholder="原、转单号，国家，报价，运输方式，类型，子单号" (ionInput)="searchItems()"></ion-searchbar>
 
   <ion-list *ngFor="let item of items" lines="none">
-    <ion-item class="bottom-border">
+    <ion-item class="bottom-border" (click)="clickCheckBox(item)">
+	    <ion-checkbox [style.display]="isShowCheckbox?'inline':'none'" checked={{item.Selected}}></ion-checkbox>
       <ion-label> 原单号:{{item.ReferenceNumber}}</ion-label>
       <ion-note slot="end">转单号:{{item.TrackNumber}}</ion-note>
     </ion-item>
@@ -26,6 +30,12 @@
       <ion-note slot="end" class="ion-margin-vertical">{{item.Amount |currency:'CNY'}}</ion-note>
     </ion-item>
   </ion-list>
+  <ion-fab horizontal="end" vertical="bottom" slot="fixed" (click)="waitingReturnList()">
+    <ion-badge class="waitReturnCount" color="{{waitReturnCount>0?'danger':'medium'}}">{{waitReturnCount}}</ion-badge>
+  	<ion-fab-button color="light">
+      <ion-icon name="trash"></ion-icon>
+  	</ion-fab-button>
+  </ion-fab>
   <ion-infinite-scroll (ionInfinite)="scrollItems($event)">
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll>

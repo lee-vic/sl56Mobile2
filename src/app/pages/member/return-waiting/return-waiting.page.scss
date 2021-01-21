@@ -1,0 +1,40 @@
+ion-content{
+    --background: #f7f7f7;
+}
+
+ion-list{
+    margin: 0.5rem;
+    border-radius: 0.5rem;
+}
+ion-toolbar{
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+}
+ion-footer{
+    ion-toolbar{
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    ion-label{
+        padding-left: 1rem;
+    }
+    .btn-rgd-return{
+        background-image: linear-gradient(to right, #63cdff , #3171e0);
+        color: white;
+        border-radius: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .btn-rgd-return-remove{
+        border: 1px solid red;
+        border-radius: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        color: red;
+    }
+    .btn-rgd-return-clear{
+        font-size: 15px;
+        color: #6d6d6d;
+        padding-right: 1rem;
+    }
+}
