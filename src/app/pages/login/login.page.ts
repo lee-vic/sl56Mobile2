@@ -47,7 +47,7 @@ export class LoginPage implements OnInit {
       formValue.unionId = this.cookieService.get('UnionId');
     }
     this.userService.auth(formValue).subscribe((res: any) => {
-      this.isLogin =  res.success;
+      this.isLogin =  res.Success;
       console.log("aa" + this.cookieService.get('sl56Auth'));
       this.loadingCtrl.dismiss();
 
@@ -57,7 +57,7 @@ export class LoginPage implements OnInit {
       }
       else {
         this.toastCtrl.create({
-          message: res.errMsg,
+          message: res.ErrMsg,
           position: 'middle',
           duration: 1500
         }).then(p => p.present());
