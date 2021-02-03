@@ -94,14 +94,14 @@ export class MemberPage implements OnInit {
       formValue.unionId = this.cookieService.get('UnionId');
     }
     this.userService.auth(formValue).subscribe((res:any) => {
-      this.isLogin =  res.success;
+      this.isLogin =  res.Success;
       if (this.isLogin == true) {
         this.loginSuccess();
       }
 
       this.loading.dismiss();
       if (!this.isLogin) {
-        this.showToast(res.errMsg);
+        this.showToast(res.ErrMsg);
       }
       // else {
       //   localStorage.setItem("username", formValue.username);
