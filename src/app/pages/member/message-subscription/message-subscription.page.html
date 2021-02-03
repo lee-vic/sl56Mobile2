@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button>
+    <ion-title>
+      消息订阅
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-item detail lines="none" *ngFor="let item of items" [routerLink]="['/member/message-subscription/member',item.type]">
+    <ion-avatar class="type-image" slot="start">
+      <img src="assets/imgs/{{item.image}}.png">
+    </ion-avatar>
+    <ion-label>
+      <h2>{{item.name}}</h2>
+    </ion-label>
+  </ion-item>
+</ion-content>

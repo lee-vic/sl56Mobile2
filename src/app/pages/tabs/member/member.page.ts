@@ -29,7 +29,7 @@ export class MemberPage implements OnInit {
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0], url: "/member/notice-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
-    { title: "测试", image: "assets/imgs/member-20.png", type: [0, 1], url: "" }
+    { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" }
   ];
   menus: Menus;
   isLogin: boolean = false;

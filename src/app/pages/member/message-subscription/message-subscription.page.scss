@@ -1,0 +1,13 @@
+ion-content{
+    --background:#f5f5f5;
+    ion-item{
+        margin: 1rem;
+        border-radius: 0.5rem;
+        
+        .type-image{
+            width: 4.5rem;
+            height: 4.5rem;
+            padding: 0.5rem
+        }
+    }
+}

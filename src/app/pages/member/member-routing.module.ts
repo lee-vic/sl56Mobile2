@@ -23,6 +23,18 @@ const routes: Routes = [ {
       path:"detail/:id",
       loadChildren:()=> import('./delivery-record-detail/delivery-record-detail.module').then(m=>m.DeliveryRecordDetailPageModule)
     } ]
+  },{ 
+    path: 'message-subscription',
+    children:[{
+      path:"list",
+      loadChildren:()=>import('./message-subscription/message-subscription.module').then(m=>m.MessageSubscriptionModule)
+    },{
+      path:"member/:type",
+      loadChildren:()=>import('./message-subscription-member/message-subscription-member.module').then(m=>m.MessageSubscriptionMemberModule)
+    },{
+      path:"edit/:type",
+      loadChildren:()=>import('./message-subscription-edit/message-subscription-edit.module').then(m=>m.MessageSubscriptionEditModule)
+    }]
   },
   { path: 'confirmation', loadChildren:()=>import("./confirmation/confirmation.module").then(m=>m.ConfirmationPageModule)},
   { path: 'wechat-pay/:id',  loadChildren:()=> import('./wechat-pay/wechat-pay.module').then(m=>m.WechatPayPageModule) },

@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ReturnListService } from './return-list.service';
+import { ReturnService } from './return.service';
 
 describe('ReturnListService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: ReturnListService = TestBed.get(ReturnListService);
+    const service: ReturnService = TestBed.get(ReturnService);
     expect(service).toBeTruthy();
   });
 });

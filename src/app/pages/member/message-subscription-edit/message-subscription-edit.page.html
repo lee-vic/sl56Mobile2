@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons>
+      <ion-back-button slot="start"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      {{typeNames[type-1]}}消息推送修改
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list lines="none">
+    <ion-item *ngFor="let item of items">
+      <ion-label>{{item.ObjectName}}</ion-label>
+      <ion-toggle [(ngModel)]="item.IsSelected" ></ion-toggle>
+    </ion-item>
+  </ion-list>
+  
+  <ion-button color="primary" expand="block" (click)="save()">保存</ion-button>
+</ion-content>

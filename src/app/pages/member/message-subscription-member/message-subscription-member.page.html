@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons>
+      <ion-back-button slot="start"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{typeNames[type-1]}}消息订阅设置</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-card *ngFor="let item of items">
+    <ion-item class="name-info" lines="none">
+      {{item.Name}} {{item.ShortName}}
+    </ion-item>
+    <ion-card-content *ngIf="item.SubscribeMessageTypeNames.length>0">
+      <ion-chip outline="true" *ngFor="let subitem of item.SubscribeMessageTypeNames.split(',')">
+        <ion-label>{{subitem}}</ion-label>
+      </ion-chip>
+    </ion-card-content>
+    <ion-card-content *ngIf="item.SubscribeMessageTypeNames.length==0">
+      <ion-label>未订阅任何消息</ion-label>
+    </ion-card-content>
+    <ion-item lines="none">
+      <ion-label></ion-label>
+      <ion-buttons>
+        <ion-button slot="end" (click)="edit(item)">
+          <ion-icon name="filing"></ion-icon>
+          编辑
+        </ion-button>
+        <!-- <ion-button slot="end" (click)="remove(item)">
+          <ion-icon name="trash"></ion-icon>
+          删除
+        </ion-button> -->
+      </ion-buttons>
+    </ion-item>
+  </ion-card>
+</ion-content>
