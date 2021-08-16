@@ -30,12 +30,16 @@ export class InstantMessageService {
    * 售前咨询消息列表
    */
   getMessages2() {
-    let seq = this.http.get<any>(apiUrl + "/InstantMessage/GetMessages2", { withCredentials: true });
+    let paras = new HttpParams()
+      .set("receiveGoodsDetailId", null)
+      .set("chatGroupId",null);
+    let seq = this.http.get<any>(apiUrl + "/InstantMessage/GetMessages3", { withCredentials: true,params:paras });
     return seq;
   }
-  getMessages3(receiveGoodsDetailId) {
+  getMessages3(receiveGoodsDetailId,chatGroupId) {
     let paras = new HttpParams()
-      .set("receiveGoodsDetailId", receiveGoodsDetailId);
+      .set("receiveGoodsDetailId", receiveGoodsDetailId)
+      .set("chatGroupId",chatGroupId);
     let seq = this.http.get<any>(apiUrl + "/InstantMessage/GetMessages3", { withCredentials: true, params: paras });
     return seq;
   }

@@ -19,7 +19,7 @@ import { CodePush } from '@ionic-native/code-push/ngx';
 
 export function createConfig(): SignalRConfiguration {
   const c = new SignalRConfiguration();
-  c.hubName = 'chatHub';
+  c.hubName = 'chatGroupHub';
 
   c.url = 'https://signalr.sl56.com/signalr/hubs';
   c.logging = false;

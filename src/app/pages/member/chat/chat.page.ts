@@ -6,6 +6,7 @@ import { ProblemService } from 'src/app/providers/problem.service';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
 
 import { ActivatedRoute, Router } from '@angular/router';
+import { stringify } from '@angular/compiler/src/util';
 
 @Component({
   selector: 'app-chat',
@@ -30,6 +31,7 @@ export class ChatPage implements OnInit, OnDestroy {
   attachmentTypeId:string;
   currentEmployeeId:number;
   showFileUploadButton:boolean=false;
+  chatGroupId:number;
   /**
    * 0:售前咨询
    * 1:单号消息
@@ -86,8 +88,12 @@ export class ChatPage implements OnInit, OnDestroy {
       let listener = c.listenFor("messageReceived");
       listener.subscribe((msg: any) => {
         let obj = JSON.parse(msg);
+        //撤回消息
         if(obj.MsgType==6){
-
+          let revokeMsgId = obj.MsgContent;
+          let revokeMessage = this.messages.find(p=>p.Id==revokeMsgId);
+          if(revokeMessage!=null)
+            revokeMessage.IsRevoke=true;
         }
         else if(obj.MsgType==7){
 
@@ -107,13 +113,15 @@ export class ChatPage implements OnInit, OnDestroy {
     });
     if (this.messageType == 0) {
       this.imService.getMessages2().subscribe(res => {
-        this.messages = res;
+        this.messages = res.Data;
+        this.chatGroupId=res.ChatGroupId;
         this.processMessages();
       })
     }
     else if (this.messageType == 1 && this.messages == undefined) {
-      this.imService.getMessages3(this.receiveGoodsDetailId).subscribe(res => {
-        this.messages = res;
+      this.imService.getMessages3(this.receiveGoodsDetailId,this.chatGroupId).subscribe(res => {
+        this.messages = res.Data;
+        this.chatGroupId=res.ChatGroupId;
         this.processMessages();
       });
     }
@@ -124,21 +132,19 @@ export class ChatPage implements OnInit, OnDestroy {
       content = obj.FileName;
     else
       content = obj.MsgContent;
-    this.pushNewMsg(content, 1, obj.SenderName, obj.IsFile, obj.ObjectId, true);
-    this.signalRConnection.invoke("markIsSend", obj.ObjectId);
+    let type=1;
+    if(obj.SenderName.indexOf("[客户]")!=-1)
+    {
+      obj.SenderName="我";
+      type=0;
+    }
+    this.pushNewMsg(content, type, obj.SenderName, obj.IsFile, obj.ObjectId, obj.AtUserName,obj.RefContent,false);
+    this.signalRConnection.invoke("markRead", this.chatGroupId);
   }
 
   multiMarkIsSend() {
     if (this.messages != undefined && this.messages.length > 0 && this.isConnected == true) {
-      let idList = new Array<Number>();
-      this.messages.forEach((val, idx, array) => {
-        if (val.IsSend == false&&val.Type==1) {
-          idList.push(val.Id);
-        }
-      });
-      if (idList.length > 0) {
-        this.signalRConnection.invoke("multiMarkIsSend", idList.toString());
-      }
+        this.signalRConnection.invoke("markRead", this.chatGroupId);
     }
   }
   processMessages() {
@@ -162,9 +168,9 @@ export class ChatPage implements OnInit, OnDestroy {
   }
   sendMsg() {
     if (!this.editorMsg.trim()) return;
-
-    this.signalRConnection.invoke("sendToEmployee", this.receiveGoodsDetailId, this.editorMsg, 0, "", 0, "",0,null).then((data: any) => {
-      this.pushNewMsg(this.editorMsg, 0, "", false, data, true);
+    console.log(this.signalRConnection);
+    this.signalRConnection.invoke("sendToGroup", this.editorMsg, null,null,this.chatGroupId,null,null,null).then((data: any) => {
+      this.pushNewMsg(this.editorMsg, 0, "", false, data, null,null,false);
       this.editorMsg = '';
     });
 
@@ -187,17 +193,19 @@ export class ChatPage implements OnInit, OnDestroy {
    * @param type -1：会话转接 0：客户发给内部职员；1：内部职员发送给客户
    * @param username 发送消息方姓名
    */
-  pushNewMsg(msg: string, type: number, username: string, isFile: boolean, objectId: number, isSned: boolean) {
+  pushNewMsg(msg: string, type: number, username: string, isFile: boolean, objectId: number, atUserName:string,refContent:string,isRevoke:boolean) {
     if (username == "")
       username = "我";
     let obj: any = {
       Content: msg,
-      Date: Date.now().toString(),
+      Date: (new Date()).toLocaleString(),
       Name: username,
       Type: type,
       IsFile: isFile,
       Id: objectId,
-      IsSend: isSned
+      AtUserName: atUserName,
+      RefContent:refContent,
+      IsRevoke:isRevoke
     };
     if (type == 1) {
       obj.avatar = "assets/imgs/chat-1.png";
@@ -251,10 +259,10 @@ export class ChatPage implements OnInit, OnDestroy {
    
   }
   sendFileMsg(res:any) {
-    this.signalRConnection.invoke("sendToEmployee", this.receiveGoodsDetailId, res.Path, 1, res.Name, res.FileSize, "",0,null).then((data: any) => {
+    this.signalRConnection.invoke("sendToGroup", res.Path, res.Name, res.FileSize,this.chatGroupId,null,null,null).then((data: any) => {
       console.log(data);
       if(data!=-1){
-        this.pushNewMsg(res.Name,0,"",true,data,true);
+        this.pushNewMsg(res.Name,0,"",true,data,null,null,false);
       }
       
     });

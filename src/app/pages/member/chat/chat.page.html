@@ -10,20 +10,25 @@
 <ion-content>
   <div class="message-wrap">
 
-    <div *ngFor="let msg of messages" class="message" [class.left]=" msg.Type === 1 " [class.right]=" msg.Type === 0 ">
-      <img class="user-img" [src]="msg.avatar" alt="">
+    <div *ngFor="let msg of messages" class="message" [class.left]=" msg.Type === 1 " [class.right]=" msg.Type === 0 " >
+      <img class="user-img" [src]="msg.avatar" alt="" *ngIf="!msg.IsRevoke">
     
-      <div class="msg-detail">
+      <div class="msg-detail" *ngIf="!msg.IsRevoke">
         <div class="msg-info">
           <p>
-            {{msg.Name}}&nbsp;&nbsp;&nbsp;{{msg.Date}}<span *ngIf="msg.IsSend==false"
-              style="color:red;padding-left:5px;">{{msg.Type==0?"未读":"离线消息"}}</span></p>
+            {{msg.Name}}&nbsp;&nbsp;&nbsp;{{msg.Date}}</p>
         </div>
         <div class="msg-content">
           <span class="triangle"></span>
-
-          <p class="line-breaker " *ngIf="msg.IsFile===false">{{msg.Content}}</p>
-          <a href="{{serverUrl}}/DeliveryRecord/ChatFile/{{msg.Id}}" *ngIf="msg.IsFile===true">{{msg.Content}}</a>
+          <div style="font-size: 13px;background-color: #c3c3c3;margin-bottom: 5px;padding: 5px;border-radius: 3px;" *ngIf="msg.RefContent!=null">
+            {{msg.AtUserName}}<br>
+            {{msg.RefContent}}
+          </div>
+          <p class="line-breaker " *ngIf="msg.IsFile===false">
+            <span style="background-color: #9fc2ff;border-radius: 3px;" *ngIf="msg.AtUserName!=null">@{{msg.AtUserName}}&nbsp;</span>
+            {{msg.Content}}
+          </p>
+          <a style="color: rgb(188, 234, 255);" href="{{serverUrl}}/DeliveryRecord/ChatFile/{{msg.Id}}" *ngIf="msg.IsFile===true">{{msg.Content}}</a>
         </div>
       </div>
     </div>
