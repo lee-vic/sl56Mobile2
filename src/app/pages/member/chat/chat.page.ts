@@ -88,6 +88,8 @@ export class ChatPage implements OnInit, OnDestroy {
       let listener = c.listenFor("messageReceived");
       listener.subscribe((msg: any) => {
         let obj = JSON.parse(msg);
+        if(obj.ShowType==1)
+          return;
         //撤回消息
         if(obj.MsgType==6){
           let revokeMsgId = obj.MsgContent;
