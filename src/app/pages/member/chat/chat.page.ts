@@ -170,10 +170,15 @@ export class ChatPage implements OnInit, OnDestroy {
   }
   sendMsg() {
     if (!this.editorMsg.trim()) return;
-    console.log(this.signalRConnection);
+    console.log("conn:",this.signalRConnection);
     this.signalRConnection.invoke("sendToGroup", this.editorMsg, null,null,this.chatGroupId,null,null,null).then((data: any) => {
-      this.pushNewMsg(this.editorMsg, 0, "", false, data, null,null,false);
-      this.editorMsg = '';
+      console.log("sendMsgResult:",data);
+      if(!isNaN(parseInt(data))){
+        this.pushNewMsg(this.editorMsg, 0, "", false, data, null,null,false);
+        this.editorMsg = '';
+      }else{
+        alert("发送失败,请尝试刷新页面后重试；错误信息："+ data);
+      }
     });
 
   }
@@ -262,9 +267,11 @@ export class ChatPage implements OnInit, OnDestroy {
   }
   sendFileMsg(res:any) {
     this.signalRConnection.invoke("sendToGroup", res.Path, res.Name, res.FileSize,this.chatGroupId,null,null,null).then((data: any) => {
-      console.log(data);
-      if(data!=-1){
+      console.log("sendFileMsgResult:",data);
+      if(!isNaN(parseInt(data))){
         this.pushNewMsg(res.Name,0,"",true,data,null,null,false);
+      }else{
+        alert("发送失败,请尝试刷新页面后重试；错误信息："+ data);
       }
       
     });
