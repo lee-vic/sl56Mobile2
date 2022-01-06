@@ -4,6 +4,7 @@ import { HttpParams, HttpClient } from '@angular/common/http';
 import { apiUrl } from '../global';
 import { User } from '../interfaces/user';
 import { ResetPassword } from '../interfaces/reset-password';
+import { ModifyPassword } from '../interfaces/modify-password';
 
 @Injectable({
   providedIn: 'root'
@@ -83,6 +84,16 @@ export class UserService {
   logined(registrationId:string,platform:string){
     let data = JSON.stringify({RegistrationId:registrationId,Platform:platform});
     let seq = this.http.post<ResetPassword>(apiUrl + "/JPush/Logined", data, {
+      headers: {
+        "content-type": "application/json"
+      },
+      withCredentials: true
+    })
+    return seq;
+  }
+  changeDeliveryPassword(form:ModifyPassword){
+    let data = JSON.stringify(form);
+    let seq = this.http.post<ResetPassword>(apiUrl + "/account/ChangeRgdPassword", data, {
       headers: {
         "content-type": "application/json"
       },
