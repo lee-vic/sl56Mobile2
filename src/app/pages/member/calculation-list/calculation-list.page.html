@@ -16,8 +16,8 @@
   <ion-list class="result_list" >
     <ion-item detail *ngFor="let item of tabsData[currentTabIndex].PriceList" (click)="detail(item)">
       <ion-label> 
-          <h2>{{item.PriceNo}}</h2>
-          <p>{{item.ShortPriceName}}</ion-label>
+          <h2>{{item.PriceCode}}</h2>
+          <p>{{item.PriceName}}</ion-label>
       <ion-note slot="end" class="ion-margin-vertical">{{item.TotalAmount|currency:'CNY'}}</ion-note>
     </ion-item>
 
