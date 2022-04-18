@@ -13,6 +13,10 @@
       <ion-label>问题名称</ion-label>
       <ion-note slot="end">{{data?.Problem?.ObjectName}}</ion-note>
     </ion-item>
+    <ion-item>
+      <ion-label>目的地国家</ion-label>
+      <ion-note slot="end">{{data?.CountryName}}</ion-note>
+    </ion-item>
     <ion-item *ngIf="data?.Problem?.Status==0">
       <ion-label>处理期限</ion-label>
       <ion-note slot="end">{{data?.Problem?.EndDate}}</ion-note>
