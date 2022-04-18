@@ -46,6 +46,7 @@
     "ngx-cookie-service": "^2.4.0",
     "rxjs": "^6.6.2",
     "signalr": "^2.4.1",
+    "simple-pdf-viewer": "^2.0.3",
     "tslib": "^1.13.0",
     "zone.js": "~0.9.1"
   },

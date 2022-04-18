@@ -59,7 +59,8 @@ const routes: Routes = [ {
   { path: 'bank-slips', loadChildren: ()=>import('./bank-slips/bank-slips.module').then(m=>m.BankSlipsPageModule) },
   { path: 'unread-message-list1',loadChildren:()=>import('./unread-message-list1/unread-message-list1.module').then(m=>m.UnreadMessageList1PageModule)},
   { path: 'return-waiting',loadChildren:()=>import('./return-waiting/return-waiting.module').then(m=>m.ReturnWaitingModule),runGuardsAndResolvers:"always"},
-  { path: 'modify-deliverypassword', loadChildren:()=>import('./modify-deliverypassword/modify-deliverypassword.module').then(m=>m.ModifyDeliverypasswordPageModule) }
+  { path: 'modify-deliverypassword', loadChildren:()=>import('./modify-deliverypassword/modify-deliverypassword.module').then(m=>m.ModifyDeliverypasswordPageModule) },
+  { path: 'invoice-preview', loadChildren:()=>import('./problem-detail/invoice-preview.module').then(m=>m.InvoicePreviewModule) }
 ];
 
 @NgModule({

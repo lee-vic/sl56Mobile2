@@ -1,28 +1,188 @@
 <ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
     <ion-title>问题详情</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-    <ion-list>
-        <ion-item>
-          <ion-label>问题名称</ion-label>
-          <ion-note slot="end">{{data?.Problem?.ObjectName}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>处理期限</ion-label>
-          <ion-note slot="end">{{data?.Problem?.EndDate}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>备注</ion-label>
-          <ion-note slot="end">{{data?.Problem?.Remark}}</ion-note>
-        </ion-item>
-      </ion-list>
+  <ion-list>
+    <ion-item>
+      <ion-label>问题名称</ion-label>
+      <ion-note slot="end">{{data?.Problem?.ObjectName}}</ion-note>
+    </ion-item>
+    <ion-item *ngIf="data?.Problem?.Status==0">
+      <ion-label>处理期限</ion-label>
+      <ion-note slot="end">{{data?.Problem?.EndDate}}</ion-note>
+    </ion-item>
+    <ion-item *ngIf="data?.Problem?.Status==1">
+      <ion-label color="success">当前问题已处理完成</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>备注</ion-label>
+      <ion-note slot="end">{{data?.Problem?.Remark}}</ion-note>
+    </ion-item>
+  </ion-list>
+  <ion-item
+    *ngIf="data?.ProcessResult!=null && data?.Problem?.Status==0 then problemActions else btnContactCS"
+  >
+  </ion-item>
+
+  <ng-template #problemActions>
+    <ion-item>
+      <ion-label color="danger"
+        >请选择一种方案自助处理</ion-label
+      >
+    </ion-item>
+    <ion-item>
+      <ion-label class="subTitle ion-text-wrap" color="primary"
+        >处理指引：{{data?.Problem?.Remark1}}</ion-label
+      >
+    </ion-item>
+    <ion-segment
+      value="{{data?.Problem?.Pages[0]?.Item1}}"
+      (ionChange)="processTypeChanged($event)"
+    >
+      <ion-segment-button
+        *ngFor="let page of data?.Problem?.Pages;let i = index"
+        value="{{page.Item1}}" id="tabHead{{i}}"
+      >
+        <ion-label>{{page.Item2}}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ng-template>
+
+  <!-- 显示Page1（更新信息） -->
+  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page1'">
+    <form #page1Form="ngForm" (ngSubmit)="submit(page1Form)">
+      <!-- 显示补充信息-单项选择 -->
+      <ion-card  *ngIf="data?.Problem?.ProcessTypeList.indexOf(1)!=-1">
+        <ion-card-header>
+          <ion-card-subtitle>单选.请在下列选项中选择一项</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-radio-group
+          name="type1Result"
+          ngModel
+          required
+          (ionChange)="checkChange(page1Form.form)"
+        >
+          <ion-item *ngFor="let setting of data.Problem.ProcessSetting1">
+            <ion-label>{{setting.Item1}}</ion-label>
+            <ion-radio slot="start" value="{{setting.Item1}}"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- 显示补充信息-填写内容 -->
+      <ion-card  *ngIf="data?.Problem?.ProcessTypeList.indexOf(2)!=-1">
+        <ion-card-header>
+          <ion-card-subtitle>填写信息.请在下方文本框中填入当前问题的答案</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item *ngFor="let setting of data.Problem.ProcessSetting2;let i= index">
+              <ion-label>{{setting.Item1}}</ion-label>
+              <ion-input
+                name="type2Result{{i}}"
+                ngModel
+                required
+                placeholder="请输入{{setting.Item2}}"
+                pattern="^[\s\S]*.*[^\s][\s\S]*$"
+              ></ion-input>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- 显示补充信息-上传文件 -->
+      <ion-card  *ngIf="data?.Problem?.ProcessTypeList.indexOf(3)!=-1">
+        <ion-card-header>
+          <ion-card-subtitle>上传文件.请上传{{data?.Problem?.AttachmentTypeName}}文件(只接受Word、Excel、PDF、JPG、PNG格式的文件)</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-input type="file" name="type3Result" ngModel required={{isFileRequired}} #attFile (ionChange)="changeFile($event,page1Form.form)"
+          accept="image/*,
+          application/pdf,
+          application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+          application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        </ion-input>
+        <ion-label *ngIf="isFileProcessing">发票文件处理中</ion-label>
+        <ion-spinner *ngIf="isFileProcessing" name="lines-small"></ion-spinner>
+        <ion-label class="ion-text-wrap" color="danger" *ngIf="fileFailMessage">文件处理失败：{{fileFailMessage}}</ion-label>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- 显示补充信息-多选 -->
+      <ion-card  *ngIf="data?.Problem?.ProcessTypeList.indexOf(4)!=-1">
+        <ion-card-header>
+          <ion-card-subtitle>多选.请在下选项中选择一项或者多项(至少选择一项)</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item *ngFor="let setting of data.Problem.ProcessSetting4;let i = index">
+              <ion-label>{{setting.Item1}}</ion-label>
+              <ion-checkbox slot="end" [(ngModel)]="checkListValue[i]" name="type4Result{{i}}" (ionChange)="checkProcessSetting4()"></ion-checkbox>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-label class="ion-text-wrap" *ngIf="submitFailMessage" color="danger">{{submitFailMessage}}</ion-label>
+      <ion-button type="submit" expand="block" [disabled]="!page1Form.form.valid || isSubmiting || isFileProcessing || (checkListValue.length>0 && checkListValue.indexOf(true)==-1)" >
+        提交
+        <ion-spinner *ngIf="isSubmiting" name="lines-small"></ion-spinner>
+      </ion-button>
+      <ion-item *ngIf="!page1Form.form.valid || (checkListValue.length>0 && checkListValue.indexOf(true)==-1)">
+        <ion-label color="danger">完整填写以上信息后方可提交！</ion-label>
+      </ion-item>
+    </form>
+  </ion-item-group>
+  
+  <!-- 显示Page2（更改渠道） -->
+  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page2'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>如果你需要更改渠道，请点击联系客服按钮</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ng-template *ngIf="true then btnContactCS"></ng-template>
+      </ion-card-content>
+    </ion-card>
+  </ion-item-group>
+
+  <!-- 显示Page3（退件） -->
+  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page3'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>如果你需要退货处理，请点击退货申请按钮</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="full" (click)="returnGoods()">退件</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </ion-item-group>
+
+  <!-- 显示Page4（直接确认） -->
+  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page4'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>当前问题可以直接确认，请点击确认按钮进行确认操作</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="full" (click)="confirm()">我确认</ion-button>
+      </ion-card-content>
+      <ion-label class="ion-text-wrap" color="danger" *ngIf="confirmFailMessage">{{confirmFailMessage}}</ion-label>
+    </ion-card>
+  </ion-item-group>
+
 </ion-content>
-<ion-footer>
-  <ion-button expand="full"  (click)="chat()">联系客服</ion-button>
-</ion-footer>
+
+<ng-template #btnContactCS>
+  <ion-footer>
+    <ion-button *ngIf="data?.Problem?.Status==0" expand="full" (click)="chat()">联系客服</ion-button>
+  </ion-footer>
+</ng-template>

@@ -6,7 +6,7 @@ import { ProblemService } from 'src/app/providers/problem.service';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { stringify } from '@angular/compiler/src/util';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-chat',
@@ -43,7 +43,8 @@ export class ChatPage implements OnInit, OnDestroy {
     public imService: InstantMessageService,
     public toastCtrl: ToastController,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private navCtrl:NavController
     ) {
       this.messageType =parseInt(this.route.snapshot.paramMap.get('id'));
       this.route.queryParams.subscribe(params=>{
@@ -53,7 +54,6 @@ export class ChatPage implements OnInit, OnDestroy {
           this.problemId = data.problemId;
           this.messages = data.messages;
           this.attachmentTypeId=data.attachmentTypeId;
-          console.log(this.attachmentTypeId);
         }
         if(this.messageType==1){
           this.showFileUploadButton=true;
@@ -72,7 +72,7 @@ export class ChatPage implements OnInit, OnDestroy {
     this.signalRConnection.stop();
   }
   ngOnInit(): void {
-
+    console.log("now.init");
     this.signalRConnection = this.signalR.createConnection();
     this.signalRConnection.status.subscribe((p) => {
       console.warn(p.name);
@@ -274,6 +274,36 @@ export class ChatPage implements OnInit, OnDestroy {
         alert("发送失败,请尝试刷新页面后重试；错误信息："+ data);
       }
       
+    });
+  }
+
+  isCanProcessBySelf(message){
+    let pattern = /(?<=自助处理.).*/g;
+    let isMatch = pattern.test(message.Content);
+    if(isMatch)
+    {
+      let rgdIdPattern=/(?<=Detail\?id=)\d+/;
+      let problemIdPattern=/(?<=ProblemId=)\d+/;
+      let rgdId=message.Content.match(rgdIdPattern)[0];
+      let problemId=message.Content.match(problemIdPattern)[0];
+      let now = Date.now();
+      let result={
+        processMessage:message.Content.replace(pattern,""),
+        rgdId:rgdId,
+        problemId:problemId
+      }
+      return result;
+    }
+  }
+
+  processProblem(result){
+    this.navCtrl.navigateForward("/member/problem-detail/"+result.rgdId,
+    {
+      queryParams:
+      {
+        problemid:result.problemId
+      },
+      replaceUrl:true//为保证问题详情与聊天界面之间跳转时数据正常刷新，这两个页面互相跳转时，不保存历史状态
     });
   }
  

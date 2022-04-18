@@ -26,7 +26,14 @@
           </div>
           <p class="line-breaker " *ngIf="msg.IsFile===false">
             <span style="background-color: #9fc2ff;border-radius: 3px;" *ngIf="msg.AtUserName!=null">@{{msg.AtUserName}}&nbsp;</span>
-            {{msg.Content}}
+            <span *ngIf="isCanProcessBySelf(msg) as result; else msgContent">
+              {{result.processMessage}}
+              <a class="processLink" (click)="processProblem(result)">点击这里</a>
+              进行自助处理
+            </span>
+            <ng-template #msgContent>
+              {{msg.Content}}
+          </ng-template>
           </p>
           <a style="color: rgb(188, 234, 255);" href="{{serverUrl}}/DeliveryRecord/ChatFile/{{msg.Id}}" *ngIf="msg.IsFile===true">{{msg.Content}}</a>
         </div>

@@ -40,4 +40,27 @@ export class ProblemService {
     let seq= this.http.post<any>(apiUrl+"/DeliveryRecord/UploadChatFile",form,{ withCredentials:true});
     return seq;
   }
+  confirm(problemId){
+    let paras=new HttpParams()
+    .set("problemId",problemId);
+    let seq= this.http.post<any>(apiUrl+"/Problem/Confirm",null,{ withCredentials:true,params:paras});
+    return seq;
+  }
+  complete(model){
+    let data = JSON.stringify(model);
+    console.log(data);
+    let seq= this.http.post<any>(apiUrl+"/Problem/Complete",data,{
+      headers:{
+        "content-type":"application/json"
+      },
+      withCredentials:true,
+      responseType:"json"
+      }
+    );
+    return seq;
+  }
+  invoicePretreatment(model){
+    let seq= this.http.post<any>(apiUrl+"/Problem/InvoicePretreatment",model,{ withCredentials:true});
+    return seq;
+  }
 }

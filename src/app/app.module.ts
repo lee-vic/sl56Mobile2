@@ -14,6 +14,7 @@ import { SignalRModule } from 'ng2-signalr';
 import { SignalRConfiguration } from 'ng2-signalr';
 import { JPush } from '@jiguang-ionic/jpush/ngx';
 import { CodePush } from '@ionic-native/code-push/ngx';
+import { SimplePdfViewerModule} from 'simple-pdf-viewer';
 
 
 
@@ -42,7 +43,8 @@ export function createConfig(): SignalRConfiguration {
     }),
     HttpClientModule,
     AppRoutingModule,
-    SignalRModule.forRoot(createConfig)
+    SignalRModule.forRoot(createConfig),
+    SimplePdfViewerModule
   ],
   providers: [
     StatusBar,

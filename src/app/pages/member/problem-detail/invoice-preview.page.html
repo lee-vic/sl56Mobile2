@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="danger" (click)="reSelect()">重选</ion-button>
+    </ion-buttons>
+    <ion-title>发票预览</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="confirm()">确认</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <section id="pdfContent">
+    <simple-pdf-viewer #pdfViewer [src]="invoicePath">
+
+    </simple-pdf-viewer>
+  </section>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="pdfViewer.prevPage()">上一页</ion-button>
+    </ion-buttons>
+    <ion-title> 当前页：{{pdfViewer.getCurrentPage()}}/共 {{pdfViewer.getNumberOfPages()}} 页</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="pdfViewer.nextPage()">下一页</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
