@@ -278,17 +278,22 @@ export class ChatPage implements OnInit, OnDestroy {
   }
 
   isCanProcessBySelf(message){
-    let pattern = /(?<=自助处理.).*/g;
-    let isMatch = pattern.test(message.Content);
-    if(isMatch)
+    let keyWord="自助处理";
+    let keyWordIndex = message.Content.indexOf(keyWord);
+    if(keyWordIndex!=-1)
     {
-      let rgdIdPattern=/(?<=Detail\?id=)\d+/;
-      let problemIdPattern=/(?<=ProblemId=)\d+/;
-      let rgdId=message.Content.match(rgdIdPattern)[0];
-      let problemId=message.Content.match(problemIdPattern)[0];
-      let now = Date.now();
+      let rgdIdPattern=/id=\w+/;
+      let problemIdPattern=/ProblemId=\w+/;
+      let rgdId=null;
+      let problemId=null;
+      if(rgdIdPattern.test(message.Content)){
+        rgdId=message.Content.match(rgdIdPattern)[0].split("=")[1];
+      }
+      if(problemIdPattern.test(message.Content)){
+        problemId=message.Content.match(problemIdPattern)[0].split("=")[1];
+      }
       let result={
-        processMessage:message.Content.replace(pattern,""),
+        processMessage:message.Content.replace(/<a.*自助处理/g,""),
         rgdId:rgdId,
         problemId:problemId
       }
