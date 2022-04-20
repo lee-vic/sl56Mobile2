@@ -38,7 +38,7 @@ export class ProblemDetailPage implements OnInit {
       let inputTypes = types.filter(p=>p>=1 && p<=4);
       console.log("inputTypes",inputTypes);
       //存在发票以及其他填写资料项时，发票不是必须
-      this.isFileRequired=!(types.length>1 && inputTypes.indexOf(3)!=-1);
+      this.isFileRequired=!(inputTypes.length>1 && inputTypes.indexOf(3)!=-1);
       console.log("isRequiredFile:",this.isFileRequired);
     });
   }
