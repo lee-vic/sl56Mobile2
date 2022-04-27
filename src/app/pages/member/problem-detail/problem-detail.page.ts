@@ -29,7 +29,8 @@ export class ProblemDetailPage implements OnInit {
       console.log("data:",this.data);
       this.processModel=this.data.ProcessResult;
       console.log("model",this.processModel);
-      this.processType = this.data.Problem.Pages[0].Item1;
+      if(this.data.Problem.Pages.length>0)
+        this.processType = this.data.Problem.Pages[0].Item1;
       this.checkListValue = new Array();
       for (let i = 0; i < this.data.Problem.ProcessSetting4.length; i++) {
         this.checkListValue.push(false);

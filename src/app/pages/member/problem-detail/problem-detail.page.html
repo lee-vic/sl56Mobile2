@@ -181,6 +181,7 @@
         <ion-card-subtitle>当前问题可以直接确认，请点击确认按钮进行确认操作</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
+        <p *ngIf="data?.Problem?.Amount>0" color="danger">请确认{{data?.Problem?.ChargeName}}{{data?.Problem?.Amount}}{{data?.Problem?.CurrencyName}}</p>
         <ion-button expand="full" (click)="confirm()">我确认</ion-button>
       </ion-card-content>
       <ion-label class="ion-text-wrap" color="danger" *ngIf="confirmFailMessage">{{confirmFailMessage}}</ion-label>
