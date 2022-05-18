@@ -34,7 +34,7 @@
     </ion-item>
   </ion-list>
   <ion-item
-    *ngIf="data?.ProcessResult!=null && data?.Problem?.Status==0 then problemActions else btnContactCS"
+    *ngIf="data?.Problem.ProcessTypeList.length>0 && data?.Problem?.Status==0 then problemActions else btnContactCS"
   >
   </ion-item>
 
