@@ -11,7 +11,6 @@ export class ReturnListPage implements OnInit {
 
   items1: Array<any> = [];
   items2: Array<any> = [];
-  items3: Array<any> = [];
   currentPageIndex: number = 1;
   isBusy: boolean = false;
   @ViewChild(IonInfiniteScroll, { static: false }) infiniteScroll: IonInfiniteScroll;
@@ -64,21 +63,7 @@ export class ReturnListPage implements OnInit {
       });
     });
   }
-  getItems3() {
-
-    this.service.getList3().subscribe(res => {
-      this.items3 = res;
-      this.items3.forEach(element => {
-        let val: string = element.ReferenceNumber;
-        let tempArray = new Array();
-        let vals = val.split(',');
-        vals.forEach(ele => {
-          tempArray.push(ele.split('_')[1]);
-        });
-        element.ReferenceNumber = tempArray.toString();
-      });
-    });
-  }
+ 
   searchItems() {
     let val = this.searchbar.value;
     let key = val.trim();
@@ -130,7 +115,6 @@ export class ReturnListPage implements OnInit {
   }
   ionViewWillEnter() {
     console.log("ionViewWillEnter");
-    this.getItems3();
     this.getItems2();
   }
 
