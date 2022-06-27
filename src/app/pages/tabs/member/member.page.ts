@@ -27,7 +27,7 @@ export class MemberPage implements OnInit {
     { title: "微信绑定", image: "assets/imgs/member-13.png", type: [0, 1], url: "/member/wechat-binding" },
     { title: "回单上传", image: "assets/imgs/member-17.png", type: [0, 1], url: "/member/bank-slips" },
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
-    { title: "业务公告", image: "assets/imgs/member-19.png", type: [0], url: "/member/notice-list" },
+    { title: "业务公告", image: "assets/imgs/member-19.png", type: [0,1], url: "/member/notice-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
     { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" }
