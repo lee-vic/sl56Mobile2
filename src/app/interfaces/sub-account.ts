@@ -8,4 +8,11 @@ export class SubAccount{
     IsNew:boolean;
     Success:boolean;
     ErrMsg:string;
+    BankAccountHolder:string;
+    BankCarNumber:string;
+    BankName:string;
+    BankCardPhoneNumber:string;
+    IdCardNumber:string;
+    Email:string;
+    Wechat:string;
 }

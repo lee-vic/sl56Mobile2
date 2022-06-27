@@ -60,7 +60,14 @@ const routes: Routes = [ {
   { path: 'unread-message-list1',loadChildren:()=>import('./unread-message-list1/unread-message-list1.module').then(m=>m.UnreadMessageList1PageModule)},
   { path: 'return-waiting',loadChildren:()=>import('./return-waiting/return-waiting.module').then(m=>m.ReturnWaitingModule),runGuardsAndResolvers:"always"},
   { path: 'modify-deliverypassword', loadChildren:()=>import('./modify-deliverypassword/modify-deliverypassword.module').then(m=>m.ModifyDeliverypasswordPageModule) },
-  { path: 'invoice-preview', loadChildren:()=>import('./problem-detail/invoice-preview.module').then(m=>m.InvoicePreviewModule) }
+  { path: 'invoice-preview', loadChildren:()=>import('./problem-detail/invoice-preview.module').then(m=>m.InvoicePreviewModule) },
+  { path: 'distribute-manager', loadChildren:()=>import('./distribute-manager/distribute-manager.module').then(m=>m.DistributeManagerPageModule) },
+  { path: 'distribute-partners', loadChildren:()=>import('./distribute-manager/partners/partners.module').then(m=>m.PartnersPageModule) },
+  { path: 'distribute-profit', loadChildren:()=>import('./distribute-manager/profit/profit.module').then(m=>m.ProfitPageModule) },
+  { path: 'distribute-share', loadChildren:()=>import('./distribute-manager/share/share.module').then(m=>m.SharePageModule) },
+  { path: 'distribute-user-info', loadChildren:()=>import('./distribute-manager/user-info/user-info.module').then(m=>m.UserInfoPageModule) },
+  { path: 'distribute-faq', loadChildren:()=>import('./distribute-manager/faq/faq.module').then(m=>m.FaqPageModule) },
+  { path: 'distribute-withdrawal', loadChildren:()=>import('./distribute-manager/withdrawal/withdrawal.module').then(m=>m.WithdrawalPageModule) }
 ];
 
 @NgModule({

@@ -30,7 +30,8 @@ export class MemberPage implements OnInit {
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0], url: "/member/notice-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
-    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" }
+    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
+    { title: "分销管理", image: "assets/imgs/member-6.png", type: [1], url: "/member/distribute-manager" }
   ];
   menus: Menus;
   isLogin: boolean = false;

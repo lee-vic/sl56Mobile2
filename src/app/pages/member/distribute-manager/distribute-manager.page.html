@@ -1,0 +1,53 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button></ion-back-button>
+        </ion-buttons>
+        <ion-title>
+            分销管理
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content *ngIf="customerInfo?.Classify==1">
+    <ion-card *ngIf="customerInfo?.Category==0">
+        <ion-card-header>
+            <ion-card-title>一键注册分销账号</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+            当前账号尚未注册成为分销账号，点击下面按钮一键注册成为分销账号
+            <ion-button expand="block" fill="outline" (click)="oneKeyRegister()">
+                一键注册
+            </ion-button>
+        </ion-card-content>
+    </ion-card>
+    <div *ngIf="customerInfo?.Category==1">
+        <ion-grid id="info">
+            <ion-row class="ion-align-items-center">
+                <ion-col col-4>
+                    <div class="ion-text-center">
+                        <div class="title">{{dayAmount}}</div>
+                        今日预估收益（元）
+                    </div>
+                </ion-col>
+                <ion-col col-4 class="ion-text-center">
+                    <div class="title">{{monthAmount}}</div>
+                    本月预估收益（元）
+                </ion-col>
+            </ion-row>
+
+        </ion-grid>
+        <ion-grid id="menu-grid">
+            <ion-row *ngFor="let row of menus.rows" class="row">
+                <ion-col *ngFor="let item of row.items" class="col">
+                    <div (click)="menuClick(item)" class="ion-text-center">
+                        <div>
+                            <img [src]="item.image" style="max-width:1.5rem;height:auto;">
+                        </div>
+                        <div class="menu-title">{{item.title}}</div>
+                    </div>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </div>
+</ion-content>

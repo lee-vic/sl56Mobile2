@@ -1,0 +1,24 @@
+
+user-header{
+    position: relative;
+}
+#info{
+    background-color: #0152A8;
+    color: #ffffff;
+    
+}
+#menu-grid ion-row.row:first-child{
+    border-top: solid 1px #dcdcdc;
+}
+#menu-grid ion-col.col{
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-right: solid 1px #dcdcdc;
+    background-color: white;
+    border-bottom: solid 1px #dcdcdc;
+}
+
+#menu-grid{
+    padding-left: 0;
+    padding-right: 0;
+}
