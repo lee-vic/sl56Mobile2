@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      我的伙伴
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-grid id="info">
+    <ion-row class="ion-align-items-center">
+      <ion-col col-4>
+        <div class="ion-text-center">
+          <div class="title">伙伴总数</div>
+          {{partners?.Total}}
+        </div>
+      </ion-col>
+      <ion-col col-4 class="ion-text-center">
+        <div class="title">本日新增</div>
+        {{partners?.TodayCount}}
+      </ion-col>
+      <ion-col col-4 class="ion-text-center">
+        <div class="title">本月新增</div>
+        {{partners?.MonthCount}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-searchbar placeholder="搜索" (ionChange)="search($event)"></ion-searchbar>
+  <ion-item>
+    <ion-label>综合排序</ion-label>
+    <ion-select placeholder="选择排序" interface="popover" (ionChange)="orderChange($event)">
+      <ion-select-option value="asc">时间顺序</ion-select-option>
+      <ion-select-option value="desc">时间倒序</ion-select-option>
+    </ion-select>
+  </ion-item>
+  <ion-grid>
+    <ion-row class="tableHeader">
+      <ion-col>
+        序号
+      </ion-col>
+      <ion-col>
+        伙伴
+      </ion-col>
+      <ion-col>
+        联系方式
+      </ion-col>
+      <ion-col>
+        加入时间
+      </ion-col>
+      <ion-col>
+        上次下单时间
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let row of partners?.Rows;let i=index" class="tableBody">
+      <ion-col>
+        {{i+1}}
+      </ion-col>
+      <ion-col>
+        {{row?.CustomerName}}
+      </ion-col>
+      <ion-col>
+      </ion-col>
+      <ion-col>
+        {{row?.CreateAtStr}}
+      </ion-col>
+      <ion-col>
+        {{row?.LastRgdCreateAtStr}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-item *ngIf="partners?.Rows?.length==0">
+    -暂无伙伴-
+  </ion-item>
+
+</ion-content>

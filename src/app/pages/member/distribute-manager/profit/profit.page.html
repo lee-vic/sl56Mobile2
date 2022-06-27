@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      收益概况
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-item>
+    <ion-label color="primary">时间</ion-label>
+    <ion-chip *ngFor="let item of types" color="{{type==item?'primary':''}}" (click)="changeType(item)">
+      <ion-icon name="checkmark" color="primary" *ngIf="type==item"></ion-icon>
+      <ion-label color="{{type==item?'primary':''}}">{{item}}</ion-label>
+    </ion-chip>
+  </ion-item>
+  <ion-grid id="info">
+    <ion-row class="ion-align-items-center">
+      <ion-col col-4>
+        <div class="ion-text-center">
+          <div class="title">预估收益合计(元)</div>
+          {{profits?.SumAmount}}
+        </div>
+      </ion-col>
+      <ion-col col-4 class="ion-text-center">
+        <div class="title">下单客户数</div>
+        {{profits?.Total}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-grid>
+    <ion-row class="tableHeader">
+      <ion-col>
+        序号
+      </ion-col>
+      <ion-col>
+        伙伴
+      </ion-col>
+      <ion-col>
+        下单时间
+      </ion-col>
+      <ion-col>
+        预估收益
+      </ion-col>
+      <ion-col>
+        实际收益
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let row of profits?.Rows;let i=index" class="tableBody">
+      <ion-col>
+        {{i+1}}
+      </ion-col>
+      <ion-col>
+        {{row?.CustomerName}}
+      </ion-col>
+      <ion-col>
+        {{row?.CreateAtStr}}
+      </ion-col>
+      <ion-col>
+        {{row?.Amount}}
+      </ion-col>
+      <ion-col>
+        {{row?.FinalAmount}}
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-item *ngIf="profits?.Rows?.length==0">
+    -暂无收益-
+  </ion-item>
+
+</ion-content>

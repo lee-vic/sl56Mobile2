@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      分享中心
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-label>分享链接(点击可以复制)</ion-label>
+    </ion-item-divider>
+    <ion-item>
+      <input #shareLink class="shareLink" (focus)="linkFocus()" />
+    </ion-item>
+  </ion-item-group>
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-label>分享二维码(长按保存本地)</ion-label>
+    </ion-item-divider>
+    <ion-item>
+      <ion-img src="{{codeBase64Str}}"></ion-img>
+    </ion-item>
+  </ion-item-group>
+</ion-content>

@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>账号注册</ion-title>
+    <ion-buttons slot="end">
+      <a routerLink="/app/tabs/member">
+        登录
+      </a>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content>
+  <form (ngSubmit)="doNext(myForm.value)" [formGroup]="myForm" novalidate class="ion-margin-top ion-padding-top">
+    <ion-item>
+      <ion-label stacked color="dark">手机号码</ion-label>
+      <ion-input type="tel" formControlName="mobilePhone" placeholder="请输入手机号码"></ion-input>
+    </ion-item>
+    <div class="validation-errors ion-padding-start">
+      <div *ngFor="let validation of validation_messages.mobilePhone">
+        <ng-container>
+          <div class="error-message"
+            *ngIf="myForm.get('mobilePhone').hasError(validation.type) && (myForm.get('mobilePhone').dirty || myForm.get('mobilePhone').touched)">
+            {{validation.message}}
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <ion-item>
+      <ion-label stacked color="dark">验证码</ion-label>
+      <ion-input type="text" formControlName="verifyCode" placeholder="请输入验证码"></ion-input>
+      <ion-button (click)="sendCode()">获取验证码</ion-button>
+    </ion-item>
+    <div class="validation-errors ion-padding-start">
+      <div *ngFor="let validation of validation_messages.verifyCode">
+        <ng-container>
+          <div class="error-message"
+            *ngIf="myForm.get('verifyCode').hasError(validation.type) && (myForm.get('verifyCode').dirty || myForm.get('verifyCode').touched)">
+            {{validation.message}}
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <ion-item>
+      <ion-label stacked color="dark">登录密码</ion-label>
+      <ion-input type="password" formControlName="password" placeholder="请输入密码，区分大小写"></ion-input>
+    </ion-item>
+    <div class="validation-errors ion-padding-start">
+      <div *ngFor="let validation of validation_messages.password">
+        <ng-container>
+          <div class="error-message"
+            *ngIf="myForm.get('password').hasError(validation.type) && (myForm.get('password').dirty || myForm.get('password').touched)">
+            {{validation.message}}
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <ion-item>
+      <ion-label stacked color="dark">确认登录密码</ion-label>
+      <ion-input type="password" formControlName="rePassword" placeholder="请再一次输入密码"></ion-input>
+    </ion-item>
+    <div class="validation-errors ion-padding-start">
+      <div *ngFor="let validation of validation_messages.rePassword">
+        <ng-container>
+          <div class="error-message"
+            *ngIf="myForm.get('rePassword').hasError(validation.type) && (myForm.get('rePassword').dirty || myForm.get('rePassword').touched)">
+            {{validation.message}}
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <ion-item>
+      <ion-label stacked color="dark">推荐码</ion-label>
+      <ion-input type="text" formControlName="code" placeholder="推荐码(选填)"></ion-input>
+    </ion-item>
+    <ion-button expand="block" type="submit" [disabled]="myForm.invalid || !isAgreement">注册</ion-button>
+  </form>
+  <div class="agreement">
+    <ion-checkbox [(ngModel)]="isAgreement" size="small"></ion-checkbox>
+    <span>已阅读并同意</span>
+    <a routerLink="/distribute-agreement">《升蓝分享平台入驻协议》</a>
+  </div>
+</ion-content>
