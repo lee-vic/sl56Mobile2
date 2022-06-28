@@ -35,6 +35,13 @@
       </ion-input>
     </ion-item>
 
+    <ion-item>
+      <ion-label>产品类型</ion-label>
+      <ion-select  interface="popover" placeholder="请选择产品类型" (ionChange)="typeChange($event)">
+        <ion-select-option *ngFor="let item of productTypes" value="{{item.Key}}">{{item.Value}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
     <ion-item *ngIf="data?.Amount1>0">
       <ion-label>自动放货</ion-label>
       <ion-toggle [(ngModel)]="data.IsRelease" [disabled]="amountInputDisable"></ion-toggle>

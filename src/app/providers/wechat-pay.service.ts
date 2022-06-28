@@ -19,4 +19,8 @@ export class WechatPayService {
     let seq= this.http.post<UnifiedOrderResult>(apiUrl+"/WeChatPay/Pay",data,{ withCredentials:true});
     return seq;
   }
+  getProductTypes(){
+    let seq= this.http.get(apiUrl+"/WeChatPay/GetPrductTypes",{ withCredentials:true});
+    return seq;
+  }
 }

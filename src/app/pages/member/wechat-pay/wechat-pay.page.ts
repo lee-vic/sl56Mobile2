@@ -16,6 +16,8 @@ export class WechatPayPage implements OnInit, OnDestroy {
   allSelected: boolean = true;
   amountInputDisable: boolean = false;
   signalRConnection: SignalRConnection;
+  selectedProductType:any;
+  productTypes:any;
   constructor(public toastCtrl: ToastController,
     public alertCtrl: AlertController,
     public loadingCtrl: LoadingController,
@@ -73,7 +75,10 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
     });
 
-   
+   this.service.getProductTypes().subscribe(res=>{
+    this.productTypes=res;
+    console.log(res);
+   });
 
 
 
@@ -271,5 +276,9 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
   payHistory() {
     this.router.navigateByUrl("/member/wechat-pay-list");
+  }
+  typeChange(e){
+    this.selectedProductType=e.detail.value;
+    this.data.ProductType=this.selectedProductType;
   }
 }
