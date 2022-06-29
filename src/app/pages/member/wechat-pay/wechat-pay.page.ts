@@ -16,7 +16,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
   allSelected: boolean = true;
   amountInputDisable: boolean = false;
   signalRConnection: SignalRConnection;
-  selectedProductType:any;
+  selectedProductType:any=0;
   productTypes:any;
   constructor(public toastCtrl: ToastController,
     public alertCtrl: AlertController,
@@ -280,5 +280,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
   typeChange(e){
     this.selectedProductType=e.detail.value;
     this.data.ProductType=this.selectedProductType;
+    console.log("selectedType:",this.selectedProductType);
   }
 }
