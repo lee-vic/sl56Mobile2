@@ -36,6 +36,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
       p.present()
       this.service.getList(this.openId).subscribe(res => {
         this.data = res;
+        this.data.ProductType=this.selectedProductType;
         if (this.data.ReceiveGoodsDetailList.length > 0) {
           this.amountInputDisable = true;
         }
