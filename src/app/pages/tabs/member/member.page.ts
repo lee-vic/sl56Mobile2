@@ -40,6 +40,7 @@ export class MemberPage implements OnInit {
   userInfo: User;
   username: string = "";
   customerType: number;
+  currencyAmount:any;
   constructor(public toastCtrl: ToastController,
     public plt: Platform,
     private userService: UserService,
@@ -136,6 +137,8 @@ export class MemberPage implements OnInit {
       this.userInfo = res;
       this.username=res.CustomerNo;
       this.customerType=res.Classify;
+      this.currencyAmount = JSON.stringify(res.CurrencyAmount).replace("}","").replace("{","").replace(" ","").replace(/\"/g,'').split(",");
+      console.log(this.currencyAmount);
       let tempMenus = this.allMenus.filter(p => {
         return p.type.indexOf(this.customerType) > -1;
       });

@@ -77,12 +77,6 @@
         <ion-row class="ion-align-items-center">
           <ion-col col-4>
             <div class="ion-text-center">
-              <div class="title">{{userInfo?.Amount|currency:'CNY'}}</div>
-              欠款金额
-            </div>
-          </ion-col>
-          <ion-col col-4>
-            <div class="ion-text-center">
 
               <div class="title"> {{userInfo?.Quantity1}}</div>
               待确认运单
@@ -96,6 +90,21 @@
         </ion-row>
 
       </ion-grid>
+
+      <ion-grid id="info">
+        <ion-row class="ion-align-items-center">
+          <ion-col col-4 *ngFor="let item of currencyAmount">
+            <div class="ion-text-center">
+              <div class="title">{{item.split(":")[1]}}</div>
+              <span class="smallFont">
+                欠款({{item.split(":")[0]}})
+              </span>
+            </div>
+          </ion-col>
+        </ion-row>
+
+      </ion-grid>
+      
     </div>
     <ion-grid id="menu-grid">
       <ion-row *ngFor="let row of menus.rows" class="row">
