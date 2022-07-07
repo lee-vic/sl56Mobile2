@@ -1,1 +1,1 @@
-export const apiUrl:string="https://api2.sl56.com/api";
+export const apiUrl:string="https://api.sl56.com.cn/api";
