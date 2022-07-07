@@ -40,4 +40,18 @@ export class DistributeService {
     let req = this.http.post<any>(apiUrl + "/Distribute/UpdateUserInfo", data, { headers: { "content-type": "application/json" }, withCredentials: true });
     return req;
   }
+
+  doWithdrawal(amount){
+    let req = this.http.post<any>(apiUrl + "/Distribute/DoWithdrawal?amount="+amount, null, { withCredentials: true });
+    return req;
+  }
+
+  getWithdrawalRecords(){
+    let req = this.http.get<any>(apiUrl + "/Distribute/GetWithdrawalRecords", { withCredentials: true });
+    return req;
+  }
+  getDistributionAmountWithdrawal(){
+    let req = this.http.get<any>(apiUrl + "/Distribute/GetDistributionAmountWithdrawal", { withCredentials: true });
+    return req;
+  }
 }

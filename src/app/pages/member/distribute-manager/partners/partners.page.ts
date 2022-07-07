@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DistributeService } from 'src/app/providers/distribute.service';
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-partners',
@@ -11,13 +12,19 @@ export class PartnersPage implements OnInit {
   partners: any;
   roderType: "asc";
   allRows:any = [];
-  constructor(private distributeService: DistributeService) { }
+  constructor(private distributeService: DistributeService,private loadingCtrl:LoadingController) { }
 
   ngOnInit(): void {
-    this.distributeService.getPartners().subscribe(res => {
-      console.log("partners:", res);
-      this.partners = res;
-      this.allRows=res.Rows;
+    this.loadingCtrl.create({
+      message:"数据加载中..."
+    }).then(p=>{
+      p.present();
+      this.distributeService.getPartners().subscribe(res => {
+        console.log("partners:", res);
+        this.partners = res;
+        this.allRows=res.Rows;
+        this.loadingCtrl.dismiss();
+      });
     });
   }
 

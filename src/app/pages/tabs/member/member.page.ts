@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Platform, ToastController, LoadingController } from '@ionic/angular';
+import { Platform, ToastController, LoadingController,NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -30,8 +30,8 @@ export class MemberPage implements OnInit {
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0,1], url: "/member/notice-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
-    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" }
-    // { title: "分销管理", image: "assets/imgs/member-6.png", type: [1], url: "/member/distribute-manager" }
+    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
+    { title: "分销管理", image: "assets/imgs/member-6.png", type: [3], url: "/member/distribute-manager" }
   ];
   menus: Menus;
   isLogin: boolean = false;
@@ -47,7 +47,8 @@ export class MemberPage implements OnInit {
     private router: Router,
     private jpush: JPush,
     private cookieService: CookieService,
-    public loadingCtrl: LoadingController) {
+    public loadingCtrl: LoadingController,
+    private navCtrl:NavController) {
     this.authForm = new FormGroup({
       username: new FormControl('', Validators.required),
       password: new FormControl('', Validators.required),
@@ -166,8 +167,11 @@ export class MemberPage implements OnInit {
             console.log(data);
           });
         })
-      
       }
+      
+      // if(this.customerType==3){
+      //   this.navCtrl.navigateForward("/member/distribute-manager",{replaceUrl:true});
+      // }
     });
 
   

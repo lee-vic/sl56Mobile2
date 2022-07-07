@@ -67,7 +67,8 @@ const routes: Routes = [ {
   { path: 'distribute-share', loadChildren:()=>import('./distribute-manager/share/share.module').then(m=>m.SharePageModule) },
   { path: 'distribute-user-info', loadChildren:()=>import('./distribute-manager/user-info/user-info.module').then(m=>m.UserInfoPageModule) },
   { path: 'distribute-faq', loadChildren:()=>import('./distribute-manager/faq/faq.module').then(m=>m.FaqPageModule) },
-  { path: 'distribute-withdrawal', loadChildren:()=>import('./distribute-manager/withdrawal/withdrawal.module').then(m=>m.WithdrawalPageModule) }
+  { path: 'distribute-withdrawal', loadChildren:()=>import('./distribute-manager/withdrawal/withdrawal.module').then(m=>m.WithdrawalPageModule) },
+  { path: 'distribute-withdrawal-records', loadChildren:()=>import('./distribute-manager/withdrawal/records/records.module').then(m=>m.RecordsPageModule) }
 ];
 
 @NgModule({

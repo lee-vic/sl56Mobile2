@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      提现记录
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <table>
+    <thead>
+      <td>提现日期</td>
+      <td>金额(元)</td>
+      <td>提现状态</td>
+      <td>提现方式</td>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of records">
+        <td>{{item?.CreateAt | date:"yyyy/MM/dd HH:mm:ss"}}</td>
+        <td>{{item?.Amount}}</td>
+        <td *ngIf="item?.Status==0">审核中</td>
+        <td *ngIf="item?.Status==1">通过审核</td>
+        <td *ngIf="item?.Status==2">审核拒绝</td>
+        <td *ngIf="item?.Status==3">打款中</td>
+        <td *ngIf="item?.Status==4">提现完成</td>
+        <td>{{item?.Mode==0?"银行卡":"微信"}}</td>
+      </tr>
+    </tbody>
+  </table>
+</ion-content>

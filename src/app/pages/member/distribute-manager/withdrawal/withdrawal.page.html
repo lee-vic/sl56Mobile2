@@ -14,12 +14,12 @@
       <ion-col col-4>
         <div class="ion-text-center">
           <div class="title">可提取收益（元）</div>
-          0
+          {{amounts?.MostWithdrawalAmount}}
         </div>
       </ion-col>
       <ion-col col-4 class="ion-text-center">
         <div class="title">累计总收益（元）</div>
-        0
+        {{amounts?.TotalAmount}}
       </ion-col>
     </ion-row>
 
@@ -29,25 +29,25 @@
       <ion-col col-4>
         <div class="ion-text-center">
           <div class="title">待结算收益（元）</div>
-          0
+          {{amounts?.EstimatedAmount}}
         </div>
       </ion-col>
       <ion-col col-4 class="ion-text-center">
         <div class="title">累计提取收益（元）</div>
-        0
+        {{amounts?.TotalWithdrawalAmount}}
       </ion-col>
     </ion-row>
   </ion-grid>
   <ion-grid>
     <ion-row class="ion-align-items-center">
       <ion-col col-4>
-        <ion-button color="primary" size="small" fill="outline" (click)="userInfo()">用户中心</ion-button>
+        <ion-button color="primary" size="small" fill="outline" (click)="toUserInfo()">用户中心</ion-button>
       </ion-col>
       <ion-col col-4 class="ion-text-center">
-        <ion-button color="primary" size="small" fill="outline">提现</ion-button>
+        <ion-button color="primary" size="small" fill="outline" (click)="doWithdrawal()">提现</ion-button>
       </ion-col>
       <ion-col col-4 class="ion-text-center">
-        <ion-button color="primary" size="small" fill="outline">提现记录</ion-button>
+        <ion-button color="primary" size="small" fill="outline" (click)="toRecords()">提现记录</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>

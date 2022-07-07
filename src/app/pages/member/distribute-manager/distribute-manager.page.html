@@ -8,20 +8,8 @@
         </ion-title>
     </ion-toolbar>
 </ion-header>
-<ion-content *ngIf="customerInfo?.Classify==1">
-    <ion-card *ngIf="customerInfo?.Category==0">
-        <ion-card-header>
-            <ion-card-title>一键注册分销账号</ion-card-title>
-        </ion-card-header>
-
-        <ion-card-content>
-            当前账号尚未注册成为分销账号，点击下面按钮一键注册成为分销账号
-            <ion-button expand="block" fill="outline" (click)="oneKeyRegister()">
-                一键注册
-            </ion-button>
-        </ion-card-content>
-    </ion-card>
-    <div *ngIf="customerInfo?.Category==1">
+<ion-content>
+    <div *ngIf="customerInfo?.Classify==3">
         <ion-grid id="info">
             <ion-row class="ion-align-items-center">
                 <ion-col col-4>

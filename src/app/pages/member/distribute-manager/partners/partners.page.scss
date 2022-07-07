@@ -11,3 +11,15 @@
     background-color: white;
     border-bottom: solid 1px #dcdcdc;
 }
+table {
+    border: 1px solid #dcdcdc;
+    width: 100%;
+    text-align: center;
+    thead{
+        font-size: 12px;
+    }
+    td {
+        border: 1px solid #dcdcdc;
+        height: 35px;
+    }
+}
