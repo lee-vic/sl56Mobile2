@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ToastController, AlertController, LoadingController } from '@ionic/angular';
+import { ToastController, AlertController, LoadingController,ActionSheetController,NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'ng2-signalr';
 import { CookieService } from 'ngx-cookie-service';
+import { UserService } from 'src/app/providers/user.service';
+
 declare var WeixinJSBridge: any;
 @Component({
   selector: 'app-wechat-pay',
@@ -13,11 +15,13 @@ declare var WeixinJSBridge: any;
 export class WechatPayPage implements OnInit, OnDestroy {
   data: any = {};
   openId: any;
+  cid:any;
   allSelected: boolean = true;
   amountInputDisable: boolean = false;
   signalRConnection: SignalRConnection;
   selectedProductType:any=0;
   productTypes:any;
+  otherCurrencyAmounts:any;
   constructor(public toastCtrl: ToastController,
     public alertCtrl: AlertController,
     public loadingCtrl: LoadingController,
@@ -25,8 +29,12 @@ export class WechatPayPage implements OnInit, OnDestroy {
     private cookieService: CookieService,
     public service: WechatPayService,
     private router: Router,
-    private route: ActivatedRoute) {
+    private route: ActivatedRoute,
+    private userService:UserService,
+    private actionSheetCtrl:ActionSheetController,
+    private navCtrl:NavController) {
       this.openId =this.route.snapshot.paramMap.get('id');
+      this.cid =this.route.snapshot.queryParams['cid'];
   }
 
   ngOnInit(): void {
@@ -34,7 +42,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
       message: '请稍后...'
     }).then(p => {
       p.present()
-      this.service.getList(this.openId).subscribe(res => {
+      this.service.getList(this.openId,this.cid).subscribe(res => {
         this.data = res;
         this.data.ProductType=this.selectedProductType;
         if (this.data.ReceiveGoodsDetailList.length > 0) {
@@ -64,6 +72,10 @@ export class WechatPayPage implements OnInit, OnDestroy {
             }
           });
         });
+        this.userService.getHomeInfo().subscribe(res=>{
+          this.otherCurrencyAmounts = res.CurrencyAmount.filter(p=>p.Id!=this.cid);
+          console.log(this.otherCurrencyAmounts);
+        })
 
       }, (error) => {
         this.loadingCtrl.dismiss();
@@ -127,14 +139,15 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   calculateAmount() {
     let tempAmount: number = 0;
-    if (this.data.Amount != "" && this.data.Amount != null)
-      tempAmount = parseFloat(this.data.Amount);
+    if (this.data.OriginalAmount != "" && this.data.OriginalAmount != null)
+      tempAmount = parseFloat(this.data.OriginalAmount)*this.data.OriginalCurrencyRate;
     if (this.data.WXPaymentCommission) {
       this.data.Commission = (tempAmount * this.data.WXPaymentCommissionRate).toFixed(2);
     }
     else {
       this.data.Commission = 0;
     }
+    this.data.Amount=tempAmount;
     this.data.TotalAmount = (tempAmount + parseFloat(this.data.Commission)).toFixed(2);
   }
   payClick() {
@@ -282,5 +295,29 @@ export class WechatPayPage implements OnInit, OnDestroy {
     this.selectedProductType=e.detail.value;
     this.data.ProductType=this.selectedProductType;
     console.log("selectedType:",this.selectedProductType);
+  }
+  async presentActionSheet() {
+    let buttons = new Array();
+    this.otherCurrencyAmounts.forEach(p=>{
+      buttons.push({
+        text: p.Name+"："+p.Amount,
+        handler: (e) => {
+          //id+1用来改变路由地址，以触发页面跳转刷新
+          this.navCtrl.navigateForward("/member/wechat-pay/"+(p.Id+1)+"?cid="+p.Id,{replaceUrl:true});
+        }
+      });
+    });
+    buttons.push({
+      text: '取消',
+      icon: 'close',
+      role: 'cancel',
+      handler: () => {
+      }
+    });
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: '请选择支付的币种',
+      buttons: buttons
+    });
+    await actionSheet.present();
   }
 }

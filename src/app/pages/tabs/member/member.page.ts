@@ -20,7 +20,7 @@ export class MemberPage implements OnInit {
     { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
     { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
-    { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0" },
+    { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
     { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
     { title: "修改密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-password" },
     { title: "子账号管理", image: "assets/imgs/member-12.png", type: [0], url: "/member/sub-account" },
@@ -138,8 +138,7 @@ export class MemberPage implements OnInit {
       this.userInfo = res;
       this.username=res.CustomerNo;
       this.customerType=res.Classify;
-      this.currencyAmount = JSON.stringify(res.CurrencyAmount).replace("}","").replace("{","").replace(" ","").replace(/\"/g,'').split(",");
-      console.log(this.currencyAmount);
+      this.currencyAmount = res.CurrencyAmount;
       let tempMenus = this.allMenus.filter(p => {
         return p.type.indexOf(this.customerType) > -1;
       });
@@ -215,5 +214,7 @@ export class MemberPage implements OnInit {
     //this.router.navigateByUrl("/member/chat/0");
     this.router.navigate(["/member", "chat", 0])
   }
-
+  wechatPay(id){
+    this.router.navigateByUrl("/member/wechat-pay/0?cid="+id);
+  }
 }

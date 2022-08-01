@@ -9,9 +9,10 @@ import { apiUrl } from '../global';
 export class WechatPayService {
 
   constructor(public http: HttpClient) { }
-  getList(openid){
+  getList(openid,cid){
     let paras=new HttpParams()
-    .set("openId",openid);
+    .set("openId",openid)
+    .set("cid",cid);
     let seq= this.http.get(apiUrl+"/WeChatPay/Query",{ withCredentials:true,params:paras});
     return seq;
   }
