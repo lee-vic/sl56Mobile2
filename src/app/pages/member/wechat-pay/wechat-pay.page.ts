@@ -34,7 +34,11 @@ export class WechatPayPage implements OnInit, OnDestroy {
     private actionSheetCtrl:ActionSheetController,
     private navCtrl:NavController) {
       this.openId =this.route.snapshot.paramMap.get('id');
-      this.cid =this.route.snapshot.queryParams['cid'];
+      if(this.route.snapshot.queryParams['cid']==null){
+        this.cid=1;
+      }else{
+        this.cid =this.route.snapshot.queryParams['cid'];
+      }
   }
 
   ngOnInit(): void {
