@@ -47,9 +47,16 @@ export class WechatPayPage implements OnInit, OnDestroy {
     }).then(p => {
       p.present()
       this.service.getList(this.openId,this.cid).subscribe(res => {
+        //支付外币时，不选择单号（若勾选单号，则支付金额会变成选择单号的总金额）
+        if(this.cid!=1){
+          res.ReceiveGoodsDetailList.forEach(p=>{
+            p.Selected=false;
+          });
+          this.allSelected=false;
+        }
         this.data = res;
         this.data.ProductType=this.selectedProductType;
-        if (this.data.ReceiveGoodsDetailList.length > 0) {
+        if (this.data.ReceiveGoodsDetailList.length > 0 && this.cid==1) {
           this.amountInputDisable = true;
         }
         else {
@@ -114,6 +121,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
   }
   selectChange() {
+    console.log("select changed");
     let selectedAmount: number = 0;
     let selectedList = new Array();
     this.data.ReceiveGoodsDetailList.filter(item => {
@@ -137,14 +145,13 @@ export class WechatPayPage implements OnInit, OnDestroy {
     this.calculateAmount();
   }
   amountChange() {
-    console.log("ngmodel");
     this.calculateAmount();
 
   }
   calculateAmount() {
     let tempAmount: number = 0;
-    if (this.data.OriginalAmount != "" && this.data.OriginalAmount != null)
-      tempAmount = parseFloat(this.data.OriginalAmount)*this.data.OriginalCurrencyRate;
+    if (this.data.Amount != "" && this.data.Amount != null)
+      tempAmount = parseFloat(this.data.Amount);
     if (this.data.WXPaymentCommission) {
       this.data.Commission = (tempAmount * this.data.WXPaymentCommissionRate).toFixed(2);
     }
@@ -152,6 +159,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
       this.data.Commission = 0;
     }
     this.data.Amount=tempAmount;
+    console.log("tempAmount:",tempAmount);
     this.data.TotalAmount = (tempAmount + parseFloat(this.data.Commission)).toFixed(2);
   }
   payClick() {
