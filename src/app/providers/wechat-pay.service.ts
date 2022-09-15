@@ -13,7 +13,7 @@ export class WechatPayService {
     let paras=new HttpParams()
     .set("openId",openid)
     .set("cid",cid);
-    let seq= this.http.get(apiUrl+"/WeChatPay/Query",{ withCredentials:true,params:paras});
+    let seq= this.http.get<any>(apiUrl+"/WeChatPay/Query",{ withCredentials:true,params:paras});
     return seq;
   }
   pay(data){
