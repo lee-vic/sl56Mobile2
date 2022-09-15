@@ -19,19 +19,20 @@ export class MemberPage implements OnInit {
     { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
     { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
-    { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
+    { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
+    { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
-    { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
-    { title: "修改密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-password" },
+    { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
+    { title: "联系客服", image: "assets/imgs/member-6.png", type: [0,1], url: "/member/chat/0" },
+    { title: "修改登录密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-password" },
+    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
     { title: "子账号管理", image: "assets/imgs/member-12.png", type: [0], url: "/member/sub-account" },
     { title: "微信绑定", image: "assets/imgs/member-13.png", type: [0, 1], url: "/member/wechat-binding" },
     { title: "回单上传", image: "assets/imgs/member-17.png", type: [0, 1], url: "/member/bank-slips" },
-    { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0,1], url: "/member/notice-list" },
-    { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
-    { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
-    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
-    { title: "分销管理", image: "assets/imgs/member-6.png", type: [3], url: "/member/distribute-manager" }
+    { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
+    { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
+    { title: "", image: "", type: [0,1], url: "" }
   ];
   menus: Menus;
   isLogin: boolean = false;
