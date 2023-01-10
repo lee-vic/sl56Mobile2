@@ -50,6 +50,9 @@
             <ion-checkbox (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
           </ion-item>
           <ion-button expand="block" type="submit" [disabled]="!myForm.valid">计算</ion-button>
+          <ion-chip class="tips" color="danger">
+            <ion-label>501KG以上输入邮编有美国高端空卡价格，敬请参选(使用完整模式可输入邮编)</ion-label>
+          </ion-chip>
         </ion-list>
       </form>
     </div>
@@ -112,6 +115,9 @@
             <ion-checkbox (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
           </ion-item>
           <ion-button expand="block" type="submit" [disabled]="!myForm.valid">计算</ion-button>
+          <ion-chip class="tips" color="danger">
+            <ion-label>501KG以上输入邮编有美国高端空卡价格，敬请参选(使用完整模式可输入邮编)</ion-label>
+          </ion-chip>
         </ion-list>
       </form>
     </div>
