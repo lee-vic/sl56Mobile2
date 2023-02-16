@@ -4,27 +4,16 @@
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>运单详情</ion-title>
-
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-segment [(ngModel)]="tab" class="my-content-ios" scrollable>
-    <ion-segment-button value="1">
-      基本信息
-    </ion-segment-button>
-    <ion-segment-button value="2">
-      规格
-    </ion-segment-button>
-    <ion-segment-button value="3">
-      轨迹信息
-    </ion-segment-button>
-    <ion-segment-button value="4">
-      费用明细
-    </ion-segment-button>
-    <ion-segment-button value="5">
-      待跟进问题
-    </ion-segment-button>
+    <ion-segment-button value="1"> 基本信息 </ion-segment-button>
+    <ion-segment-button value="2"> 规格 </ion-segment-button>
+    <ion-segment-button value="3"> 轨迹信息 </ion-segment-button>
+    <ion-segment-button value="4"> 费用明细 </ion-segment-button>
+    <ion-segment-button value="5"> 待跟进问题 </ion-segment-button>
   </ion-segment>
   <div [ngSwitch]="tab" class="ion-padding-top">
     <div *ngSwitchCase="1">
@@ -112,8 +101,22 @@
       </ion-list>
     </div>
     <div *ngSwitchCase="3">
-      <ion-list>
-
+      <div *ngIf="data?.IsShowPackageTracks">
+        <div class="trackTips">点击包裹号，可以展开每个包裹的详细轨迹</div>
+        <ion-list class="packageTrackList" *ngFor="let item of data?.PackageTracks">
+          <div class="packageNumber" (click)="trackToggle(item)">{{item?.PackageNumber}}</div>
+          <div *ngIf="item?.open">
+            <ion-item *ngFor="let track of item.Tracks">
+              <ion-label>
+                <h2>{{track?.ActivityDate}}</h2>
+                <p>{{track?.Location}}</p>
+                <p>{{track?.Activity}}</p>
+              </ion-label>
+            </ion-item>
+          </div>
+        </ion-list>
+      </div>
+      <ion-list *ngIf="!data?.IsShowPackageTracks">
         <ion-item *ngFor="let item of data?.Tracks">
           <ion-label>
             <h2>{{item?.Date}}</h2>
@@ -125,9 +128,7 @@
     </div>
     <div *ngSwitchCase="4">
       <ion-list>
-
         <ion-item *ngFor="let item of data?.AccountReceivableDetails">
-
           <ion-label>
             <h3>{{item?.Name}}</h3>
             <p>{{item?.Remark}}</p>
@@ -138,7 +139,6 @@
     </div>
     <div *ngSwitchCase="5">
       <ion-list>
-
         <ion-item *ngFor="let item of data?.Problems">
           <ion-label>
             <h3>{{item?.Name}}</h3>
@@ -149,19 +149,21 @@
       </ion-list>
     </div>
   </div>
-
 </ion-content>
 <ion-footer>
   <ion-grid>
     <ion-row>
       <ion-col>
-        <ion-button expand="full" (click)="chat()" color="primary">联系客服</ion-button>
+        <ion-button expand="full" (click)="chat()" color="primary"
+          >联系客服</ion-button
+        >
       </ion-col>
       <ion-col>
-        <ion-button expand="full" (click)="more()" color="secondary">退货&暂扣</ion-button>
+        <ion-button expand="full" (click)="more()" color="secondary"
+          >退货&暂扣</ion-button
+        >
       </ion-col>
     </ion-row>
   </ion-grid>
   <!-- <ion-button expand="full"  (click)="chat()">功能选择</ion-button> -->
-
 </ion-footer>

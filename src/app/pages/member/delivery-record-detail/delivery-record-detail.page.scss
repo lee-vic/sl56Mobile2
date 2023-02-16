@@ -8,3 +8,18 @@ ion-button{
     --padding-top:0;
     --padding-bottom:0;
 }
+.packageTrackList{
+    margin-bottom: 5px;
+}
+.packageNumber{
+    background: #f4f5f8;
+    padding: 5px;
+}
+.packageNumber:hover{
+    background: #cccdd3;
+}
+.trackTips{
+  padding: 5px;
+  color: red;
+  font-size: 13px;
+}
