@@ -104,7 +104,11 @@
       <div *ngIf="data?.IsShowPackageTracks">
         <div class="trackTips">点击包裹号，可以展开每个包裹的详细轨迹</div>
         <ion-list class="packageTrackList" *ngFor="let item of data?.PackageTracks">
-          <div class="packageNumber" (click)="trackToggle(item)">{{item?.PackageNumber}}</div>
+          <div class="packageNumber">
+            <div (click)="trackToggle(item)">{{item?.PackageNumber}}</div>
+            <div class="sub_font_color sub_font_size">当前活动：{{item?.CurrentActivity}}</div>
+            <div class="sub_font_color sub_font_size">当前地点：{{item?.CurrentLocation}}</div>
+        </div>
           <div *ngIf="item?.open">
             <ion-item *ngFor="let track of item.Tracks">
               <ion-label>
