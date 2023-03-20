@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { NavController, AlertController, ToastController, ModalController, NavParams, IonButton } from '@ionic/angular';
+import { NavController, AlertController, ToastController, ModalController, NavParams, IonButton, LoadingController } from '@ionic/angular';
 import { ReturnService } from 'src/app/providers/return.service';
 import { ActivatedRoute } from '@angular/router';
 import { ReturnApplyHistoryPage } from '../return-apply-history/return-apply-history.page';
@@ -11,7 +11,7 @@ import { ReturnApplyHistoryPage } from '../return-apply-history/return-apply-his
   styleUrls: ['./return-apply.page.scss'],
 })
 export class ReturnApplyPage implements OnInit {
-  @ViewChild('btnSubmit',{static:true}) btnSubmit: IonButton;
+  @ViewChild('btnSubmit', { static: true }) btnSubmit: IonButton;
   ids: any;
   data: any;
   type: any;
@@ -31,8 +31,8 @@ export class ReturnApplyPage implements OnInit {
                 this.navCtrl.pop();
               }
             }]
-          }).then(p=>p.present());
-         
+          }).then(p => p.present());
+
         }
         else {
           this.applyForm.controls["RequiredDate"].setValue(res.RequiredDate);
@@ -56,10 +56,11 @@ export class ReturnApplyPage implements OnInit {
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     public modalCtrl: ModalController,
+    public loadingController: LoadingController,
     private route: ActivatedRoute
-    ) {
-    this.type=this.route.snapshot.queryParams.type;
-    this.ids= this.route.snapshot.queryParams.ids;
+  ) {
+    this.type = this.route.snapshot.queryParams.type;
+    this.ids = this.route.snapshot.queryParams.ids;
     this.applyForm = this.formBuilder.group({
       PersonName: ['', Validators.required],
       IDCardNumber: ['', [Validators.required, Validators.minLength(18), Validators.maxLength(18)]],
@@ -84,30 +85,45 @@ export class ReturnApplyPage implements OnInit {
 
   }
   doApply(form) {
-    this.btnSubmit.disabled=true;
+    this.btnSubmit.disabled = true;
+    this.loadingController.create({
+      message: '请稍后...',
+    }).then(p=>{
+      p.present();
+    });
     this.service.apply1(form).subscribe(res => {
-      this.btnSubmit.disabled=false;
+      this.loadingController.dismiss();
       if (res.IsSuccess == false) {
+        this.btnSubmit.disabled = false;
         this.alertCtrl.create({
           header: '提示',
           message: res.ErrorMessage,
           buttons: ['确定']
-        }).then(p=>p.present());
-   
+        }).then(p => p.present());
       }
       else {
         this.toastCtrl.create({
           message: '您的退货申请已成功提交',
           duration: 3000,
           position: 'middle',
-        }).then(p=>{
+        }).then(p => {
           p.present();
           this.navCtrl.back();
         });
-       
       }
+    }, error => {
+      this.btnSubmit.disabled = false;
+      this.loadingController.dismiss();
+      this.alertCtrl.create({
+        header: '出现错误，请重试',
+        message: '如果多次重试仍然失败，请联系您的服务专员',
+        buttons: ['确定']
+      }).then(p => p.present());
+    }, () => {
+
     });
   }
+
   doFill(form) {
     this.service.fill1(form).subscribe(res => {
       if (res.IsSuccess == false) {
@@ -115,8 +131,8 @@ export class ReturnApplyPage implements OnInit {
           header: '提示',
           message: res.Message,
           buttons: ['确定']
-        }).then(p=>p.present());
-     
+        }).then(p => p.present());
+
       }
       else {
         let toast = this.toastCtrl.create({
@@ -124,7 +140,7 @@ export class ReturnApplyPage implements OnInit {
           duration: 3000,
           position: 'middle'
         });
-       
+
       }
     });
   }
@@ -136,9 +152,9 @@ export class ReturnApplyPage implements OnInit {
     const modal = await this.modalCtrl.create({
       component: ReturnApplyHistoryPage
     });
-    modal.onDidDismiss().then((ev)=>{
-      let val=ev.data['val'];
-      if(val!=undefined){
+    modal.onDidDismiss().then((ev) => {
+      let val = ev.data['val'];
+      if (val != undefined) {
         let vals = val.split(' ');
         this.applyForm.controls["PersonName"].setValue(vals[0]);
         this.applyForm.controls["IDCardNumber"].setValue(vals[1]);
@@ -146,7 +162,7 @@ export class ReturnApplyPage implements OnInit {
           this.applyForm.controls["PlateNumber"].setValue(vals[2]);
       }
 
-        
+
     });
     return await modal.present();
   }

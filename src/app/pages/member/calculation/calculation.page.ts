@@ -16,26 +16,26 @@ export class CalculationPage implements OnInit {
   countryList: any;
   modeOfTransportList: any;
   volumetricDivisorList: any;
-  priceRuleTemplateInfoList:any;
+  priceRuleTemplateInfoList: any;
   countrySearch: any;
   modeOfTransportId: number;
   selectedCountry: any;
   countryInput: string;
   showCountryList: boolean = false;
-  selectRuleIds:Array<number>=[];
+  selectRuleIds: Array<number> = [];
   public myForm: FormGroup;
   public loading: any;
 
 
 
-   constructor(
-     public countryProvider: CountryService,
+  constructor(
+    public countryProvider: CountryService,
     public modalCtrl: ModalController,
     public formBuilder: FormBuilder,
     public loadingCtrl: LoadingController,
     public toastCtrl: ToastController,
     private router: Router,
-    public countryAutoCompleteService:CountryAutoCompleteService,
+    public countryAutoCompleteService: CountryAutoCompleteService,
 
     public service: CalculationService) {
     this.myForm = this.formBuilder.group({
@@ -57,15 +57,13 @@ export class CalculationPage implements OnInit {
     this.service.getVolumetricDivisorList().subscribe(res => {
       this.volumetricDivisorList = res;
     });
-    this.service.getPriceRuleTemplateInfoList().subscribe(res=>{
-      this.priceRuleTemplateInfoList=res;
+    this.service.getPriceRuleTemplateInfoList().subscribe(res => {
+      this.priceRuleTemplateInfoList = res;
     });
     this.countryProvider.getCoutryList()
       .subscribe((res) => {
         this.countryList = this.countrySearch = res;
       });
-    // if (this.cookieService.get('State') != "")
-    //   this.viewCtrl.showBackButton(false);
   }
 
   ionViewDidLoad() {
@@ -111,35 +109,35 @@ export class CalculationPage implements OnInit {
       this.selectedCountry = this.countrySearch[0];
     }
   }
-  ruleChanged(item:any,e:CustomEvent){
-    let checked=e.detail.checked;
-    if(checked==true){
+  ruleChanged(item: any, e: CustomEvent) {
+    let checked = e.detail.checked;
+    if (checked == true) {
       this.selectRuleIds.push(item.Id);
     }
-    else{
-      this.selectRuleIds=this.selectRuleIds.filter(p=>p!==item.Id);
+    else {
+      this.selectRuleIds = this.selectRuleIds.filter(p => p !== item.Id);
     }
 
-    console.log(this.selectRuleIds) ;
+    console.log(this.selectRuleIds);
   }
   doCalculate(formValue) {
-    if(this.selectedCountry==null)
+    if (this.selectedCountry == null)
       return;
-     this.loadingCtrl.create({
-       message: '请稍后...',
+    this.loadingCtrl.create({
+      message: '请稍后...',
 
-    
-    }).then((res)=>res.present());
-   
+
+    }).then((res) => res.present());
+
     formValue.countryId = this.selectedCountry.Id;
-    formValue.selectRuleIds=this.selectRuleIds;
+    formValue.selectRuleIds = this.selectRuleIds;
     console.log(formValue);
     this.service.calculate(formValue).subscribe((res) => {
       this.loadingCtrl.dismiss();
-     
-      
+
+
       if (res.length > 0) {
-        localStorage.setItem("CalculationResult",JSON.stringify(res));
+        localStorage.setItem("CalculationResult", JSON.stringify(res));
         this.router.navigateByUrl("/member/calculation/calculation-list");
         // this.navCtrl.push(UserCalculationListPage, {
         //   list: res
@@ -150,13 +148,13 @@ export class CalculationPage implements OnInit {
           message: '当前条件未能找到合适报价，请修改条件重试',
           position: 'middle',
           duration: 1500
-        }).then((res=>res.present()))
-     
+        }).then((res => res.present()))
+
       }
     });
   }
-  segmentChanged(ev){
-    this.selectRuleIds=[]
+  segmentChanged(ev) {
+    this.selectRuleIds = []
   }
 
 
