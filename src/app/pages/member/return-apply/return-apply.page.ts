@@ -62,13 +62,21 @@ export class ReturnApplyPage implements OnInit {
     this.type = this.route.snapshot.queryParams.type;
     this.ids = this.route.snapshot.queryParams.ids;
     this.applyForm = this.formBuilder.group({
-      PersonName: ['', Validators.required],
-      IDCardNumber: ['', [Validators.required, Validators.minLength(18), Validators.maxLength(18)]],
-      PlateNumber: ['', Validators.pattern("([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DF])|([DF]([A-HJ-NP-Z0-9])[0-9]{4})))|([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]{1})")],
-      Remark: [''],
+      PersonName: ["", Validators.required],
+      MobilePhone: [
+        "",
+        Validators.compose([Validators.required, Validators.pattern("^1[3|4|5|7|8][0-9]{9}$"),]),
+      ],
+      PlateNumber: [
+        "",
+        Validators.pattern(
+          "([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DF])|([DF]([A-HJ-NP-Z0-9])[0-9]{4})))|([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]{1})"
+        ),
+      ],
+      Remark: [""],
       RequiredDate: [],
       ReferenceNumber: [],
-      IdList: this.ids
+      IdList: this.ids,
     });
   }
 
@@ -157,7 +165,7 @@ export class ReturnApplyPage implements OnInit {
       if (val != undefined) {
         let vals = val.split(' ');
         this.applyForm.controls["PersonName"].setValue(vals[0]);
-        this.applyForm.controls["IDCardNumber"].setValue(vals[1]);
+        this.applyForm.controls["MobilePhone"].setValue(vals[1]);
         if (vals.length > 2)
           this.applyForm.controls["PlateNumber"].setValue(vals[2]);
       }
