@@ -58,6 +58,35 @@
           <ion-label>申请时间</ion-label>
           <ion-note slot="end">{{item.CreateAt}}</ion-note>
         </ion-item>
+        <ion-item>
+          <ion-label>手机号码</ion-label>
+          <ion-note slot="end"  *ngIf="!item.isEditMobilePhone">{{item.MobilePhone}}</ion-note>
+          <ion-button slot="end" (click)="editMobilePhone(item)" expand="block" fill="clear" shape="round" *ngIf="!item.isEditMobilePhone">
+            修改
+          </ion-button>
+
+          <ion-input [(ngModel)]="tempPhone"  *ngIf="item.isEditMobilePhone" data-id="item.ObjectId"></ion-input>
+          <ion-button slot="end" (click)="cancelMobilePhone(item)" expand="block" fill="clear" shape="round"  *ngIf="item.isEditMobilePhone">
+            取消
+          </ion-button>
+          <ion-button slot="end" (click)="submitMobilePhone(item)" expand="block" fill="clear" shape="round"  *ngIf="item.isEditMobilePhone">
+            保存
+          </ion-button>
+        </ion-item>
+        <ion-item *ngIf="item.PickupCode.length>0">
+          <ion-label>取件码</ion-label>
+          <ion-note slot="end">{{item.PickupCode}}</ion-note>
+        </ion-item>
+        <ion-item *ngIf="item.PickupCode.length>0">
+          <ion-label>有效期</ion-label>
+          <ion-note slot="end" [ngStyle]="{'color': getIsExpiredTimeOut(item)?'red':''}">
+            {{item.ExpiredTime}}
+            <span style="color:red" *ngIf="getIsExpiredTimeOut(item)">[过期]</span>
+          </ion-note>
+          <ion-button slot="end" (click)="resetPickupCode(item)" expand="block" fill="clear" shape="round" *ngIf="getIsExpiredTimeOut(item)">
+            重新获取
+          </ion-button>
+        </ion-item>
         <ion-item [class.bottom-border]="item.ApplyType==0">
           <ion-label>当前状态</ion-label>
           <ion-note slot="end">{{item.Remark}}</ion-note>
