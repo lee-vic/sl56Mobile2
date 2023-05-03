@@ -1,15 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { FormGroup, Validators, FormBuilder, FormArray } from '@angular/forms';
 import { ModalController, LoadingController, ToastController } from '@ionic/angular';
 import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
 import { Router } from '@angular/router';
+import { Size } from 'src/app/interfaces/size';
 
 @Component({
-  selector: 'app-calculation',
-  templateUrl: './calculation.page.html',
-  styleUrls: ['./calculation.page.scss'],
+  selector: "app-calculation",
+  templateUrl: "./calculation.page.html",
+  styleUrls: ["./calculation.page.scss"],
 })
 export class CalculationPage implements OnInit {
   calculateMode = "1";
@@ -23,10 +24,10 @@ export class CalculationPage implements OnInit {
   countryInput: string;
   showCountryList: boolean = false;
   selectRuleIds: Array<number> = [];
+  // sizes: Array<Size> = [];
   public myForm: FormGroup;
+  public sizeForm: FormGroup;
   public loading: any;
-
-
 
   constructor(
     public countryProvider: CountryService,
@@ -37,51 +38,96 @@ export class CalculationPage implements OnInit {
     private router: Router,
     public countryAutoCompleteService: CountryAutoCompleteService,
 
-    public service: CalculationService) {
+    public service: CalculationService
+  ) {
     this.myForm = this.formBuilder.group({
-      ModeOfTransportId: ['0', Validators.required],
-      productType: ['1', Validators.required],
-      countryId: ['', Validators.required],
-      actualWeight: ['', Validators.required],
+      ModeOfTransportId: ["0", Validators.required],
+      productType: ["1", Validators.required],
+      countryId: ["", Validators.required],
+      actualWeight: ["", Validators.required],
       volumeWeight: [],
       declaredValue: [],
       postalCode: [],
       city: [],
-      volumetric: ['1']
+      volumetric: ["1"],
+      isEditSize: [false],
+      sizes: this.formBuilder.array([this.createSizeForm()]),
+      piece: [1, [Validators.required, Validators.min(1)]],
     });
   }
   ngOnInit(): void {
-    this.service.getModeOfTransportList().subscribe(res => {
+    this.service.getModeOfTransportList().subscribe((res) => {
       this.modeOfTransportList = res;
     });
-    this.service.getVolumetricDivisorList().subscribe(res => {
+    this.service.getVolumetricDivisorList().subscribe((res) => {
       this.volumetricDivisorList = res;
     });
-    this.service.getPriceRuleTemplateInfoList().subscribe(res => {
+    this.service.getPriceRuleTemplateInfoList().subscribe((res) => {
       this.priceRuleTemplateInfoList = res;
     });
-    this.countryProvider.getCoutryList()
-      .subscribe((res) => {
-        this.countryList = this.countrySearch = res;
-      });
+    this.countryProvider.getCoutryList().subscribe((res) => {
+      this.countryList = this.countrySearch = res;
+    });
+    this.myForm.get("piece").valueChanges.subscribe((piece) => {
+      if (piece < 0) {
+        return;
+      }
+      if (piece == null || piece == 0) {
+        return;
+      }
+      else if (piece < this.sizes.length) {
+        for (let i = this.sizes.length; i > piece; i--){
+          this.sizes.removeAt(i - 1);
+        }
+      } else if (piece > this.sizes.length) {
+        let diff = piece - this.sizes.length;
+        for (let i = 0; i < diff; i++) {
+          let size = new Size();
+          size.ActualWeight = 1;
+          size.Height = 1;
+          size.Length = 1;
+          size.Width = 1;
+          this.sizes.push(this.createSizeForm());
+        }
+      }
+    });
+    this.myForm.get("isEditSize").valueChanges.subscribe(isEditSize => { 
+      //不输入尺寸时，跳过验证sizeform
+      if (!isEditSize) {
+        this.sizes.disable();
+      } else {
+        this.sizes.enable();
+      }
+    });;
   }
 
+  
+  private createSizeForm() {
+    return this.formBuilder.group({
+      ActualWeight: [1, [Validators.required, Validators.min(1)]],
+      Length: [1, [Validators.required, Validators.min(1)]],
+      Width: [1, [Validators.required, Validators.min(1)]],
+      Height: [1, [Validators.required, Validators.min(1)]],
+    });
+  }
   ionViewDidLoad() {
-    console.log('ionViewDidLoad CalculationPage');
+    console.log("ionViewDidLoad CalculationPage");
   }
 
-
+  get sizes() {
+    console.log(this.myForm.get("sizes"));
+    return this.myForm.get("sizes") as FormArray;
+  }
 
   filterCountryItems(ev) {
     let val = ev.srcElement["value"];
     this.showCountryList = true;
     this.selectedCountry = null;
-    if (val && val.trim() !== '') {
+    if (val && val.trim() !== "") {
       this.countrySearch = this.countryList.filter(function (item) {
         return item.Name.toLowerCase().includes(val.toLowerCase());
       });
-    }
-    else {
+    } else {
       this.countrySearch = this.countryList;
     }
   }
@@ -97,7 +143,6 @@ export class CalculationPage implements OnInit {
     if ($event.keyCode == 13) {
       this.selectCountry();
     }
-
   }
   onCountryBlur() {
     this.selectCountry();
@@ -113,21 +158,19 @@ export class CalculationPage implements OnInit {
     let checked = e.detail.checked;
     if (checked == true) {
       this.selectRuleIds.push(item.Id);
-    }
-    else {
-      this.selectRuleIds = this.selectRuleIds.filter(p => p !== item.Id);
+    } else {
+      this.selectRuleIds = this.selectRuleIds.filter((p) => p !== item.Id);
     }
 
     console.log(this.selectRuleIds);
   }
   doCalculate(formValue) {
-    if (this.selectedCountry == null)
-      return;
-    this.loadingCtrl.create({
-      message: '请稍后...',
-
-
-    }).then((res) => res.present());
+    if (this.selectedCountry == null) return;
+    this.loadingCtrl
+      .create({
+        message: "请稍后...",
+      })
+      .then((res) => res.present());
 
     formValue.countryId = this.selectedCountry.Id;
     formValue.selectRuleIds = this.selectRuleIds;
@@ -135,27 +178,24 @@ export class CalculationPage implements OnInit {
     this.service.calculate(formValue).subscribe((res) => {
       this.loadingCtrl.dismiss();
 
-
       if (res.length > 0) {
         localStorage.setItem("CalculationResult", JSON.stringify(res));
         this.router.navigateByUrl("/member/calculation/calculation-list");
         // this.navCtrl.push(UserCalculationListPage, {
         //   list: res
         // })
-      }
-      else {
-        this.toastCtrl.create({
-          message: '当前条件未能找到合适报价，请修改条件重试',
-          position: 'middle',
-          duration: 1500
-        }).then((res => res.present()))
-
+      } else {
+        this.toastCtrl
+          .create({
+            message: "当前条件未能找到合适报价，请修改条件重试",
+            position: "middle",
+            duration: 1500,
+          })
+          .then((res) => res.present());
       }
     });
   }
   segmentChanged(ev) {
-    this.selectRuleIds = []
+    this.selectRuleIds = [];
   }
-
-
 }
