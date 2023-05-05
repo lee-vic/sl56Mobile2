@@ -98,7 +98,9 @@ export class CalculationPage implements OnInit {
       } else {
         this.sizes.enable();
       }
-    });;
+    });
+    //初始化时，默认不输入尺寸
+    this.sizes.disable();
   }
 
   
@@ -171,7 +173,9 @@ export class CalculationPage implements OnInit {
         message: "请稍后...",
       })
       .then((res) => res.present());
-
+    if (this.sizes.status == "DISABLED") {
+      formValue.sizes = [];
+    }
     formValue.countryId = this.selectedCountry.Id;
     formValue.selectRuleIds = this.selectRuleIds;
     console.log(formValue);
