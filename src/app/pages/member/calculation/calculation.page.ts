@@ -83,7 +83,8 @@ export class CalculationPage implements OnInit {
         let diff = piece - this.sizes.length;
         for (let i = 0; i < diff; i++) {
           let size = new Size();
-          size.ActualWeight = 1;
+          size.Piece = 1;
+          size.Weight = 1;
           size.Height = 1;
           size.Length = 1;
           size.Width = 1;
@@ -106,7 +107,8 @@ export class CalculationPage implements OnInit {
   
   private createSizeForm() {
     return this.formBuilder.group({
-      ActualWeight: [1, [Validators.required, Validators.min(1)]],
+      Piece: [1, [Validators.required, Validators.min(1)]],
+      Weight: [1, [Validators.required, Validators.min(1)]],
       Length: [1, [Validators.required, Validators.min(1)]],
       Width: [1, [Validators.required, Validators.min(1)]],
       Height: [1, [Validators.required, Validators.min(1)]],
