@@ -74,37 +74,32 @@ export class CalculationPage implements OnInit {
       }
       if (piece == null || piece == 0) {
         return;
-      }
-      else if (piece < this.sizes.length) {
-        for (let i = this.sizes.length; i > piece; i--){
+      } else if (piece < this.sizes.length) {
+        for (let i = this.sizes.length; i > piece; i--) {
           this.sizes.removeAt(i - 1);
         }
       } else if (piece > this.sizes.length) {
         let diff = piece - this.sizes.length;
         for (let i = 0; i < diff; i++) {
-          let size = new Size();
-          size.Piece = 1;
-          size.Weight = 1;
-          size.Height = 1;
-          size.Length = 1;
-          size.Width = 1;
-          this.sizes.push(this.createSizeForm());
+          this.addSize();
         }
       }
     });
-    this.myForm.get("isEditSize").valueChanges.subscribe(isEditSize => { 
+    this.myForm.get("isEditSize").valueChanges.subscribe((isEditSize) => {
       //不输入尺寸时，跳过验证sizeform
       if (!isEditSize) {
         this.sizes.disable();
+        this.myForm.get("actualWeight").enable();
       } else {
+        //输入尺寸时，跳过实重验证
         this.sizes.enable();
+        this.myForm.get("actualWeight").disable();
       }
     });
     //初始化时，默认不输入尺寸
     this.sizes.disable();
   }
 
-  
   private createSizeForm() {
     return this.formBuilder.group({
       Piece: [1, [Validators.required, Validators.min(1)]],
@@ -169,13 +164,14 @@ export class CalculationPage implements OnInit {
     console.log(this.selectRuleIds);
   }
   doCalculate(formValue) {
+    console.log("calculateMode", this.calculateMode);
     if (this.selectedCountry == null) return;
     this.loadingCtrl
       .create({
         message: "请稍后...",
       })
       .then((res) => res.present());
-    if (this.sizes.status == "DISABLED") {
+    if (this.sizes.status == "DISABLED" || this.calculateMode == "1") {
       formValue.sizes = [];
     }
     formValue.countryId = this.selectedCountry.Id;
@@ -200,6 +196,19 @@ export class CalculationPage implements OnInit {
           .then((res) => res.present());
       }
     });
+  }
+  addSize() {
+    let size = new Size();
+    size.Piece = 1;
+    size.Weight = 1;
+    size.Height = 1;
+    size.Length = 1;
+    size.Width = 1;
+    this.sizes.push(this.createSizeForm());
+  }
+  removeSize() {
+    let lastSizeIndex = this.sizes.length - 1;
+    this.sizes.removeAt(lastSizeIndex);
   }
   segmentChanged(ev) {
     this.selectRuleIds = [];

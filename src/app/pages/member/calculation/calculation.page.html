@@ -98,21 +98,8 @@
             <ion-label>申报价值</ion-label>
             <ion-input type="text" formControlName="declaredValue"></ion-input>
           </ion-item>
+          
           <ion-item>
-            <ion-label>实重</ion-label>
-            <ion-input type="number" formControlName="actualWeight"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label>体积重</ion-label>
-            <ion-input type="number" formControlName="volumeWeight" placeholder="请选你输入的体积重除数"></ion-input>
-            <ion-select interface="popover" formControlName="volumetric">
-              <ion-select-option *ngFor="let item of volumetricDivisorList" [value]="item.Id">{{item.Name}}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-          <ion-item>
-            <!-- <ion-label>件数</ion-label>
-            <ion-input type="number" formControlName="piece"></ion-input> -->
             <ion-label>输入尺寸</ion-label>
             <ion-checkbox #isInputSize formControlName="isEditSize"></ion-checkbox>
           </ion-item>
@@ -155,7 +142,21 @@
                 </ion-col>
                 </ng-container>
               </ion-row>
+              <ion-button *ngIf="sizes.length>1" (click)="removeSize()">移除规格</ion-button>
+              <ion-button style="float:right" (click)="addSize()">添加规格</ion-button>
             </ion-grid>
+          </ion-item>
+          <ion-item *ngIf="!isInputSize.checked">
+            <ion-label>实重</ion-label>
+            <ion-input type="number" formControlName="actualWeight"></ion-input>
+          </ion-item>
+          <ion-item *ngIf="!isInputSize.checked">
+            <ion-label>体积重</ion-label>
+            <ion-input type="number" formControlName="volumeWeight" placeholder="请选你输入的体积重除数"></ion-input>
+            <ion-select interface="popover" formControlName="volumetric">
+              <ion-select-option *ngFor="let item of volumetricDivisorList" [value]="item.Id">{{item.Name}}
+              </ion-select-option>
+            </ion-select>
           </ion-item>
           <ion-item *ngFor="let item of priceRuleTemplateInfoList">
             <ion-label>{{item.Name}}</ion-label>
