@@ -212,5 +212,9 @@ export class CalculationPage implements OnInit {
   }
   segmentChanged(ev) {
     this.selectRuleIds = [];
+    if(ev.detail.value == "1")
+        this.myForm.get("actualWeight").enable();
+    else if(this.myForm.value.isEditSize)
+        this.myForm.get("actualWeight").disable();
   }
 }
