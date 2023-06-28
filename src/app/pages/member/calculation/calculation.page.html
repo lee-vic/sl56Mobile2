@@ -122,26 +122,35 @@
                   高(CM)
                 </ion-col>
               </ion-row>
-              <ion-row *ngFor="let size of sizes.controls;let i=index">
-                <ng-container [formGroupName]="i">
-                
-                <ion-col>
-                  <input id="size-piece-{{i}}" type="text" placeholder="件数" style="width: 100%;" formControlName="Piece" min="1">
-                </ion-col>
-                <ion-col>
-                  <input id="size-weight-{{i}}" type="text" placeholder="重量" style="width: 100%;" formControlName="Weight" min="1">
-                </ion-col>
-                <ion-col>
-                  <input id="size-length-{{i}}" type="text"   placeholder="长" style="width: 100%;" formControlName="Length" min="1">
-                </ion-col>
-                <ion-col>
-                  <input id="size-width-{{i}}"  type="text"  placeholder="宽" style="width: 100%;" formControlName="Width" min="1">
-                </ion-col>
-                <ion-col>
-                  <input id="size-height-{{i}}"  type="text"  placeholder="高" style="width: 100%;" formControlName="Height" min="1">
-                </ion-col>
-                </ng-container>
-              </ion-row>
+              <ng-container *ngFor="let size of sizes.controls;let i=index">
+                <ion-row>
+                  <ng-container [formGroupName]="i">
+                  
+                  <ion-col>
+                    <input id="size-piece-{{i}}" type="text" placeholder="件数" style="width: 100%;" formControlName="Piece" min="1">
+                  </ion-col>
+                  <ion-col>
+                    <input id="size-weight-{{i}}" type="text" placeholder="重量" style="width: 100%;" formControlName="Weight" min="1">
+                  </ion-col>
+                  <ion-col>
+                    <input id="size-length-{{i}}" type="text"   placeholder="长" style="width: 100%;" formControlName="Length" min="1">
+                  </ion-col>
+                  <ion-col>
+                    <input id="size-width-{{i}}"  type="text"  placeholder="宽" style="width: 100%;" formControlName="Width" min="1">
+                  </ion-col>
+                  <ion-col>
+                    <input id="size-height-{{i}}"  type="text"  placeholder="高" style="width: 100%;" formControlName="Height" min="1">
+                  </ion-col>
+                  </ng-container>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ng-container  *ngFor="let rule of size.value.PieceRules;let j=index" >
+                      <input type="checkbox" (change)="checkPieceRule(i,j)" [checked]="rule.Checked" />{{rule.ObjectName}}
+                    </ng-container>
+                  </ion-col>
+                </ion-row>
+              </ng-container>
               <ion-button *ngIf="sizes.length>1" (click)="removeSize()">移除规格</ion-button>
               <ion-button style="float:right" (click)="addSize()">添加规格</ion-button>
             </ion-grid>

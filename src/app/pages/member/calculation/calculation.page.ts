@@ -5,7 +5,7 @@ import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
 import { Router } from '@angular/router';
-import { Size } from 'src/app/interfaces/size';
+import { PieceRule, Size } from 'src/app/interfaces/size';
 
 @Component({
   selector: "app-calculation",
@@ -15,6 +15,7 @@ import { Size } from 'src/app/interfaces/size';
 export class CalculationPage implements OnInit {
   calculateMode = "1";
   countryList: any;
+  pieceTemplateRules: Array<any> = [];
   modeOfTransportList: any;
   volumetricDivisorList: any;
   priceRuleTemplateInfoList: any;
@@ -65,6 +66,12 @@ export class CalculationPage implements OnInit {
     this.service.getPriceRuleTemplateInfoList().subscribe((res) => {
       this.priceRuleTemplateInfoList = res;
     });
+    this.service.GetPieceRuleTemplates().subscribe((res) => {
+      this.pieceTemplateRules = res;
+      this.mapNewPieceRules.forEach((p) => {
+        this.sizes.value[0].PieceRules.push(p);
+      });
+    });
     this.countryProvider.getCoutryList().subscribe((res) => {
       this.countryList = this.countrySearch = res;
     });
@@ -100,6 +107,17 @@ export class CalculationPage implements OnInit {
     this.sizes.disable();
   }
 
+  get mapNewPieceRules() {
+    let templateRules = this.pieceTemplateRules.map(function (p) {
+      let obj = new PieceRule();
+      obj.ObjectName = p.ObjectName;
+      obj.ObjectId = p.ObjectId;
+      obj.Checked = p.Checked;
+      return obj;
+    });
+    return templateRules;
+  }
+
   private createSizeForm() {
     return this.formBuilder.group({
       Piece: [1, [Validators.required, Validators.min(1)]],
@@ -107,6 +125,7 @@ export class CalculationPage implements OnInit {
       Length: [1, [Validators.required, Validators.min(1)]],
       Width: [1, [Validators.required, Validators.min(1)]],
       Height: [1, [Validators.required, Validators.min(1)]],
+      PieceRules: [this.mapNewPieceRules],
     });
   }
   ionViewDidLoad() {
@@ -114,7 +133,7 @@ export class CalculationPage implements OnInit {
   }
 
   get sizes() {
-    console.log(this.myForm.get("sizes"));
+    console.log("getSizes:", this.myForm.get("sizes"));
     return this.myForm.get("sizes") as FormArray;
   }
 
@@ -197,13 +216,11 @@ export class CalculationPage implements OnInit {
       }
     });
   }
+  checkPieceRule(pieceIndex, ruleIndex) {
+    this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = !this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked;
+    this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds = this.sizes.value[pieceIndex].PieceRules.filter(p=>p.Checked).map(p=>p.ObjectId);
+  }
   addSize() {
-    let size = new Size();
-    size.Piece = 1;
-    size.Weight = 1;
-    size.Height = 1;
-    size.Length = 1;
-    size.Width = 1;
     this.sizes.push(this.createSizeForm());
   }
   removeSize() {
@@ -212,9 +229,8 @@ export class CalculationPage implements OnInit {
   }
   segmentChanged(ev) {
     this.selectRuleIds = [];
-    if(ev.detail.value == "1")
-        this.myForm.get("actualWeight").enable();
-    else if(this.myForm.value.isEditSize)
-        this.myForm.get("actualWeight").disable();
+    if (ev.detail.value == "1") this.myForm.get("actualWeight").enable();
+    else if (this.myForm.value.isEditSize)
+      this.myForm.get("actualWeight").disable();
   }
 }
