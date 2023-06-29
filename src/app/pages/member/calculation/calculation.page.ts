@@ -126,6 +126,7 @@ export class CalculationPage implements OnInit {
       Width: [1, [Validators.required, Validators.min(1)]],
       Height: [1, [Validators.required, Validators.min(1)]],
       PieceRules: [this.mapNewPieceRules],
+      SelectedPriceRuleTemplateIds:[[]]
     });
   }
   ionViewDidLoad() {
@@ -218,7 +219,12 @@ export class CalculationPage implements OnInit {
   }
   checkPieceRule(pieceIndex, ruleIndex) {
     this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = !this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked;
-    this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds = this.sizes.value[pieceIndex].PieceRules.filter(p=>p.Checked).map(p=>p.ObjectId);
+    //清空已选择的id
+    this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.splice(0, this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.length);
+    //重新添加已选择的id
+    this.sizes.value[pieceIndex].PieceRules.filter(p => p.Checked).map(p => p.ObjectId).forEach(p => {
+      this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.push(p);
+     });
   }
   addSize() {
     this.sizes.push(this.createSizeForm());
