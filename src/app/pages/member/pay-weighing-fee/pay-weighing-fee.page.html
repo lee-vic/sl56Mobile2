@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>重量选择</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-text color="danger" *ngIf="weights.length==0;else showList">
+    <h1>{{showMsg}}</h1>
+  </ion-text>
+  <ng-template #showList>
+    <ion-list>
+      <ion-item detail *ngFor="let item of weights" (click)="detail(item.ObjectId,item.GrossWeight)">
+        {{item.GrossWeight}}
+      </ion-item>
+    </ion-list>
+  </ng-template>
+  
+</ion-content>
