@@ -10,15 +10,12 @@ import { UnifiedOrderResult } from '../interfaces/unified-order-result';
 export class WeightBillService {
   constructor(public http: HttpClient) {}
 
-  getPaymentAmount(weight) {
-    let paras = new HttpParams().set("weight", weight);
-    let seq = this.http.get<number>(
-      apiUrl + "/Measure/GetWeighingPaymentAmount",
-      {
-        withCredentials: true,
-        params: paras,
-      }
-    );
+  getWeightBill(objectId) {
+    let paras = new HttpParams().set("objectId", objectId);
+    let seq = this.http.get<WeightBill>(apiUrl + "/Measure/GetWeightBill", {
+      withCredentials: true,
+      params: paras,
+    });
     return seq;
   }
 

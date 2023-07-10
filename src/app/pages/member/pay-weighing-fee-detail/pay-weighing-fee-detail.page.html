@@ -8,30 +8,54 @@
 </ion-header>
 <ion-content>
   <ion-row>
-  <ion-label class="feeLabel">
-    费用(￥)：{{weightBill.Amount}}
-  </ion-label>
+    <ion-label class="feeLabel" *ngIf="weightBill.Status!=2;else paid">
+      费用(￥)：{{weightBill.Amount}}
+    </ion-label>
+    <ng-template #paid>
+      <ion-label class="feeLabel" #paid>
+        订单已支付！
+      </ion-label>
+    </ng-template>
   </ion-row>
   <ion-list>
     <ion-item>
       <ion-label>毛重</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.GrossWeight" readonly> </ion-input>
+      <ion-input type="text" [(ngModel)]="weightBill.GrossWeight" readonly>
+      </ion-input>
     </ion-item>
     <ion-item>
       <ion-label>皮重</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.TareWeight" (ionChange)="inputTareWeight($event)" inputmode="decimal"> </ion-input>
+      <ion-input
+        type="text"
+        [(ngModel)]="weightBill.TareWeight"
+        (ionChange)="inputTareWeight($event)"
+        inputmode="decimal"
+        readonly="{{weightBill.Status!=0}}"
+      >
+      </ion-input>
     </ion-item>
     <ion-item>
       <ion-label>净重</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.NetWeight" readonly> </ion-input>
+      <ion-input type="text" [(ngModel)]="weightBill.NetWeight" readonly>
+      </ion-input>
     </ion-item>
     <ion-item>
       <ion-label>车牌</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.VehicleNo"> </ion-input>
+      <ion-input
+        type="text"
+        [(ngModel)]="weightBill.VehicleNo"
+        readonly="{{weightBill.Status!=0}}"
+      >
+      </ion-input>
+    </ion-item>
+    <ion-item *ngIf="weightBill.Status==2">
+      <a [href]="downloadLink">下载磅单文件</a>
     </ion-item>
   </ion-list>
 </ion-content>
 
-<ion-footer>
-  <ion-button expand="full" class="pay-button" (click)="payAndPrint()">支付</ion-button>
+<ion-footer *ngIf="weightBill.Status!=2">
+  <ion-button expand="full" class="pay-button" (click)="payAndPrint()"
+    >支付</ion-button
+  >
 </ion-footer>

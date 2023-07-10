@@ -3,7 +3,7 @@ import { LoadingController, ToastController, NavController } from '@ionic/angula
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { WechatPayService } from 'src/app/providers/wechat-pay.service';
+import { apiUrl } from "src/app/global";
 declare var WeixinJSBridge: any;
 @Component({
   selector: "app-pay-weighing-fee-detail",
@@ -12,6 +12,9 @@ declare var WeixinJSBridge: any;
 })
 export class PayWeighingFeeDetailPage implements OnInit {
   weightBill: WeightBill = new WeightBill();
+  openId: string;
+  objectId;
+  downloadLink;
   constructor(
     private route: ActivatedRoute,
     private loadingCtrl: LoadingController,
@@ -19,11 +22,8 @@ export class PayWeighingFeeDetailPage implements OnInit {
     private toastCtrl: ToastController,
     private navCtrl: NavController
   ) {
-    this.weightBill.ObjectId = route.snapshot.queryParams["ObjectId"];
-    this.weightBill.GrossWeight = route.snapshot.queryParams["GrossWeight"];
-    this.weightBill.TareWeight = 0;
-    this.weightBill.NetWeight = this.weightBill.GrossWeight;
-    this.weightBill.WxOpenId = route.snapshot.queryParams["OpenId"];
+    this.objectId = route.snapshot.queryParams["ObjectId"];
+    this.openId = route.snapshot.queryParams["OpenId"];
     console.log("WeightBill:", this.weightBill);
   }
 
@@ -34,12 +34,17 @@ export class PayWeighingFeeDetailPage implements OnInit {
       })
       .then((p) => {
         p.present();
-        this.weightBillService
-          .getPaymentAmount(this.weightBill.GrossWeight)
-          .subscribe((res) => {
-            this.weightBill.Amount = res;
-            p.dismiss();
-          });
+        this.weightBillService.getWeightBill(this.objectId).subscribe((res) => {
+          this.weightBill = res;
+          if (this.weightBill.Status == 0) {
+            this.weightBill.WxOpenId = this.openId;
+            this.weightBill.TareWeight = 0;
+            this.weightBill.NetWeight = this.weightBill.GrossWeight;
+          } else if (this.weightBill.Status == 2) {
+            this.downloadLink = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.weightBill.ObjectId;
+          }
+          p.dismiss();
+        });
       });
   }
 
@@ -65,12 +70,12 @@ export class PayWeighingFeeDetailPage implements OnInit {
               duration: 1000,
             })
             .then((p) => p.present());
-            this.navCtrl.navigateForward(
-              "/member/pay-weighing-fee/result/" + this.weightBill.ObjectId,
-              {
-                replaceUrl: true,
-              }
-            );
+          this.navCtrl.navigateForward(
+            "/member/pay-weighing-fee/result/" + this.weightBill.ObjectId,
+            {
+              replaceUrl: true,
+            }
+          );
         } else {
           alert(res.err_code + res.err_desc + res.err_msg);
         }
@@ -78,7 +83,10 @@ export class PayWeighingFeeDetailPage implements OnInit {
     );
   }
   payAndPrint() {
-    if (this.weightBill.VehicleNo == null || this.weightBill.VehicleNo.length == 0) {
+    if (
+      this.weightBill.VehicleNo == null ||
+      this.weightBill.VehicleNo.length == 0
+    ) {
       alert("请输入车牌号码");
       // this.toastCtrl.create({
       //   message: "请输入车牌号码！",
@@ -127,10 +135,13 @@ export class PayWeighingFeeDetailPage implements OnInit {
       });
   }
   inputTareWeight(event) {
-    this.weightBill.TareWeight = parseFloat(this.weightBill.TareWeight.toString());
+    this.weightBill.TareWeight = parseFloat(
+      this.weightBill.TareWeight.toString()
+    );
     if (Number.isNaN(this.weightBill.TareWeight))
       this.weightBill.TareWeight = 0;
-    this.weightBill.NetWeight = this.weightBill.GrossWeight - this.weightBill.TareWeight;
+    this.weightBill.NetWeight =
+      this.weightBill.GrossWeight - this.weightBill.TareWeight;
     console.log(this.weightBill);
-  };
+  }
 }

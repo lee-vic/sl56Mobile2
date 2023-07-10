@@ -18,50 +18,58 @@ export class PayWeighingFeePage implements OnInit {
     private cookieService: CookieService,
     private weightBillService: WeightBillService,
     private navController: NavController,
-    private loadingCtrl:LoadingController
+    private loadingCtrl: LoadingController
   ) {}
 
   ngOnInit(): void {
     this.openId = this.cookieService.get("OpenId");
     console.log("OpenId：", this.openId);
-    this.loadingCtrl.create({
-      message:"请稍后"
-    }).then(lc => {
-      lc.present();
-      this.weightBillService.getList(this.openId).subscribe(p => {
-        this.weights = p;
-        //测试数据
-        // for (let i = 0; i < 10; i++) {
-        //   let t: WeightBill = {
-        //     ObjectId: 1,
-        //     GrossWeight: 10.5,
-        //     NetWeight: 11,
-        //     TareWeight: 1,
-        //     VehicleNo: "粤A123",
-        //     UnitOfWeight: "KG",
-        //     Amount: 100,
-        //     WxOpenId: "1111111",
-        //     TradeType: "JSAPI",
-        //     BillPath: "",
-        //   };
-        //   this.weights.push(t);
-        // }
-        lc.dismiss();
-        if (this.weights.length == 0) {
-          this.showMsg = "地磅数据读取失败，请尝试刷新页面！";
-        }
+    this.loadingCtrl
+      .create({
+        message: "请稍后",
+      })
+      .then((lc) => {
+        lc.present();
+        this.weightBillService.getList(this.openId).subscribe((p) => {
+          this.weights = p;
+          //测试数据
+          // for (let i = 0; i < 10; i++) {
+          //   let t: WeightBill = {
+          //     ObjectId: 1,
+          //     GrossWeight: 10.5,
+          //     NetWeight: 11,
+          //     TareWeight: 1,
+          //     VehicleNo: "粤A123",
+          //     UnitOfWeight: "KG",
+          //     Amount: 100,
+          //     WxOpenId: "1111111",
+          //     TradeType: "JSAPI",
+          //     BillPath: "",
+          //   };
+          //   this.weights.push(t);
+          // }
+          lc.dismiss();
+          console.log(this.weights);
+          if (this.weights.length == 0) {
+            this.showMsg = "地磅数据读取失败，请尝试刷新页面！";
+          }
+        });
       });
-    });
   }
 
-  detail(objectId, grossWeight) {
+  detail(objectId) {
     let options: NavigationOptions = {
       queryParams: {
         ObjectId: objectId,
-        GrossWeight: grossWeight,
-        OpenId:this.openId
-      }
+        OpenId: this.openId,
+      },
     };
-    this.navController.navigateForward("/member/pay-weighing-fee/detail",options);
+    this.navController.navigateForward(
+      "/member/pay-weighing-fee/detail",
+      options
+    );
+  }
+  refresh() {
+    this.ngOnInit();
   }
 }

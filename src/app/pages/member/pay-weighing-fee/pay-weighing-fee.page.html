@@ -6,11 +6,21 @@
 <ion-content>
   <ion-text color="danger" *ngIf="weights.length==0;else showList">
     <h1>{{showMsg}}</h1>
+    <h2>
+      <a (click)="refresh()">刷新</a>
+    </h2>
   </ion-text>
   <ng-template #showList>
-    <ion-list>
-      <ion-item detail *ngFor="let item of weights" (click)="detail(item.ObjectId,item.GrossWeight)">
-        {{item.GrossWeight}}
+    <ion-list *ngFor="let item of weights">
+      <ion-item>
+        重量：{{item.GrossWeight}}{{item.UnitOfWeight}}
+      </ion-item>
+      <ion-item detail (click)="detail(item.ObjectId)">
+        <ion-label>
+          <p>测量时间：{{item.WeightingDate}}</p>
+          <p>支付状态：<span [ngClass]="{'paid':item.Status==2,'nopay':item.Status!=2}"> {{item.Status==2?'已支付':'未支付'}}</span></p>
+          <p>车牌号码：{{(item.VehicleNo==null || item.VehicleNo.length==0)?'(未填写)':item.VehicleNo}}</p>
+        </ion-label>
       </ion-item>
     </ion-list>
   </ng-template>
