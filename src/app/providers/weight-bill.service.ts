@@ -8,7 +8,7 @@ import { UnifiedOrderResult } from '../interfaces/unified-order-result';
   providedIn: "root",
 })
 export class WeightBillService {
-  constructor(public http: HttpClient) {}
+  constructor(public http: HttpClient) { }
 
   getWeightBill(objectId) {
     let paras = new HttpParams().set("objectId", objectId);
@@ -50,5 +50,12 @@ export class WeightBillService {
       }
     );
     return seq;
+  }
+  start(openid,vehicleNo) {
+    var request = new XMLHttpRequest();
+    request.withCredentials = true;
+    request.open('GET', apiUrl + "/Measure/Start?vehicleNo=" + vehicleNo+"&openid="+openid, false);
+    request.send(null);
+    return request.responseText;
   }
 }

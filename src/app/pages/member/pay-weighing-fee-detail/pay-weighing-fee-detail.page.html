@@ -18,34 +18,25 @@
     </ng-template>
   </ion-row>
   <ion-list>
-    <ion-item>
+    <ion-item *ngIf="weightBill.Status==2">
       <ion-label>毛重</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.GrossWeight" readonly>
+      <ion-input type="number" [(ngModel)]="weightBill.GrossWeight" readonly>
       </ion-input>
     </ion-item>
     <ion-item>
       <ion-label>皮重</ion-label>
-      <ion-input
-        type="text"
-        [(ngModel)]="weightBill.TareWeight"
-        (ionChange)="inputTareWeight($event)"
-        inputmode="decimal"
-        readonly="{{weightBill.Status!=0}}"
-      >
+      <ion-input type="number" [(ngModel)]="weightBill.TareWeight" (ionChange)="inputTareWeight($event)"
+        inputmode="decimal" readonly="{{weightBill.Status!=0}}">
       </ion-input>
     </ion-item>
-    <ion-item>
+    <ion-item *ngIf="weightBill.Status==2">
       <ion-label>净重</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.NetWeight" readonly>
+      <ion-input type="number" [(ngModel)]="weightBill.NetWeight" readonly>
       </ion-input>
     </ion-item>
     <ion-item>
       <ion-label>车牌</ion-label>
-      <ion-input
-        type="text"
-        [(ngModel)]="weightBill.VehicleNo"
-        readonly="{{weightBill.Status!=0}}"
-      >
+      <ion-input type="text" [(ngModel)]="weightBill.VehicleNo" readonly="{{true}}">
       </ion-input>
     </ion-item>
     <ion-item *ngIf="weightBill.Status==2">
@@ -55,7 +46,5 @@
 </ion-content>
 
 <ion-footer *ngIf="weightBill.Status!=2">
-  <ion-button expand="full" class="pay-button" (click)="payAndPrint()"
-    >支付</ion-button
-  >
+  <ion-button expand="full" class="pay-button" (click)="payAndPrint()">支付</ion-button>
 </ion-footer>

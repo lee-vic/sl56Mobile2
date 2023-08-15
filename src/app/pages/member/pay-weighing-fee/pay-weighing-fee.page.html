@@ -1,14 +1,12 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>重量选择</ion-title>
+    <ion-title>称重记录</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <ion-text color="danger" *ngIf="weights.length==0;else showList">
     <h1>{{showMsg}}</h1>
-    <h2>
-      <a (click)="refresh()">刷新</a>
-    </h2>
+    
   </ion-text>
   <ng-template #showList>
     <ion-list *ngFor="let item of weights">
@@ -24,5 +22,7 @@
       </ion-item>
     </ion-list>
   </ng-template>
-  
 </ion-content>
+<ion-footer>
+  <ion-button expand="full" (click)="start()" [disabled]="!signalRConnected">开始称重</ion-button>
+</ion-footer>

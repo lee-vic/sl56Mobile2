@@ -1,9 +1,10 @@
 import { WeightBillService } from './../../../providers/weight-bill.service';
-import { LoadingController, ToastController, NavController } from '@ionic/angular';
+import { LoadingController, ToastController, NavController, AlertController } from '@ionic/angular';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { apiUrl } from "src/app/global";
+import { SignalR, SignalRConnection } from 'ng2-signalr';
 declare var WeixinJSBridge: any;
 @Component({
   selector: "app-pay-weighing-fee-detail",
@@ -12,6 +13,7 @@ declare var WeixinJSBridge: any;
 })
 export class PayWeighingFeeDetailPage implements OnInit {
   weightBill: WeightBill = new WeightBill();
+  signalRConnection: SignalRConnection;
   openId: string;
   objectId;
   downloadLink;
@@ -20,25 +22,52 @@ export class PayWeighingFeeDetailPage implements OnInit {
     private loadingCtrl: LoadingController,
     private weightBillService: WeightBillService,
     private toastCtrl: ToastController,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private alertController: AlertController,
+    private signalR: SignalR,
   ) {
     this.objectId = route.snapshot.queryParams["ObjectId"];
     this.openId = route.snapshot.queryParams["OpenId"];
-    console.log("WeightBill:", this.weightBill);
   }
 
   ngOnInit(): void {
-    this.loadingCtrl
-      .create({
-        message: "请稍后",
-      })
+    this.signalRConnection = this.signalR.createConnection();
+    this.signalRConnection.status.subscribe((p) => console.log(p.name));
+
+  }
+  ionViewDidEnter() {
+    this.loadData();
+    this.signalRConnection.start().then((c) => {
+      //监听支付成功事件
+      let listener = c.listenFor("messageReceived");
+      listener.subscribe((msg: any) => {
+        let obj = JSON.parse(msg);
+        if (obj.MsgContent == "True") {
+          this.loadingCtrl.dismiss();
+          this.toastCtrl.create({
+            message: "支付成功",
+            position: "middle",
+            duration: 2000,
+          }).then((p) => p.present());
+          this.navCtrl.back();
+        }
+      });
+    });
+  }
+  ionViewWillLeave() {
+    this.signalRConnection.stop();
+  }
+  loadData() {
+    this.loadingCtrl.create({
+      message: "请稍后",
+    })
       .then((p) => {
         p.present();
         this.weightBillService.getWeightBill(this.objectId).subscribe((res) => {
           this.weightBill = res;
           if (this.weightBill.Status == 0) {
             this.weightBill.WxOpenId = this.openId;
-            this.weightBill.TareWeight = 0;
+            this.weightBill.TareWeight = null;
             this.weightBill.NetWeight = this.weightBill.GrossWeight;
           } else if (this.weightBill.Status == 2) {
             this.downloadLink = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.weightBill.ObjectId;
@@ -63,19 +92,9 @@ export class PayWeighingFeeDetailPage implements OnInit {
       jsApiParam, //josn串
       (res) => {
         if (res.err_msg == "get_brand_wcpay_request:ok") {
-          this.toastCtrl
-            .create({
-              message: "支付成功",
-              position: "middle",
-              duration: 1000,
-            })
-            .then((p) => p.present());
-          this.navCtrl.navigateForward(
-            "/member/pay-weighing-fee/result/" + this.weightBill.ObjectId,
-            {
-              replaceUrl: true,
-            }
-          );
+          this.loadingCtrl.create({
+            message: '正在检查支付结果,请稍后...'
+          }).then(p => p.present());
         } else {
           alert(res.err_code + res.err_desc + res.err_msg);
         }
@@ -83,19 +102,21 @@ export class PayWeighingFeeDetailPage implements OnInit {
     );
   }
   payAndPrint() {
-    if (
-      this.weightBill.VehicleNo == null ||
-      this.weightBill.VehicleNo.length == 0
-    ) {
-      alert("请输入车牌号码");
-      // this.toastCtrl.create({
-      //   message: "请输入车牌号码！",
-      //   position: "middle",
-      //   duration:3000
-      // }).then(p => p.present());
-      return;
+    if (this.weightBill.TareWeight == null) {
+      this.alertController.create({
+        header: '信息不完整',
+        subHeader:"请输入皮重",
+        backdropDismiss: false,
+        keyboardClose: false,
+        buttons: [{
+          text: "确定",
+        }]
+      }).then(p => p.present());
     }
-    this.payByJsApi();
+    else {
+      this.payByJsApi();
+    }
+
   }
   payByJsApi() {
     this.weightBill.TradeType = "JSAPI";
@@ -143,5 +164,8 @@ export class PayWeighingFeeDetailPage implements OnInit {
     this.weightBill.NetWeight =
       this.weightBill.GrossWeight - this.weightBill.TareWeight;
     console.log(this.weightBill);
+  }
+  ngOnDestroy(): void {
+    this.signalRConnection.stop();
   }
 }
