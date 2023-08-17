@@ -92,9 +92,9 @@ export class PayWeighingFeeDetailPage implements OnInit {
       jsApiParam, //josn串
       (res) => {
         if (res.err_msg == "get_brand_wcpay_request:ok") {
-          this.loadingCtrl.create({
-            message: '正在检查支付结果,请稍后...'
-          }).then(p => p.present());
+          // this.loadingCtrl.create({
+          //   message: '正在检查支付结果,请稍后...'
+          // }).then(p => p.present());
         } else {
           alert(res.err_code + res.err_desc + res.err_msg);
         }

@@ -70,7 +70,7 @@ export class PayWeighingFeePage implements OnInit {
             InvokeClassName:this.openId,
             InvokeMethodName:this.vehicleNo
           };
-          this.signalRConnection.invoke("SendMessage",sendData).then((data: string) => {
+          this.signalRConnection.invoke("SendMessage2",sendData).then((data: string) => {
             this.loadingCtrl.dismiss();
             this.detail(parseInt(obj.InvokeClassName));
           })
@@ -115,7 +115,7 @@ export class PayWeighingFeePage implements OnInit {
           if (data.vehicleNo == "" || data.vehicleNo.length < 7) {
             this.toastController.create({
               message: '请输入正确的车牌号码',
-              duration: 2000
+              duration: 5000
             }).then(p => p.present());
             return false;
           }
@@ -124,14 +124,14 @@ export class PayWeighingFeePage implements OnInit {
             let started = this.weightBillService.start(this.openId, data.vehicleNo);
             if (started == "true") {
               this.loadingCtrl.create({
-                message: '请稍后...'
+                message: '正在测量,请稍后...'
               }).then(p => p.present());;
             }
             else {
 
               this.toastController.create({
                 message: '启动设备失败，请重试！',
-                duration: 2000
+                duration: 5000
               }).then(p => p.present());
               return false;
             }

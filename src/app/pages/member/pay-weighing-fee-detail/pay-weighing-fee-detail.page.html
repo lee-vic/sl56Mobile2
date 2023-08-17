@@ -26,7 +26,7 @@
     <ion-item>
       <ion-label>皮重</ion-label>
       <ion-input type="number" [(ngModel)]="weightBill.TareWeight" (ionChange)="inputTareWeight($event)"
-        inputmode="decimal" readonly="{{weightBill.Status!=0}}">
+        inputmode="decimal" readonly="{{weightBill.Status!=0}}" autofocus="true" placeholder="请输入皮重">
       </ion-input>
     </ion-item>
     <ion-item *ngIf="weightBill.Status==2">
