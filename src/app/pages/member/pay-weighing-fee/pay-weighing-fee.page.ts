@@ -5,6 +5,7 @@ import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
 import { NavigationOptions } from '@ionic/angular/dist/providers/nav-controller';
 import { SignalR, SignalRConnection } from 'ng2-signalr';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: "app-pay-weighing-fee",
@@ -18,6 +19,7 @@ export class PayWeighingFeePage implements OnInit {
   signalRConnection: SignalRConnection;
   signalRConnected: boolean = false;
   vehicleNo: string = "";
+  subscriber: Subscription;
   constructor(
     private cookieService: CookieService,
     private weightBillService: WeightBillService,
@@ -36,8 +38,8 @@ export class PayWeighingFeePage implements OnInit {
   }
   loadList() {
     this.loadingCtrl.create({
-        message: "请稍后",
-      })
+      message: "请稍后",
+    })
       .then((lc) => {
         lc.present();
         this.weightBillService.getList(this.openId).subscribe((p) => {
@@ -55,22 +57,26 @@ export class PayWeighingFeePage implements OnInit {
       this.signalRConnected = true;
       //监听读数服务读数已完毕的事件
       let listener = c.listenFor("messageReceived");
-      listener.subscribe((msg: any) => {
+
+      if (this.subscriber != undefined)
+        this.subscriber.unsubscribe();
+      this.subscriber = listener.subscribe((msg: any) => {
         let obj = JSON.parse(msg);
+        console.log(obj);
         if (obj.MsgContent == "Complete") {
           //通知读数服务停止读取数据
-          let sendData={
-            MsgFrom :16075,
-            FromClientType : 1,
-            MsgFromType :0,
-            MsgTo : 1,
-            ToClientType : 13,
-            MsgToType : 1,
-            MsgContent : "Stop",
-            InvokeClassName:this.openId,
-            InvokeMethodName:this.vehicleNo
+          let sendData = {
+            MsgFrom: 16075,
+            FromClientType: 1,
+            MsgFromType: 0,
+            MsgTo: 1,
+            ToClientType: 13,
+            MsgToType: 1,
+            MsgContent: "Stop",
+            InvokeClassName: this.openId,
+            InvokeMethodName: this.vehicleNo
           };
-          this.signalRConnection.invoke("SendMessage2",sendData).then((data: string) => {
+          this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
             this.loadingCtrl.dismiss();
             this.detail(parseInt(obj.InvokeClassName));
           })
@@ -78,11 +84,11 @@ export class PayWeighingFeePage implements OnInit {
       });
     });
   }
-  ionViewWillLeave(){
+  ionViewWillLeave() {
     this.signalRConnection.stop();
-    this.signalRConnected=false;
+    this.signalRConnected = false;
   }
-  
+
   detail(objectId) {
     let options: NavigationOptions = {
       queryParams: {
@@ -114,8 +120,9 @@ export class PayWeighingFeePage implements OnInit {
         handler: (data) => {
           if (data.vehicleNo == "" || data.vehicleNo.length < 7) {
             this.toastController.create({
+              position: "middle",
               message: '请输入正确的车牌号码',
-              duration: 5000
+              duration: 2000
             }).then(p => p.present());
             return false;
           }
@@ -130,8 +137,10 @@ export class PayWeighingFeePage implements OnInit {
             else {
 
               this.toastController.create({
-                message: '启动设备失败，请重试！',
-                duration: 5000
+                position: "middle",
+                header: "启动失败",
+                message: '请联系系统管理员！',
+                duration: 2000
               }).then(p => p.present());
               return false;
             }

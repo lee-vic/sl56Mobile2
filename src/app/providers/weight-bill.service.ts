@@ -58,4 +58,13 @@ export class WeightBillService {
     request.send(null);
     return request.responseText;
   }
+  
+  save(data) {
+    let seq = this.http.post<string>(
+      apiUrl + "/Measure/Save",
+      data,
+      { withCredentials: true }
+    );
+    return seq;
+  }
 }

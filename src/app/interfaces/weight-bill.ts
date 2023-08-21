@@ -33,4 +33,6 @@ export class WeightBill {
   WeightingDate: string;
   // 单据状态.0:初始状态.1:创建了微信支付订单，但是还没有收到支付成功通知的。2:已成功支付
   Status;
+  //是否月结
+  IsMonthly:Boolean;
 }

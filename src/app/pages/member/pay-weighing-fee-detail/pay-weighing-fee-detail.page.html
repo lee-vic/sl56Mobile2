@@ -3,20 +3,23 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>填写并支付</ion-title>
+    <ion-title>详细信息</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-row>
-    <ion-label class="feeLabel" *ngIf="weightBill.Status!=2;else paid">
-      费用(￥)：{{weightBill.Amount}}
-    </ion-label>
-    <ng-template #paid>
-      <ion-label class="feeLabel" #paid>
-        订单已支付！
+  <div *ngIf="weightBill.IsMonthly==false">
+    <ion-row>
+      <ion-label class="feeLabel" *ngIf="weightBill.Status!=2;else paid">
+        费用(￥)：{{weightBill.Amount}}
       </ion-label>
-    </ng-template>
-  </ion-row>
+      <ng-template #paid>
+        <ion-label class="feeLabel" #paid>
+          订单已支付！
+        </ion-label>
+      </ng-template>
+    </ion-row>
+  </div>
+
   <ion-list>
     <ion-item *ngIf="weightBill.Status==2">
       <ion-label>毛重</ion-label>
@@ -43,8 +46,6 @@
       <a [href]="downloadLink">下载磅单文件</a>
     </ion-item>
   </ion-list>
+  <ion-button expand="block" class="pay-button" (click)="payAndPrint()" *ngIf="weightBill.Status!=2">{{buttonText}}</ion-button>
 </ion-content>
 
-<ion-footer *ngIf="weightBill.Status!=2">
-  <ion-button expand="full" class="pay-button" (click)="payAndPrint()">支付</ion-button>
-</ion-footer>
