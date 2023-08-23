@@ -67,4 +67,15 @@ export class WeightBillService {
     );
     return seq;
   }
+  getHistoryVehicleNo(openId){
+    let paras = new HttpParams().set("openid", openId);
+    let seq = this.http.get<Array<string>>(
+      apiUrl + "/Measure/HistoryVehicleNo",
+      {
+        withCredentials: true,
+        params: paras,
+      }
+    );
+    return seq;
+  }
 }

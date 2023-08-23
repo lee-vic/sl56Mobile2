@@ -1,4 +1,4 @@
-import { NavController, LoadingController, AlertController, ToastController } from '@ionic/angular';
+import { NavController, LoadingController, AlertController, ToastController, ActionSheetController } from '@ionic/angular';
 import { Component, OnInit } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
@@ -27,7 +27,8 @@ export class PayWeighingFeePage implements OnInit {
     private loadingCtrl: LoadingController,
     private alertController: AlertController,
     private signalR: SignalR,
-    public toastController: ToastController
+    public toastController: ToastController,
+    public actionSheetController: ActionSheetController
   ) { }
 
   ngOnInit(): void {
@@ -103,6 +104,63 @@ export class PayWeighingFeePage implements OnInit {
   }
 
   start() {
+    this.weightBillService.getHistoryVehicleNo(this.openId).subscribe(vehicleNoList => {
+      if (vehicleNoList.length == 0) {
+        this.getInputVehicleNo();
+      }
+      else {
+        var vehicleNoButtons = [];
+        vehicleNoList.forEach(element => {
+          vehicleNoButtons.push({
+            text: element,
+            handler: () => {
+              this.startRead(element);
+            }
+          });
+        });
+        vehicleNoButtons.push({
+          text: "输入其它车牌号码",
+          handler: () => {
+            this.getInputVehicleNo();
+          }
+        });
+        vehicleNoButtons.push({
+          text: "取消",
+          role:"cancel",
+          handler: () => {
+            
+          }
+        });
+        this.actionSheetController.create({
+          header: "车牌号码历史记录",
+          subHeader: "请选择",
+          backdropDismiss:false,
+          keyboardClose:false,
+          buttons: vehicleNoButtons
+        }).then(p => p.present());
+      }
+    });
+
+  }
+  startRead(inputVehicleNo: string) {
+    this.vehicleNo = inputVehicleNo;
+    let started = this.weightBillService.start(this.openId, this.vehicleNo);
+    if (started == "true") {
+      this.loadingCtrl.create({
+        message: '正在测量,请稍后...'
+      }).then(p => p.present());;
+    }
+    else {
+      this.toastController.create({
+        position: "middle",
+        header: "启动失败",
+        message: '请联系系统管理员！',
+        duration: 2000
+      }).then(p => p.present());
+      return false;
+    }
+  }
+  getInputVehicleNo() {
     this.alertController.create({
       header: '请输入车牌号码',
       backdropDismiss: false,
@@ -127,28 +185,9 @@ export class PayWeighingFeePage implements OnInit {
             return false;
           }
           else {
-            this.vehicleNo = data.vehicleNo;
-            let started = this.weightBillService.start(this.openId, data.vehicleNo);
-            if (started == "true") {
-              this.loadingCtrl.create({
-                message: '正在测量,请稍后...'
-              }).then(p => p.present());;
-            }
-            else {
-
-              this.toastController.create({
-                position: "middle",
-                header: "启动失败",
-                message: '请联系系统管理员！',
-                duration: 2000
-              }).then(p => p.present());
-              return false;
-            }
+            this.startRead(data.vehicleNo);
           }
-
         }
-
-
       }]
     }).then(p => p.present());
   }
