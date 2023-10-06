@@ -328,6 +328,13 @@ const routes: Routes = [
       },
     ],
   },
+  {
+    path: "interview",
+    loadChildren: () =>
+      import("./interview/interview.module").then(
+        (m) => m.InterviewModule
+      ),
+  },
 ];
 
 @NgModule({
