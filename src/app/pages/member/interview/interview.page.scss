@@ -1,0 +1,86 @@
+.time-expire{
+    text-align: center;
+    line-height: 50px;
+    padding:20px
+}
+.rate-container{
+    background-color: rgb(239, 242, 245);
+    padding: 10px;
+    .rate-tips{
+        background: white;
+        padding: 15px;
+        border-radius: 10px 10px 0 0;
+        line-height: 30px;
+        font-size: 18px;
+    }
+    .rate-infos{
+        border-radius: 0 0 10px 10px;
+        padding-bottom: 20px;
+        background: white;
+        ion-item > ion-label{
+            min-width: 60px;
+            max-width: 50px;
+        }
+        ion-chip > ion-label{
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        ion-button{
+            font-size: 15px;
+        }
+    }
+    .rate-box{
+        background: white;
+        margin-top: 20px;
+        padding: 15px 0px 15px 15px;
+        border-radius: 10px;
+        .rate-stars{
+            padding-top: 20px;
+            ion-icon{
+                font-size: 25px;
+                color: #999;
+                padding-right: 10px;
+            }
+            ion-label{
+                position: absolute;
+                padding-top: 2px;
+                color: #999;
+            }
+        }
+        .rate-tags{
+            margin-top: 20px;
+            ion-label{
+                color:#999
+            }
+        }
+        .rate-remark{
+            height: 100px;
+            padding-right: 15px;
+            ion-textarea{
+                height: 90px;
+                padding-right: 8px;
+                padding-left: 8px;
+                border-radius: 5px;
+                background: rgb(239, 242, 245);
+                ion-label{
+                    position: absolute;
+                    right: 10px;
+                    bottom: 5px;
+                    color: #999;
+                }
+            }
+        }
+    }
+}
+.rate-complete{
+    text-align: center;
+    margin-top: 100px;
+    ion-icon{
+        color: rgb(74 198 180);
+        font-size: 100px;
+    }
+    >div{
+        font-size: 25px;
+        font-weight: bold;
+    }
+}
