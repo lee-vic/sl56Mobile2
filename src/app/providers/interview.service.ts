@@ -34,4 +34,16 @@ export class InterviewService {
     });
     return req;
   }
+  config(url, jsApiList) {
+    let params = new HttpParams()
+      .set("url", url)
+      .set("jsApiList", jsApiList);
+    let req = this.httpClient.get<any>(
+      apiUrl + "/Interview/GetWxSdkConfigInfo",
+      {
+        params: params,
+      }
+    );
+    return req;
+  }
 }
