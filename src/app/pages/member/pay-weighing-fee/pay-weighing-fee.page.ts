@@ -126,16 +126,16 @@ export class PayWeighingFeePage implements OnInit {
         });
         vehicleNoButtons.push({
           text: "取消",
-          role:"cancel",
+          role: "cancel",
           handler: () => {
-            
+
           }
         });
         this.actionSheetController.create({
           header: "车牌号码历史记录",
           subHeader: "请选择",
-          backdropDismiss:false,
-          keyboardClose:false,
+          backdropDismiss: false,
+          keyboardClose: false,
           buttons: vehicleNoButtons
         }).then(p => p.present());
       }
@@ -144,21 +144,52 @@ export class PayWeighingFeePage implements OnInit {
   }
   startRead(inputVehicleNo: string) {
     this.vehicleNo = inputVehicleNo;
-    let started = this.weightBillService.start(this.openId, this.vehicleNo);
-    if (started == "true") {
-      this.loadingCtrl.create({
-        message: '正在测量,请稍后...'
-      }).then(p => p.present());;
-    }
-    else {
-      this.toastController.create({
-        position: "middle",
-        header: "启动失败",
-        message: '请联系系统管理员！',
-        duration: 2000
-      }).then(p => p.present());
-      return false;
-    }
+    this.loadingCtrl.create({
+      message: '正在发起请求,请稍后...'
+    }).then(p => p.present());
+    this.weightBillService.start(this.openId, this.vehicleNo)
+      .subscribe(started => {
+        this.loadingCtrl.dismiss();
+        console.log(typeof (started));
+        console.log(started);
+        if (started == "true") {
+          this.loadingCtrl.create({
+            message: '正在测量,请稍后...'
+          }).then(p => p.present());
+        }
+        else {
+          this.alertController.create({
+            header: '启动失败',
+            subHeader:"非常抱歉，系统遇到了问题",
+            message:"请联系系统管理员！",
+            backdropDismiss:false,
+            keyboardClose:false,
+            buttons: [
+              {
+                text: '确定',
+                role: 'cancel'
+              }
+            ]
+          }).then(p=>p.present());
+          return false;
+        }
+      }, err => {
+        this.loadingCtrl.dismiss();
+        console.log(err);
+        this.alertController.create({
+          header: '启动失败',
+          subHeader:"非常抱歉，系统遇到了问题",
+          message:"请联系系统管理员！",
+          backdropDismiss:false,
+          keyboardClose:false,
+          buttons: [
+            {
+              text: '确定',
+              role: 'cancel'
+            }
+          ]
+        }).then(p=>p.present());
+      });
   }
   getInputVehicleNo() {
     this.alertController.create({

@@ -52,11 +52,15 @@ export class WeightBillService {
     return seq;
   }
   start(openid,vehicleNo) {
-    var request = new XMLHttpRequest();
-    request.withCredentials = true;
-    request.open('GET', apiUrl + "/Measure/Start?vehicleNo=" + vehicleNo+"&openid="+openid, false);
-    request.send(null);
-    return request.responseText;
+    let paras = new HttpParams().set("openid", openid).set("vehicleNo",vehicleNo);
+    let seq = this.http.get<string>(
+      apiUrl + "/Measure/Start",
+      {
+        withCredentials: true,
+        params: paras,
+      }
+    );
+    return seq;
   }
   
   save(data) {
