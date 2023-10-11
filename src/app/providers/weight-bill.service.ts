@@ -53,7 +53,7 @@ export class WeightBillService {
   }
   start(openid,vehicleNo) {
     let paras = new HttpParams().set("openid", openid).set("vehicleNo",vehicleNo);
-    let seq = this.http.get<string>(
+    let seq = this.http.get<boolean>(
       apiUrl + "/Measure/Start",
       {
         withCredentials: true,

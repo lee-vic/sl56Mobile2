@@ -152,7 +152,7 @@ export class PayWeighingFeePage implements OnInit {
         this.loadingCtrl.dismiss();
         console.log(typeof (started));
         console.log(started);
-        if (started == "true") {
+        if (started == true) {
           this.loadingCtrl.create({
             message: '正在测量,请稍后...'
           }).then(p => p.present());
