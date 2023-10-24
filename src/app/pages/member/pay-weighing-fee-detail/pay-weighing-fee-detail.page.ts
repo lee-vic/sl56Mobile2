@@ -73,8 +73,13 @@ export class PayWeighingFeeDetailPage implements OnInit {
           this.weightBill = res;
           if (this.weightBill.Status == 0) {
             this.weightBill.WxOpenId = this.openId;
-            this.weightBill.TareWeight = null;
-            this.weightBill.NetWeight = this.weightBill.GrossWeight;
+            if (this.weightBill.TareWeight > 0) {
+              this.weightBill.NetWeight = this.weightBill.GrossWeight - this.weightBill.TareWeight;
+            }
+            else {
+              this.weightBill.TareWeight = null;
+              this.weightBill.NetWeight = this.weightBill.GrossWeight;
+            }
             //月结客户 更改按钮显示的文本
             if (this.weightBill.IsMonthly) {
               this.buttonText = "保存";
