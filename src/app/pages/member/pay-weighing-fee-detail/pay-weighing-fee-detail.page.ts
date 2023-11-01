@@ -51,9 +51,10 @@ export class PayWeighingFeeDetailPage implements OnInit {
         if (obj.MsgContent == "True") {
           this.loadingCtrl.dismiss();
           this.toastCtrl.create({
-            message: "支付成功",
+            header:"支付成功",
+            message: "如果您需要纸质磅单，请到门卫室领取",
             position: "middle",
-            duration: 2000,
+            duration: 5000,
           }).then((p) => p.present());
           this.navCtrl.back();
         }
@@ -142,9 +143,10 @@ export class PayWeighingFeeDetailPage implements OnInit {
         this.weightBillService.save(this.weightBill).subscribe(p => {
           if (p == "true") {
             this.toastCtrl.create({
-              message: "已保存成功",
+              header:"已保存成功",
+              message: "如果您需要纸质磅单，请到门卫室领取",
               position: "middle",
-              duration: 2000,
+              duration: 5000,
             }).then((p) => p.present());
             this.navCtrl.back();
           }
