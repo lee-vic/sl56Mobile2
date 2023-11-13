@@ -23,8 +23,8 @@ export class ResetPasswordPage implements OnInit {
   btnDisabled: boolean = false;
   validation_messages = {
     "mobile": [
-      { type: "required", message: "手机号码不能为空" },
-      { type: "pattern", message: "手机号码格式不正确" }
+      { type: "required", message: "手机号码/邮箱不能为空" },
+      { type: "pattern", message: "手机号码/邮箱格式不正确" }
     ],
     "code": [
       { type: "required", message: "验证码不能为空" },
@@ -43,7 +43,7 @@ export class ResetPasswordPage implements OnInit {
     this.myForm2 = this.formBuilder.group({
       mobile: ['', Validators.compose([
         Validators.required,
-        Validators.pattern("^1[3|4|5|7|8][0-9]{9}$")
+        Validators.pattern(/(^1[3|4|5|7|8][0-9]{9}$)|(^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$)/)
       ])],
       code: ['', Validators.compose([
         Validators.required,
