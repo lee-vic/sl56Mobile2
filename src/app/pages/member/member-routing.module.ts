@@ -313,7 +313,7 @@ const routes: Routes = [
           ),
       },
       {
-        path: "detail",
+        path: "detail/:id",
         loadChildren: () =>
           import(
             "./pay-weighing-fee-detail/pay-weighing-fee-detail.module"
@@ -335,6 +335,9 @@ const routes: Routes = [
         (m) => m.InterviewModule
       ),
   },
+  { path: 'weight-bill-list', loadChildren: () =>import("./weight-bill-list/weight-bill-list.module").then((m) => m.WeightBillListPageModule) }
+
+
 ];
 
 @NgModule({

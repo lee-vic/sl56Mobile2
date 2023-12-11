@@ -19,6 +19,7 @@ const routes: Routes = [
   { path: 'epidemic', loadChildren: './pages/epidemic/epidemic.module#EpidemicPageModule' },
   { path: 'distribute-register', loadChildren:()=>import('./pages/member/distribute-register/distribute-register.module').then(m=>m.DistributeRegisterPageModule) },
   { path: 'distribute-agreement', loadChildren:()=>import('./pages/member/distribute-register/distribute-agreement/distribute-agreement.module').then(m=>m.DistributeAgreementModule) }
+
 ];
 
 @NgModule({

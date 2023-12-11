@@ -1,28 +1,83 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>称重记录</ion-title>
+    <ion-title>开始称重</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToHistory()">
+        历史过磅
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-text color="danger" *ngIf="weights.length==0;else showList">
-    <h1>{{showMsg}}</h1>
+  <ion-segment [(ngModel)]="tab">
+    <ion-segment-button value="1">
+      重车模式
+    </ion-segment-button>
+    <ion-segment-button value="2">
+      空车模式
+    </ion-segment-button>
+  </ion-segment>
+  <div class="ion-padding-top">
+    <form [formGroup]="weightBillForm1" novalidate>
+      <ion-list>
+        <ion-item>
+          <ion-label>车牌号码*</ion-label>
+          <ion-input type="text" value="" placeholder="请输入车牌号码" formControlName="vehicleNo" [(ngModel)]="data.VehicleNo"
+            (ionChange)="vehicleNoChange($event)"></ion-input>
+          <ion-button color="primary" size="small" slot="end" (click)="showHistoryVehicleNo()">历史车牌</ion-button>
+          <ion-button color="secondary" size="small" slot="end" (click)="showInParkVehicleNo()">入场记录</ion-button>
+        </ion-item>
+        <div class="validation-errors ion-padding-start">
+          <div *ngFor="let validation of validation_messages.vehicleNo">
+            <ng-container>
+              <div class="error-message"
+                *ngIf="weightBillForm1.get('vehicleNo').hasError(validation.type) && (weightBillForm1.get('vehicleNo').dirty || weightBillForm1.get('vehicleNo').touched)">
+                {{validation.message}}
+              </div>
+            </ng-container>
+          </div>
+        </div>
+        <ion-item [ngClass]="tab==2 ? 'ion-hide' : ''">
+          <ion-label>皮重(车重)*</ion-label>
+          <ion-input type="number" value="" placeholder="请输入皮重(车重)" formControlName="tareWeight"
+            [(ngModel)]="data.TareWeight"></ion-input>
+        </ion-item>
 
-  </ion-text>
-  <ng-template #showList>
-    <ion-list *ngFor="let item of weights">
-      <ion-item>
-        <ion-label>车号:{{item.VehicleNo}}</ion-label>
-        <ion-note slot="end" class="weight">净重:{{item.NetWeight}}{{item.UnitOfWeight}}</ion-note>
-      </ion-item>
-      <ion-item detail (click)="detail(item.ObjectId)">
-        <ion-label>
-          <p>毛重:{{item.GrossWeight}}{{item.UnitOfWeight}}</p>
-          <p>皮重:{{item.TareWeight}}{{item.UnitOfWeight}}</p>
-          <p>测量时间:{{item.WeightingDate}}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </ng-template>
+        <!-- <ion-item>
+          <ion-label>过磅费</ion-label>
+          <ion-input type="number" value="" placeholder="磅单上显示的金额，与实际收费无关" formControlName="weighingFee"
+            [(ngModel)]="data.WeighingFee"></ion-input>
+        </ion-item> -->
+        <ion-item>
+          <ion-label>过磅费</ion-label>
+          <ion-select interface="popover" formControlName="pricePerTon"  [(ngModel)]="data.PricePerTon">
+            <ion-select-option *ngFor="let item of prices" [value]="item.value" [selected]="item.value==0">{{item.text}}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label>企业账号</ion-label>
+          <ion-input type="text" value="" placeholder="请输入企业账号" formControlName="corporateAccount"
+            [(ngModel)]="data.CorporateAccount"></ion-input>
+        </ion-item>
+      </ion-list>
+
+    </form>
+  </div>
+
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>温馨提示</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p>1、请确保车辆完全在磅上；</p>
+      <p>2、测量时请确保车辆静止，人员请勿在磅上走动；</p>
+      <p>3、过磅结束后，您可以查看电子榜单，同时纸质榜单 将打印在园区门口保安室。</p>
+      <p>4、收费规则：港车15元/次，其他其他车辆按含车重量，1元/吨最低15元/次。</p>
+      <p>5、有疑问请致电：18148566788</p>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
 <ion-footer>
   <ion-button expand="full" (click)="start()" [disabled]="!signalRConnected">开始称重</ion-button>

@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>称重记录</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-text color="danger" *ngIf="weights.length==0;else showList">
+    <h1>{{showMsg}}</h1>
+
+  </ion-text>
+  <ng-template #showList>
+    <ion-list *ngFor="let item of weights">
+      <ion-item>
+        <ion-label>车号:{{item.VehicleNo}}</ion-label>
+        <ion-note slot="end" class="weight">净重:{{item.NetWeight}}{{item.UnitOfWeight}}</ion-note>
+      </ion-item>
+      <ion-item detail (click)="detail(item.ObjectId)">
+        <ion-label>
+          <p>毛重:{{item.GrossWeight}}{{item.UnitOfWeight}}</p>
+          <p>皮重:{{item.TareWeight}}{{item.UnitOfWeight}}</p>
+          <p>测量时间:{{item.WeightingDate}}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ng-template>
+</ion-content>

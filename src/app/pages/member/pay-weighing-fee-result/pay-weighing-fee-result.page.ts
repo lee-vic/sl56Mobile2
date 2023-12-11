@@ -11,11 +11,12 @@ import { apiUrl } from 'src/app/global';
 export class PayWeighingFeeResultPage implements OnInit {
   id;
   downloadLink;
-  constructor(private route:ActivatedRoute,private service:WeightBillService) {
-      this.id = +this.route.snapshot.paramMap.get("id");
+  imageUrl:string;
+  constructor(private route: ActivatedRoute, private service: WeightBillService) {
+    this.id = this.route.snapshot.paramMap.get("id");
   }
 
   ngOnInit(): void {
-    this.downloadLink = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.id;
-   }
+    this.imageUrl = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.id;
+  }
 }

@@ -5,6 +5,7 @@ import { IonicModule } from "@ionic/angular";
 import { PayWeighingFeePage } from "./pay-weighing-fee.page";
 import { RouterModule, Routes } from '@angular/router';
 import { CookieService } from "ngx-cookie-service";
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 const routes: Routes = [
   {
     path: "",
@@ -15,6 +16,8 @@ const routes: Routes = [
   declarations: [PayWeighingFeePage],
   imports: [
     CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     RouterModule.forChild(routes),
     IonicModule
   ],

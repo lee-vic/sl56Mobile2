@@ -34,5 +34,11 @@ export class WeightBill {
   // 单据状态.0:初始状态.1:创建了微信支付订单，但是还没有收到支付成功通知的。2:已成功支付
   Status;
   //是否月结
-  IsMonthly:Boolean;
+  IsMonthly: Boolean;
+  //客户输入的过磅费。只是打印在榜单上的金额。与实际收费金额无关.如果用户未输入，默认实际支付金额
+  WeighingFee:number;
+  //企业账号，如果数据库有对应记录。不收取过磅费用
+  CorporateAccount:number;
+  //过磅费选项，见UI的选项值
+  PricePerTon:number;
 }

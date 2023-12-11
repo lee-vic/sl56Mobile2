@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { apiUrl } from '../global';
 import { WeightBill } from '../interfaces/weight-bill';
 import { UnifiedOrderResult } from '../interfaces/unified-order-result';
+import { timeout } from 'rxjs/operators';
 
 @Injectable({
   providedIn: "root",
@@ -51,18 +52,11 @@ export class WeightBillService {
     );
     return seq;
   }
-  start(openid,vehicleNo) {
-    let paras = new HttpParams().set("openid", openid).set("vehicleNo",vehicleNo);
-    let seq = this.http.get<boolean>(
-      apiUrl + "/Measure/Start",
-      {
-        withCredentials: true,
-        params: paras,
-      }
-    );
+  start(data:WeightBill) {
+    let seq =  this.http.post<boolean>(apiUrl+"/Measure/Start",data,{ withCredentials:true}).pipe(timeout(5000));
     return seq;
   }
-  
+
   save(data) {
     let seq = this.http.post<string>(
       apiUrl + "/Measure/Save",
@@ -71,13 +65,33 @@ export class WeightBillService {
     );
     return seq;
   }
-  getHistoryVehicleNo(openId){
+  getHistoryVehicleNo(openId) {
     let paras = new HttpParams().set("openid", openId);
     let seq = this.http.get<Array<string>>(
       apiUrl + "/Measure/HistoryVehicleNo",
       {
         withCredentials: true,
         params: paras,
+      }
+    );
+    return seq;
+  }
+  getWeightBillDefaultValue(openId: string, vehicleNo: string) {
+    let paras = new HttpParams().set("vehicleNo", vehicleNo).set("openId", openId);
+    let seq = this.http.get<WeightBill>(
+      apiUrl + "/Measure/GetWeightBillDefaultValue",
+      {
+        withCredentials: true,
+        params: paras,
+      }
+    );
+    return seq;
+  }
+  getInParkVehicleNo() {
+    let seq = this.http.get<Array<string>>(
+      apiUrl + "/Measure/InParkVehicleNo",
+      {
+        withCredentials: true
       }
     );
     return seq;

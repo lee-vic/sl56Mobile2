@@ -3,57 +3,42 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>详细信息</ion-title>
+    <ion-title>支付结算</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <div *ngIf="weightBill.IsMonthly==false">
+  <div>
     <ion-row>
-      <ion-label class="feeLabel" *ngIf="weightBill.Status!=2;else paid">
+      <ion-label class="feeLabel">
         费用(￥)：{{weightBill.Amount}}
       </ion-label>
-      <ng-template #paid>
-        <ion-label class="feeLabel" #paid>
-          订单已支付！
-        </ion-label>
-      </ng-template>
     </ion-row>
   </div>
 
   <ion-list>
-    <ion-item *ngIf="weightBill.Status==2">
-      <ion-label>毛重</ion-label>
-      <ion-input type="number" [(ngModel)]="weightBill.GrossWeight" readonly>
-      </ion-input>
+    <ion-item>
+      <ion-label>车牌号码</ion-label>
+      <ion-note slot="end">{{weightBill?.VehicleNo}}</ion-note>
     </ion-item>
     <ion-item>
-      <ion-label>皮重</ion-label>
-      <ion-input type="number" [(ngModel)]="weightBill.TareWeight" (ionChange)="inputTareWeight($event)"
-        inputmode="decimal" readonly="{{weightBill.Status!=0}}" autofocus="true" placeholder="请输入皮重">
-      </ion-input>
-      <ion-label class="ion-text-wrap" color="danger" *ngIf="this.weightBill.NetWeight<0">
-        皮重不能大于毛重！
-      </ion-label>
-    </ion-item>
-    <ion-item *ngIf="weightBill.Status==0">
-      <ion-label class="ion-text-wrap">
-        皮重默认为您上一次称重的重量，您可以根据实际情况修改
-      </ion-label>
-    </ion-item>
-    <ion-item *ngIf="weightBill.Status==2">
-      <ion-label>净重</ion-label>
-      <ion-input type="number" [(ngModel)]="weightBill.NetWeight" readonly>
-      </ion-input>
+      <ion-label>皮重(车重)</ion-label>
+      <ion-note slot="end">{{weightBill?.TareWeight}}KG</ion-note>
     </ion-item>
     <ion-item>
-      <ion-label>车牌</ion-label>
-      <ion-input type="text" [(ngModel)]="weightBill.VehicleNo" readonly="{{true}}">
-      </ion-input>
+      <ion-label>过磅费</ion-label>
+      <ion-note slot="end">{{weightBill?.WeighingFee}}元</ion-note>
     </ion-item>
-    <ion-item *ngIf="weightBill.Status==2">
-      <a [href]="downloadLink">下载磅单文件</a>
+    <ion-item>
+      <ion-label>月卡用户</ion-label>
+      <ion-note slot="end">{{weightBill?.IsMonthly}}</ion-note>
+    </ion-item>
+    <ion-item>
+      <ion-label>企业账号</ion-label>
+      <ion-note slot="end">{{weightBill?.CorporateAccount}}</ion-note>
     </ion-item>
   </ion-list>
-  <ion-button expand="block" class="pay-button" (click)="payAndPrint()" *ngIf="weightBill.Status!=2" disabled="{{this.weightBill.NetWeight<0}}">{{buttonText}}</ion-button>
-</ion-content>
 
+</ion-content>
+<ion-footer>
+  <ion-button expand="block" (click)="payByJsApi()"  [disabled]="!signalRConnected">支付费用</ion-button>
+</ion-footer>

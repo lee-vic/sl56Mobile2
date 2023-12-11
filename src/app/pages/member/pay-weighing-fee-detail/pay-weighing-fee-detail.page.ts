@@ -15,11 +15,9 @@ declare var WeixinJSBridge: any;
 export class PayWeighingFeeDetailPage implements OnInit {
   weightBill: WeightBill = new WeightBill();
   signalRConnection: SignalRConnection;
-  openId: string;
   objectId;
-  downloadLink;
-  buttonText: string = "支付费用";
   subscriber: Subscription;
+  signalRConnected: boolean = false;
   constructor(
     private route: ActivatedRoute,
     private loadingCtrl: LoadingController,
@@ -29,8 +27,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
     private alertController: AlertController,
     private signalR: SignalR,
   ) {
-    this.objectId = route.snapshot.queryParams["ObjectId"];
-    this.openId = route.snapshot.queryParams["OpenId"];
+    this.objectId = this.route.snapshot.paramMap.get("id");
   }
 
   ngOnInit(): void {
@@ -42,27 +39,32 @@ export class PayWeighingFeeDetailPage implements OnInit {
   ionViewDidEnter() {
     this.loadData();
     this.signalRConnection.start().then((c) => {
+      this.signalRConnected=true;
       //监听支付成功事件
       let listener = c.listenFor("messageReceived");
-      if (this.subscriber != undefined)
+      if (this.subscriber != undefined) {
         this.subscriber.unsubscribe();
+      }
       this.subscriber = listener.subscribe((msg: any) => {
         let obj = JSON.parse(msg);
         if (obj.MsgContent == "True") {
           this.loadingCtrl.dismiss();
           this.toastCtrl.create({
-            header:"支付成功",
+            header: "支付成功",
             message: "如果您需要纸质磅单，请到门卫室领取",
             position: "middle",
             duration: 5000,
           }).then((p) => p.present());
-          this.navCtrl.back();
+          this.navCtrl.navigateForward(
+            "/member/pay-weighing-fee/result/" + this.objectId
+          );
         }
       });
     });
   }
   ionViewWillLeave() {
     this.signalRConnection.stop();
+    this.signalRConnected = false;
   }
   loadData() {
     this.loadingCtrl.create({
@@ -72,22 +74,6 @@ export class PayWeighingFeeDetailPage implements OnInit {
         p.present();
         this.weightBillService.getWeightBill(this.objectId).subscribe((res) => {
           this.weightBill = res;
-          if (this.weightBill.Status == 0) {
-            this.weightBill.WxOpenId = this.openId;
-            if (this.weightBill.TareWeight > 0) {
-              this.weightBill.NetWeight = this.weightBill.GrossWeight - this.weightBill.TareWeight;
-            }
-            else {
-              this.weightBill.TareWeight = null;
-              this.weightBill.NetWeight = this.weightBill.GrossWeight;
-            }
-            //月结客户 更改按钮显示的文本
-            if (this.weightBill.IsMonthly) {
-              this.buttonText = "保存";
-            }
-          } else if (this.weightBill.Status == 2) {
-            this.downloadLink = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.weightBill.ObjectId;
-          }
           p.dismiss();
         }, (err) => {
           this.loadingCtrl.dismiss();
@@ -125,41 +111,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
       }
     );
   }
-  payAndPrint() {
-    if (this.weightBill.TareWeight == null) {
-      this.alertController.create({
-        header: '信息不完整',
-        subHeader: "请输入皮重",
-        backdropDismiss: false,
-        keyboardClose: false,
-        buttons: [{
-          text: "确定",
-        }]
-      }).then(p => p.present());
-    }
-    else {
-      //月结客户，直接保存
-      if (this.weightBill.IsMonthly == true) {
-        this.weightBillService.save(this.weightBill).subscribe(p => {
-          if (p == "true") {
-            this.toastCtrl.create({
-              header:"已保存成功",
-              message: "如果您需要纸质磅单，请到门卫室领取",
-              position: "middle",
-              duration: 5000,
-            }).then((p) => p.present());
-            this.navCtrl.back();
-          }
-        });
-      }
-      //非月结客户，调用支付
-      else {
-        this.payByJsApi();
-      }
 
-    }
-
-  }
   payByJsApi() {
     this.weightBill.TradeType = "JSAPI";
     this.loadingCtrl
@@ -197,16 +149,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
         );
       });
   }
-  inputTareWeight(event) {
-    this.weightBill.TareWeight = parseFloat(
-      this.weightBill.TareWeight.toString()
-    );
-    if (Number.isNaN(this.weightBill.TareWeight))
-      this.weightBill.TareWeight = 0;
-    this.weightBill.NetWeight =
-      this.weightBill.GrossWeight - this.weightBill.TareWeight;
-    console.log(this.weightBill);
-  }
+
   ngOnDestroy(): void {
     this.signalRConnection.stop();
   }

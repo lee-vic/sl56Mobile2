@@ -25,7 +25,6 @@ export class SubAccountDetailPage implements OnInit {
     public formBuilder: FormBuilder,
     ) {
       this.id = +this.route.snapshot.paramMap.get('id');
-   
     console.log(this.id);
     if (this.id == 0) {
       this.title = "新增子帐号";
