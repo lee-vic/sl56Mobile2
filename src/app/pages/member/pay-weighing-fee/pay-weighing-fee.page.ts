@@ -228,6 +228,12 @@ export class PayWeighingFeePage implements OnInit {
           else {
             this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
               this.loadingCtrl.dismiss();
+              this.toastController.create({
+                header: "称重已完成",
+                message: "如果您需要纸质磅单，请到门卫室领取",
+                position: "middle",
+                duration: 5000,
+              }).then((p) => p.present());
               this.detail(parseInt(obj.InvokeClassName));
             });
           }

@@ -24,8 +24,12 @@
           <ion-label>车牌号码*</ion-label>
           <ion-input type="text" value="" placeholder="请输入车牌号码" formControlName="vehicleNo" [(ngModel)]="data.VehicleNo"
             (ionChange)="vehicleNoChange($event)"></ion-input>
-          <ion-button color="primary" size="small" slot="end" (click)="showHistoryVehicleNo()">历史车牌</ion-button>
-          <ion-button color="secondary" size="small" slot="end" (click)="showInParkVehicleNo()">入场记录</ion-button>
+        
+        </ion-item>
+        <ion-item>
+          <ion-label></ion-label>
+          <ion-button color="primary" size="small" slot="end" fill="clear" (click)="showHistoryVehicleNo()">历史记录</ion-button>
+          <ion-button color="secondary" size="small" slot="end" fill="clear" (click)="showInParkVehicleNo()">入场记录</ion-button>
         </ion-item>
         <div class="validation-errors ion-padding-start">
           <div *ngFor="let validation of validation_messages.vehicleNo">
