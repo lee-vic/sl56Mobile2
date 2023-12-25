@@ -7,6 +7,7 @@ import { NavigationOptions } from '@ionic/angular/dist/providers/nav-controller'
 import { SignalR, SignalRConnection } from 'ng2-signalr';
 import { Subscription } from 'rxjs';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: "app-pay-weighing-fee",
@@ -57,7 +58,8 @@ export class PayWeighingFeePage implements OnInit {
     private signalR: SignalR,
     public toastController: ToastController,
     public formBuilder: FormBuilder,
-    public actionSheetController: ActionSheetController
+    public actionSheetController: ActionSheetController,
+    private titleService:Title
   ) {
     this.weightBillForm1 = this.formBuilder.group({
       vehicleNo: ['', Validators.compose(
@@ -83,7 +85,7 @@ export class PayWeighingFeePage implements OnInit {
     this.signalRConnection = this.signalR.createConnection();
     this.signalRConnection.status.subscribe((p) => console.log(p.name));
     this.loadDefaultValue();
-
+    this.titleService.setTitle("丰树地磅");
   }
   s
   loadDefaultValue() {
