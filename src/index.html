@@ -3,11 +3,12 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>升蓝国际物流</title>
+  <title></title>
 
   <base href="/" />
 
-  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport"
+    content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
 
@@ -24,11 +25,19 @@
 </body>
 <script>
   var _hmt = _hmt || [];
-  (function() {
+  (function () {
     var hm = document.createElement("script");
     hm.src = "https://hm.baidu.com/hm.js?0196f0af72bfc6799e634b44560c00ba";
-    var s = document.getElementsByTagName("script")[0]; 
+    var s = document.getElementsByTagName("script")[0];
     s.parentNode.insertBefore(hm, s);
   })();
-  </script>
+  setTimeout(() => {
+    var title = document.title;
+    if (title == "") {
+      document.title = "升蓝国际物流";
+    }
+  }, 1000);
+
+</script>
+
 </html>
