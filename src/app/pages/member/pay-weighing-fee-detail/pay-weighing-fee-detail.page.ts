@@ -6,7 +6,9 @@ import { ActivatedRoute } from '@angular/router';
 import { apiUrl } from "src/app/global";
 import { SignalR, SignalRConnection } from 'ng2-signalr';
 import { Subscription } from 'rxjs';
+
 declare var WeixinJSBridge: any;
+declare var wx: any;
 @Component({
   selector: "app-pay-weighing-fee-detail",
   templateUrl: "./pay-weighing-fee-detail.page.html",
@@ -18,6 +20,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
   objectId;
   subscriber: Subscription;
   signalRConnected: boolean = false;
+  isMiniProgram: boolean = false;//是否在小程序内运行
   constructor(
     private route: ActivatedRoute,
     private loadingCtrl: LoadingController,
@@ -25,7 +28,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
     private toastCtrl: ToastController,
     private navCtrl: NavController,
     private alertController: AlertController,
-    private signalR: SignalR,
+    private signalR: SignalR
   ) {
     this.objectId = this.route.snapshot.paramMap.get("id");
   }
@@ -34,7 +37,9 @@ export class PayWeighingFeeDetailPage implements OnInit {
     this.weightBill.IsMonthly = false;
     this.signalRConnection = this.signalR.createConnection();
     this.signalRConnection.status.subscribe((p) => console.log(p.name));
-
+    if (window.navigator.userAgent.indexOf("miniProgram") != -1) {
+      this.isMiniProgram = true;
+    }
   }
   ionViewDidEnter() {
     this.loadData();
@@ -113,6 +118,14 @@ export class PayWeighingFeeDetailPage implements OnInit {
   }
 
   payByJsApi() {
+    //小程序端跳转到小程序内的支付页面
+    if (this.isMiniProgram) {
+      this.weightBill.TradeType = "MAPP1";
+      wx.miniProgram.navigateTo({
+        url: "/pages/index/pay?params=" + JSON.stringify(this.weightBill),
+      });
+      return;
+    }
     this.weightBill.TradeType = "JSAPI";
     this.loadingCtrl
       .create({
