@@ -1,5 +1,5 @@
-import { NavController, LoadingController, AlertController, ToastController, ActionSheetController } from '@ionic/angular';
-import { Component, OnInit } from '@angular/core';
+import { NavController, LoadingController, AlertController, ToastController, ActionSheetController, IonInput } from '@ionic/angular';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
@@ -21,6 +21,9 @@ export class PayWeighingFeePage implements OnInit {
   public data: WeightBill = new WeightBill();
   tab: number = 1;
   public weightBillForm1: FormGroup;
+  @ViewChild('vehicleNoInput', { static: true }) vehicleNoInput: IonInput;
+  //车牌输入框获得焦点是是否自动显示车辆入场记录
+  autoShowInparkHistory: boolean = false;
   validation_messages = {
     "vehicleNo": [
       { type: "required", message: "车牌号码必须输入" },
@@ -59,7 +62,7 @@ export class PayWeighingFeePage implements OnInit {
     public toastController: ToastController,
     public formBuilder: FormBuilder,
     public actionSheetController: ActionSheetController,
-    private titleService:Title
+    private titleService: Title
   ) {
     this.weightBillForm1 = this.formBuilder.group({
       vehicleNo: ['', Validators.compose(
@@ -70,14 +73,14 @@ export class PayWeighingFeePage implements OnInit {
         ]
       )],
       tareWeight: [null],
-      pricePerTon: [0,Validators.compose([Validators.required])],
+      pricePerTon: [0, Validators.compose([Validators.required])],
       corporateAccount: [null, Validators.compose(
         [
           Validators.maxLength(32)
         ]
       )],
     });
-    this.data.PricePerTon=0;
+    this.data.PricePerTon = 0;
   }
 
   ngOnInit(): void {
@@ -95,13 +98,16 @@ export class PayWeighingFeePage implements OnInit {
       .then((lc) => {
         lc.present();
         this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, "").subscribe(result => {
+          //存在历史记录
           if (result != null) {
             this.data.VehicleNo = result.VehicleNo;
             this.data.TareWeight = result.TareWeight;
           }
+          //不存在历史记录
           else {
             this.data.VehicleNo = null;
             this.data.TareWeight = null;
+            this.autoShowInparkHistory = true;//将自动显示入场记录的标识置为true
           }
           lc.dismiss();
         }, error => {
@@ -114,8 +120,8 @@ export class PayWeighingFeePage implements OnInit {
     this.weightBillService.getHistoryVehicleNo(this.data.WxOpenId).subscribe(vehicleNoList => {
       if (vehicleNoList.length == 0) {
         this.alertController.create({
-          header: '信息不完整',
-          message: "请根据系统的提示完整输入所需信息",
+          header: '不存在历史记录',
+          message: "请尝试输入车牌号码或者选择车辆入场记录",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
@@ -152,22 +158,27 @@ export class PayWeighingFeePage implements OnInit {
       }
     });
   }
-  showInParkVehicleNo() {
+  showInParkVehicleNo(showNotExistsMessage: boolean) {
     this.weightBillService.getInParkVehicleNo().subscribe(vehicleNoList => {
+      //不存在入场记录
       if (vehicleNoList.length == 0) {
-        this.alertController.create({
-          header: '信息不完整',
-          message: "请根据系统的提示完整输入所需信息",
-          backdropDismiss: false,
-          keyboardClose: false,
-          buttons: [
-            {
-              text: '确定',
-              role: 'cancel'
-            }
-          ]
-        }).then(p => p.present());
+        //如果需要弹出不存在入场记录的提示（手动点击的才弹出，自动显示的不弹出）
+        if (showNotExistsMessage) {
+          this.alertController.create({
+            header: '不存在入场记录',
+            message: "请尝试输入车牌号码或者选择历史记录",
+            backdropDismiss: false,
+            keyboardClose: false,
+            buttons: [
+              {
+                text: '确定',
+                role: 'cancel'
+              }
+            ]
+          }).then(p => p.present());
+        }
       }
+      //存在入场记录，弹出让用户选择
       else {
         var vehicleNoButtons = [];
         vehicleNoList.forEach(element => {
@@ -179,13 +190,15 @@ export class PayWeighingFeePage implements OnInit {
           });
         });
         vehicleNoButtons.push({
-          text: "取消",
+          text: "没有我的车牌",
           role: "cancel",
           handler: () => {
+            this.autoShowInparkHistory = false;
+            this.vehicleNoInput.setFocus();
           }
         });
         this.actionSheetController.create({
-          header: "车牌号码历史记录",
+          header: "园区车辆入场记录",
           subHeader: "请选择",
           backdropDismiss: false,
           keyboardClose: false,
@@ -234,7 +247,7 @@ export class PayWeighingFeePage implements OnInit {
                 header: "称重已完成",
                 message: "如果您需要纸质磅单，请到门卫室领取",
                 position: "middle",
-                duration: 5000,
+                duration: 3000,
               }).then((p) => p.present());
               this.detail(parseInt(obj.InvokeClassName));
             });
@@ -343,22 +356,36 @@ export class PayWeighingFeePage implements OnInit {
     }
   }
   vehicleNoChange(event) {
-    if (this.data.VehicleNo != null && this.data.VehicleNo != undefined)
+    if (this.data.VehicleNo != null && this.data.VehicleNo != undefined && this.data.VehicleNo.length > 0) {
       this.data.VehicleNo = this.data.VehicleNo.toLocaleUpperCase();
-    if (this.data.VehicleNo.length >= 7) {
-      this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, this.data.VehicleNo).subscribe(result => {
-        if (result != null) {
-          this.data.TareWeight = result.TareWeight;
-        }
-        else {
-          this.data.TareWeight = null;
-        }
+      if (this.data.VehicleNo.length >= 7) {
+        this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, this.data.VehicleNo).subscribe(result => {
+          if (result != null) {
+            this.data.TareWeight = result.TareWeight;
+          }
+          else {
+            this.data.TareWeight = null;
+          }
 
-      }, error => {
+        }, error => {
 
-      });
+        });
+      }
     }
-
+    else {
+      if (this.autoShowInparkHistory == true) {
+        this.showInParkVehicleNo(false);
+      }
+    }
+  }
+  vehicleNoFocus(event) {
+    console.log(this.data.VehicleNo);
+    if (this.autoShowInparkHistory == true) {
+      if (this.data.VehicleNo == null || this.data.VehicleNo == undefined || this.data.VehicleNo.length == 0) {
+        this.showInParkVehicleNo(false);
+      }
+    }
+    //alert(this.data.VehicleNo);
   }
   setVehicleNo(val: string) {
     this.weightBillForm1.controls["vehicleNo"].setValue(val);
