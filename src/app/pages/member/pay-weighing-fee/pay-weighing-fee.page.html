@@ -54,7 +54,7 @@
         </ion-item> -->
         <ion-item>
           <ion-label>过磅费</ion-label>
-          <ion-select interface="popover" formControlName="pricePerTon"  [(ngModel)]="data.PricePerTon">
+          <ion-select interface="alert" formControlName="pricePerTon"  [(ngModel)]="data.PricePerTon" cancelText="取消" okText="确定">
             <ion-select-option *ngFor="let item of prices" [value]="item.value" [selected]="item.value==0">{{item.text}}</ion-select-option>
           </ion-select>
         </ion-item>

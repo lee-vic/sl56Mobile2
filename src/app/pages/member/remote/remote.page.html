@@ -12,11 +12,10 @@
       <ion-list>
         <ion-item>
           <ion-label>运输方式</ion-label>
-          <ion-select interface="popover" formControlName="ModeOfTransportTypeId">
+          <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportTypeId" >
             <ion-select-option *ngFor="let item of modeOfTransportTypeList" [value]="item.Id" [selected]="item.Id==0">{{item.Name}}</ion-select-option>
           </ion-select>
         </ion-item>
-       
         <ion-item>
           <ion-label>国家</ion-label>
           <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()" (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"

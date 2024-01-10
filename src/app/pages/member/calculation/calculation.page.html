@@ -23,7 +23,7 @@
 
           <ion-item>
             <ion-label>货物类型</ion-label>
-            <ion-select interface="popover" formControlName="productType">
+            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="productType">
               <ion-select-option value="1" selected="true">包裹</ion-select-option>
               <ion-select-option value="0">文件</ion-select-option>
             </ion-select>
@@ -61,14 +61,14 @@
         <ion-list>
           <ion-item>
             <ion-label>运输方式</ion-label>
-            <ion-select interface="popover" formControlName="ModeOfTransportId">
+            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportId">
               <ion-select-option *ngFor="let item of modeOfTransportList" [value]="item.Id" [selected]="item.Id==0">
                 {{item.Name}}</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
             <ion-label>货物类型</ion-label>
-            <ion-select interface="popover" formControlName="productType">
+            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="productType">
               <ion-select-option value="1" selected="true">包裹</ion-select-option>
               <ion-select-option value="0">文件</ion-select-option>
             </ion-select>
@@ -162,7 +162,7 @@
           <ion-item *ngIf="!isInputSize.checked">
             <ion-label>体积重</ion-label>
             <ion-input type="number" formControlName="volumeWeight" placeholder="请选你输入的体积重除数"></ion-input>
-            <ion-select interface="popover" formControlName="volumetric">
+            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="volumetric">
               <ion-select-option *ngFor="let item of volumetricDivisorList" [value]="item.Id">{{item.Name}}
               </ion-select-option>
             </ion-select>

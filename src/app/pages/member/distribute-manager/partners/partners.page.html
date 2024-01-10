@@ -30,7 +30,7 @@
   <ion-searchbar placeholder="搜索" (ionChange)="search($event)"></ion-searchbar>
   <ion-item>
     <ion-label>综合排序</ion-label>
-    <ion-select placeholder="选择排序" interface="popover" (ionChange)="orderChange($event)">
+    <ion-select placeholder="选择排序" interface="alert" cancelText="取消" okText="确定" (ionChange)="orderChange($event)">
       <ion-select-option value="asc">时间顺序</ion-select-option>
       <ion-select-option value="desc">时间倒序</ion-select-option>
     </ion-select>
