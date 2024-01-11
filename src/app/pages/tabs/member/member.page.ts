@@ -218,4 +218,7 @@ export class MemberPage implements OnInit {
   wechatPay(id){
     this.router.navigateByUrl("/member/wechat-pay/0?cid="+id);
   }
+  goToTest() {
+    this.router.navigateByUrl("/member/test");
+  }
 }

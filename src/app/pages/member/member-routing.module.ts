@@ -1,6 +1,5 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-
+import { NgModule } from "@angular/core";
+import { Routes, RouterModule } from "@angular/router";
 
 const routes: Routes = [
   {
@@ -331,17 +330,24 @@ const routes: Routes = [
   {
     path: "interview",
     loadChildren: () =>
-      import("./interview/interview.module").then(
-        (m) => m.InterviewModule
+      import("./interview/interview.module").then((m) => m.InterviewModule),
+  },
+  {
+    path: "weight-bill-list",
+    loadChildren: () =>
+      import("./weight-bill-list/weight-bill-list.module").then(
+        (m) => m.WeightBillListPageModule
       ),
   },
-  { path: 'weight-bill-list', loadChildren: () =>import("./weight-bill-list/weight-bill-list.module").then((m) => m.WeightBillListPageModule) }
-
-
+  {
+    path:"test",
+    loadChildren: () =>
+      import("./problem-detail/problem-weapp-test/problem-weapp-test.module").then((m) => m.ProblemWeappTestModule),
+  }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class MemberRoutingModule { }
+export class MemberRoutingModule {}
