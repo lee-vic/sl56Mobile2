@@ -96,6 +96,7 @@
         <ion-card-header>
           <ion-card-subtitle>上传文件.请上传{{data?.Problem?.AttachmentTypeName}}文件(只接受Word、Excel、PDF、JPG、PNG格式的文件)
           </ion-card-subtitle>
+          <ion-card-subtitle color="primary" *ngIf="isWeAppUploadFile">已通过微信小程序上传了文件(当前页面重新上传文件并提交将会覆盖旧文件)</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
           <ion-input type="file" name="type3Result" ngModel required={{isFileRequired}} #attFile
@@ -107,6 +108,11 @@
           <ion-label *ngIf="isFileProcessing">发票文件处理中</ion-label>
           <ion-spinner *ngIf="isFileProcessing" name="lines-small"></ion-spinner>
           <ion-label class="ion-text-wrap" color="danger" *ngIf="fileFailMessage">文件处理失败：{{fileFailMessage}}</ion-label>
+          
+        <!-- 打开微信小程序上传文件的按钮 -->
+        <div id="wxOpenLaunchWeApp">
+
+        </div>
         </ion-card-content>
       </ion-card>
 
@@ -128,7 +134,7 @@
 
       <ion-label class="ion-text-wrap" *ngIf="submitFailMessage" color="danger">{{submitFailMessage}}</ion-label>
       <ion-button type="submit" expand="block"
-        [disabled]="!page1Form.form.valid || isSubmiting || isFileProcessing || (checkListValue.length>0 && checkListValue.indexOf(true)==-1)">
+        [disabled]="(!page1Form.form.valid && !isWeAppUploadFile) || isSubmiting || isFileProcessing || (checkListValue.length>0 && checkListValue.indexOf(true)==-1)">
         提交
         <ion-spinner *ngIf="isSubmiting" name="lines-small"></ion-spinner>
       </ion-button>
@@ -182,12 +188,4 @@
     <ion-button *ngIf="data?.Problem?.Status==0" expand="full" (click)="chat()">联系客服</ion-button>
   </ion-footer>
 </ng-template>
-
-<div id="wxOpenLaunchWeApp">
-  <!-- <wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/logon/index">
-    <template>
-      <style>.btn { padding: 12px }</style>
-      <button class="btn">打开小程序</button>
-    </template></wx-open-launch-weapp> -->
-</div>
 
