@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
-import { NavController } from "@ionic/angular";
+import { LoadingController, NavController } from "@ionic/angular";
 import { ActivatedRoute, Router, NavigationExtras } from "@angular/router";
 import {
   ProblemProcessResultModel,
@@ -27,6 +27,7 @@ export class ProblemDetailPage implements OnInit {
   isFileProcessing: boolean = false;
   isSubmiting: boolean = false;
   isFileRequired = true;
+  isWeAppUploadFile = false;
   ngOnInit(): void {
     this.service.getProblemDetail(this.problemId).subscribe((res) => {
       this.data = res;
@@ -47,36 +48,43 @@ export class ProblemDetailPage implements OnInit {
         inputTypes.length > 1 && inputTypes.indexOf(3) != -1
       );
       console.log("isRequiredFile:", this.isFileRequired);
-      // this.commonService
-      //   .getJsSdkConfig(
-      //     "https://mobile.sl56.com" + this.router.url,
-      //     null,
-      //     "wx-open-launch-weapp"
-      //   )
-      //   .subscribe((res) => {
-      //     let config = JSON.parse(res);
-      //     wx.config(config);
-      //     console.log("openLaunchWeAppConfig:", config);
-      //   });
+    this.getWeAppFileStatus();
+    //生成跳转到小程序的按钮
+      if (wx != null && inputTypes.indexOf(3) != -1 && this.receiveGoodsDetailId == 1846276) {
+        this.commonService
+          .getJsSdkConfig(
+            "https://mobile.sl56.com" + this.router.url,
+            null,
+            "wx-open-launch-weapp"
+          )
+          .subscribe((res) => {
+            let config = JSON.parse(res);
+            wx.config(config);
+            console.log("openLaunchWeAppConfig:", config);
+            const openAppDiv = document.getElementById(
+              "wxOpenLaunchWeApp"
+            ) as Element;
+            openAppDiv.innerHTML =
+              '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
+              this.problemId +
+              '"><template><style>.btn { padding: 5px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
+          });
+      }
     });
   }
-  // ngAfterViewInit() {
-  //   const openAppDiv = document.getElementById("wxOpenLaunchWeApp") as Element;
-  //   openAppDiv.innerHTML =
-  //     '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/logon/index"><template><style>.btn { padding: 12px }</style><button class="btn">打开小程序</button></template></wx-open-launch-weapp>';
-  // }
 
   //监听事件，打开小程序上传文件之后，回到公众号时，检查文件是否有上传成功
   @HostListener("window:focus", ["$event"])
   onFocus(event) {
-    console.log("Page Focusd");
+    this.getWeAppFileStatus();
   }
   constructor(
     public navCtrl: NavController,
     private route: ActivatedRoute,
     public service: ProblemService,
     private router: Router,
-    private commonService: CommonService
+    private commonService: CommonService,
+    private loadingCtrl: LoadingController
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(
@@ -227,5 +235,22 @@ export class ProblemDetailPage implements OnInit {
         this.data.Problem.Status = 1;
       }
     });
+  }
+  getWeAppFileStatus() {
+    if (!this.isWeAppUploadFile) {
+      // this.loadingCtrl
+      //   .create({
+      //     message: "获取附件状态...",
+      //   })
+      //   .then((p) => p.present());
+      this.service.isWeAppUploadFile(this.problemId).subscribe(
+        (res) => {
+          if (res) {
+            console.log("微信小程序已上传附件");
+            this.isWeAppUploadFile = res;
+          }
+        }
+      );
+    }
   }
 }
