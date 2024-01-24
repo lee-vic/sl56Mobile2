@@ -21,6 +21,7 @@ export class PayWeighingFeePage implements OnInit {
   public data: WeightBill = new WeightBill();
   tab: number = 1;
   public weightBillForm1: FormGroup;
+  isMiniProgram: boolean = false;//是否在小程序内运行
   @ViewChild('vehicleNoInput', { static: true }) vehicleNoInput: IonInput;
   //车牌输入框获得焦点是是否自动显示车辆入场记录
   autoShowInparkHistory: boolean = false;
@@ -84,13 +85,43 @@ export class PayWeighingFeePage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.data.WxOpenId = this.cookieService.get("OpenId");
-    this.signalRConnection = this.signalR.createConnection();
-    this.signalRConnection.status.subscribe((p) => console.log(p.name));
-    this.loadDefaultValue();
     this.titleService.setTitle("丰树地磅");
+    //微信小程序
+    if (window.navigator.userAgent.indexOf("miniProgram") != -1) {
+      this.isMiniProgram = true;
+      this.data.WxOpenId = this.cookieService.get("OpenId");
+      this.signalRConnection = this.signalR.createConnection();
+      this.signalRConnection.status.subscribe((p) => console.log(p.name));
+      this.loadDefaultValue();
+      this.alertController.create({
+        header: '系统升级提示',
+        message: "尊贵的客户，现过磅系统升级为微信小程序，可在微信下拉快速打开过磅小程序，无需下车完成过磅。我们将持续优化升级，为您提供更方便、更快捷的服务！",
+        backdropDismiss: false,
+        keyboardClose: false,
+        buttons: [
+          {
+            text: '确定',
+            role: 'cancel'
+          }
+        ]
+      }).then(p => p.present());
+    }
+    else {
+      this.alertController.create({
+        header: '系统升级提示',
+        message: "当前系统已迁移至微信小程序，请在微信中搜索小程序:丰树地磅",
+        backdropDismiss: false,
+        keyboardClose: false,
+        buttons: [
+          {
+            text: '确定',
+            role: 'cancel'
+          }
+        ]
+      }).then(p => p.present());
+    }
   }
-  s
+
   loadDefaultValue() {
     this.loadingCtrl.create({
       message: "请稍后",
@@ -208,6 +239,8 @@ export class PayWeighingFeePage implements OnInit {
     });
   }
   ionViewDidEnter() {
+    if (this.isMiniProgram == false)
+      return;
     this.signalRConnection.start().then((c) => {
       this.signalRConnected = true;
       //监听读数服务读数已完毕的事件
