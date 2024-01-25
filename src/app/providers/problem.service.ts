@@ -85,4 +85,12 @@ export class ProblemService {
     });
     return seq;
   }
+  deleteProblemTempFile(problemId) {
+    let paras = new HttpParams().set("problemId", problemId);
+    let seq = this.http.post<any>(apiUrl + "/Problem/DeleteProblemTempFile", null, {
+      withCredentials: true,
+      params: paras,
+    });
+    return seq;
+  }
 }

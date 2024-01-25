@@ -1,6 +1,10 @@
 import { Component, HostListener, OnInit } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
-import { LoadingController, NavController } from "@ionic/angular";
+import {
+  AlertController,
+  LoadingController,
+  NavController,
+} from "@ionic/angular";
 import { ActivatedRoute, Router, NavigationExtras } from "@angular/router";
 import {
   ProblemProcessResultModel,
@@ -48,9 +52,14 @@ export class ProblemDetailPage implements OnInit {
         inputTypes.length > 1 && inputTypes.indexOf(3) != -1
       );
       console.log("isRequiredFile:", this.isFileRequired);
-    this.getWeAppFileStatus();
-    //生成跳转到小程序的按钮
-      if (wx != null && inputTypes.indexOf(3) != -1 && this.receiveGoodsDetailId == 1846276) {
+      this.getWeAppFileStatus(true);
+      let that = this;
+      //生成跳转到小程序的按钮
+      if (
+        wx != null &&
+        inputTypes.indexOf(3) != -1 &&
+        this.receiveGoodsDetailId == 1846276
+      ) {
         this.commonService
           .getJsSdkConfig(
             "https://mobile.sl56.com" + this.router.url,
@@ -68,23 +77,39 @@ export class ProblemDetailPage implements OnInit {
               '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
               this.problemId +
               '"><template><style>.btn { padding: 5px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
+
+            const weOpenLaunchWeappBtn = document.getElementById(
+              "launch-btn"
+            ) as Element;
+            console.log(weOpenLaunchWeappBtn);
+            weOpenLaunchWeappBtn.addEventListener("click", function () {
+              that.alertCtrl
+                .create({
+                  header: "提示",
+                  message: "聊天文件上传完成",
+                  buttons: [
+                    {
+                      text: "确定",
+                      handler: () => {
+                        that.getWeAppFileStatus(false);
+                      },
+                    },
+                  ],
+                })
+                .then((p) => p.present());
+            });
           });
       }
     });
   }
 
-  //监听事件，打开小程序上传文件之后，回到公众号时，检查文件是否有上传成功
-  @HostListener("window:focus", ["$event"])
-  onFocus(event) {
-    this.getWeAppFileStatus();
-  }
   constructor(
     public navCtrl: NavController,
     private route: ActivatedRoute,
     public service: ProblemService,
     private router: Router,
     private commonService: CommonService,
-    private loadingCtrl: LoadingController
+    private alertCtrl: AlertController
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(
@@ -93,11 +118,18 @@ export class ProblemDetailPage implements OnInit {
     this.route.queryParams.subscribe((_res) => {
       if (this.router.getCurrentNavigation().extras.state) {
         var data = this.router.getCurrentNavigation().extras.state;
+        console.log(data);
         if (data.confirmFile == false) {
-          console.log("重选选择发票文件");
-          let fileInputs: any = document.getElementsByName("type3Result");
-          fileInputs[0].value = null;
-          fileInputs[1].value = null;
+          //如果是微信小程序上传的文件，则需要删除
+          if (data.isWeAppFile) {
+            this.service.deleteProblemTempFile(this.problemId).subscribe(p=>console.log(p));
+            this.isWeAppUploadFile = false;
+          } else {
+            console.log("重选选择发票文件");
+            let fileInputs: any = document.getElementsByName("type3Result");
+            fileInputs[0].value = null;
+            fileInputs[1].value = null;
+          }
         }
       }
     });
@@ -176,6 +208,7 @@ export class ProblemDetailPage implements OnInit {
                     filePath: res.Path,
                     rgdId: this.receiveGoodsDetailId,
                     problemId: this.problemId,
+                    isWeAppFile: false,
                   },
                 });
               } else {
@@ -236,21 +269,36 @@ export class ProblemDetailPage implements OnInit {
       }
     });
   }
-  getWeAppFileStatus() {
-    if (!this.isWeAppUploadFile) {
-      // this.loadingCtrl
-      //   .create({
-      //     message: "获取附件状态...",
-      //   })
-      //   .then((p) => p.present());
-      this.service.isWeAppUploadFile(this.problemId).subscribe(
-        (res) => {
-          if (res) {
-            console.log("微信小程序已上传附件");
-            this.isWeAppUploadFile = res;
+  getWeAppFileStatus(isInitPage) {
+    // this.loadingCtrl
+    //   .create({
+    //     message: "获取附件状态...",
+    //   })
+    //   .then((p) => p.present());
+
+    this.service.isWeAppUploadFile(this.problemId).subscribe((res) => {
+      this.isWeAppUploadFile = res;
+      if (isInitPage) return;
+      if (res && this.processModel.Type3Result.AttachmentTypeId == "1") {
+        this.isFileProcessing = true;
+        this.service.invoicePretreatment(this.processModel).subscribe((res) => {
+          this.isFileProcessing = false;
+          if (res.Result == true) {
+            console.log("filePath:", res.Path);
+            this.fileFailMessage = null;
+            this.navCtrl.navigateForward("/member/invoice-preview", {
+              queryParams: {
+                filePath: res.Path,
+                rgdId: this.receiveGoodsDetailId,
+                problemId: this.problemId,
+                isWeAppFile: true,
+              },
+            });
           }
-        }
-      );
-    }
+        });
+      } else {
+        alert("未检测到有上传的文件，请重新上传后再试");
+      }
+    });
   }
 }
