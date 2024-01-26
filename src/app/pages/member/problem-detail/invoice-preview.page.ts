@@ -12,14 +12,16 @@ export class InvoicePreviewPage implements OnInit {
 
   invoicePath:string;
   rgdId:number;
-  problemId:number;
+  problemId: number;
+  isWeAppFile: boolean;
   
   constructor(private route:ActivatedRoute,private router:Router,private navCtrl:NavController) {
     this.route.queryParams.subscribe(p=>{
       this.rgdId=p.rgdId;
       this.problemId=p.problemId;
+      this.isWeAppFile = p.isWeAppFile;
       let previewPath =apiUrl + "/Problem/PreviewInvoice?path=" +p.filePath+"#page=1";
-      this.invoicePath=previewPath;
+      this.invoicePath = previewPath;
       console.log(previewPath);
     });
    }
@@ -33,7 +35,8 @@ export class InvoicePreviewPage implements OnInit {
           problemid:this.problemId
         },
         state:{
-          confirmFile:false,
+          confirmFile: false,
+          isWeAppFile:this.isWeAppFile,
           refresh:Date.now()
         }
     }
@@ -46,7 +49,8 @@ export class InvoicePreviewPage implements OnInit {
           problemid:this.problemId
         },
         state:{
-          confirmFile:true
+          confirmFile: true,
+          isWeAppFile:this.isWeAppFile,
         }
     }
     this.navCtrl.navigateBack('/member/problem-detail/'+this.rgdId,params)
