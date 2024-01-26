@@ -276,13 +276,21 @@ export class PayWeighingFeePage implements OnInit {
           else {
             this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
               this.loadingCtrl.dismiss();
-              this.toastController.create({
-                header: "称重已完成",
+              this.alertController.create({
+                header: '称重已完成',
+                subHeader: "点击确定后,系统将显示电子磅单",
                 message: "如果您需要纸质磅单，请到门卫室领取",
-                position: "middle",
-                duration: 3000,
-              }).then((p) => p.present());
-              this.detail(parseInt(obj.InvokeClassName));
+                backdropDismiss: false,
+                keyboardClose: false,
+                buttons: [
+                  {
+                    text: '确定',
+                    handler: () => {
+                      this.detail(parseInt(obj.InvokeClassName));
+                    }
+                  }
+                ]
+              }).then(p => p.present());
             });
           }
         }
