@@ -9,10 +9,7 @@
 
 <ion-content>
   <ion-list>
-    <ion-item>
-      <ion-label>问题名称</ion-label>
-      <ion-note slot="end">{{data?.Problem?.ObjectName}}</ion-note>
-    </ion-item>
+
     <ion-item>
       <ion-label>目的地国家</ion-label>
       <ion-note slot="end">{{data?.CountryName}}</ion-note>
@@ -21,16 +18,20 @@
       <ion-label>价格名称</ion-label>
       <ion-note slot="end">{{data?.PriceName}}</ion-note>
     </ion-item>
-    <ion-item *ngIf="data?.Problem?.Status==0">
-      <ion-label>处理期限</ion-label>
-      <ion-note slot="end">{{data?.Problem?.EndDate}}</ion-note>
-    </ion-item>
     <ion-item *ngIf="data?.Problem?.Status==1">
       <ion-label color="success">当前问题已处理完成</ion-label>
     </ion-item>
     <ion-item>
-      <ion-label>备注</ion-label>
-      <ion-note slot="end">{{data?.Problem?.Remark}}</ion-note>
+      <ion-label>问题名称</ion-label>
+      <ion-note slot="end" color="dark">{{data?.Problem?.ObjectName}}</ion-note>
+    </ion-item>
+    <ion-item>
+      <ion-label>问题详情</ion-label>
+      <ion-note slot="end" color="dark">{{data?.Problem?.Remark}}</ion-note>
+    </ion-item>
+    <ion-item>
+      <ion-label>处理指引</ion-label>
+      <ion-note slot="end" color="secondary">{{data?.Problem?.Remark1}}</ion-note>
     </ion-item>
   </ion-list>
   <ion-item
@@ -39,15 +40,11 @@
 
   <ng-template #problemActions>
     <ion-item>
-      <ion-label color="danger">请选择一种方案自助处理</ion-label>
+      <ion-label color="danger">请在下方选择一种方案自助处理</ion-label>
     </ion-item>
     <ion-item *ngIf="data?.Problem?.Amount>0">
       <ion-label class="subTitle ion-text-wrap" color="danger">
         请确认{{data?.Problem?.ChargeName}}{{data?.Problem?.Amount}}{{data?.Problem?.CurrencyName}}</ion-label>
-    </ion-item>
-
-    <ion-item>
-      <ion-label class="subTitle ion-text-wrap" color="primary">处理指引：{{data?.Problem?.Remark1}}</ion-label>
     </ion-item>
     <ion-segment value="{{data?.Problem?.Pages[0]?.Item1}}" (ionChange)="processTypeChanged($event)">
       <ion-segment-button *ngFor="let page of data?.Problem?.Pages;let i = index" value="{{page.Item1}}"
@@ -96,7 +93,8 @@
         <ion-card-header>
           <ion-card-subtitle>上传文件.请上传{{data?.Problem?.AttachmentTypeName}}文件(只接受Word、Excel、PDF、JPG、PNG格式的文件)
           </ion-card-subtitle>
-          <ion-card-subtitle color="primary" *ngIf="isWeAppUploadFile">已通过微信小程序上传了文件(当前页面重新上传文件并提交将会覆盖旧文件)</ion-card-subtitle>
+          <ion-card-subtitle color="primary"
+            *ngIf="isWeAppUploadFile">已通过微信小程序上传了文件(当前页面重新上传文件并提交将会覆盖旧文件)</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
           <ion-input type="file" name="type3Result" ngModel required={{isFileRequired}} #attFile
@@ -108,11 +106,11 @@
           <ion-label *ngIf="isFileProcessing">发票文件处理中</ion-label>
           <ion-spinner *ngIf="isFileProcessing" name="lines-small"></ion-spinner>
           <ion-label class="ion-text-wrap" color="danger" *ngIf="fileFailMessage">文件处理失败：{{fileFailMessage}}</ion-label>
-          
-        <!-- 打开微信小程序上传文件的按钮 -->
-        <div id="wxOpenLaunchWeApp">
 
-        </div>
+          <!-- 打开微信小程序上传文件的按钮 -->
+          <div id="wxOpenLaunchWeApp">
+
+          </div>
         </ion-card-content>
       </ion-card>
 
@@ -188,4 +186,3 @@
     <ion-button *ngIf="data?.Problem?.Status==0" expand="full" (click)="chat()">联系客服</ion-button>
   </ion-footer>
 </ng-template>
-
