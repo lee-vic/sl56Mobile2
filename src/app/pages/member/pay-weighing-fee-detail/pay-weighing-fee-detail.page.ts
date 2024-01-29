@@ -54,15 +54,23 @@ export class PayWeighingFeeDetailPage implements OnInit {
         let obj = JSON.parse(msg);
         if (obj.MsgContent == "True") {
           this.loadingCtrl.dismiss();
-          this.toastCtrl.create({
-            header: "支付成功",
+          this.alertController.create({
+            header: '称重已完成',
+            subHeader: "点击确定后,系统将显示电子磅单",
             message: "如果您需要纸质磅单，请到门卫室领取",
-            position: "middle",
-            duration: 5000,
-          }).then((p) => p.present());
-          this.navCtrl.navigateForward(
-            "/member/pay-weighing-fee/result/" + this.objectId
-          );
+            backdropDismiss: false,
+            keyboardClose: false,
+            buttons: [
+              {
+                text: '确定',
+                handler: () => {
+                  this.navCtrl.navigateForward(
+                    "/member/pay-weighing-fee/result/" + this.objectId
+                  );
+                }
+              }
+            ]
+          }).then(p => p.present());
         }
       });
     });
