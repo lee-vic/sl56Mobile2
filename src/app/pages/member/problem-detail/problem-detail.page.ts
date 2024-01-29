@@ -109,7 +109,8 @@ export class ProblemDetailPage implements OnInit {
     public service: ProblemService,
     private router: Router,
     private commonService: CommonService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(
@@ -122,7 +123,9 @@ export class ProblemDetailPage implements OnInit {
         if (data.confirmFile == false) {
           //如果是微信小程序上传的文件，则需要删除
           if (data.isWeAppFile) {
-            this.service.deleteProblemTempFile(this.problemId).subscribe(p=>console.log(p));
+            this.service
+              .deleteProblemTempFile(this.problemId)
+              .subscribe((p) => console.log(p));
             this.isWeAppUploadFile = false;
           } else {
             console.log("重选选择发票文件");
@@ -153,6 +156,11 @@ export class ProblemDetailPage implements OnInit {
 
   processTypeChanged(event) {
     this.processType = event.detail.value;
+    const openAppDiv = document.getElementById("wxOpenLaunchWeApp") as Element;
+    openAppDiv.innerHTML =
+      '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
+      this.problemId +
+      '"><template><style>.btn { padding: 5px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
     console.log("选项卡Changed");
   }
 
@@ -270,35 +278,51 @@ export class ProblemDetailPage implements OnInit {
     });
   }
   getWeAppFileStatus(isInitPage) {
-    // this.loadingCtrl
-    //   .create({
-    //     message: "获取附件状态...",
-    //   })
-    //   .then((p) => p.present());
-
-    this.service.isWeAppUploadFile(this.problemId).subscribe((res) => {
-      this.isWeAppUploadFile = res;
-      if (isInitPage) return;
-      if (res && this.processModel.Type3Result.AttachmentTypeId == "1") {
-        this.isFileProcessing = true;
-        this.service.invoicePretreatment(this.processModel).subscribe((res) => {
-          this.isFileProcessing = false;
-          if (res.Result == true) {
-            console.log("filePath:", res.Path);
-            this.fileFailMessage = null;
-            this.navCtrl.navigateForward("/member/invoice-preview", {
-              queryParams: {
-                filePath: res.Path,
-                rgdId: this.receiveGoodsDetailId,
-                problemId: this.problemId,
-                isWeAppFile: true,
-              },
-            });
+    this.loadingCtrl
+      .create({
+        message: "获取附件状态...",
+      })
+      .then((p) => {
+        p.present();
+        this.service.isWeAppUploadFile(this.problemId).subscribe((res) => {
+          this.isWeAppUploadFile = res;
+          this.loadingCtrl.dismiss();
+          if (isInitPage) return;
+          if (res) {
+            if (this.processModel.Type3Result.AttachmentTypeId == "1") {
+              this.isFileProcessing = true;
+              this.loadingCtrl
+                .create({
+                  message: "获取附件预览...",
+                })
+                .then((p) => p.present());
+              this.service
+                .invoicePretreatment(this.processModel)
+                .subscribe((res) => {
+                  this.isFileProcessing = false;
+                  this.loadingCtrl.dismiss();
+                  if (res.Result == true) {
+                    console.log("filePath:", res.Path);
+                    this.fileFailMessage = null;
+                    this.navCtrl.navigateForward("/member/invoice-preview", {
+                      queryParams: {
+                        filePath: res.Path,
+                        rgdId: this.receiveGoodsDetailId,
+                        problemId: this.problemId,
+                        isWeAppFile: true,
+                      },
+                    });
+                  } else {
+                    console.log("fileFailMessage:", this.fileFailMessage);
+                    this.fileFailMessage = res.Message;
+                    this.isWeAppUploadFile = false;
+                  }
+                });
+            }
+          } else {
+            alert("未检测到有上传的文件，请重新上传后再试");
           }
         });
-      } else {
-        alert("未检测到有上传的文件，请重新上传后再试");
-      }
-    });
+      });
   }
 }
