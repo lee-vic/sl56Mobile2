@@ -57,8 +57,7 @@ export class ProblemDetailPage implements OnInit {
       //生成跳转到小程序的按钮
       if (
         wx != null &&
-        inputTypes.indexOf(3) != -1 &&
-        this.receiveGoodsDetailId == 1846276
+        inputTypes.indexOf(3) != -1
       ) {
         this.commonService
           .getJsSdkConfig(
@@ -76,7 +75,7 @@ export class ProblemDetailPage implements OnInit {
             openAppDiv.innerHTML =
               '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
               this.problemId +
-              '"><template><style>.btn { padding: 5px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
+              '"><template><style>.btn { padding: 5px;font-size:11px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
 
             const weOpenLaunchWeappBtn = document.getElementById(
               "launch-btn"
@@ -86,7 +85,7 @@ export class ProblemDetailPage implements OnInit {
               that.alertCtrl
                 .create({
                   header: "提示",
-                  message: "聊天文件上传完成",
+                  message: "点击确定进行下一步操作",
                   buttons: [
                     {
                       text: "确定",
