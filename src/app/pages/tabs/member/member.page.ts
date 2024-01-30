@@ -17,7 +17,7 @@ export class MemberPage implements OnInit {
   allMenus: Array<Menu> = [
     { title: "价格查询", image: "assets/imgs/member-2.png", type: [0, 1], url: "/member/calculation" },
     { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
-    { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0], url: "/member/confirmation" },
+    { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0,1], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
