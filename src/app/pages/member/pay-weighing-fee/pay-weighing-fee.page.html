@@ -25,10 +25,10 @@
   <div *ngIf="isMiniProgram==true">
     <ion-segment [(ngModel)]="tab">
       <ion-segment-button value="1">
-        重车模式
+        称净重
       </ion-segment-button>
       <ion-segment-button value="2">
-        空车模式
+        称总重
       </ion-segment-button>
     </ion-segment>
     <div class="ion-padding-top">
@@ -41,7 +41,7 @@
           
           </ion-item>
           <ion-item>
-            <ion-label></ion-label>
+            <ion-label>车牌快捷选择</ion-label>
             <ion-button color="primary" size="small" slot="end" fill="clear" (click)="showHistoryVehicleNo()">历史记录</ion-button>
             <ion-button color="secondary" size="small" slot="end" fill="clear" (click)="showInParkVehicleNo(true)">入场记录</ion-button>
           </ion-item>
@@ -67,14 +67,14 @@
               [(ngModel)]="data.WeighingFee"></ion-input>
           </ion-item> -->
           <ion-item>
-            <ion-label>过磅费</ion-label>
+            <ion-label>磅费打印几元每吨</ion-label>
             <ion-select interface="alert" formControlName="pricePerTon"  [(ngModel)]="data.PricePerTon" cancelText="取消" okText="确定">
               <ion-select-option *ngFor="let item of prices" [value]="item.value" [selected]="item.value==0">{{item.text}}</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
             <ion-label>企业账号</ion-label>
-            <ion-input type="text" value="" placeholder="请输入企业账号" formControlName="corporateAccount"
+            <ion-input type="text" value="" placeholder="无账号不需要输入" formControlName="corporateAccount"
               [(ngModel)]="data.CorporateAccount"></ion-input>
           </ion-item>
         </ion-list>
