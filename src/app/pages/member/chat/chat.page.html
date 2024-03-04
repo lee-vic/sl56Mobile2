@@ -35,7 +35,10 @@
               {{msg.Content}}
           </ng-template>
           </p>
-          <a style="color: rgb(188, 234, 255);" href="{{serverUrl}}/DeliveryRecord/ChatFile/{{msg.Id}}" *ngIf="msg.IsFile===true">{{msg.Content}}</a>
+          <a style="color: rgb(188, 234, 255);" href="{{serverUrl}}/DeliveryRecord/ChatFile/{{msg.Id}}" *ngIf="msg.IsFile===true && msg.FileType!='pic'">{{msg.Content}}</a>
+          <ion-thumbnail slot="start"  *ngIf="msg.IsFile===true && msg.FileType=='pic'" (click)="showImage(msg.Id)">
+            <ion-img src="{{serverUrl}}/DeliveryRecord/GetThumbnailImage?id={{msg.Id}}"></ion-img>
+          </ion-thumbnail>
         </div>
       </div>
     </div>
@@ -56,3 +59,7 @@
     </button>
   </div>
 </ion-footer>
+<script src="./baguetteBox.js"></script>
+<script>
+    console.log("baguetteBox:", baguetteBox);
+</script>

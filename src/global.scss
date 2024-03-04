@@ -33,3 +33,16 @@ ion-content {
     -o-user-select: text !important;
     user-select: text !important;
 }
+
+/*控制聊天页面，弹出对话框显示大图片，此样式放在聊天页面内css文件不起作用，所以暂时放到这里*/
+.alert-image {
+    --max-width: none !important;
+    font-size: 15px;
+    .alert-head{
+        padding: 1px;
+    }
+    .alert-message{
+        padding: 1px;
+        max-height: none;
+    }
+}
