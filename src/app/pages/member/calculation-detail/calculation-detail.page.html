@@ -29,6 +29,11 @@
     <div *ngSwitchCase="1">
       <ion-list>
         <ion-item>
+          <ion-label>目的地</ion-label>
+
+          <ion-input class="ion-text-right" readonly="true" value="{{data.CountryName}}"></ion-input>
+        </ion-item>
+        <ion-item>
           <ion-label>报价代码</ion-label>
           <ion-input class="ion-text-right" readonly="true" value="{{data.PriceCode}}"></ion-input>
         </ion-item>
