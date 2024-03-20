@@ -76,6 +76,17 @@ export class WeightBillService {
     );
     return seq;
   }
+  getHistoryCorporateAccount(openId) {
+    let paras = new HttpParams().set("openid", openId);
+    let seq = this.http.get<Array<string>>(
+      apiUrl + "/Measure/HistoryCorporateAccount",
+      {
+        withCredentials: true,
+        params: paras,
+      }
+    );
+    return seq;
+  }
   getWeightBillDefaultValue(openId: string, vehicleNo: string) {
     let paras = new HttpParams().set("vehicleNo", vehicleNo).set("openId", openId);
     let seq = this.http.get<WeightBill>(

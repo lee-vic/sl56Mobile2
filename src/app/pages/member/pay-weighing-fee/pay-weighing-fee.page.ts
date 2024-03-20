@@ -43,7 +43,7 @@ export class PayWeighingFeePage implements OnInit {
     ]
   };
   prices: any[] = [
-    { value: 0, text: "按实际支付金额" },
+    { value: 0, text: "自定义" },
     { value: 1, text: "1.0元/吨" },
     { value: 1.5, text: "1.5元/吨" },
     { value: 2, text: "2.0元/吨" },
@@ -181,6 +181,47 @@ export class PayWeighingFeePage implements OnInit {
         });
         this.actionSheetController.create({
           header: "车牌号码历史记录",
+          subHeader: "请选择",
+          backdropDismiss: false,
+          keyboardClose: false,
+          buttons: vehicleNoButtons
+        }).then(p => p.present());
+      }
+    });
+  }
+  showHistoryCorporateAccount() {
+    this.weightBillService.getHistoryCorporateAccount(this.data.WxOpenId).subscribe(corporateAccountList => {
+      if (corporateAccountList.length == 0) {
+        this.alertController.create({
+          header: '不存在历史记录',
+          backdropDismiss: false,
+          keyboardClose: false,
+          buttons: [
+            {
+              text: '确定',
+              role: 'cancel'
+            }
+          ]
+        }).then(p => p.present());
+      }
+      else {
+        var vehicleNoButtons = [];
+        corporateAccountList.forEach(element => {
+          vehicleNoButtons.push({
+            text: element,
+            handler: () => {
+              this.setCorporateAccount(element);
+            }
+          });
+        });
+        vehicleNoButtons.push({
+          text: "取消",
+          role: "cancel",
+          handler: () => {
+          }
+        });
+        this.actionSheetController.create({
+          header: "企业账号历史记录",
           subHeader: "请选择",
           backdropDismiss: false,
           keyboardClose: false,
@@ -430,6 +471,9 @@ export class PayWeighingFeePage implements OnInit {
   }
   setVehicleNo(val: string) {
     this.weightBillForm1.controls["vehicleNo"].setValue(val);
+  }
+  setCorporateAccount(val: string) {
+    this.weightBillForm1.controls["corporateAccount"].setValue(val);
   }
   startRead() {
     this.loadingCtrl.create({
