@@ -41,4 +41,6 @@ export class WeightBill {
   CorporateAccount:number;
   //过磅费选项，见UI的选项值
   PricePerTon:number;
+  //称重模式。0:称净重.1:称总重.2:称皮重.3:二次过磅
+  WeighingMode:number;
 }

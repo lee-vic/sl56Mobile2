@@ -23,12 +23,15 @@
     </ion-card>
   </div>
   <div *ngIf="isMiniProgram==true">
-    <ion-segment [(ngModel)]="tab">
-      <ion-segment-button value="1">
+    <ion-segment [(ngModel)]="data.WeighingMode">
+      <ion-segment-button value="0">
         称净重
       </ion-segment-button>
-      <ion-segment-button value="2">
+      <ion-segment-button value="1">
         称总重
+      </ion-segment-button>
+      <ion-segment-button value="2">
+        称皮重
       </ion-segment-button>
     </ion-segment>
     <div class="ion-padding-top">
@@ -70,7 +73,7 @@
               <ion-button color="primary" size="small" slot="end" fill="clear"
                 (click)="showHistoryCorporateAccount()">历史记录</ion-button>
             </ion-item>
-            <ion-item [ngClass]="tab==2 ? 'ion-hide' : ''">
+            <ion-item [ngClass]="(data.WeighingMode==1 ||data.WeighingMode==2) ? 'ion-hide' : ''">
               <ion-label>皮重(车重)KG*</ion-label>
               <ion-input type="number" value="" placeholder="请输入皮重(车重),单位KG" formControlName="tareWeight"
                 [(ngModel)]="data.TareWeight"></ion-input>

@@ -19,7 +19,6 @@ export class PayWeighingFeePage implements OnInit {
   signalRConnected: boolean = false;
   subscriber: Subscription;
   public data: WeightBill = new WeightBill();
-  tab: number = 1;
   public weightBillForm1: FormGroup;
   isMiniProgram: boolean = false;//是否在小程序内运行
   @ViewChild('vehicleNoInput', { static: true }) vehicleNoInput: IonInput;
@@ -82,6 +81,7 @@ export class PayWeighingFeePage implements OnInit {
       )],
     });
     this.data.PricePerTon = 0;
+    this.data.WeighingMode=0;
   }
 
   ngOnInit(): void {
@@ -400,7 +400,7 @@ export class PayWeighingFeePage implements OnInit {
   }
   start() {
     if (this.validateweightBillForm1()) {
-      if (this.tab == 1 && (this.data.TareWeight == null || this.data.TareWeight == undefined || this.data.TareWeight == 0)) {
+      if (this.data.WeighingMode == 0 && (this.data.TareWeight == null || this.data.TareWeight == undefined || this.data.TareWeight == 0)) {
         this.alertController.create({
           header: '信息不完整',
           message: "重车模式必须输入皮重",
@@ -415,7 +415,7 @@ export class PayWeighingFeePage implements OnInit {
         }).then(p => p.present());
       }
       else {
-        if (this.tab == 2)
+        if (this.data.WeighingMode == 1)
           this.data.TareWeight = 0;
         this.startRead();
 
