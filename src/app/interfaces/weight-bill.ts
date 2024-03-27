@@ -43,4 +43,6 @@ export class WeightBill {
   PricePerTon:number;
   //称重模式。0:称净重.1:称总重.2:称皮重.3:二次过磅
   WeighingMode:number;
+  //是否返回过第二次磅.空车返重，重车返空 的二次过磅模式下用户选择
+  IsReturn:Boolean;
 }

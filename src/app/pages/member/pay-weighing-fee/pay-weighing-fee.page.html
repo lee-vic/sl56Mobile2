@@ -33,6 +33,9 @@
       <ion-segment-button value="2">
         称皮重
       </ion-segment-button>
+      <ion-segment-button value="3">
+        二次过磅
+      </ion-segment-button>
     </ion-segment>
     <div class="ion-padding-top">
       <form [formGroup]="weightBillForm1" novalidate>
@@ -73,7 +76,7 @@
               <ion-button color="primary" size="small" slot="end" fill="clear"
                 (click)="showHistoryCorporateAccount()">历史记录</ion-button>
             </ion-item>
-            <ion-item [ngClass]="(data.WeighingMode==1 ||data.WeighingMode==2) ? 'ion-hide' : ''">
+            <ion-item [ngClass]="(data.WeighingMode==1 ||data.WeighingMode==2||data.WeighingMode==3) ? 'ion-hide' : ''">
               <ion-label>皮重(车重)KG*</ion-label>
               <ion-input type="number" value="" placeholder="请输入皮重(车重),单位KG" formControlName="tareWeight"
                 [(ngModel)]="data.TareWeight"></ion-input>
@@ -92,6 +95,24 @@
                   [selected]="item.value==0">{{item.text}}</ion-select-option>
               </ion-select>
             </ion-item>
+
+
+          </ion-list>
+        </ion-card>
+        <ion-card [ngClass]="(data.WeighingMode==0 ||data.WeighingMode==1 ||data.WeighingMode==2) ? 'ion-hide' : ''">
+
+          <ion-list lines="none">
+            <ion-radio-group formControlName="isReturn" [(ngModel)]="data.IsReturn">
+              <ion-item>
+                <ion-label>第一次过磅</ion-label>
+                <ion-radio slot="end" value="false" ></ion-radio>
+              </ion-item>
+
+              <ion-item>
+                <ion-label>第二次过磅</ion-label>
+                <ion-radio slot="end" value="true"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
           </ion-list>
         </ion-card>
       </form>

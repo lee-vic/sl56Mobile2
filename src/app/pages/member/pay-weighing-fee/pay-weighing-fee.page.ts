@@ -39,6 +39,9 @@ export class PayWeighingFeePage implements OnInit {
     ],
     "corporateAccount": [
       { type: "maxLength", message: "车牌号码的长度最多为32位" }
+    ],
+    "isReturn": [
+
     ]
   };
   prices: any[] = [
@@ -79,32 +82,33 @@ export class PayWeighingFeePage implements OnInit {
           Validators.maxLength(32)
         ]
       )],
+      isReturn: [null]
     });
     this.data.PricePerTon = 0;
-    this.data.WeighingMode=0;
+    this.data.WeighingMode = 0;
   }
 
   ngOnInit(): void {
     this.titleService.setTitle("丰树地磅");
     //微信小程序
     if (window.navigator.userAgent.indexOf("miniProgram") != -1) {
-      this.isMiniProgram = true;
-      this.data.WxOpenId = this.cookieService.get("OpenId");
-      this.signalRConnection = this.signalR.createConnection();
-      this.signalRConnection.status.subscribe((p) => console.log(p.name));
-      this.loadDefaultValue();
-      this.alertController.create({
-        header: '系统升级提示',
-        message: "尊贵的客户，现过磅系统升级为微信小程序，可在微信下拉快速打开过磅小程序，无需下车完成过磅。我们将持续优化升级，为您提供更方便、更快捷的服务！",
-        backdropDismiss: false,
-        keyboardClose: false,
-        buttons: [
-          {
-            text: '确定',
-            role: 'cancel'
-          }
-        ]
-      }).then(p => p.present());
+    this.isMiniProgram = true;
+    this.data.WxOpenId = this.cookieService.get("OpenId");
+    this.signalRConnection = this.signalR.createConnection();
+    this.signalRConnection.status.subscribe((p) => console.log(p.name));
+    this.loadDefaultValue();
+    this.alertController.create({
+      header: '系统升级提示',
+      message: "尊贵的客户，现过磅系统升级为微信小程序，可在微信下拉快速打开过磅小程序，无需下车完成过磅。我们将持续优化升级，为您提供更方便、更快捷的服务！",
+      backdropDismiss: false,
+      keyboardClose: false,
+      buttons: [
+        {
+          text: '确定',
+          role: 'cancel'
+        }
+      ]
+    }).then(p => p.present());
     }
     else {
       this.alertController.create({
@@ -351,6 +355,72 @@ export class PayWeighingFeePage implements OnInit {
             ]
           }).then(p => p.present());
         }
+        //二次过磅模式没有找到第一次过磅记录
+        else if (obj.MsgContent == "Error1") {
+          //通知读数服务停止读取数据
+          let sendData = {
+            MsgFrom: 16075,
+            FromClientType: 1,
+            MsgFromType: 0,
+            MsgTo: 1,
+            ToClientType: 13,
+            MsgToType: 1,
+            MsgContent: "Stop",
+            InvokeClassName: this.data.WxOpenId,
+            InvokeMethodName: ""
+          };
+          this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
+            this.loadingCtrl.dismiss();
+            this.alertController.create({
+              header: '测量失败',
+              subHeader: "未找到第一次过磅记录",
+              message: "请核实车牌号码是否正确",
+              backdropDismiss: false,
+              keyboardClose: false,
+              buttons: [
+                {
+                  text: '确定',
+                  role: 'cancel'
+                }
+              ]
+            }).then(p => p.present());
+          });
+
+
+        }
+        //二次过磅模式两次重量一致
+        else if (obj.MsgContent == "Error2") {
+
+          //通知读数服务停止读取数据
+          let sendData = {
+            MsgFrom: 16075,
+            FromClientType: 1,
+            MsgFromType: 0,
+            MsgTo: 1,
+            ToClientType: 13,
+            MsgToType: 1,
+            MsgContent: "Stop",
+            InvokeClassName: this.data.WxOpenId,
+            InvokeMethodName: ""
+          };
+          this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
+            this.loadingCtrl.dismiss();
+            this.alertController.create({
+              header: '测量失败',
+              subHeader: "重量不正确",
+              message: "第一次过磅重量和第二次过磅重量相同",
+              backdropDismiss: false,
+              keyboardClose: false,
+              buttons: [
+                {
+                  text: '确定',
+                  role: 'cancel'
+                }
+              ]
+            }).then(p => p.present());
+          });
+
+        }
       });
     });
   }
@@ -404,6 +474,20 @@ export class PayWeighingFeePage implements OnInit {
         this.alertController.create({
           header: '信息不完整',
           message: "重车模式必须输入皮重",
+          backdropDismiss: false,
+          keyboardClose: false,
+          buttons: [
+            {
+              text: '确定',
+              role: 'cancel'
+            }
+          ]
+        }).then(p => p.present());
+      }
+      else if (this.data.WeighingMode == 3 && (this.data.IsReturn == null || this.data.IsReturn == undefined)) {
+        this.alertController.create({
+          header: '信息不完整',
+          message: "二次过磅模式必须选择是第几次过磅",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
