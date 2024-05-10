@@ -27,7 +27,6 @@ export class PayWeighingFeePage implements OnInit {
   validation_messages = {
     "vehicleNo": [
       { type: "required", message: "车牌号码必须输入" },
-      { type: "minlength", message: "车牌号码的长度最少为7位" },
       { type: "maxlength", message: "车牌号码的长度最多为8位" }
     ],
     "tareWeight": [
@@ -71,7 +70,6 @@ export class PayWeighingFeePage implements OnInit {
       vehicleNo: ['', Validators.compose(
         [
           Validators.required,
-          Validators.minLength(7),
           Validators.maxLength(8)
         ]
       )],
@@ -91,29 +89,15 @@ export class PayWeighingFeePage implements OnInit {
   ngOnInit(): void {
     this.titleService.setTitle("丰树地磅");
     //微信小程序
-    if (window.navigator.userAgent.indexOf("miniProgram") != -1) {
-    this.isMiniProgram = true;
-    this.data.WxOpenId = this.cookieService.get("OpenId");
-    this.signalRConnection = this.signalR.createConnection();
-    this.signalRConnection.status.subscribe((p) => console.log(p.name));
-    this.loadDefaultValue();
-    this.alertController.create({
-      header: '系统升级提示',
-      message: "尊贵的客户，现过磅系统升级为微信小程序，可在微信下拉快速打开过磅小程序，无需下车完成过磅。我们将持续优化升级，为您提供更方便、更快捷的服务！",
-      backdropDismiss: false,
-      keyboardClose: false,
-      buttons: [
-        {
-          text: '确定',
-          role: 'cancel'
-        }
-      ]
-    }).then(p => p.present());
-    }
-    else {
+    // if (window.navigator.userAgent.indexOf("miniProgram") != -1) {
+      this.isMiniProgram = true;
+      this.data.WxOpenId = this.cookieService.get("OpenId");
+      this.signalRConnection = this.signalR.createConnection();
+      this.signalRConnection.status.subscribe((p) => console.log(p.name));
+      this.loadDefaultValue();
       this.alertController.create({
         header: '系统升级提示',
-        message: "当前系统已迁移至微信小程序，请在微信中搜索小程序:丰树地磅",
+        message: "尊贵的客户，现过磅系统升级为微信小程序，可在微信下拉快速打开过磅小程序，无需下车完成过磅。我们将持续优化升级，为您提供更方便、更快捷的服务！",
         backdropDismiss: false,
         keyboardClose: false,
         buttons: [
@@ -123,7 +107,21 @@ export class PayWeighingFeePage implements OnInit {
           }
         ]
       }).then(p => p.present());
-    }
+    // }
+    // else {
+    //   this.alertController.create({
+    //     header: '系统升级提示',
+    //     message: "当前系统已迁移至微信小程序，请在微信中搜索小程序:丰树地磅",
+    //     backdropDismiss: false,
+    //     keyboardClose: false,
+    //     buttons: [
+    //       {
+    //         text: '确定',
+    //         role: 'cancel'
+    //       }
+    //     ]
+    //   }).then(p => p.present());
+    // }
   }
 
   loadDefaultValue() {
@@ -310,8 +308,9 @@ export class PayWeighingFeePage implements OnInit {
             InvokeClassName: this.data.WxOpenId,
             InvokeMethodName: ""
           };
+          let amount=parseInt(obj.InvokeMethodName);
           //需要收费,跳转到支付页面
-          if (obj.InvokeMethodName != "0") {
+          if (amount> 0) {
             this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
               this.loadingCtrl.dismiss();
               this.gotoPay(parseInt(obj.InvokeClassName));

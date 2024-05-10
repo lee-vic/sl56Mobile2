@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder, FormArray } from '@angular/forms';
-import { ModalController, LoadingController, ToastController } from '@ionic/angular';
+import { ModalController, LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
@@ -37,6 +37,7 @@ export class CalculationPage implements OnInit {
     public loadingCtrl: LoadingController,
     public toastCtrl: ToastController,
     private router: Router,
+    private alertController: AlertController,
     public countryAutoCompleteService: CountryAutoCompleteService,
 
     public service: CalculationService
@@ -126,7 +127,7 @@ export class CalculationPage implements OnInit {
       Width: [1, [Validators.required, Validators.min(1)]],
       Height: [1, [Validators.required, Validators.min(1)]],
       PieceRules: [this.mapNewPieceRules],
-      SelectedPriceRuleTemplateIds:[[]]
+      SelectedPriceRuleTemplateIds: [[]]
     });
   }
   ionViewDidLoad() {
@@ -185,37 +186,53 @@ export class CalculationPage implements OnInit {
   }
   doCalculate(formValue) {
     console.log("calculateMode", this.calculateMode);
-    if (this.selectedCountry == null) return;
-    this.loadingCtrl
-      .create({
-        message: "请稍后...",
-      })
-      .then((res) => res.present());
-    if (this.sizes.status == "DISABLED" || this.calculateMode == "1") {
-      formValue.sizes = [];
-    }
-    formValue.countryId = this.selectedCountry.Id;
-    formValue.selectRuleIds = this.selectRuleIds;
     console.log(formValue);
-    this.service.calculate(formValue).subscribe((res) => {
-      this.loadingCtrl.dismiss();
-
-      if (res.length > 0) {
-        localStorage.setItem("CalculationResult", JSON.stringify(res));
-        this.router.navigateByUrl("/member/calculation/calculation-list");
-        // this.navCtrl.push(UserCalculationListPage, {
-        //   list: res
-        // })
-      } else {
-        this.toastCtrl
-          .create({
-            message: "当前条件未能找到合适报价，请修改条件重试",
-            position: "middle",
-            duration: 1500,
-          })
-          .then((res) => res.present());
+    if (this.selectedCountry == null) {
+      this.alertController.create({
+        header: '信息不完整',
+        message: "您输入的国家不正确，请重新输入",
+        backdropDismiss: false,
+        keyboardClose: false,
+        buttons: [
+          {
+            text: '确定',
+            role: 'cancel'
+          }
+        ]
+      }).then(p => p.present());
+    }
+    else {
+      this.loadingCtrl
+        .create({
+          message: "请稍后...",
+        })
+        .then((res) => res.present());
+      if (this.sizes.status == "DISABLED" || this.calculateMode == "1") {
+        formValue.sizes = [];
       }
-    });
+      formValue.countryId = this.selectedCountry.Id;
+      formValue.selectRuleIds = this.selectRuleIds;
+      console.log(formValue);
+      this.service.calculate(formValue).subscribe((res) => {
+        this.loadingCtrl.dismiss();
+
+        if (res.length > 0) {
+          localStorage.setItem("CalculationResult", JSON.stringify(res));
+          this.router.navigateByUrl("/member/calculation/calculation-list");
+          // this.navCtrl.push(UserCalculationListPage, {
+          //   list: res
+          // })
+        } else {
+          this.toastCtrl
+            .create({
+              message: "当前条件未能找到合适报价，请修改条件重试",
+              position: "middle",
+              duration: 1500,
+            })
+            .then((res) => res.present());
+        }
+      });
+    }
   }
   checkPieceRule(pieceIndex, ruleIndex) {
     this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = !this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked;
@@ -224,7 +241,7 @@ export class CalculationPage implements OnInit {
     //重新添加已选择的id
     this.sizes.value[pieceIndex].PieceRules.filter(p => p.Checked).map(p => p.ObjectId).forEach(p => {
       this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.push(p);
-     });
+    });
   }
   addSize() {
     this.sizes.push(this.createSizeForm());

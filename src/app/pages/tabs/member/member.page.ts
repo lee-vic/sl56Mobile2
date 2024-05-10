@@ -28,7 +28,7 @@ export class MemberPage implements OnInit {
     { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
     { title: "子账号管理", image: "assets/imgs/member-12.png", type: [0], url: "/member/sub-account" },
     { title: "微信绑定", image: "assets/imgs/member-13.png", type: [0, 1], url: "/member/wechat-binding" },
-    { title: "回单上传", image: "assets/imgs/member-17.png", type: [0, 1], url: "/member/bank-slips" },
+    { title: "银行水单上传(优先放货)", image: "assets/imgs/member-17.png", type: [0, 1], url: "/member/bank-slips" },
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0,1], url: "/member/notice-list" },
     { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
     { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
