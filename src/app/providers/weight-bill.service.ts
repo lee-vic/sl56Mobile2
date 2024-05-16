@@ -4,6 +4,7 @@ import { apiUrl } from '../global';
 import { WeightBill } from '../interfaces/weight-bill';
 import { UnifiedOrderResult } from '../interfaces/unified-order-result';
 import { timeout } from 'rxjs/operators';
+import { PrintWeightBill } from '../interfaces/print-weight-bill';
 
 @Injectable({
   providedIn: "root",
@@ -14,6 +15,15 @@ export class WeightBillService {
   getWeightBill(objectId) {
     let paras = new HttpParams().set("objectId", objectId);
     let seq = this.http.get<WeightBill>(apiUrl + "/Measure/GetWeightBill", {
+      withCredentials: true,
+      params: paras,
+    });
+    return seq;
+  }
+
+  printWeightBill(objectId) {
+    let paras = new HttpParams().set("objectId", objectId);
+    let seq = this.http.get<PrintWeightBill>(apiUrl + "/Measure/PrintWeightBill", {
       withCredentials: true,
       params: paras,
     });
