@@ -40,13 +40,24 @@
     <div class="ion-padding-top">
       <form [formGroup]="weightBillForm1" novalidate>
         <ion-card>
+        
           <ion-list lines="none">
             <ion-item>
               <ion-label>车牌号码*</ion-label>
               <ion-input type="text" value="" placeholder="请输入或者点击下方链接选择" formControlName="vehicleNo"
                 [(ngModel)]="data.VehicleNo" (ionChange)="vehicleNoChange($event)" (ionFocus)="vehicleNoFocus($event)"
-                autofocus="true" #vehicleNoInput></ion-input>
+                autofocus="true" #vehicleNoInput myborder="border"></ion-input>
             </ion-item>
+            <div class="validation-errors ion-padding-start">
+              <div *ngFor="let validation of validation_messages.vehicleNo">
+                <ng-container>
+                  <div class="error-message"
+                    *ngIf="weightBillForm1.get('vehicleNo').hasError(validation.type) && (weightBillForm1.get('vehicleNo').dirty || weightBillForm1.get('vehicleNo').touched)">
+                    {{validation.message}}
+                  </div>
+                </ng-container>
+              </div>
+            </div>
             <ion-item>
               <ion-label part="no-border">车牌快捷选择</ion-label>
               <ion-button color="primary" size="small" slot="end" fill="clear"
@@ -59,34 +70,12 @@
         <ion-card>
           <ion-list lines="none">
 
-            <div class="validation-errors ion-padding-start">
-              <div *ngFor="let validation of validation_messages.vehicleNo">
-                <ng-container>
-                  <div class="error-message"
-                    *ngIf="weightBillForm1.get('vehicleNo').hasError(validation.type) && (weightBillForm1.get('vehicleNo').dirty || weightBillForm1.get('vehicleNo').touched)">
-                    {{validation.message}}
-                  </div>
-                </ng-container>
-              </div>
-            </div>
-            <ion-item>
-              <ion-label>企业账号</ion-label>
-              <ion-input type="text" value="" placeholder="无账号不需要输入" formControlName="corporateAccount"
-                [(ngModel)]="data.CorporateAccount"></ion-input>
-              <ion-button color="primary" size="small" slot="end" fill="clear"
-                (click)="showHistoryCorporateAccount()">历史记录</ion-button>
-            </ion-item>
+          
             <ion-item [ngClass]="(data.WeighingMode==1 ||data.WeighingMode==2||data.WeighingMode==3) ? 'ion-hide' : ''">
               <ion-label>皮重(车重)KG*</ion-label>
               <ion-input type="number" value="" placeholder="请输入皮重(车重),单位KG" formControlName="tareWeight"
-                [(ngModel)]="data.TareWeight"></ion-input>
+                [(ngModel)]="data.TareWeight" myborder="border"></ion-input>
             </ion-item>
-
-            <!-- <ion-item>
-            <ion-label>过磅费</ion-label>
-            <ion-input type="number" value="" placeholder="磅单上显示的金额，与实际收费无关" formControlName="weighingFee"
-              [(ngModel)]="data.WeighingFee"></ion-input>
-          </ion-item> -->
             <ion-item>
               <ion-label>磅费打印14元/次或1元/吨</ion-label>
               <ion-select interface="alert" formControlName="pricePerTon" [(ngModel)]="data.PricePerTon" cancelText="取消"
@@ -95,6 +84,19 @@
                   [selected]="item.value==0">{{item.text}}</ion-select-option>
               </ion-select>
             </ion-item>
+            <ion-item>
+              <ion-label>企业账号</ion-label>
+              <ion-input type="text" value="" placeholder="无账号不需要输入" formControlName="corporateAccount"
+                [(ngModel)]="data.CorporateAccount"></ion-input>
+              <ion-button color="primary" size="small" slot="end" fill="clear"
+                (click)="showHistoryCorporateAccount()">历史记录</ion-button>
+            </ion-item>
+            <!-- <ion-item>
+            <ion-label>过磅费</ion-label>
+            <ion-input type="number" value="" placeholder="磅单上显示的金额，与实际收费无关" formControlName="weighingFee"
+              [(ngModel)]="data.WeighingFee"></ion-input>
+          </ion-item> -->
+            
 
 
           </ion-list>
@@ -119,7 +121,7 @@
     </div>
 
 
-    <ion-card>
+    <ion-card >
       <ion-card-header>
         <ion-card-title>温馨提示</ion-card-title>
       </ion-card-header>

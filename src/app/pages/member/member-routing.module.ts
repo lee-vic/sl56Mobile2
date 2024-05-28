@@ -343,7 +343,15 @@ const routes: Routes = [
     path:"test",
     loadChildren: () =>
       import("./problem-detail/problem-weapp-test/problem-weapp-test.module").then((m) => m.ProblemWeappTestModule),
-  }
+  },
+  {
+    path: "bank",
+    loadChildren: () =>
+      import("./bank/bank.module").then(
+        (m) => m.BankPageModule
+      ),
+  },
+
 ];
 
 @NgModule({

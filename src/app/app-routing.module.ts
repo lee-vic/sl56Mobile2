@@ -18,8 +18,7 @@ const routes: Routes = [
   { path: 'login', loadChildren: './pages/login/login.module#LoginPageModule' },
   { path: 'epidemic', loadChildren: './pages/epidemic/epidemic.module#EpidemicPageModule' },
   { path: 'distribute-register', loadChildren:()=>import('./pages/member/distribute-register/distribute-register.module').then(m=>m.DistributeRegisterPageModule) },
-  { path: 'distribute-agreement', loadChildren:()=>import('./pages/member/distribute-register/distribute-agreement/distribute-agreement.module').then(m=>m.DistributeAgreementModule) }
-
+  { path: 'distribute-agreement', loadChildren:()=>import('./pages/member/distribute-register/distribute-agreement/distribute-agreement.module').then(m=>m.DistributeAgreementModule) },
 ];
 
 @NgModule({

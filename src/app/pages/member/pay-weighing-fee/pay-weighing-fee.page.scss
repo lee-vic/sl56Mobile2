@@ -1,34 +1,50 @@
-h1{
+h1 {
     margin: 10px;
 }
-h2{
+
+h2 {
     text-align: center;
 }
-a{
+
+a {
     text-decoration: underline;
 }
-ion-list{
+
+ion-list {
     margin-bottom: 10px;
 }
-.paid{
+
+.paid {
     color: #28ba62;
 }
-.nopay{
+
+.nopay {
     color: #eb445a;
 }
-.weight{
+
+.weight {
     color: black !important;
 }
-.error-message
-{
-  color: red;
+
+.error-message {
+    color: red;
 }
-.validation-errors{
+
+.validation-errors {
     background-color: white;
 }
-.button-small{
+
+.button-small {
     margin-inline: 1px !important;
 }
-.test .item-inner{
+
+.test .item-inner {
     border-bottom: none !important;
+}
+
+ion-input[myborder]{
+    border: solid 1px #85c1e9;
+    --padding-top: 5px;
+    --padding-bottom: 5px;
+    --padding-start: 5px;
 }

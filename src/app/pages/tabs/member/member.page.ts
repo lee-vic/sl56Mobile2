@@ -22,6 +22,7 @@ export class MemberPage implements OnInit {
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
+    { title: "银行账号", image: "assets/imgs/member-23.png", type: [0, 1], url: "/member/bank" },
     { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
     { title: "联系客服", image: "assets/imgs/member-6.png", type: [0,1], url: "/member/chat/0" },
     { title: "修改登录密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-password" },
