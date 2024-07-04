@@ -43,8 +43,8 @@ export class CalculationPage implements OnInit {
     public service: CalculationService
   ) {
     this.myForm = this.formBuilder.group({
-      ModeOfTransportId: ["0", Validators.required],
-      productType: ["1", Validators.required],
+      ModeOfTransportIdList: ["0", Validators.required],
+      ProductContentType: ["1", Validators.required],
       countryId: ["", Validators.required],
       actualWeight: ["", Validators.required],
       volumeWeight: [],
@@ -127,7 +127,7 @@ export class CalculationPage implements OnInit {
       Width: [1, [Validators.required, Validators.min(1)]],
       Height: [1, [Validators.required, Validators.min(1)]],
       PieceRules: [this.mapNewPieceRules],
-      SelectedPriceRuleTemplateIds: [[]]
+      SeletedTemplateRules: [[]]
     });
   }
   ionViewDidLoad() {
@@ -211,7 +211,7 @@ export class CalculationPage implements OnInit {
         formValue.sizes = [];
       }
       formValue.countryId = this.selectedCountry.Id;
-      formValue.selectRuleIds = this.selectRuleIds;
+      formValue.SeletedTemplateRules = this.selectRuleIds;
       console.log(formValue);
       this.service.calculate(formValue).subscribe((res) => {
         this.loadingCtrl.dismiss();
@@ -237,10 +237,10 @@ export class CalculationPage implements OnInit {
   checkPieceRule(pieceIndex, ruleIndex) {
     this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = !this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked;
     //清空已选择的id
-    this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.splice(0, this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.length);
+    this.sizes.value[pieceIndex].SeletedTemplateRules.splice(0, this.sizes.value[pieceIndex].SeletedTemplateRules.length);
     //重新添加已选择的id
     this.sizes.value[pieceIndex].PieceRules.filter(p => p.Checked).map(p => p.ObjectId).forEach(p => {
-      this.sizes.value[pieceIndex].SelectedPriceRuleTemplateIds.push(p);
+      this.sizes.value[pieceIndex].SeletedTemplateRules.push(p);
     });
   }
   addSize() {
