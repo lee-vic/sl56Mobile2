@@ -108,7 +108,7 @@
             <div (click)="trackToggle(item)">{{item?.PackageNumber}}</div>
             <div class="sub_font_color sub_font_size">当前活动：{{item?.CurrentActivity}}</div>
             <div class="sub_font_color sub_font_size">当前地点：{{item?.CurrentLocation}}</div>
-        </div>
+          </div>
           <div *ngIf="item?.open">
             <ion-item *ngFor="let track of item.Tracks">
               <ion-label>
@@ -158,14 +158,10 @@
   <ion-grid>
     <ion-row>
       <ion-col>
-        <ion-button expand="full" (click)="chat()" color="primary"
-          >联系客服</ion-button
-        >
+        <ion-button expand="full" (click)="more()" color="secondary">暂扣&退货</ion-button>
       </ion-col>
       <ion-col>
-        <ion-button expand="full" (click)="more()" color="secondary"
-          >退货&暂扣</ion-button
-        >
+        <ion-button expand="full" (click)="chat()" color="primary">联系客服</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>
