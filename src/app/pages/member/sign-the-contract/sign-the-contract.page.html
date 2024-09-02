@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/app/tabs/member"></ion-back-button>
+    </ion-buttons>
+    <ion-title> 合同签署 </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-segment (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="0" checked>
+      <ion-label>待签署</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="1">
+      <ion-label>已签署</ion-label>
+    </ion-segment-button>
+        <ion-segment-button value="2">
+      <ion-label>其他</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  <ion-list>
+    <ion-item *ngFor="let item of showList">
+      <ion-label>
+        <h2>{{item.ObjectName}}</h2>
+        <p>{{item.Status}}</p>
+      </ion-label>
+      <ion-button *ngIf="getShowButtonType(item)==0" (click)="goToSignTask(item)">
+        填写
+      </ion-button>
+      <ion-button *ngIf="getShowButtonType(item)==1" (click)="goToSignTask(item)">
+        签署
+      </ion-button>
+      <ion-button *ngIf="getShowButtonType(item)==3"  color="medium" disabled>
+        等待其他参与方完成填写
+      </ion-button>
+      <!-- 自动定稿，无需显示待定稿 -->
+      <!-- <ion-button *ngIf="getShowButtonType(item)==4"  color="medium" disabled>
+        等待发起方定稿
+      </ion-button> -->
+      <ion-button *ngIf="getShowButtonType(item)==5"  color="medium" disabled>
+        等待其他参与方完成签署
+      </ion-button>
+      <ion-button (click)="goToPreview(item)">
+        查看
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

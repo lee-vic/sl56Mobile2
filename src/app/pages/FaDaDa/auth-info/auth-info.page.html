@@ -1,0 +1,14 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      认证信息
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-label *ngIf="isAuth===false">未认证</ion-label>
+  <ion-label *ngIf="isAuth===true">已认证</ion-label>
+</ion-content>

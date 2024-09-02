@@ -351,6 +351,18 @@ const routes: Routes = [
         (m) => m.BankPageModule
       ),
   },
+  {
+    path: "sign-the-contract",
+    loadChildren: () => import("./sign-the-contract/sign-the-contract.module").then(
+        (m) => m.SignTheContractPageModule
+    )
+  },
+  {
+    path: "auth-info",
+    loadChildren: () => import("../FaDaDa/auth-info/auth-info.module").then(
+      (m) => m.AuthInfoPageModule
+    )
+  }
 
 ];
 
