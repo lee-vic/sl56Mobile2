@@ -112,11 +112,14 @@
     <ion-grid id="menu-grid">
       <ion-row *ngFor="let row of menus.rows" class="row">
         <ion-col *ngFor="let item of row.items" class="col">
+          <ion-badge color="danger" *ngIf="this.waitToSignTaskCount>0 && item.title=='合同签署'">{{this.waitToSignTaskCount}}</ion-badge>
           <div (click)="menuClick(item)" class="ion-text-center">
             <div>
               <img [src]="item.image" style="max-width:1.5rem;height:auto;">
             </div>
-            <div class="menu-title">{{item.title}}</div>
+            <div class="menu-title">
+              {{item.title}}
+            </div>
           </div>
         </ion-col>
       </ion-row>

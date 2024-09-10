@@ -6,5 +6,6 @@ export interface User {
     CustomerId:number;
     CustomerNo:string;
     Classify:number;
-    CurrencyAmount:any;
+    CurrencyAmount: any;
+    WaitToSignTaskCount:number;
 }
