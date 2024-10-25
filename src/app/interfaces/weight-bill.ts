@@ -45,4 +45,6 @@ export class WeightBill {
   WeighingMode:number;
   //是否返回过第二次磅.空车返重，重车返空 的二次过磅模式下用户选择
   IsReturn:Boolean;
+  //柜号
+  EquipmentNumber:string;
 }
