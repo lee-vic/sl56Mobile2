@@ -362,7 +362,19 @@ const routes: Routes = [
     loadChildren: () => import("../FaDaDa/auth-info/auth-info.module").then(
       (m) => m.AuthInfoPageModule
     )
-  }
+},
+{
+  path: "warehouse-application",
+    loadChildren: () => import("./warehouse-application/warehouse-application.module").then(
+      (m) => m.WarehouseApplicationPageModule
+    )
+},
+{
+  path: "warehouse-application-detail/:id",
+    loadChildren: () => import("./warehouse-application-detail/warehouse-application-detail.module").then(
+      (m) => m.WarehouseApplicationDetailPageModule
+    )
+}
 
 ];
 

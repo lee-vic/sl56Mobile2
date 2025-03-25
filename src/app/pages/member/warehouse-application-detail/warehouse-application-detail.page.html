@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>入仓申请信息</ion-title>
+    <ion-buttons slot="end" *ngIf="id>0 && status!=9">
+      <ion-button (click)="cancel()">取消</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" (ngSubmit)="save()">
+
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">单号</ion-label>
+        <ion-input type="text" formControlName="ReferenceNumber" 
+                  placeholder="必填，请输入单号" [readonly]="status != 0"></ion-input>
+        <ion-note *ngIf="form.get('ReferenceNumber')?.invalid && form.get('ReferenceNumber')?.touched" color="danger">
+          <span *ngIf="form.get('ReferenceNumber')?.errors?.required">单号不能为空</span>
+          <span *ngIf="form.get('ReferenceNumber')?.errors?.pattern">单号只能为大写字母或数字的组合,并且长度至少8位</span>
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">件数</ion-label>
+        <ion-input type="number" formControlName="Piece" 
+                  placeholder="必填，请输入件数" [readonly]="status != 0"></ion-input>
+        <ion-note *ngIf="form.get('Piece')?.invalid && form.get('Piece')?.touched" color="danger">
+          <span *ngIf="form.get('Piece')?.errors?.required">件数不能为空</span>
+          <span *ngIf="form.get('Piece')?.errors?.min">件数必须是正整数</span>
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">送货方式</ion-label>
+        <ion-select formControlName="Source" [disabled]="status != 0">
+          <ion-select-option *ngFor="let item of sourceList" [value]="item.value">
+            {{ item.text }}
+          </ion-select-option>
+        </ion-select>
+        <ion-note *ngIf="form.get('Source')?.invalid && form.get('Source')?.touched" color="danger">
+          <span *ngIf="form.get('Source')?.errors?.required">送货方式不能为空</span>
+        </ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">费用</ion-label>
+        <ion-input type="number" formControlName="Amount" readonly></ion-input>
+      </ion-item>
+    </ion-list>
+    <div class="save-content">
+      <ion-button type="submit" expand="block" *ngIf="status===0">
+        保存
+      </ion-button>
+    </div>
+  </form>
+</ion-content>
