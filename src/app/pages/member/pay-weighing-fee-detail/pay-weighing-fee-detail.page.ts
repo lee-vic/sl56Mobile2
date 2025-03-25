@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { apiUrl } from "src/app/global";
 import { SignalR, SignalRConnection } from 'ng2-signalr';
 import { Subscription } from 'rxjs';
+import { NavigationOptions } from '@ionic/angular/dist/providers/nav-controller';
 
 declare var WeixinJSBridge: any;
 declare var wx: any;
@@ -44,7 +45,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
   ionViewDidEnter() {
     this.loadData();
     this.signalRConnection.start().then((c) => {
-      this.signalRConnected=true;
+      this.signalRConnected = true;
       //监听支付成功事件
       let listener = c.listenFor("messageReceived");
       if (this.subscriber != undefined) {
@@ -57,15 +58,20 @@ export class PayWeighingFeeDetailPage implements OnInit {
           this.alertController.create({
             header: '称重已完成',
             subHeader: "点击确定后,系统将显示电子磅单",
-            message: "如果您需要纸质磅单，请到门卫室领取",
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [
               {
                 text: '确定',
                 handler: () => {
+                  let options: NavigationOptions = {
+                    queryParams: {
+                      ObjectId: this.objectId,
+                      IsAskPrint: true
+                    },
+                  };
                   this.navCtrl.navigateForward(
-                    "/member/pay-weighing-fee/result/" + this.objectId
+                    "/member/pay-weighing-fee/result/" + this.objectId, options
                   );
                 }
               }

@@ -80,7 +80,8 @@ export class PayWeighingFeePage implements OnInit {
           Validators.maxLength(32)
         ]
       )],
-      isReturn: [null]
+      isReturn: [null],
+      equipmentNumber:[null]
     });
     this.data.PricePerTon = 0;
     this.data.WeighingMode = 0;
@@ -97,7 +98,7 @@ export class PayWeighingFeePage implements OnInit {
       this.loadDefaultValue();
       this.alertController.create({
         header: '系统升级提示',
-        message: "尊贵的客户，现过磅系统升级为微信小程序，可在微信下拉快速打开过磅小程序，无需下车完成过磅。我们将持续优化升级，为您提供更方便、更快捷的服务！",
+        message: "尊贵的客户，微信下拉直接打开“丰树地磅”过磅，无需下车扫码！",
         backdropDismiss: false,
         keyboardClose: false,
         buttons: [
@@ -323,7 +324,6 @@ export class PayWeighingFeePage implements OnInit {
               this.alertController.create({
                 header: '称重已完成',
                 subHeader: "点击确定后,系统将显示电子磅单",
-                message: "如果您需要纸质磅单，请到门卫室领取",
                 backdropDismiss: false,
                 keyboardClose: false,
                 buttons: [
@@ -435,10 +435,11 @@ export class PayWeighingFeePage implements OnInit {
       queryParams: {
         ObjectId: objectId,
         OpenId: this.data.WxOpenId,
+        IsAskPrint:true
       },
     };
     this.navController.navigateForward(
-      "/member/pay-weighing-fee/result/" + objectId
+      "/member/pay-weighing-fee/result/" + objectId,options
     );
   }
   gotoPay(objectId) {
