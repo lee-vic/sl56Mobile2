@@ -27,7 +27,7 @@ export class WarehouseApplicationPage {
   }
 
   async loadApplications() {
-    if(!this.hasMore) return;
+    if(!this.hasMore && this.currentPage > 1) return;
     const loading = await this.loadingCtrl.create({
       message: '正在加载...'
     });
