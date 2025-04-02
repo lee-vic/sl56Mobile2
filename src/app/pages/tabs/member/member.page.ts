@@ -33,9 +33,8 @@ export class MemberPage implements OnInit {
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0,1], url: "/member/notice-list" },
     { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
     { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
-    // { title: "认证信息", image: "assets/imgs/member-25.png", type: [0, 1], url: "/member/auth-info" },
     { title: "合同签署", image: "assets/imgs/member-24.png", type: [0, 1], url: "/member/sign-the-contract" },
-    { title: "入仓申请", image: "assets/imgs/member-26.png", type: [0, 1], url: "/member/warehouse-application" }
+    { title: "香港入仓申请", image: "assets/imgs/member-26.png", type: [0, 1], url: "/member/warehouse-application" }
   ];
   menus: Menus;
   isLogin: boolean = false;
