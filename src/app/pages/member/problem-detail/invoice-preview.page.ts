@@ -21,7 +21,7 @@ export class InvoicePreviewPage implements OnInit {
       this.problemId = p.problemId;
       this.isWeAppFile = p.isWeAppFile;
       let previewPath = encodeURI(apiUrl + "/Problem/PreviewInvoice?path=" + p.filePath + "#page=1");
-      this.invoicePath =previewPath;
+      this.invoicePath = previewPath;
       console.log(previewPath);
     });
   }
