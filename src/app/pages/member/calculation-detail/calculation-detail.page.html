@@ -66,6 +66,10 @@
           <ion-label>含油参价</ion-label>
           <ion-input class="ion-text-right" readonly="true" value="{{data.UnitPrice}}"></ion-input>
         </ion-item>
+        <ion-item>
+          <ion-label>重要提醒</ion-label>
+          <ion-input class="ion-text-right" readonly="true" value="{{data.ImportantTip}}" color="danger"></ion-input>
+        </ion-item>
       </ion-list>
     </div>
     <div *ngSwitchCase="2" [innerHTML]="data.CommonRemark" class="ion-padding">
