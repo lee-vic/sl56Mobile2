@@ -54,14 +54,11 @@
           <ion-label>货物属性</ion-label>
           <ion-note slot="end">{{data?.AttributeNames}}</ion-note>
         </ion-item>
-        <ion-item>
-          <ion-label>操作员</ion-label>
-          <ion-note slot="end">{{data?.OperationName}}</ion-note>
+        <ion-item *ngIf="data?.LabelUrl!=null">
+          <ion-label>托运标签</ion-label>
+          <ion-button href="{{data?.LabelUrl}}" fill="outline" slot="end">下载</ion-button>
         </ion-item>
-        <ion-item>
-          <ion-label>总单号</ion-label>
-          <ion-note slot="end">{{data?.ReceiveGoodsNo}}</ion-note>
-        </ion-item>
+
         <ion-item>
           <ion-label>计价时间</ion-label>
           <ion-note slot="end">{{data?.Date}}</ion-note>

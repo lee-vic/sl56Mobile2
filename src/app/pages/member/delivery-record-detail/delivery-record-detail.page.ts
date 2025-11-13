@@ -8,6 +8,7 @@ import {
   ToastController,
 } from "@ionic/angular";
 import { ProblemService } from "src/app/providers/problem.service";
+import { apiUrl } from "src/app/global";
 @Component({
   selector: "app-delivery-record-detail",
   templateUrl: "./delivery-record-detail.page.html",
@@ -56,7 +57,14 @@ export class DeliveryRecordDetailPage implements OnInit {
           console.log("PackageTracks:", this.data.PackageTracks);
         }
         this.isReturn = this.data.IsReturnCustomer;
-        console.log(this.data);
+        //如果允许下载标签且有标签则生成下载地址
+        if(this.data.AllowDownloadLabel&&this.data.HasLabel){
+           this.data.LabelUrl =apiUrl+ "/DeliveryRecord/DownloadLabel/"+this.data.TransportDocumentId;
+        }
+        else{
+          this.data.LabelUrl = null;
+        }
+
       },
       (err) => {
         //  let toast = this.toastCtrl.create({
