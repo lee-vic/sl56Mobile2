@@ -27,4 +27,8 @@ export class NoticeService {
     let seq= this.http.get<Notice> (apiUrl+"/Notice/Detail",{ withCredentials:true,params:paras});
     return seq;
   }
+  getUnreadCount(){
+    let seq= this.http.get<number> (apiUrl+"/Notice/GetUnreadCount",{ withCredentials:true});
+    return seq;
+  }
 }

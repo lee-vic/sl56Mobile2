@@ -1,3 +1,9 @@
 .result_list{
     margin-top: 10px;
 }
+.multiline-text {
+  display: block; /* 或 inline-block */
+  white-space: pre-wrap; /* 保留换行符并允许自动换行 */
+  word-wrap: break-word; /* 允许长单词换行 */
+  overflow-wrap: break-word;
+}

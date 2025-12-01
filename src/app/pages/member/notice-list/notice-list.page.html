@@ -10,6 +10,7 @@
 <ion-content>
   <ion-list lines="full">
     <ion-item detail (click)="openDetail(item)" *ngFor="let item of items">
+
       <ion-label class="ion-text-wrap">
         <p>{{item.CreateAt}}</p>
         <ion-text>
@@ -17,7 +18,7 @@
         </ion-text>
         <p>{{item.Summary}}</p>
       </ion-label>
-
+      <ion-badge slot="end" color="{{item.IsRead ? 'success' : 'danger'}}">{{item.IsRead?"已读":"未读"}}</ion-badge>
     </ion-item>
   </ion-list>
   <ion-infinite-scroll (ionInfinite)="getItems()">

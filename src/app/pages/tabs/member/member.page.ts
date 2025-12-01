@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Platform, ToastController, LoadingController,NavController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Platform, ToastController, LoadingController, NavController, IonDatetime } from '@ionic/angular';
+import { NavigationEnd, Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
 import { User } from 'src/app/interfaces/user';
 import { JPush } from '@jiguang-ionic/jpush/ngx';
+import { NoticeService } from 'src/app/providers/notice.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-member',
@@ -16,21 +18,21 @@ import { JPush } from '@jiguang-ionic/jpush/ngx';
 export class MemberPage implements OnInit {
   allMenus: Array<Menu> = [
     { title: "价格查询", image: "assets/imgs/member-2.png", type: [0, 1], url: "/member/calculation" },
+    { title: "业务公告", image: "assets/imgs/member-19.png", type: [0, 1], url: "/member/notice-list" },
     { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
-    { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0,1], url: "/member/confirmation" },
+    { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0, 1], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
     { title: "银行账号", image: "assets/imgs/member-23.png", type: [0, 1], url: "/member/bank" },
     { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
-    { title: "联系客服", image: "assets/imgs/member-6.png", type: [0,1], url: "/member/chat/0" },
+    { title: "联系客服", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/chat/0" },
     { title: "修改登录密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-password" },
     { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
     { title: "子账号管理", image: "assets/imgs/member-12.png", type: [0], url: "/member/sub-account" },
     { title: "微信绑定", image: "assets/imgs/member-13.png", type: [0, 1], url: "/member/wechat-binding" },
     { title: "银行水单上传(优先放货)", image: "assets/imgs/member-17.png", type: [0, 1], url: "/member/bank-slips" },
-    { title: "业务公告", image: "assets/imgs/member-19.png", type: [0,1], url: "/member/notice-list" },
     { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
     { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
     { title: "合同签署", image: "assets/imgs/member-24.png", type: [0, 1], url: "/member/sign-the-contract" },
@@ -44,15 +46,20 @@ export class MemberPage implements OnInit {
   username: string = "";
   customerType: number;
   currencyAmount: any;
+  unreadNoticeCount: number = 0;
   waitToSignTaskCount: number = 0;
+  noticeIsClicked: boolean = false;
+  routerSub: Subscription;
   constructor(public toastCtrl: ToastController,
     public plt: Platform,
     private userService: UserService,
     private router: Router,
     private jpush: JPush,
     private cookieService: CookieService,
+    private noticeService: NoticeService,
     public loadingCtrl: LoadingController,
-    private navCtrl:NavController) {
+    private renderer: Renderer2,
+    private navCtrl: NavController) {
     this.authForm = new FormGroup({
       username: new FormControl('', Validators.required),
       password: new FormControl('', Validators.required),
@@ -83,15 +90,31 @@ export class MemberPage implements OnInit {
         }
       });
     });
+    this.routerSub = this.router.events.subscribe(evt => {
+      if (evt instanceof NavigationEnd) {
+      
+        if (this.router.url === '/app/tabs/member') {
+          //刷新未读公告数量
+          this.noticeService.getUnreadCount().subscribe(res => {
+            this.unreadNoticeCount = res;
+          });
+        }
+      }
+    });
 
-
+  }
+  ngOnDestroy() {
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
   }
   forgetPasswordClick() {
     this.router.navigateByUrl("/member/reset-password");
   }
   ionViewDidEnter() {
-    console.log("ionViewDidEnter");
+    console.log(new Date().getTime());
   }
+
   doLogin(formValue) {
 
 
@@ -101,8 +124,8 @@ export class MemberPage implements OnInit {
       formValue.openId = this.cookieService.get('OpenId');
       formValue.unionId = this.cookieService.get('UnionId');
     }
-    this.userService.auth(formValue).subscribe((res:any) => {
-      this.isLogin =  res.Success;
+    this.userService.auth(formValue).subscribe((res: any) => {
+      this.isLogin = res.Success;
       if (this.isLogin == true) {
         this.loginSuccess();
       }
@@ -140,8 +163,8 @@ export class MemberPage implements OnInit {
     this.userService.getHomeInfo().subscribe(res => {
       console.log(res);
       this.userInfo = res;
-      this.username=res.CustomerNo;
-      this.customerType=res.Classify;
+      this.username = res.CustomerNo;
+      this.customerType = res.Classify;
       this.currencyAmount = res.CurrencyAmount;
       this.waitToSignTaskCount = res.WaitToSignTaskCount;
       let tempMenus = this.allMenus.filter(p => {
@@ -159,31 +182,33 @@ export class MemberPage implements OnInit {
         }
         this.menus.rows[rowIndex].items.push(tempMenus[i]);
       }
-  
+
       if (this.plt.is("hybrid")) {
-        this.jpush.getRegistrationID().then(res=>{
-          let platform:string="";
-          if(this.plt.is("android"))
-            platform="android";
-          else if(this.plt.is("iphone"))
-            platform="iphone";
-          this.userService.logined(res,platform).subscribe(data=>{
+        this.jpush.getRegistrationID().then(res => {
+          let platform: string = "";
+          if (this.plt.is("android"))
+            platform = "android";
+          else if (this.plt.is("iphone"))
+            platform = "iphone";
+          this.userService.logined(res, platform).subscribe(data => {
             console.log(data);
           });
         })
       }
-      
+      this.noticeService.getUnreadCount().subscribe(res => {
+        this.unreadNoticeCount = res;
+      });
       // if(this.customerType==3){
       //   this.navCtrl.navigateForward("/member/distribute-manager",{replaceUrl:true});
       // }
     });
 
-  
-
-    
 
 
-    
+
+
+
+
 
   }
 
@@ -194,6 +219,10 @@ export class MemberPage implements OnInit {
       this.showToast('功能升级中...');
     }
     else {
+      if (item.title == "业务公告") {
+        this.noticeIsClicked = true;
+
+      }
       this.router.navigateByUrl(item.url);
     }
 
@@ -219,8 +248,8 @@ export class MemberPage implements OnInit {
     //this.router.navigateByUrl("/member/chat/0");
     this.router.navigate(["/member", "chat", 0])
   }
-  wechatPay(id){
-    this.router.navigateByUrl("/member/wechat-pay/0?cid="+id);
+  wechatPay(id) {
+    this.router.navigateByUrl("/member/wechat-pay/0?cid=" + id);
   }
   goToTest() {
     this.router.navigateByUrl("/member/test");

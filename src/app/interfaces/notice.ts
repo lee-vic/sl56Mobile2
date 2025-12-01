@@ -3,4 +3,5 @@ export interface Notice {
     Title:string;
     Summary:string;
     CreateAt:string;
+    IsRead:boolean;
 }

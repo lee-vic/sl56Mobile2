@@ -42,6 +42,7 @@ export class NoticeListPage implements OnInit {
     });
   }
   openDetail(item:Notice) {
+    item.IsRead=true;
     this.navCtrl.navigateForward("/member/notice-detail/"+item.NoticeId);
   }
 

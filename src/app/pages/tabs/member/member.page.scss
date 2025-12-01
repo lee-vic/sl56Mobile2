@@ -87,6 +87,7 @@ ion-img{
     vertical-align: center;
     text-align: center;
     border-radius:50%;
+     line-height: 20px;
     color: white;
 }
 .my-badge1{
@@ -96,4 +97,36 @@ ion-img{
 }
 .smallFont{
     font-size: 13px;
+}
+.my-badge2{
+    position: absolute;
+    right:5px;
+    top:5px;
+    background-color: red;
+    width: 20px;
+    height: 20px;
+    vertical-align: center;
+    text-align: center;
+    border-radius:50%;
+    line-height: 20px;
+    color: white;
+    font-size: 12px;
+}
+
+/* 定义基础样式 */
+.fade-flicker {
+  animation: flickerFade 2s infinite;
+}
+
+/* 定义关键帧动画 */
+@keyframes flickerFade {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3; /* 调整这个值可以改变最暗的程度 */
+  }
+  100% {
+    opacity: 1;
+  }
 }

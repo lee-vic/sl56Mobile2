@@ -19,8 +19,8 @@
 
         <h2>{{item.PriceCode}}&nbsp;&nbsp;{{item.Series}}</h2>
         <p>{{item.PriceName}}</p>
-        <ion-text color="danger">
-          <p>{{item.ImportantTip}}</p>
+        <ion-text color="danger" class="multiline-text">
+          {{item.ImportantTip}}
         </ion-text>
       </ion-label>
       <ion-note slot="end" class="ion-margin-vertical">{{item.TotalAmount|currency:'CNY'}}</ion-note>
