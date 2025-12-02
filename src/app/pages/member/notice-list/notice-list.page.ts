@@ -12,8 +12,8 @@ export class NoticeListPage implements OnInit {
   isBusy: boolean = false;
   currentPageIndex: number = 1;
   items: Array<Notice> = [];
-  @ViewChild(IonInfiniteScroll,{static:true}) infiniteScroll: IonInfiniteScroll;
-  constructor(private service: NoticeService,public navCtrl: NavController) { }
+  @ViewChild(IonInfiniteScroll, { static: true }) infiniteScroll: IonInfiniteScroll;
+  constructor(private service: NoticeService, public navCtrl: NavController) { }
 
   ngOnInit(): void {
     this.getItems();
@@ -27,23 +27,24 @@ export class NoticeListPage implements OnInit {
       return;
     this.isBusy = true;
     this.service.getNoticeList(this.currentPageIndex).subscribe(res => {
-      if (res.length <10) {
-        this.infiniteScroll.disabled=true;
+      for (var i = 0; i < res.length; i++) {
+        this.items.push(res[i]);
+      }
+      if (res.length < 10) {
+        this.infiniteScroll.disabled = true;
       }
       else {
-        for (var i = 0; i < res.length; i++) {
-          this.items.push(res[i]);
-        }
+
         this.currentPageIndex++;
       }
       if (this.infiniteScroll != null)
-      this.infiniteScroll.complete();
+        this.infiniteScroll.complete();
       this.isBusy = false;
     });
   }
-  openDetail(item:Notice) {
-    item.IsRead=true;
-    this.navCtrl.navigateForward("/member/notice-detail/"+item.NoticeId);
+  openDetail(item: Notice) {
+    item.IsRead = true;
+    this.navCtrl.navigateForward("/member/notice-detail/" + item.NoticeId);
   }
 
 }
