@@ -51,7 +51,6 @@ export class LoginPage implements OnInit {
 
       if (this.isLogin) {
         this.router.navigateByUrl(this.cookieService.get('State'));
-        //this.navCtrl.push(this.cookieService.get('State'));
       }
       else {
         this.toastCtrl.create({

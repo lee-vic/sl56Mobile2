@@ -45,18 +45,18 @@
 
   </div>
 </ion-content>
-<ion-footer no-border>
+<ion-footer class="ion-no-border">
   <div class="input-wrap">
 
     <textarea #chat_input placeholder="请输入..." [(ngModel)]="editorMsg" (keyup.enter)="sendMsg()" (focusin)="onFocus()">
     </textarea>
-    <ion-button fill="clear" icon-only item-right (click)="sendMsg()">
-      <ion-icon name="send"></ion-icon>
+    <ion-button fill="clear" (click)="sendMsg()">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
     </ion-button>
     <input #file type="file" (change)="upload(file.files)" style="display:none" />
-    <button ion-button clear icon-only item-right (click)="file.click()" *ngIf="showFileUploadButton">
-      <ion-icon name="share"></ion-icon>
-    </button>
+    <ion-button fill="clear" (click)="file.click()" *ngIf="showFileUploadButton">
+      <ion-icon slot="icon-only" name="share"></ion-icon>
+    </ion-button>
   </div>
 </ion-footer>
 <script src="./baguetteBox.js"></script>

@@ -1,32 +1,46 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
-import { IonSearchbar,IonInfiniteScroll,Events } from '@ionic/angular';
+import { IonSearchbar,IonInfiniteScroll } from '@ionic/angular';
 import { DeliveryRecordService } from 'src/app/providers/delivery-record.service';
 import {ReturnService} from 'src/app/providers/return.service';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { WaitingReturnEventsService } from 'src/app/providers/waiting-return-events.service';
 
 @Component({
   selector: 'app-delivery-record',
   templateUrl: './delivery-record.page.html',
   styleUrls: ['./delivery-record.page.scss'],
 })
-export class DeliveryRecordPage implements OnInit {
+export class DeliveryRecordPage implements OnInit, OnDestroy {
   items: Array<DeliveryRecord> = [];
   currentPageIndex: number = 1;
   isShowCheckbox:boolean=false;
   waitReturnCount:number=0;
+  private reloadSubscription: Subscription;
 
   @ViewChild(IonInfiniteScroll,{static:true}) infiniteScroll: IonInfiniteScroll;
   @ViewChild(IonSearchbar,{static:true}) searchbar: IonSearchbar;
-  constructor(public service: DeliveryRecordService,  private router: Router,public returnService:ReturnService,public events:Events) { }
+  constructor(
+    public service: DeliveryRecordService,
+    private router: Router,
+    public returnService:ReturnService,
+    private waitingReturnEventsService: WaitingReturnEventsService
+  ) { }
 
   ngOnInit() {
     this.getItems("",false);
     this.getWaitingReturnList();
     
-    this.events.subscribe('reloadWaitingReturn',() => {
+    this.reloadSubscription = this.waitingReturnEventsService.onReloadWaitingReturn().subscribe(() => {
       this.getWaitingReturnList();
     });
+  }
+
+  ngOnDestroy() {
+    if (this.reloadSubscription) {
+      this.reloadSubscription.unsubscribe();
+    }
   }
 
   searchItems() {
@@ -61,9 +75,6 @@ export class DeliveryRecordPage implements OnInit {
 
   detail(item) {
     this.router.navigate(["/member/delivery-record/detail",item.Id]);
-    // this.navCtrl.push(UserDeliveryRecordDetailPage, {
-    //   id: item.Id
-    // });
   }
   batchReturn(){
     this.isShowCheckbox=!this.isShowCheckbox;
@@ -89,7 +100,7 @@ export class DeliveryRecordPage implements OnInit {
     }
   }
   waitingReturnList(){
-    this.events.publish('reloadWaitingReturn');
+    this.waitingReturnEventsService.notifyReloadWaitingReturn();
     this.router.navigate(["/member/return-waiting"]);
   }
 }

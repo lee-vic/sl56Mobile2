@@ -76,13 +76,13 @@
         </div>
       </div>
     </ion-list>
-    <div padding-left padding-right>
+    <div class="ion-padding-start ion-padding-end">
       <ion-button expand="block" type="submit" [disabled]="myForm.invalid">保存</ion-button>
 
     </div>
 
   </form>
-  <div padding-left padding-right *ngIf="!isNew">
+  <div class="ion-padding-start ion-padding-end" *ngIf="!isNew">
 
     <ion-button expand="block" fill="outline" (click)="delete()">删除</ion-button>
   </div>

@@ -1,5 +1,5 @@
 import { NavController, LoadingController, AlertController, ToastController, ActionSheetController, IonInput } from '@ionic/angular';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';

@@ -21,10 +21,6 @@ export class WechatBindingPage implements OnInit {
       this.list=res;
     })
   }
-
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad WechatBindingPage');
-  }
   onItemDeleteClick(item){
     this.alertCtrl.create({
       header: '解除微信账号绑定',

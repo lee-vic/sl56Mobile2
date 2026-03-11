@@ -1,6 +1,6 @@
 <ion-content>
   <div>
-    <ion-slides pager autoplay="3000" loop="true">
+    <ion-slides [options]="slideOpts" pager="true">
 
       <ion-slide *ngFor="let slide of slides">
         <img [src]="slide.image" />
@@ -14,7 +14,7 @@
   <ion-grid>
 
     <ion-row>
-      <ion-col col-12>
+      <ion-col size="12">
         <h4>产品业务</h4>
       </ion-col>
     </ion-row>
@@ -27,13 +27,13 @@
 
     </ion-row>
   </ion-grid>
-  <ion-list no-lines>
+  <ion-list lines="none">
     <ion-list-header>
       <h2>升蓝动态</h2>
     </ion-list-header>
 
       <ion-item button detail *ngFor="let item of news" lines="none" (click)="openNews(item)">
-        <ion-thumbnail item-start>
+        <ion-thumbnail slot="start">
           <img [src]="item.image">
         </ion-thumbnail>
         <ion-label>

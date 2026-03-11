@@ -32,11 +32,11 @@
    
     <ion-item>
       {{item.Date}}
-      <ion-button slot="end" outline (click)="onItemConfirmClick(item)">确认出货</ion-button>
+      <ion-button slot="end" fill="outline" (click)="onItemConfirmClick(item)">确认出货</ion-button>
     </ion-item>
 
   </ion-list>
-  <div padding *ngIf="searchList?.length==0">
+  <div class="ion-padding" *ngIf="searchList?.length==0">
     <img src="assets/imgs/empty.png">
   </div>
 

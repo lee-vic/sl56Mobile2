@@ -24,9 +24,6 @@ export class WechatPayListPage implements OnInit {
   ngOnInit(): void {
     this.getItems();
   }
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad WechatPayListPage');
-  }
   getItems() {
     if (this.isBusy == true)
       return;

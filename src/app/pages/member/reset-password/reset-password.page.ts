@@ -66,7 +66,6 @@ export class ResetPasswordPage implements OnInit {
         // this.tab="2";
         // this.tab2Disabled=false;
         this.data=res;
-        //this.navCtrl.push(UserForgotPassword1Page,{data:res});
       }
       else{
        this.toastCtrl.create({
@@ -134,7 +133,6 @@ export class ResetPasswordPage implements OnInit {
         this.data=res;
         this.tab="2";
         this.tab3Disabled=false;
-        //this.navCtrl.push(UserForgotPassword2Page,{data:res});
       }
       else{
         let toast = this.toastCtrl.create({
@@ -160,11 +158,7 @@ export class ResetPasswordPage implements OnInit {
         //   duration: 1000
         // });
        
-        // setTimeout(() => {
-        //   this.navCtrl.popToRoot();
-        //   this.navCtrl.pop();
-        // }, 1000);
-       
+
       }
       else{
         let toast = this.toastCtrl.create({

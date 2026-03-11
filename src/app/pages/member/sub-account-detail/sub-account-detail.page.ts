@@ -92,16 +92,12 @@ export class SubAccountDetailPage implements OnInit {
     }
 
   }
-
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad EditSubAccountPage');
-  }
   onSubmit(formValue) {
     console.log(this.data);
     if (this.isNew) {
       this.service.create(this.data).subscribe(res => {
         if (res.Success) {
-          this.navCtrl.pop();
+          this.navCtrl.back();
         }
         else {
           let toast = this.toastCtrl.create({
@@ -117,7 +113,7 @@ export class SubAccountDetailPage implements OnInit {
     else {
       this.service.edit(this.data).subscribe(res => {
         if (res.Success) {
-          this.navCtrl.pop();
+          this.navCtrl.back();
         }
         else {
           let toast = this.toastCtrl.create({
@@ -144,7 +140,7 @@ export class SubAccountDetailPage implements OnInit {
           text: '确定',
           handler: () => {
             this.service.delete(this.id).subscribe(res => {
-              this.navCtrl.pop();
+              this.navCtrl.back();
             });
           }
         }

@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import{ IonCheckbox,AlertController,Events,NavController} from '@ionic/angular';
+import{ IonCheckbox,AlertController,NavController} from '@ionic/angular';
 import{ReturnService} from 'src/app/providers/return.service';
 import{DeliveryRecord} from 'src/app/interfaces/delivery-record';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import { WaitingReturnEventsService } from 'src/app/providers/waiting-return-events.service';
 
 @Component({
   selector: 'app-return-waiting',
@@ -17,8 +18,8 @@ export class ReturnWaitingPage implements OnInit {
   constructor(
     public service:ReturnService,
     public alert:AlertController,
-    public events:Events,
     public navCtrl:NavController,
+    private waitingReturnEventsService: WaitingReturnEventsService,
     private router: Router,
     private route: ActivatedRoute) {
       this.navigationSubscription = this.router.events.subscribe((event: any) => {
@@ -104,7 +105,7 @@ export class ReturnWaitingPage implements OnInit {
   }
 
   back(){
-    this.events.publish('reloadWaitingReturn');
+    this.waitingReturnEventsService.notifyReloadWaitingReturn();
   }
 
 }

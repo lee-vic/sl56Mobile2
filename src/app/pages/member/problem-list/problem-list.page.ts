@@ -40,17 +40,9 @@ export class ProblemListPage implements OnInit {
  
   detail(item) {
     this.navCtrl.navigateForward("/member/delivery-record/detail/"+item.Id);
-    
-    // this.navCtrl.push(UserDeliveryRecordDetailPage, {
-    //   id: item.Id
-    // });
   }
   problemDetail(_receiveGoodsDetailId,_problemId){
     this.navCtrl.navigateForward("/member/problem-detail/"+_receiveGoodsDetailId,{queryParams:{problemid:_problemId}});
-    // this.navCtrl.push(UserProblemDetailPage, {
-    //   receiveGoodsDetailId: _receiveGoodsDetailId,
-    //   problemId:_problemId
-    // });
   }
   searchItems() {
     let val = this.searchbar.value;
@@ -78,7 +70,6 @@ export class ProblemListPage implements OnInit {
     });
   }
   scrollItems($event) {
-    this.getItems(this.searchbar.value,true);
-   
+    this.getItems(this.searchbar.value, true);
   }
 }

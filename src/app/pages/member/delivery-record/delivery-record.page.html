@@ -17,7 +17,7 @@
 
   <ion-list *ngFor="let item of items" lines="none">
     <ion-item class="bottom-border" (click)="clickCheckBox(item)">
-	    <ion-checkbox [style.display]="isShowCheckbox?'inline':'none'" checked={{item.Selected}}></ion-checkbox>
+	    <ion-checkbox [style.display]="isShowCheckbox?'inline':'none'" [checked]="item.Selected"></ion-checkbox>
       <ion-label> 原单号:{{item.ReferenceNumber}}</ion-label>
       <ion-note slot="end">转单号:{{item.TrackNumber}}</ion-note>
     </ion-item>

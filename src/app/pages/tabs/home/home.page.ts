@@ -7,6 +7,12 @@ import { Router } from '@angular/router';
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage  {
+  slideOpts = {
+    autoplay: {
+      delay: 3000
+    },
+    loop: true
+  };
 
   news = [
     {

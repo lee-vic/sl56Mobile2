@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { PriceInfo } from 'src/app/interfaces/price';
 import { apiUrl } from 'src/app/global';
-import { NavController, NavParams, IonInfiniteScroll } from '@ionic/angular';
+import { IonInfiniteScroll } from '@ionic/angular';
 import { PriceService } from 'src/app/providers/price.service';
 
 @Component({
@@ -16,14 +16,10 @@ export class PriceListPage implements OnInit {
   isBusy: boolean = false;
   allowDownload:boolean=false;
   downloadUrl:string=apiUrl + "/Price/Download";
-  constructor(public navCtrl: NavController,
-    private service: PriceService) {
+  constructor(private service: PriceService) {
   }
   ngOnInit(): void {
     this.getItems(null);
-  }
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad PriceListPage');
   }
   getItems(ev) {
     if (this.isBusy == true)

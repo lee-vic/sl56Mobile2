@@ -26,7 +26,7 @@
         </ion-item>
         <ion-item>
           <ion-label>记住我</ion-label>
-          <ion-checkbox checked slot="start" formControlName="rememberMe"></ion-checkbox>
+          <ion-checkbox slot="start" formControlName="rememberMe"></ion-checkbox>
         </ion-item>
       </ion-list>
       <div class="ion-padding">
@@ -40,18 +40,18 @@
     <div class="user-heder-1">
       <ion-grid id="titlte">
         <ion-row class="ion-align-items-center">
-          <ion-col col-4 class="ion-align-self-center">
+          <ion-col size="4" class="ion-align-self-center">
             <div class="ion-float-left">
 
               <img src="assets/imgs/member-14.png" style="width:30px;height:30px;">
             </div>
             <div class="ion-float-left" id="name">{{username}}</div>
           </ion-col>
-          <ion-col col-4 class="ion-align-self-center " class="ion-text-center">
+          <ion-col size="4" class="ion-align-self-center " class="ion-text-center">
             <img src="assets/imgs/member-16.png" style="width:35px;height:35px;">
 
           </ion-col>
-          <ion-col col-4 class="ion-align-self-center" class="ion-text-right">
+          <ion-col size="4" class="ion-align-self-center" class="ion-text-right">
             <img src="assets/imgs/member-15.png" class="my-badge1"
               [ngStyle]="{'margin-right':userInfo?.UnReadMessageCount > 0? '12px;': ''}" (click)="openMessage()"
               *ngIf="customerType==0">
@@ -60,17 +60,17 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col col-2 class="ion-text-center">
+          <ion-col size="2" class="ion-text-center">
 
           </ion-col>
-          <ion-col col-8 class="ion-text-center">
+          <ion-col size="8" class="ion-text-center">
 
             <ion-button id="btnPerson" (click)="openChat()" fill="clear">
               我的客服专员
               <ion-icon name="arrow-forward"></ion-icon>
             </ion-button>
           </ion-col>
-          <ion-col col-2 class="ion-text-center">
+          <ion-col size="2" class="ion-text-center">
 
           </ion-col>
         </ion-row>
@@ -78,7 +78,7 @@
       <div *ngIf="customerType!=3">
         <ion-grid id="info">
           <ion-row class="ion-align-items-center">
-            <ion-col col-4>
+            <ion-col size="4">
               <div class="ion-text-center">
 
                 <div class="title"> {{userInfo?.Quantity1}}</div>
@@ -86,7 +86,7 @@
 
               </div>
             </ion-col>
-            <ion-col col-4 class="ion-text-center">
+            <ion-col size="4" class="ion-text-center">
               <div class="title"> {{userInfo?.Quantity2}}</div>
               问题件
             </ion-col>
@@ -96,7 +96,7 @@
 
         <ion-grid id="info">
           <ion-row class="ion-align-items-center">
-            <ion-col col-4 *ngFor="let item of currencyAmount" (click)="wechatPay(item.Id)">
+            <ion-col size="4" *ngFor="let item of currencyAmount" (click)="wechatPay(item.Id)">
               <div class="ion-text-center">
                 <div class="title">{{item.Amount}}</div>
                 <span class="smallFont">

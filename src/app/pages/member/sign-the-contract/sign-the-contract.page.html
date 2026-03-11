@@ -7,8 +7,8 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-segment (ionChange)="segmentChanged($event)">
-    <ion-segment-button value="0" checked>
+  <ion-segment [value]="showType" (ionChange)="segmentChanged($event)">
+    <ion-segment-button value="0">
       <ion-label>待签署</ion-label>
     </ion-segment-button>
     <ion-segment-button value="1">

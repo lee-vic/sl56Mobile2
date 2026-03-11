@@ -1,7 +1,7 @@
-import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { ToastController, LoadingController, NavController, IonDatetime } from '@ionic/angular';
+import { ToastController, LoadingController } from '@ionic/angular';
 import { NavigationEnd, Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
@@ -54,9 +54,7 @@ export class MemberPage implements OnInit {
     private router: Router,
     private cookieService: CookieService,
     private noticeService: NoticeService,
-    public loadingCtrl: LoadingController,
-    private renderer: Renderer2,
-    private navCtrl: NavController) {
+    public loadingCtrl: LoadingController) {
     this.authForm = new FormGroup({
       username: new FormControl('', Validators.required),
       password: new FormControl('', Validators.required),

@@ -21,9 +21,6 @@ export class TemplateListPage implements OnInit {
   ngOnInit(): void {
     this.getItems(null);
   }
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad TemplateListPage');
-  }
   getItems(ev) {
     if (this.isBusy == true)
       return;

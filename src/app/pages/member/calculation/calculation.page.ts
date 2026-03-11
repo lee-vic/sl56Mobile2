@@ -130,9 +130,6 @@ export class CalculationPage implements OnInit {
       SeletedTemplateRules: [[]]
     });
   }
-  ionViewDidLoad() {
-    console.log("ionViewDidLoad CalculationPage");
-  }
 
   get sizes() {
     console.log("getSizes:", this.myForm.get("sizes"));
@@ -219,9 +216,6 @@ export class CalculationPage implements OnInit {
         if (res.length > 0) {
           localStorage.setItem("CalculationResult", JSON.stringify(res));
           this.router.navigateByUrl("/member/calculation/calculation-list");
-          // this.navCtrl.push(UserCalculationListPage, {
-          //   list: res
-          // })
         } else {
           this.toastCtrl
             .create({

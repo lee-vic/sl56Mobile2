@@ -18,9 +18,6 @@ export class NoticeListPage implements OnInit {
   ngOnInit(): void {
     this.getItems();
   }
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad NoticePage');
-  }
   getItems() {
 
     if (this.isBusy)

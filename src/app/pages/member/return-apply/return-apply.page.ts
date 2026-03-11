@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { NavController, AlertController, ToastController, ModalController, NavParams, IonButton, LoadingController } from '@ionic/angular';
+import { NavController, AlertController, ToastController, ModalController, IonButton, LoadingController } from '@ionic/angular';
 import { ReturnService } from 'src/app/providers/return.service';
 import { ActivatedRoute } from '@angular/router';
 import { ReturnApplyHistoryPage } from '../return-apply-history/return-apply-history.page';
@@ -28,7 +28,7 @@ export class ReturnApplyPage implements OnInit {
               text: "确定",
               role: "cancel",
               handler: () => {
-                this.navCtrl.pop();
+                this.navCtrl.back();
               }
             }]
           }).then(p => p.present());
@@ -74,9 +74,6 @@ export class ReturnApplyPage implements OnInit {
     });
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad ReturnApplyPage');
-  }
   doSubmit(form) {
     if (this.type == 0) {
       this.doApply(form);

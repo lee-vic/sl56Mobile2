@@ -28,9 +28,6 @@ export class ReturnListPage implements OnInit {
     private alertCtrl: AlertController
   ) {}
 
-  ionViewDidLoad() {
-    console.log("ionViewDidLoad ReturnListPage");
-  }
   scrollItems($event) {
     this.getItems1(this.searchbar.value, true);
   }
@@ -171,10 +168,6 @@ export class ReturnListPage implements OnInit {
       .then((p) => p.present());
   }
   fill(item) {
-    // this.navCtrl.push(UserReturnApplyPage, {
-    //   id: item.ObjectId,
-    //   type:1
-    // });
   }
   ionViewWillEnter() {
     console.log("ionViewWillEnter");

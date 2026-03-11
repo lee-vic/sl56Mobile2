@@ -22,10 +22,6 @@ export class ReturnApplyHistoryPage implements OnInit {
     public service: ReturnService) {
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad ReturnApplyHistoryPage');
-  }
-  
   select(){
     this.modalController.dismiss({ 'val': this.currentItem });
   }

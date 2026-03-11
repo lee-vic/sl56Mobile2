@@ -162,7 +162,7 @@ export class ChatPage implements OnInit, OnDestroy {
     this.multiMarkIsSend();
   }
 
-  ionViewDidLoad() {
+  ionViewDidEnter() {
     this.scrollToBottom();
   }
   sendMsg() {

@@ -71,7 +71,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
             let obj = JSON.parse(msg);
             if (obj.MsgContent == "True") {
               this.payHistory();
-              // this.navCtrl.push(UserWechatPayListPage);
             }
             else {
               this.toastCtrl.create({
@@ -265,7 +264,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
 
   listClick() {
-    // this.navCtrl.push(UserWechatPayListPage);
   }
   callpay(jsApiParam) {
     if (typeof WeixinJSBridge == "undefined") {

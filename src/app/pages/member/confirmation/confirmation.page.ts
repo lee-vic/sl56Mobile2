@@ -28,10 +28,6 @@ export class ConfirmationPage implements OnInit {
     
 
   }
-
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad ConfirmationPage');
-  }
   onAllClick() {
     this.searchList.forEach(element => {
       element.Selected = this.allSelected;
@@ -119,9 +115,6 @@ export class ConfirmationPage implements OnInit {
   }
   detail(item) {
     this.router.navigate(["/member/delivery-record/detail",item.Id]);
-    // this.navCtrl.push(UserDeliveryRecordDetailPage, {
-    //   id: item.Id
-    // });
   }
 
 }

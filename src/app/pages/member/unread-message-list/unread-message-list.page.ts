@@ -37,9 +37,6 @@ export class UnreadMessageListPage implements OnInit {
     });
   }
 
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad UnreadMessageListPage');
-  }
   detail(type) {
     if (type == 0) {
       if (this.data.Count2 > 0) {

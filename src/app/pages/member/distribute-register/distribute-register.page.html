@@ -13,7 +13,7 @@
 <ion-content>
   <form (ngSubmit)="doNext(myForm.value)" [formGroup]="myForm" novalidate class="ion-margin-top ion-padding-top">
     <ion-item>
-      <ion-label stacked color="dark">手机号码</ion-label>
+      <ion-label position="stacked" color="dark">手机号码</ion-label>
       <ion-input type="tel" formControlName="mobilePhone" placeholder="请输入手机号码"></ion-input>
     </ion-item>
     <div class="validation-errors ion-padding-start">
@@ -27,7 +27,7 @@
       </div>
     </div>
     <ion-item>
-      <ion-label stacked color="dark">验证码</ion-label>
+      <ion-label position="stacked" color="dark">验证码</ion-label>
       <ion-input type="text" formControlName="verifyCode" placeholder="请输入验证码"></ion-input>
       <ion-button (click)="sendCode()">获取验证码</ion-button>
     </ion-item>
@@ -42,7 +42,7 @@
       </div>
     </div>
     <ion-item>
-      <ion-label stacked color="dark">登录密码</ion-label>
+      <ion-label position="stacked" color="dark">登录密码</ion-label>
       <ion-input type="password" formControlName="password" placeholder="请输入密码，区分大小写"></ion-input>
     </ion-item>
     <div class="validation-errors ion-padding-start">
@@ -56,7 +56,7 @@
       </div>
     </div>
     <ion-item>
-      <ion-label stacked color="dark">确认登录密码</ion-label>
+      <ion-label position="stacked" color="dark">确认登录密码</ion-label>
       <ion-input type="password" formControlName="rePassword" placeholder="请再一次输入密码"></ion-input>
     </ion-item>
     <div class="validation-errors ion-padding-start">
@@ -70,7 +70,7 @@
       </div>
     </div>
     <ion-item>
-      <ion-label stacked color="dark">推荐码</ion-label>
+      <ion-label position="stacked" color="dark">推荐码</ion-label>
       <ion-input type="text" formControlName="code" placeholder="推荐码(选填)"></ion-input>
     </ion-item>
     <ion-button expand="block" type="submit" [disabled]="myForm.invalid || !isAgreement">注册</ion-button>

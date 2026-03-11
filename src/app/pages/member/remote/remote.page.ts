@@ -46,10 +46,6 @@ export class RemotePage implements OnInit {
     })
 
   }
-
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad RemotePage');
-  }
   filterCountryItems(ev: any) {
     let val = ev.srcElement["value"];
 

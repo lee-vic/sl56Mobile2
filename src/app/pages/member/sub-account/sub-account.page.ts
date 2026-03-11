@@ -26,17 +26,11 @@ export class SubAccountPage implements OnInit {
       this.items = res;
     });
   }
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad SubAccountPage');
-  }
   add() {
     this.navCtrl.navigateForward("/member/sub-account-detail/");
   }
   detail(item: SubAccount) {
     this.navCtrl.navigateForward("/member/sub-account-detail/"+ item.ObjectId);
-    // this.navCtrl.push(UserEditSubAccountPage, {
-    //   id: item.ObjectId
-    // });
   }
   ionViewDidEnter() {
     console.log("ionViewDidEnter");

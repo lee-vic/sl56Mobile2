@@ -45,10 +45,6 @@ export class ModifyDeliverypasswordPage implements OnInit {
     });
     this.data=new ModifyPassword();
   }
-
-  ionViewDidLoad() {
-    console.log('ionViewDidLoad ModifyDeliverypasswordPage');
-  }
   doNext(formValue) {
     console.log(formValue);
     this.data.NewPassword1=formValue.newPassword1;
@@ -65,7 +61,7 @@ export class ModifyDeliverypasswordPage implements OnInit {
        
         
         setTimeout(() => {
-          this.navCtrl.pop();
+          this.navCtrl.back();
         }, 1000);
       }
       else{
