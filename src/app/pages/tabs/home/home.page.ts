@@ -29,16 +29,13 @@ export class HomePage  {
   ];
   slides = [
     {
-      image: "assets/imgs/home-slidebox-1.png",
+      image: "assets/imgs/home-slidebox-1.jpg",
     },
     {
       image: "assets/imgs/home-slidebox-2.png",
     },
     {
       image: "assets/imgs/home-slidebox-3.png",
-    },
-    {
-      image: "assets/imgs/home-slidebox-4.png",
     }
   ];
   products = [
