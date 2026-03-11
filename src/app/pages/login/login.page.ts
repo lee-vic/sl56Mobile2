@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { LoadingController, ToastController, Platform } from '@ionic/angular';
+import { LoadingController, ToastController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { UserService } from 'src/app/providers/user.service';
 import { Router } from '@angular/router';
@@ -16,7 +16,6 @@ export class LoginPage implements OnInit {
   public isLogin: boolean;
   constructor(public formBuilder: FormBuilder,
     public toastCtrl: ToastController,
-    public plt: Platform,
     private router: Router,
     private userService: UserService,
     private cookieService: CookieService,
@@ -41,11 +40,10 @@ export class LoginPage implements OnInit {
     this.loadingCtrl.create({
       message: '请稍后...',
     }).then(p => p.present());
-    if (this.plt.is("mobileweb") || this.plt.is("desktop")) {
-      formValue.clientType = 1;
-      formValue.openId = this.cookieService.get('OpenId');
-      formValue.unionId = this.cookieService.get('UnionId');
-    }
+    // Web application - always set clientType to web
+    formValue.clientType = 1;
+    formValue.openId = this.cookieService.get('OpenId');
+    formValue.unionId = this.cookieService.get('UnionId');
     this.userService.auth(formValue).subscribe((res: any) => {
       this.isLogin =  res.Success;
       console.log("aa" + this.cookieService.get('sl56Auth'));
@@ -78,7 +76,6 @@ export class LoginPage implements OnInit {
     this.router.navigateByUrl("/member/reset-password");
   }
   getCookie() {
-    console.log(this.plt.platforms())
     console.log(this.cookieService.get('OpenId'));
     console.log(this.cookieService.get('UnionId'));
     console.log(this.cookieService.get('State'));

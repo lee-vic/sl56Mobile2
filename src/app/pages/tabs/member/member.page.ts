@@ -1,12 +1,11 @@
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { Platform, ToastController, LoadingController, NavController, IonDatetime } from '@ionic/angular';
+import { ToastController, LoadingController, NavController, IonDatetime } from '@ionic/angular';
 import { NavigationEnd, Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
 import { User } from 'src/app/interfaces/user';
-import { JPush } from '@jiguang-ionic/jpush/ngx';
 import { NoticeService } from 'src/app/providers/notice.service';
 import { Subscription } from 'rxjs';
 
@@ -51,10 +50,8 @@ export class MemberPage implements OnInit {
   noticeIsClicked: boolean = false;
   routerSub: Subscription;
   constructor(public toastCtrl: ToastController,
-    public plt: Platform,
     private userService: UserService,
     private router: Router,
-    private jpush: JPush,
     private cookieService: CookieService,
     private noticeService: NoticeService,
     public loadingCtrl: LoadingController,
@@ -116,14 +113,11 @@ export class MemberPage implements OnInit {
   }
 
   doLogin(formValue) {
-
-
     this.showLoading("请稍后...");
-    if (this.plt.is("mobileweb") || this.plt.is("desktop")) {
-      formValue.clientType = 1;
-      formValue.openId = this.cookieService.get('OpenId');
-      formValue.unionId = this.cookieService.get('UnionId');
-    }
+    // Web application - always set clientType to web
+    formValue.clientType = 1;
+    formValue.openId = this.cookieService.get('OpenId');
+    formValue.unionId = this.cookieService.get('UnionId');
     this.userService.auth(formValue).subscribe((res: any) => {
       this.isLogin = res.Success;
       if (this.isLogin == true) {
@@ -181,19 +175,6 @@ export class MemberPage implements OnInit {
             rowIndex++;
         }
         this.menus.rows[rowIndex].items.push(tempMenus[i]);
-      }
-
-      if (this.plt.is("hybrid")) {
-        this.jpush.getRegistrationID().then(res => {
-          let platform: string = "";
-          if (this.plt.is("android"))
-            platform = "android";
-          else if (this.plt.is("iphone"))
-            platform = "iphone";
-          this.userService.logined(res, platform).subscribe(data => {
-            console.log(data);
-          });
-        })
       }
       this.noticeService.getUnreadCount().subscribe(res => {
         this.unreadNoticeCount = res;

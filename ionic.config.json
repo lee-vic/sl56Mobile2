@@ -1,7 +1,4 @@
 {
   "name": "sl56Mobile2",
-  "integrations": {
-    "cordova": {}
-  },
   "type": "angular"
 }

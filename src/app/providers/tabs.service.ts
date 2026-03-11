@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { filter } from 'rxjs/operators';
 import { NavigationEnd, Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root',
@@ -14,11 +13,10 @@ export class TabsService {
   routeParamPages: string[] = [
     'news-details',
   ]; 
-  constructor(private router: Router, private platform: Platform) {
-    this.platform.ready().then(() => {
-      console.log('Core service init');
-      this.navEvents();
-    });
+  constructor(private router: Router) {
+    // Web application ready immediately, no need for platform.ready()
+    console.log('Core service init');
+    this.navEvents();
   }
 
   public hideTabs() {
