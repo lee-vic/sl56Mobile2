@@ -31,7 +31,6 @@ export function createConfig(): SignalRConfiguration {
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [
     BrowserModule,
     IonicModule.forRoot({

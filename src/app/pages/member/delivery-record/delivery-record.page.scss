@@ -1,5 +1,5 @@
-.list-ios .item-block .item-inner{
-    border: none;
+ion-item {
+    --inner-border-width: 0;
 }
 .bottom-border{
     border-bottom: 0.55px solid #c8c7cc;
@@ -17,16 +17,9 @@ ion-list{
 ion-toolbar{
     --background: white;
 }
-.list-ios > .item-block:first-child{
-    border-top: none;
-}
 .test{
     background-color:#f8f8f8;
     padding-left: 0.9rem;
-}
-.test .item-inner{
-    border-bottom: none !important;
-
 }
 .waitReturnCount{
     position: absolute;

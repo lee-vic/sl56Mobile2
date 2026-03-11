@@ -31,7 +31,7 @@
     </ion-item>
   </ion-list>
   <ion-fab horizontal="end" vertical="bottom" slot="fixed" (click)="waitingReturnList()">
-    <ion-badge class="waitReturnCount" color="{{waitReturnCount>0?'danger':'medium'}}">{{waitReturnCount}}</ion-badge>
+    <ion-badge class="waitReturnCount" [color]="waitReturnCount > 0 ? 'danger' : 'medium'">{{waitReturnCount}}</ion-badge>
   	<ion-fab-button color="light">
       <ion-icon name="trash"></ion-icon>
   	</ion-fab-button>

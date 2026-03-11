@@ -19,7 +19,7 @@
         <ion-item>
           <ion-label>国家</ion-label>
           <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()" (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
-            [(ngModel)]="countryInput" clearInput="true" placeholder="国家二字代码、中文名"></ion-input>
+            [(ngModel)]="countryInput" clearInput placeholder="国家二字代码、中文名"></ion-input>
         </ion-item>
         <ion-item *ngIf="showCountryList">
           <ion-list style="width: 100%;">
@@ -28,11 +28,11 @@
         </ion-item>
         <ion-item>
           <ion-label>邮编</ion-label>
-          <ion-input type="text" formControlName="postalCode" clearInput="true"></ion-input>
+          <ion-input type="text" formControlName="postalCode" clearInput></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>城市</ion-label>
-          <ion-input type="text" formControlName="city" clearInput="true"></ion-input>
+          <ion-input type="text" formControlName="city" clearInput></ion-input>
         </ion-item>
         
         <ion-button expand="block" type="submit" [disabled]="!myForm.valid">查询</ion-button>

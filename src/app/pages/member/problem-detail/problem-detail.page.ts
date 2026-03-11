@@ -135,8 +135,6 @@ export class ProblemDetailPage implements OnInit {
         }
       }
     });
-    //this.receiveGoodsDetailId=navParams.get("id");
-    //this.problemId=navParams.get("problemId");
     console.log(this.receiveGoodsDetailId);
   }
 

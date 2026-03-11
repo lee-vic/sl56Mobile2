@@ -11,9 +11,9 @@
 <ion-content>
   <ion-item>
     <ion-label color="primary">时间</ion-label>
-    <ion-chip *ngFor="let item of types" color="{{type==item?'primary':''}}" (click)="changeType(item)">
+    <ion-chip *ngFor="let item of types" [color]="type == item ? 'primary' : null" (click)="changeType(item)">
       <ion-icon name="checkmark" color="primary" *ngIf="type==item"></ion-icon>
-      <ion-label color="{{type==item?'primary':''}}">{{item}}</ion-label>
+      <ion-label [color]="type == item ? 'primary' : null">{{item}}</ion-label>
     </ion-chip>
   </ion-item>
   <ion-grid id="info">

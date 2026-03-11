@@ -31,44 +31,44 @@
         <ion-item>
           <ion-label>目的地</ion-label>
 
-          <ion-input class="ion-text-right" readonly="true" value="{{data.CountryName}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.CountryName"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>报价代码</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.PriceCode}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.PriceCode"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>报价名称</ion-label>
 
-          <ion-input class="ion-text-right" readonly="true" value="{{data.PriceName}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.PriceName"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>运输方式</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.ModeOfTransportName}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.ModeOfTransportName"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>金额</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.TotalAmount}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.TotalAmount"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>币别</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.Currency}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.Currency"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>计费重量</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.ChargeableWeight}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.ChargeableWeight"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>体积除数</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.Volumetric}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.Volumetric"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>含油参价</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.UnitPrice}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.UnitPrice"></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>重要提醒</ion-label>
-          <ion-input class="ion-text-right" readonly="true" value="{{data.ImportantTip}}" color="danger"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="data.ImportantTip" color="danger"></ion-input>
         </ion-item>
       </ion-list>
     </div>
@@ -87,7 +87,7 @@
         <ion-item *ngFor="let item of data.Charges">
           <ion-label>{{item.ChargeName}}</ion-label>
 
-          <ion-input class="ion-text-right" readonly="true" value="{{item.Expression}}={{item.Amount}}"></ion-input>
+          <ion-input class="ion-text-right" readonly [value]="item.Expression + '=' + item.Amount"></ion-input>
         </ion-item>
       </ion-list>
     </div>

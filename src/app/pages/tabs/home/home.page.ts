@@ -1,20 +1,38 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+
+interface HomeSlide {
+  image: string;
+}
+
+interface HomeNewsItem {
+  title: string;
+  description: string;
+  image: string;
+  cateId?: number;
+}
+
+interface HomeProduct {
+  image: string;
+  product: string;
+}
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage  {
+export class HomePage {
   slideOpts = {
     autoplay: {
-      delay: 3000
+      delay: 3000,
+      disableOnInteraction: false
     },
-    loop: true
+    loop: true,
+    speed: 400
   };
 
-  news = [
+  news: HomeNewsItem[] = [
     {
       title: "公司通知",
       description: "升蓝重要通知",
@@ -33,18 +51,18 @@ export class HomePage  {
       image: "assets/imgs/home-news-2.png"
     }
   ];
-  slides = [
+  slides: HomeSlide[] = [
     {
-      image: "assets/imgs/home-slidebox-1.jpg",
+      image: "assets/imgs/home-slidebox-1.jpg"
     },
     {
-      image: "assets/imgs/home-slidebox-2.png",
+      image: "assets/imgs/home-slidebox-2.png"
     },
     {
-      image: "assets/imgs/home-slidebox-3.png",
+      image: "assets/imgs/home-slidebox-3.png"
     }
   ];
-  products = [
+  products: HomeProduct[] = [
     {
       image: "assets/imgs/home-product-1.png",
       product: "1"
@@ -57,13 +75,23 @@ export class HomePage  {
       image: "assets/imgs/home-product-3.png",
       product: "3"
     }
-  ]
+  ];
+
   constructor(private router: Router) {}
-  openProduct(prod) {
-    this.router.navigate(["/app/tabs/product",prod.product]);
-  }
-  openNews(item) {
-    this.router.navigate(["/app/tabs/news",item.cateId]);
+
+  trackBySlideImage(index: number, slide: HomeSlide): string {
+    return slide.image;
   }
 
+  openProduct(prod: HomeProduct) {
+    this.router.navigate(["/app/tabs/product", prod.product]);
+  }
+
+  openNews(item: HomeNewsItem) {
+    if (item.cateId == null) {
+      return;
+    }
+
+    this.router.navigate(["/app/tabs/news", item.cateId]);
+  }
 }

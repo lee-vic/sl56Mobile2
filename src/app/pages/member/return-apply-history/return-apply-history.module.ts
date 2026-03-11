@@ -16,7 +16,6 @@ import { ReturnApplyHistoryPage } from './return-apply-history.page';
     IonicModule,
 
   ],
-  declarations: [ReturnApplyHistoryPage],
-  entryComponents:[ReturnApplyHistoryPage]
+  declarations: [ReturnApplyHistoryPage]
 })
 export class ReturnApplyHistoryPageModule {}

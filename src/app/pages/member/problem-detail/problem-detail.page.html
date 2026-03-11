@@ -46,8 +46,8 @@
       <ion-label class="subTitle ion-text-wrap" color="danger">
         请确认{{data?.Problem?.ChargeName}}{{data?.Problem?.Amount}}{{data?.Problem?.CurrencyName}}</ion-label>
     </ion-item>
-    <ion-segment value="{{data?.Problem?.Pages[0]?.Item1}}" (ionChange)="processTypeChanged($event)">
-      <ion-segment-button *ngFor="let page of data?.Problem?.Pages;let i = index" value="{{page.Item1}}"
+    <ion-segment [value]="data?.Problem?.Pages[0]?.Item1" (ionChange)="processTypeChanged($event)">
+      <ion-segment-button *ngFor="let page of data?.Problem?.Pages;let i = index" [value]="page.Item1"
         id="tabHead{{i}}">
         <ion-label>{{page.Item2}}</ion-label>
       </ion-segment-button>
@@ -66,7 +66,7 @@
           <ion-radio-group name="type1Result" ngModel required (ionChange)="checkChange(page1Form.form)">
             <ion-item *ngFor="let setting of data.Problem.ProcessSetting1">
               <ion-label>{{setting.Item1}}</ion-label>
-              <ion-radio slot="start" value="{{setting.Item1}}"></ion-radio>
+              <ion-radio slot="start" [value]="setting.Item1"></ion-radio>
             </ion-item>
           </ion-radio-group>
         </ion-card-content>

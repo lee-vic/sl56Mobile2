@@ -1,13 +1,13 @@
 <ion-content>
   <ion-segment [(ngModel)]="tabIndex" mode="md" (ionChange)="segmentChanged($event)">
-    <ion-segment-button value="{{tab.categoryId}}" *ngFor="let tab of noticeTabs">
+    <ion-segment-button [value]="tab.categoryId" *ngFor="let tab of noticeTabs">
       {{tab.title}}
     </ion-segment-button>
   </ion-segment>
   <div [ngSwitch]="tabIndex" class="ion-padding-top">
     <div *ngSwitchCase="2">
       <ion-list>
-        <ion-item button detail (click)="openDetail(item)" *ngFor="let item of noticeTabs[0].items">
+        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[0].items">
           <ion-label class="ion-text-wrap">
             <h3>{{item.CreateAt}}</h3>
             <h2>{{item.Title}}</h2>
@@ -22,7 +22,7 @@
     <div *ngSwitchCase="3">
       <ion-list>
 
-        <ion-item button detail (click)="openDetail(item)" *ngFor="let item of noticeTabs[1].items">
+        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[1].items">
           <ion-label class="ion-text-wrap">
             <h3>{{item.CreateAt}}</h3>
             <h2>{{item.Title}}</h2>
@@ -37,7 +37,7 @@
     <div *ngSwitchCase="4">
       <ion-list>
 
-        <ion-item button detail (click)="openDetail(item)" *ngFor="let item of noticeTabs[2].items">
+        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[2].items">
           <ion-label class="ion-text-wrap">
             <h3>{{item.CreateAt}}</h3>
             <h2>{{item.Title}}</h2>
@@ -51,7 +51,7 @@
     </div>
     <div *ngSwitchCase="5">
       <ion-list>
-        <ion-item button detail (click)="openDetail(item)" *ngFor="let item of noticeTabs[3].items">
+        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[3].items">
           <ion-label class="ion-text-wrap">
             <h3>{{item.CreateAt}}</h3>
             <h2>{{item.Title}}</h2>

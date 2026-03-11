@@ -1,3 +1,23 @@
+ion-content {
+  --background: #fff;
+}
+
+.hero-slider {
+  background: #fff;
+}
+
+.hero-slides {
+  --bullet-background: rgba(255, 255, 255, 0.7);
+  --bullet-background-active: #ffffff;
+}
+
+.hero-slide img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+}
+
 ion-item > ion-label{
     padding-left: 1em;
   }

@@ -32,11 +32,11 @@
             <ion-label>国家</ion-label>
             <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
               (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)" [(ngModel)]="countryInput"
-              clearInput="true"></ion-input>
+              clearInput></ion-input>
           </ion-item>
           <ion-item *ngIf="showCountryList">
             <ion-list style="width: 100%;">
-              <ion-item button *ngFor="let item of countrySearch" (click)="countryItemClick(item)"> {{item.Name}}
+              <ion-item [button]="true" *ngFor="let item of countrySearch" (click)="countryItemClick(item)"> {{item.Name}}
               </ion-item>
 
             </ion-list>
@@ -78,11 +78,11 @@
             <ion-label>国家</ion-label>
             <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
               (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)" [(ngModel)]="countryInput"
-              clearInput="true"></ion-input>
+              clearInput></ion-input>
           </ion-item>
           <ion-item *ngIf="showCountryList">
             <ion-list>
-              <ion-item button *ngFor="let item of countrySearch" (click)="countryItemClick(item)"> {{item.Name}}
+              <ion-item [button]="true" *ngFor="let item of countrySearch" (click)="countryItemClick(item)"> {{item.Name}}
               </ion-item>
             </ion-list>
           </ion-item>
