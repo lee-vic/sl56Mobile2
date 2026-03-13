@@ -6,7 +6,6 @@ import { ActivatedRoute } from '@angular/router';
 import { apiUrl } from "src/app/global";
 import { SignalR, SignalRConnection } from 'ng2-signalr';
 import { Subscription } from 'rxjs';
-import { NavigationOptions } from '@ionic/angular/dist/providers/nav-controller';
 
 declare var WeixinJSBridge: any;
 declare var wx: any;
@@ -64,7 +63,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
               {
                 text: '确定',
                 handler: () => {
-                  let options: NavigationOptions = {
+                  const options = {
                     queryParams: {
                       ObjectId: this.objectId,
                       IsAskPrint: true

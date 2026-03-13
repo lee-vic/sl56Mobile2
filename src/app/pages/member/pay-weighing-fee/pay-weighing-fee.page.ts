@@ -3,7 +3,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
-import { NavigationOptions } from '@ionic/angular/dist/providers/nav-controller';
 import { SignalR, SignalRConnection } from 'ng2-signalr';
 import { Subscription } from 'rxjs';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
@@ -431,7 +430,7 @@ export class PayWeighingFeePage implements OnInit {
   }
 
   detail(objectId) {
-    let options: NavigationOptions = {
+    const options = {
       queryParams: {
         ObjectId: objectId,
         OpenId: this.data.WxOpenId,
@@ -443,7 +442,7 @@ export class PayWeighingFeePage implements OnInit {
     );
   }
   gotoPay(objectId) {
-    let options: NavigationOptions = {
+    const options = {
       queryParams: {
         ObjectId: objectId,
         OpenId: this.data.WxOpenId,

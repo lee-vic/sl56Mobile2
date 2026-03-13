@@ -44,7 +44,7 @@
           <ion-list lines="none">
             <ion-item>
               <ion-label>车牌号码*</ion-label>
-              <ion-input type="text" value="" placeholder="请输入或者点击下方链接选择" formControlName="vehicleNo"
+              <ion-input type="text" placeholder="请输入或者点击下方链接选择" formControlName="vehicleNo"
                 [(ngModel)]="data.VehicleNo" (ionChange)="vehicleNoChange($event)" (ionFocus)="vehicleNoFocus($event)"
                 autofocus="true" #vehicleNoInput myborder="border"></ion-input>
             </ion-item>
@@ -73,7 +73,7 @@
 
             <ion-item [ngClass]="(data.WeighingMode==1 ||data.WeighingMode==2||data.WeighingMode==3) ? 'ion-hide' : ''">
               <ion-label>皮重(车重)KG*</ion-label>
-              <ion-input type="number" value="" placeholder="请输入皮重(车重),单位KG" formControlName="tareWeight"
+              <ion-input type="number" placeholder="请输入皮重(车重),单位KG" formControlName="tareWeight"
                 [(ngModel)]="data.TareWeight" myborder="border"></ion-input>
             </ion-item>
             <ion-item>
@@ -85,19 +85,19 @@
             </ion-item>
             <ion-item>
               <ion-label>备注/柜号</ion-label>
-              <ion-input type="text" value="" placeholder="可选" formControlName="equipmentNumber"
+              <ion-input type="text" placeholder="可选" formControlName="equipmentNumber"
                 [(ngModel)]="data.EquipmentNumber"></ion-input>
             </ion-item>
             <ion-item>
               <ion-label>企业账号</ion-label>
-              <ion-input type="text" value="" placeholder="无账号不需要输入" formControlName="corporateAccount"
+              <ion-input type="text" placeholder="无账号不需要输入" formControlName="corporateAccount"
                 [(ngModel)]="data.CorporateAccount"></ion-input>
               <ion-button color="primary" size="small" slot="end" fill="clear"
                 (click)="showHistoryCorporateAccount()">历史记录</ion-button>
             </ion-item>
             <!-- <ion-item>
             <ion-label>过磅费</ion-label>
-            <ion-input type="number" value="" placeholder="磅单上显示的金额，与实际收费无关" formControlName="weighingFee"
+            <ion-input type="number" placeholder="磅单上显示的金额，与实际收费无关" formControlName="weighingFee"
               [(ngModel)]="data.WeighingFee"></ion-input>
           </ion-item> -->
 

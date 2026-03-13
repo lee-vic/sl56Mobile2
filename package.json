@@ -5,7 +5,7 @@
   "homepage": "https://www.sl56.com/",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && ng serve",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider && ng build --prod --aot",
     "test": "ng test",
     "lint": "ng lint",
