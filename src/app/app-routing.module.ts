@@ -15,8 +15,8 @@ const routes: Routes = [
     path:"member",
     loadChildren:()=>import('./pages/member/member.module').then(m=>m.MemberModule)
   },
-  { path: 'login', loadChildren: './pages/login/login.module#LoginPageModule' },
-  { path: 'epidemic', loadChildren: './pages/epidemic/epidemic.module#EpidemicPageModule' },
+  { path: 'login', loadChildren: () => import('./pages/login/login.module').then(m => m.LoginPageModule) },
+  { path: 'epidemic', loadChildren: () => import('./pages/epidemic/epidemic.module').then(m => m.EpidemicPageModule) },
   { path: 'distribute-register', loadChildren:()=>import('./pages/member/distribute-register/distribute-register.module').then(m=>m.DistributeRegisterPageModule) },
   { path: 'distribute-agreement', loadChildren: () => import('./pages/member/distribute-register/distribute-agreement/distribute-agreement.module').then(m => m.DistributeAgreementModule) },
   { path: 'fadada/authresult', loadChildren: () => import('./pages/FaDaDa/auth-result/auth-result.module').then(m => m.AuthResultPageModule) },
