@@ -19,6 +19,7 @@ export class ReturnListPage implements OnInit {
   @ViewChild(IonSearchbar, { static: false }) searchbar: IonSearchbar;
   ngOnInit(): void {
     this.getItems1("", false);
+    this.getItems2();
   }
   tab = "1";
   constructor(
@@ -168,9 +169,5 @@ export class ReturnListPage implements OnInit {
       .then((p) => p.present());
   }
   fill(item) {
-  }
-  ionViewWillEnter() {
-    console.log("ionViewWillEnter");
-    this.getItems2();
   }
 }

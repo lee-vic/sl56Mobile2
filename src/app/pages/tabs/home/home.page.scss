@@ -6,9 +6,16 @@ ion-content {
   background: #fff;
 }
 
-.hero-slides {
-  --bullet-background: rgba(255, 255, 255, 0.7);
-  --bullet-background-active: #ffffff;
+.hero-swiper {
+  width: 100%;
+  --swiper-pagination-color: #ffffff;
+  --swiper-pagination-bullet-inactive-color: rgba(255, 255, 255, 0.7);
+
+  .swiper-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .hero-slide img {

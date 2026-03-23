@@ -4,7 +4,7 @@ import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { apiUrl } from "src/app/global";
-import { SignalR, SignalRConnection } from 'ng2-signalr';
+import { SignalR, SignalRConnection } from 'src/app/providers/signal-r.service';
 import { Subscription } from 'rxjs';
 
 declare var WeixinJSBridge: any;
@@ -40,9 +40,11 @@ export class PayWeighingFeeDetailPage implements OnInit {
     if (window.navigator.userAgent.indexOf("miniProgram") != -1) {
       this.isMiniProgram = true;
     }
-  }
-  ionViewDidEnter() {
     this.loadData();
+    this.startSignalRConnection();
+  }
+
+  private startSignalRConnection() {
     this.signalRConnection.start().then((c) => {
       this.signalRConnected = true;
       //监听支付成功事件
@@ -79,10 +81,6 @@ export class PayWeighingFeeDetailPage implements OnInit {
         }
       });
     });
-  }
-  ionViewWillLeave() {
-    this.signalRConnection.stop();
-    this.signalRConnected = false;
   }
   loadData() {
     this.loadingCtrl.create({
@@ -177,6 +175,8 @@ export class PayWeighingFeeDetailPage implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.signalRConnection.stop();
+    if (this.signalRConnection) {
+      this.signalRConnection.stop();
+    }
   }
 }

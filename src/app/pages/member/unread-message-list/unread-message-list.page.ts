@@ -12,7 +12,11 @@ export class UnreadMessageListPage implements OnInit {
   customerId: number;
   data: any = {};
   ngOnInit(): void {
-
+    if (this.customerId == undefined) {
+      this.getData();
+    } else {
+      this.getData1();
+    }
   }
   getData() {
     this.service.getUnReadMessage().subscribe(res => {
@@ -63,16 +67,6 @@ export class UnreadMessageListPage implements OnInit {
         }).then(p => p.present());
       }
     }
-  }
-  ionViewDidEnter() {
-    console.log(this.customerId);
-    if (this.customerId == undefined) {
-      this.getData();
-    }
-    else {
-      this.getData1();
-    }
-
   }
 
 }

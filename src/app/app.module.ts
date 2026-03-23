@@ -8,26 +8,6 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { TabsService } from './providers/tabs.service';
-import { SignalRModule } from 'ng2-signalr';
-import { SignalRConfiguration } from 'ng2-signalr';
-import { SimplePdfViewerModule} from 'simple-pdf-viewer';
-
-
-
-export function createConfig(): SignalRConfiguration {
-  const c = new SignalRConfiguration();
-  c.hubName = 'chatGroupHub';
-
-  c.url = 'https://signalr.sl56.com/signalr/hubs';
-  c.logging = false;
-  c.withCredentials=true;
-  
-  // >= v5.0.0
-  c.executeEventsInZone = true; // optional, default is true
-  c.executeErrorsInZone = false; // optional, default is false
-  c.executeStatusChangeInZone = true; // optional, default is true
-  return c;
-}
 
 @NgModule({
   declarations: [AppComponent],
@@ -37,9 +17,7 @@ export function createConfig(): SignalRConfiguration {
       backButtonText:"返回",
     }),
     HttpClientModule,
-    AppRoutingModule,
-    SignalRModule.forRoot(createConfig),
-    SimplePdfViewerModule
+    AppRoutingModule
   ],
   providers: [
     TabsService,

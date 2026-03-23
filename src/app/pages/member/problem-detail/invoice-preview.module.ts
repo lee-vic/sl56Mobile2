@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { InvoicePreviewPage } from './invoice-preview.page';
 import { IonicModule} from '@ionic/angular';
 import { Routes, RouterModule } from '@angular/router';
-import { SimplePdfViewerModule} from 'simple-pdf-viewer';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 const routes: Routes = [
   {
@@ -16,7 +16,7 @@ const routes: Routes = [
     CommonModule,
     IonicModule,
     RouterModule.forChild(routes),
-    SimplePdfViewerModule
+    PdfViewerModule
   ],
   declarations: [InvoicePreviewPage]
 })

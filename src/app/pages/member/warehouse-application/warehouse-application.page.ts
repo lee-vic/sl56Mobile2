@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavController, LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { WarehouseApplicationService } from '../../../providers/warehouse-application.service';
 import { WarehouseApplication } from '../../../interfaces/warehouse-application';
@@ -8,7 +8,7 @@ declare var WeixinJSBridge: any;
   templateUrl: './warehouse-application.page.html',
   styleUrls: ['./warehouse-application.page.scss'],
 })
-export class WarehouseApplicationPage {
+export class WarehouseApplicationPage implements OnInit {
   currentPage = 1;
   applications: WarehouseApplication[] = [];
   hasMore = true;
@@ -22,7 +22,7 @@ export class WarehouseApplicationPage {
     private alertCtrl: AlertController
   ) { }
 
-  ionViewDidEnter() {
+  ngOnInit(): void {
     this.loadApplications();
   }
 

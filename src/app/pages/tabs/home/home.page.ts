@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { SwiperOptions } from 'swiper';
 
 interface HomeSlide {
   image: string;
@@ -23,13 +24,14 @@ interface HomeProduct {
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage {
-  slideOpts = {
+  swiperOptions: SwiperOptions = {
     autoplay: {
       delay: 3000,
       disableOnInteraction: false
     },
     loop: true,
-    speed: 400
+    speed: 400,
+    pagination: { clickable: true }
   };
 
   news: HomeNewsItem[] = [

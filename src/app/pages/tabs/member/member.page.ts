@@ -85,17 +85,20 @@ export class MemberPage implements OnInit {
         }
       });
     });
-    this.routerSub = this.router.events.subscribe(evt => {
-      if (evt instanceof NavigationEnd) {
-      
-        if (this.router.url === '/app/tabs/member'||this.router.url.startsWith('/app/tabs/member')) {
-          //刷新未读公告数量
-          this.noticeService.getUnreadCount().subscribe(res => {
-            this.unreadNoticeCount = res;
-          });
+    if (this.isLogin) {
+      this.routerSub = this.router.events.subscribe(evt => {
+        if (evt instanceof NavigationEnd) {
+
+          if (this.router.url === '/app/tabs/member' || this.router.url.startsWith('/app/tabs/member')) {
+            //刷新未读公告数量
+            this.noticeService.getUnreadCount().subscribe(res => {
+              this.unreadNoticeCount = res;
+            });
+          }
         }
-      }
-    });
+      });
+    }
+
 
   }
   ngOnDestroy() {
@@ -105,9 +108,6 @@ export class MemberPage implements OnInit {
   }
   forgetPasswordClick() {
     this.router.navigateByUrl("/member/reset-password");
-  }
-  ionViewDidEnter() {
-    console.log(new Date().getTime());
   }
 
   doLogin(formValue) {

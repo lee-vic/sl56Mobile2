@@ -1,10 +1,12 @@
 <ion-content>
   <section class="hero-slider" *ngIf="slides.length > 0">
-    <ion-slides class="hero-slides" [options]="slideOpts" [pager]="true">
-      <ion-slide class="hero-slide" *ngFor="let slide of slides; trackBy: trackBySlideImage">
-        <img [src]="slide.image" alt="首页轮播图" />
-      </ion-slide>
-    </ion-slides>
+    <swiper class="hero-swiper" [config]="swiperOptions">
+      <ng-template swiperSlide *ngFor="let slide of slides; trackBy: trackBySlideImage">
+        <div class="hero-slide">
+          <img [src]="slide.image" alt="首页轮播图" />
+        </div>
+      </ng-template>
+    </swiper>
   </section>
 
   <ion-grid>

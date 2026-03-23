@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
-import { SignalR, SignalRConnection } from 'ng2-signalr';
+import { SignalR, SignalRConnection } from 'src/app/providers/signal-r.service';
 import { Subscription } from 'rxjs';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -95,6 +95,7 @@ export class PayWeighingFeePage implements OnInit {
       this.signalRConnection = this.signalR.createConnection();
       this.signalRConnection.status.subscribe((p) => console.log(p.name));
       this.loadDefaultValue();
+      this.initSignalRConnection();
       this.alertController.create({
         header: '系统升级提示',
         message: "尊贵的客户，微信下拉直接打开“丰树地磅”过磅，无需下车扫码！",
@@ -281,7 +282,7 @@ export class PayWeighingFeePage implements OnInit {
       }
     });
   }
-  ionViewDidEnter() {
+  private initSignalRConnection() {
     if (this.isMiniProgram == false)
       return;
     this.signalRConnection.start().then((c) => {
@@ -422,13 +423,6 @@ export class PayWeighingFeePage implements OnInit {
       });
     });
   }
-  ionViewWillLeave() {
-    if (this.signalRConnected == true) {
-      this.signalRConnection.stop();
-      this.signalRConnected = false;
-    }
-  }
-
   detail(objectId) {
     const options = {
       queryParams: {
@@ -610,6 +604,8 @@ export class PayWeighingFeePage implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.signalRConnection.stop();
+    if (this.signalRConnection) {
+      this.signalRConnection.stop();
+    }
   }
 }

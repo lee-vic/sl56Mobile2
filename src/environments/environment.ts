@@ -3,7 +3,18 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  signalR: {
+    url: 'https://signalr.sl56.com/signalr',
+    hub: 'chatGroupHub',
+    withCredentials: true,
+    retry: {
+      maxAttempts: 5,
+      baseDelayMs: 800,
+      maxDelayMs: 8000
+    },
+    log: true
+  }
 };
 
 /*

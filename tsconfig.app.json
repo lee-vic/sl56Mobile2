@@ -9,6 +9,11 @@
   ],
   "exclude": [
     "src/test.ts",
-    "src/**/*.spec.ts"
+    "src/**/*.spec.ts",
+    "src/environments/environment.prod.ts",
+    "src/app/pages/member/distribute-manager/**",
+    "src/app/pages/member/distribute-register/distribute-register.service.ts",
+    "src/app/pages/member/distribute-register/distribute-agreement/distribute-agreement.service.ts",
+    "src/app/pages/member/problem-detail/problem-weapp-test/problem-weapp-test.service.ts"
   ]
 }

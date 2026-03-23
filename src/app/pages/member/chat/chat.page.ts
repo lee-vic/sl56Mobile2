@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ToastController,IonContent, AlertController } from '@ionic/angular';
-import { SignalRConnection, SignalR } from 'ng2-signalr';
+import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
 import { apiUrl } from 'src/app/global';
 import { ProblemService } from 'src/app/providers/problem.service';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
@@ -13,7 +13,7 @@ declare var baguetteBox: any;
   templateUrl: "./chat.page.html",
   styleUrls: ["./chat.page.scss"],
 })
-export class ChatPage implements OnInit, OnDestroy {
+export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   signalRConnection: SignalRConnection;
   @ViewChild(IonContent, { static: true }) content: IonContent;
   @ViewChild("chat_input", { static: true }) messageInput: ElementRef;
@@ -65,7 +65,9 @@ export class ChatPage implements OnInit, OnDestroy {
     });
   }
   ngOnDestroy(): void {
-    this.signalRConnection.stop();
+    if (this.signalRConnection) {
+      this.signalRConnection.stop();
+    }
   }
   ngOnInit(): void {
     console.log("now.init");
@@ -162,7 +164,7 @@ export class ChatPage implements OnInit, OnDestroy {
     this.multiMarkIsSend();
   }
 
-  ionViewDidEnter() {
+  ngAfterViewInit(): void {
     this.scrollToBottom();
   }
   sendMsg() {

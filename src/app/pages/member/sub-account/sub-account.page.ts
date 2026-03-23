@@ -18,7 +18,7 @@ export class SubAccountPage implements OnInit {
   }
 
   ngOnInit(): void {
-    //this.getList();
+    this.getList();
   }
   getList(){
     this.service.getList().subscribe(res => {
@@ -31,10 +31,5 @@ export class SubAccountPage implements OnInit {
   }
   detail(item: SubAccount) {
     this.navCtrl.navigateForward("/member/sub-account-detail/"+ item.ObjectId);
-  }
-  ionViewDidEnter() {
-    console.log("ionViewDidEnter");
-     this.getList();
-   
   }
 }

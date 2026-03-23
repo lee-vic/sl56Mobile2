@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ToastController, AlertController, LoadingController,ActionSheetController,NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
-import { SignalRConnection, SignalR } from 'ng2-signalr';
+import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
 import { CookieService } from 'ngx-cookie-service';
 import { UserService } from 'src/app/providers/user.service';
 
@@ -107,7 +107,9 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
   }
   ngOnDestroy(): void {
-    this.signalRConnection.stop();
+    if (this.signalRConnection) {
+      this.signalRConnection.stop();
+    }
   }
 
 

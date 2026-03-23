@@ -14,6 +14,7 @@ export class UnreadMessageList1Page implements OnInit {
   }
 
   ngOnInit() {
+    this.getData();
   }
   getData() {
     this.service.getMessages1().subscribe(res => {
@@ -35,8 +36,5 @@ export class UnreadMessageList1Page implements OnInit {
       }
     }
     this.router.navigate(["/member/chat/1"], extras)
-  }
-  ionViewDidEnter() {
-    this.getData();
   }
 }

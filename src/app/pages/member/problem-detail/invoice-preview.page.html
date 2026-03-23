@@ -11,19 +11,28 @@
 </ion-header>
 <ion-content>
   <section id="pdfContent">
-    <simple-pdf-viewer #pdfViewer [src]="invoicePath">
-
-    </simple-pdf-viewer>
+    <ion-note color="danger" *ngIf="loadFailed">
+      PDF加载失败，请返回重选后重试。
+    </ion-note>
+    <pdf-viewer
+      [src]="invoiceSrc"
+      [show-all]="false"
+      [render-text]="true"
+      [original-size]="false"
+      [page]="currentPage"
+      (error)="onPdfError($event)"
+      (after-load-complete)="onPdfLoaded($event)">
+    </pdf-viewer>
   </section>
 </ion-content>
 <ion-footer>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="pdfViewer.prevPage()">上一页</ion-button>
+      <ion-button (click)="prevPage()">上一页</ion-button>
     </ion-buttons>
-    <ion-title> 当前页：{{pdfViewer.getCurrentPage()}}/共 {{pdfViewer.getNumberOfPages()}} 页</ion-title>
+    <ion-title> 当前页：{{currentPage}}/共 {{totalPages}} 页</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="pdfViewer.nextPage()">下一页</ion-button>
+      <ion-button (click)="nextPage()">下一页</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>

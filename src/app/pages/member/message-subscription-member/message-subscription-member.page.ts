@@ -17,9 +17,10 @@ export class MessageSubscriptionMemberPage implements OnInit {
   constructor(public route:ActivatedRoute,public service:MessageSubscriptionService,public router:Router,public alert:AlertController) { }
 
   ngOnInit(): void {
+    this.loadItems();
   }
 
-  ionViewDidEnter(){
+  loadItems() {
     this.type=parseInt(this.route.snapshot.paramMap.get("type"));
     switch(this.type){
       case 1:
