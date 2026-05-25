@@ -48,7 +48,7 @@ export class DeliveryRecordDetailPage implements OnInit {
       (res) => {
         this.data = res;
         if (this.data.IsShowPackageTracks) {
-          this.data.PackageTracks = JSON.parse(
+          this.data.PackageTracks = this.parsePackageTracks(
             this.data.PackageTracksJsonString
           );
           this.data.PackageTracks.forEach((element) => {
@@ -76,6 +76,19 @@ export class DeliveryRecordDetailPage implements OnInit {
       }
     );
   }
+
+  private parsePackageTracks(raw: any): any[] {
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw !== 'string' || raw.trim() === '') return [];
+
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
   applyReturn() {
     this.navCtrl.navigateForward("/member/return-apply", {
       queryParams: { type: 0, ids: this.data.ObjectId },

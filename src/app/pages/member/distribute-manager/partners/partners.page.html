@@ -27,7 +27,7 @@
       </ion-col>
     </ion-row>
   </ion-grid>
-  <ion-searchbar placeholder="搜索" (ionChange)="search($event)"></ion-searchbar>
+  <ion-searchbar placeholder="搜索" showClearButton="focus" (ionChange)="search($event)"></ion-searchbar>
   <ion-item>
     <ion-label>综合排序</ion-label>
     <ion-select placeholder="选择排序" interface="alert" cancelText="取消" okText="确定" (ionChange)="orderChange($event)">

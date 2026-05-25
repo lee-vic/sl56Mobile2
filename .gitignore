@@ -13,12 +13,14 @@ log.txt
 npm-debug.log*
 
 .idea/
+.angular/
 .ionic/
 .sourcemaps/
 .sass-cache/
 .tmp/
 .versions/
 coverage/
+test-results/
 www/
 node_modules/
 tmp/

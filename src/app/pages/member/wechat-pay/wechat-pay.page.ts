@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ToastController, AlertController, LoadingController,ActionSheetController,NavController } from '@ionic/angular';
+import { ToastController, AlertController, LoadingController,ActionSheetController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
@@ -31,8 +31,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private userService:UserService,
-    private actionSheetCtrl:ActionSheetController,
-    private navCtrl:NavController) {
+    private actionSheetCtrl:ActionSheetController) {
       this.openId =this.route.snapshot.paramMap.get('id');
       if(this.route.snapshot.queryParams['cid']==null){
         this.cid=1;
@@ -68,7 +67,13 @@ export class WechatPayPage implements OnInit, OnDestroy {
         this.signalRConnection.start().then((c) => {
           let listener = c.listenFor("messageReceived");
           listener.subscribe((msg: any) => {
-            let obj = JSON.parse(msg);
+            let obj: any = null;
+            try {
+              obj = typeof msg === 'string' ? JSON.parse(msg) : msg;
+            } catch (e) {
+              return;
+            }
+            if (!obj || typeof obj !== 'object') return;
             if (obj.MsgContent == "True") {
               this.payHistory();
             }
@@ -315,7 +320,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
         text: p.Name+"："+p.Amount,
         handler: (e) => {
           //id+1用来改变路由地址，以触发页面跳转刷新
-          this.navCtrl.navigateForward("/member/wechat-pay/"+(p.Id+1)+"?cid="+p.Id,{replaceUrl:true});
+          this.router.navigateByUrl("/member/wechat-pay/"+(p.Id+1)+"?cid="+p.Id, { replaceUrl: true });
         }
       });
     });

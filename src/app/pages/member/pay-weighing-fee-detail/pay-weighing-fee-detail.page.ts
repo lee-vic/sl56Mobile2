@@ -53,7 +53,8 @@ export class PayWeighingFeeDetailPage implements OnInit {
         this.subscriber.unsubscribe();
       }
       this.subscriber = listener.subscribe((msg: any) => {
-        let obj = JSON.parse(msg);
+        const obj = this.parseSignalRMessage(msg);
+        if (!obj) return;
         if (obj.MsgContent == "True") {
           this.loadingCtrl.dismiss();
           this.alertController.create({
@@ -82,6 +83,22 @@ export class PayWeighingFeeDetailPage implements OnInit {
       });
     });
   }
+
+  private parseSignalRMessage(msg: any): any | null {
+    if (msg == undefined || msg == null) return null;
+
+    if (typeof msg === 'string') {
+      try {
+        const parsed = JSON.parse(msg);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch {
+        return null;
+      }
+    }
+
+    return typeof msg === 'object' ? msg : null;
+  }
+
   loadData() {
     this.loadingCtrl.create({
       message: "请稍后",

@@ -27,7 +27,7 @@ export class PayWeighingFeeResultPage implements OnInit {
 
   ngOnInit(): void {
     this.imageUrl = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.id;
-    if (this.isAskPrint == true) {
+    if (this.shouldAskPrint()) {
       this.alertController.create({
         header: '是否打印纸质磅单？',
         message: "10秒内未选择，系统将默认<strong>打印</strong>",
@@ -56,6 +56,11 @@ export class PayWeighingFeeResultPage implements OnInit {
       }, 10 * 1000);
     }
   }
+
+  private shouldAskPrint(): boolean {
+    return this.isAskPrint === true || this.isAskPrint === 'true' || this.isAskPrint === 1 || this.isAskPrint === '1';
+  }
+
   print() {
     this.loadingCtrl.create({
       message: "正在打印纸质磅单",

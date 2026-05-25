@@ -116,8 +116,9 @@ export class ProblemDetailPage implements OnInit {
       this.route.snapshot.paramMap.get("id")
     );
     this.route.queryParams.subscribe((_res) => {
-      if (this.router.getCurrentNavigation().extras.state) {
-        var data = this.router.getCurrentNavigation().extras.state;
+      const nav = this.router.getCurrentNavigation();
+      const data = (nav && nav.extras && nav.extras.state) || window.history.state;
+      if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
         console.log(data);
         if (data.confirmFile == false) {
           //如果是微信小程序上传的文件，则需要删除

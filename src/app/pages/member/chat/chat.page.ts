@@ -49,8 +49,15 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   ) {
     this.messageType = parseInt(this.route.snapshot.paramMap.get("id"));
     this.route.queryParams.subscribe((params) => {
-      if (this.router.getCurrentNavigation().extras.state) {
-        let data = this.router.getCurrentNavigation().extras.state;
+      const nav = this.router.getCurrentNavigation();
+      const data = (nav && nav.extras && nav.extras.state) || window.history.state;
+      if (
+        data &&
+        (data.receiveGoodsDetailId != undefined ||
+          data.problemId != undefined ||
+          data.messages != undefined ||
+          data.attachmentTypeId != undefined)
+      ) {
         this.receiveGoodsDetailId = data.receiveGoodsDetailId;
         this.problemId = data.problemId;
         this.messages = data.messages;
@@ -84,7 +91,14 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     this.signalRConnection.start().then((c) => {
       let listener = c.listenFor("messageReceived");
       listener.subscribe((msg: any) => {
-        let obj = JSON.parse(msg);
+        let obj: any = null;
+        try {
+          obj = typeof msg === "string" ? JSON.parse(msg) : msg;
+        } catch (e) {
+          return;
+        }
+        if (!obj || typeof obj !== "object") return;
+        if (obj.MsgType == undefined || obj.SenderName == undefined) return;
         console.log("收到新消息：",obj);
         if (obj.ShowType == 1) return;
         //撤回消息
@@ -205,6 +219,9 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     this.scrollToBottom();
   }
   scrollToBottom() {
+    if (!this.content || !this.content.scrollToBottom) {
+      return;
+    }
     setTimeout(() => {
       if (this.content.scrollToBottom) {
         this.content.scrollToBottom();
@@ -350,11 +367,11 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   processProblem(result) {
-    this.navCtrl.navigateForward("/member/problem-detail/" + result.rgdId, {
+    this.router.navigate(["/member/problem-detail/" + result.rgdId], {
       queryParams: {
         problemid: result.problemId,
       },
-      replaceUrl: true, //为保证问题详情与聊天界面之间跳转时数据正常刷新，这两个页面互相跳转时，不保存历史状态
+      replaceUrl: true, // 为保证问题详情与聊天界面之间跳转时数据正常刷新，这两个页面互相跳转时，不保存历史状态
     });
   }
 

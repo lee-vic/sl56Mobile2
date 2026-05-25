@@ -1,41 +1,37 @@
 # sl56Mobile2
 
-## E2E 执行（团队统一方式）
+## 当前环境
 
-本项目 E2E 基于 Protractor，已在配置中固定使用本地 ChromeDriver 文件并以 headless 模式运行。
+- 前端框架：Ionic 6 + Angular 14
+- 运行时：Node 24.x（以 CI 环境为准）
+- 单元测试：Jasmine + Karma
+- E2E：Playwright
 
-### 推荐命令
+## 标准命令
 
-- 直接执行稳定命令（推荐）：
-  - `npm run e2e:stable`
-- 兼容旧方式（等价）：
-  - `npm run e2e -- --webdriver-update=false`
+### 开发
 
-### 为什么用 e2e:stable
+- 启动开发服务：`npm run start`
+- 单元测试（本地交互）：`npm run test`
+- E2E 冒烟（本地）：`npm run e2e:smoke`
 
-- 自动带上 `NODE_OPTIONS=--openssl-legacy-provider`
-- 自动带上 `--webdriver-update=false`
-- 避免每次手动追加参数，降低团队执行差异
+### 提测
 
-### 运行前检查
+- 生产构建：`npm run build`
+- 单元测试（CI 模式）：`npm run test:ci`
+- E2E 冒烟（CI 模式）：`npm run e2e:smoke:ci`
 
-- 已安装依赖：`npm install`
-- 机器上存在可用浏览器：
-  - 优先读取 `CHROME_BIN`
-  - 否则按 Protractor 配置中的候选路径查找 Chrome/Edge
-- 保持网络与权限正常，避免本机安全策略拦截浏览器启动
+### 发布门禁
 
-### 常见问题
+- 一键门禁：`npm run verify:phase0`
+- 门禁内容：`npm run build` + `npm run test:ci`
 
-- 启动失败且提示 OpenSSL 相关错误：
-  - 请使用 `npm run e2e:stable`，不要直接调用 `ng e2e`
-- 报 webdriver-manager 更新相关问题：
-  - 请确认使用了 `--webdriver-update=false`
-- 仅需看最终结果：
-  - 关注末尾是否出现 `Executed N of N specs SUCCESS`
+## E2E 说明
 
-### 相关文件
+- 默认执行：`npm run e2e`
+- 首次安装浏览器：`npm run e2e:install`
 
-- `package.json`
-- `e2e/protractor.conf.js`
-- `e2e/src/app.e2e-spec.ts`
+## 命令约定
+
+- 推荐统一使用 `npm run ...` 作为团队标准入口（本地与 CI 一致）
+- `ionic ...` 可用于本地临时调试或特定 Ionic CLI 场景
