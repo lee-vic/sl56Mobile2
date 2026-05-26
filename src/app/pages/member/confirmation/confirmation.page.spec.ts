@@ -96,7 +96,7 @@ describe('ConfirmationPage', () => {
     ] as any;
     component.searchList = component.receiveGoodsDetailList;
 
-    component.getItems({ target: { value: 'abc' } });
+    component.getItems({ detail: { value: 'abc' } } as CustomEvent);
 
     expect(component.searchList.length).toBe(1);
     expect(component.searchList[0].ReferenceNumber).toBe('ABC123');

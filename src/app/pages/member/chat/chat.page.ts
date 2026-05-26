@@ -37,6 +37,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
    * 1:单号消息
    */
   messageType: number;
+  private hasShownConnectionToast: boolean = false;
   constructor(
     private signalR: SignalR,
     public service: ProblemService,
@@ -83,8 +84,12 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
       console.warn(p.name);
       if (p.name == "connected") {
         this.isConnected = true;
+        this.hasShownConnectionToast = false;
         this.multiMarkIsSend();
       } else {
+        if (p.name === "disconnected") {
+          this.showConnectionUnavailableToast();
+        }
         this.isConnected = false;
       }
     });
@@ -114,6 +119,8 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
           this.appendMessage(obj);
         }
       });
+    }).catch(() => {
+      this.showConnectionUnavailableToast();
     });
     if (this.messageType == 0) {
       this.imService.getMessages2().subscribe((res) => {
@@ -151,7 +158,11 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
       obj.RefContent,
       false
     );
-    this.signalRConnection.invoke("markRead", this.chatGroupId);
+    this.signalRConnection.invoke(
+      "markRead",
+      this.chatGroupId,
+      this.signalRConnection.getConnectionId()
+    );
   }
 
   multiMarkIsSend() {
@@ -160,7 +171,11 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
       this.messages.length > 0 &&
       this.isConnected == true
     ) {
-      this.signalRConnection.invoke("markRead", this.chatGroupId);
+      this.signalRConnection.invoke(
+        "markRead",
+        this.chatGroupId,
+        this.signalRConnection.getConnectionId()
+      );
     }
   }
   processMessages() {
@@ -212,7 +227,28 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
         } else {
           alert("发送失败,请尝试刷新页面后重试；错误信息：" + data);
         }
+      })
+      .catch(() => {
+        this.toastCtrl
+          .create({
+            message: "消息发送失败，请稍后重试",
+            duration: 1500,
+            position: "middle",
+          })
+          .then((p) => p.present());
       });
+  }
+
+  private showConnectionUnavailableToast() {
+    if (this.hasShownConnectionToast) return;
+    this.hasShownConnectionToast = true;
+    this.toastCtrl
+      .create({
+        message: "实时消息服务暂不可用，系统正在尝试重连",
+        duration: 1800,
+        position: "middle",
+      })
+      .then((p) => p.present());
   }
   onFocus() {
     //this.content.
@@ -376,10 +412,11 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async showImage(id) {
+    const safeId = encodeURIComponent(String(id ?? ""));
     const alert = await this.alertController.create({
       header: "",
       message:
-        "<ion-img src='"+this.serverUrl+"/DeliveryRecord/ChatFile?id="+id+"'></ion-img>",
+        "<ion-img src='"+this.serverUrl+"/DeliveryRecord/ChatFile?id="+safeId+"'></ion-img>",
       cssClass:"alert-image",
       buttons: [],
     });

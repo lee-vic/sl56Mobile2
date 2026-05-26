@@ -19,18 +19,18 @@ describe('SignalR / SignalRConnection', () => {
 
   beforeEach(() => {
     mockProxy = {
-      on:     jasmine.createSpy('proxy.on'),
+      on: jasmine.createSpy('proxy.on'),
       invoke: jasmine.createSpy('proxy.invoke')
     };
     mockConn = {
-      logging:          false,
-      data:             '' as any,
-      disconnected:     jasmine.createSpy('conn.disconnected'),
-      reconnecting:     jasmine.createSpy('conn.reconnecting'),
-      reconnected:      jasmine.createSpy('conn.reconnected'),
-      createHubProxy:   jasmine.createSpy('conn.createHubProxy').and.returnValue(mockProxy),
-      start:            jasmine.createSpy('conn.start'),
-      stop:             jasmine.createSpy('conn.stop')
+      logging: false,
+      data: '' as any,
+      disconnected: jasmine.createSpy('conn.disconnected'),
+      reconnecting: jasmine.createSpy('conn.reconnecting'),
+      reconnected: jasmine.createSpy('conn.reconnected'),
+      createHubProxy: jasmine.createSpy('conn.createHubProxy').and.returnValue(mockProxy),
+      start: jasmine.createSpy('conn.start'),
+      stop: jasmine.createSpy('conn.stop')
     };
     (window as any).$ = {
       hubConnection: jasmine.createSpy('$.hubConnection').and.returnValue(mockConn)
@@ -40,7 +40,6 @@ describe('SignalR / SignalRConnection', () => {
   // ── 1. Factory service ────────────────────────────────────────────
   describe('SignalR factory', () => {
     it('createConnection() should return a SignalRConnection instance', () => {
-      mockConn.start.and.returnValue(makeSuccessStart());
       const svc = new SignalR();
       expect(svc.createConnection() instanceof SignalRConnection).toBe(true);
     });

@@ -12,14 +12,14 @@
       <ion-list>
         <ion-item>
           <ion-label>运输方式</ion-label>
-          <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportTypeId">
+          <ion-select aria-label="运输方式" interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportTypeId">
             <ion-select-option *ngFor="let item of modeOfTransportTypeList" [value]="item.Id">{{item.Name}}</ion-select-option>
           </ion-select>
         </ion-item>
         <ion-item>
           <ion-label>国家</ion-label>
-          <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()" (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
-            [(ngModel)]="countryInput" clearInput placeholder="国家二字代码、中文名"></ion-input>
+          <ion-input aria-label="国家" type="text" formControlName="countryId" (ionBlur)="onCountryBlur()" (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
+            clearInput placeholder="国家二字代码、中文名"></ion-input>
         </ion-item>
         <ion-item *ngIf="showCountryList">
           <ion-list style="width: 100%;">
@@ -28,11 +28,11 @@
         </ion-item>
         <ion-item>
           <ion-label>邮编</ion-label>
-          <ion-input type="text" formControlName="postalCode" clearInput></ion-input>
+          <ion-input aria-label="邮编" type="text" formControlName="postalCode" clearInput></ion-input>
         </ion-item>
         <ion-item>
           <ion-label>城市</ion-label>
-          <ion-input type="text" formControlName="city" clearInput></ion-input>
+          <ion-input aria-label="城市" type="text" formControlName="city" clearInput></ion-input>
         </ion-item>
         
         <ion-button expand="block" type="submit" [disabled]="!myForm.valid">查询</ion-button>

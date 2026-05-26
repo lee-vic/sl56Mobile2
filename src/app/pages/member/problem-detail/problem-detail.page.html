@@ -81,7 +81,7 @@
           <ion-list>
             <ion-item *ngFor="let setting of data.Problem.ProcessSetting2;let i= index">
               <ion-label>{{setting.Item1}}</ion-label>
-              <ion-input name="type2Result{{i}}" ngModel required placeholder="请输入{{setting.Item2}}"
+              <ion-input aria-label="填写信息" name="type2Result{{i}}" ngModel required placeholder="请输入{{setting.Item2}}"
                 pattern="^[\s\S]*.*[^\s][\s\S]*$"></ion-input>
             </ion-item>
           </ion-list>
@@ -97,7 +97,7 @@
             *ngIf="isWeAppUploadFile">已通过微信小程序上传了文件(当前页面重新上传文件并提交将会覆盖旧文件)</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
-          <ion-input type="file" name="type3Result" ngModel required={{isFileRequired}} #attFile
+          <ion-input aria-label="上传文件" type="file" name="type3Result" ngModel required={{isFileRequired}} #attFile
             (ionChange)="changeFile($event,page1Form.form)" accept="image/*,
           application/pdf,
           application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
@@ -123,7 +123,7 @@
           <ion-list>
             <ion-item *ngFor="let setting of data.Problem.ProcessSetting4;let i = index">
               <ion-label>{{setting.Item1}}</ion-label>
-              <ion-checkbox slot="end" [(ngModel)]="checkListValue[i]" name="type4Result{{i}}"
+              <ion-checkbox aria-label="选择处理项" slot="end" [(ngModel)]="checkListValue[i]" name="type4Result{{i}}"
                 (ionChange)="checkProcessSetting4()"></ion-checkbox>
             </ion-item>
           </ion-list>

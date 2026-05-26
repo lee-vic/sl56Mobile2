@@ -15,7 +15,7 @@
     <ion-item class="bottom-border">
 
       <ion-label> 单号:{{item.ReferenceNumber}}</ion-label>
-      <ion-checkbox [(ngModel)]="item.Selected" slot="start"></ion-checkbox>
+      <ion-checkbox aria-label="选择单号" [(ngModel)]="item.Selected" slot="start"></ion-checkbox>
       <ion-note slot="end">目的地:{{item.CountryName}}</ion-note>
 
     </ion-item>
@@ -47,7 +47,7 @@
 <ion-footer>
   <ion-toolbar>
     <ion-buttons>
-      <ion-checkbox (ionChange)="onAllClick()" [(ngModel)]="allSelected" style="margin-left: 0.5rem;"></ion-checkbox>
+      <ion-checkbox aria-label="全选" (ionChange)="onAllClick()" [(ngModel)]="allSelected" style="margin-left: 0.5rem;"></ion-checkbox>
       <ion-label style="margin-left: 0.5rem;">{{allSelected?'反选':'全选'}}</ion-label>
 
     </ion-buttons>

@@ -15,20 +15,35 @@
 
     <h1>登录</h1>
 
-    <ion-item>
-      <ion-label position="stacked" color="dark">用户名</ion-label>
-      <ion-input type="text" formControlName="username" placeholder="请输入手机号码"></ion-input>
-
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked" color="dark">密码</ion-label>
-      <ion-input type="password" formControlName="password" placeholder="请输入密码 区分大小写"></ion-input>
-    </ion-item>
+    <ion-list inset lines="none">
+      <ion-item>
+        <ion-input
+          aria-label="用户名"
+          label="用户名"
+          labelPlacement="stacked"
+          fill="outline"
+          type="text"
+          formControlName="username"
+          placeholder="请输入手机号码"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          aria-label="密码"
+          label="密码"
+          labelPlacement="stacked"
+          fill="outline"
+          type="password"
+          formControlName="password"
+          placeholder="请输入密码 区分大小写"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
     <!-- <ion-item>
       <ion-label>绑定微信</ion-label>
       <ion-checkbox formControlName="isBind"></ion-checkbox>
     </ion-item> -->
-    <ion-button   expand="block" type="submit" [disabled]="!authForm.valid">登录</ion-button>
+    <ion-button expand="block" shape="round" type="submit" [disabled]="!authForm.valid">登录</ion-button>
 
 
   </form>

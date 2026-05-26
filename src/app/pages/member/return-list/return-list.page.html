@@ -23,7 +23,7 @@
 
   </ion-segment>
   <div [ngSwitch]="tab">
-    <div *ngSwitchCase="1" class="bg">
+    <div *ngSwitchCase="'1'" class="bg">
     
         <ion-searchbar placeholder="原、转单号，国家，报价，运输方式，类型，子单号" showClearButton="focus" (ionInput)="searchItems($event)" #searchbar></ion-searchbar>
      
@@ -47,7 +47,7 @@
       </ion-infinite-scroll>
     </div>
 
-    <div *ngSwitchCase="2" class="ion-padding-top bg">
+    <div *ngSwitchCase="'2'" class="ion-padding-top bg">
       <ion-list *ngFor="let item of items2" lines="none">
 
         <ion-item  class="bottom-border">
@@ -65,7 +65,7 @@
             修改
           </ion-button>
 
-          <ion-input [(ngModel)]="tempPhone"  *ngIf="item.isEditMobilePhone" data-id="item.ObjectId"></ion-input>
+          <ion-input aria-label="编辑手机号码" [(ngModel)]="tempPhone"  *ngIf="item.isEditMobilePhone" data-id="item.ObjectId"></ion-input>
           <ion-button slot="end" (click)="cancelMobilePhone(item)" expand="block" fill="clear" shape="round"  *ngIf="item.isEditMobilePhone">
             取消
           </ion-button>

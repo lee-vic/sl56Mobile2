@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ConfirmationService } from 'src/app/providers/confirmation.service';
 import { ToastController, AlertController, LoadingController } from '@ionic/angular';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
+import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
 
 @Component({
   selector: 'app-confirmation',
@@ -11,9 +12,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 export class ConfirmationPage implements OnInit {
   allSelected: boolean = false;
   total = 0;
-  receiveGoodsDetailList: Array<any>;
-  searchList: Array<any>;
-  canGoback:boolean=true;
+  receiveGoodsDetailList: DeliveryRecord[] = [];
+  searchList: DeliveryRecord[] = [];
+  canGoback: boolean = true;
   constructor(public service: ConfirmationService, 
     public toastCtrl: ToastController, 
     public alertCtrl: AlertController, 
@@ -33,8 +34,8 @@ export class ConfirmationPage implements OnInit {
       element.Selected = this.allSelected;
     });
   }
-  getItems(ev: any) {
-    let val = ev.target.value;
+  getItems(ev: CustomEvent) {
+    const val = (ev.detail && ev.detail.value) ? ev.detail.value : '';
     console.log(val);
     if (val && val.trim() != '') {
       this.searchList = this.receiveGoodsDetailList.filter((item) => {
@@ -45,7 +46,7 @@ export class ConfirmationPage implements OnInit {
       this.searchList = this.receiveGoodsDetailList;
     }
   }
-  onItemConfirmClick(item) {
+  onItemConfirmClick(item: { Id: number | Number }) {
     this.alertCtrl.create({
       header: '确认出货?',
       message: '请仔细核实数据准确无误，运单确认后任何更改将收取操作费！',
@@ -95,25 +96,28 @@ export class ConfirmationPage implements OnInit {
 
     }
   }
-  doConfirm(selectedIdList) {
+  doConfirm(selectedIdList: string) {
     this.loadingCtrl.create({
       message: '请稍后...',
     }).then(p => p.present());
 
-    this.service.confirm(selectedIdList).subscribe(res => {
-      this.loadingCtrl.dismiss();
-      this.searchList = this.receiveGoodsDetailList = res;
-    }, (err) => {
-      this.loadingCtrl.dismiss();
-      this.toastCtrl.create({
-        message: err.message,
-        position: 'middle',
-        duration: 3000
-      }).then(p => p.present());
+    this.service.confirm(selectedIdList).subscribe({
+      next: (res) => {
+        this.loadingCtrl.dismiss();
+        this.searchList = this.receiveGoodsDetailList = res;
+      },
+      error: (err) => {
+        this.loadingCtrl.dismiss();
+        this.toastCtrl.create({
+          message: err.message,
+          position: 'middle',
+          duration: 3000
+        }).then(p => p.present());
 
+      }
     });
   }
-  detail(item) {
+  detail(item: { Id: number | Number }) {
     this.router.navigate(["/member/delivery-record/detail",item.Id]);
   }
 

@@ -105,17 +105,20 @@ export class PayWeighingFeeDetailPage implements OnInit {
     })
       .then((p) => {
         p.present();
-        this.weightBillService.getWeightBill(this.objectId).subscribe((res) => {
-          this.weightBill = res;
-          p.dismiss();
-        }, (err) => {
-          this.loadingCtrl.dismiss();
-          this.toastCtrl.create({
-            message: "获取数据出现错误",
-            position: "middle",
-            duration: 2000,
-          }).then((p) => p.present());
-          this.navCtrl.back();
+        this.weightBillService.getWeightBill(this.objectId).subscribe({
+          next: (res) => {
+            this.weightBill = res;
+            p.dismiss();
+          },
+          error: (_err) => {
+            this.loadingCtrl.dismiss();
+            this.toastCtrl.create({
+              message: "获取数据出现错误",
+              position: "middle",
+              duration: 2000,
+            }).then((p) => p.present());
+            this.navCtrl.back();
+          }
         });
       });
   }
@@ -161,8 +164,8 @@ export class PayWeighingFeeDetailPage implements OnInit {
       })
       .then((p) => {
         p.present();
-        this.weightBillService.payWeighingFee(this.weightBill).subscribe(
-          (res) => {
+        this.weightBillService.payWeighingFee(this.weightBill).subscribe({
+          next: (res) => {
             this.loadingCtrl.dismiss();
             if (res.Success) {
               let jsApiParam = JSON.parse(res.Data);
@@ -177,7 +180,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
                 .then((p) => p.present());
             }
           },
-          (err) => {
+          error: (err) => {
             this.loadingCtrl.dismiss();
             this.toastCtrl
               .create({
@@ -187,7 +190,7 @@ export class PayWeighingFeeDetailPage implements OnInit {
               })
               .then((p) => p.present());
           }
-        );
+        });
       });
   }
 

@@ -33,29 +33,32 @@ export class WarehouseApplicationPage implements OnInit {
     });
     await loading.present();
 
-    this.warehouseService.getList(this.currentPage).subscribe(res => {
-      loading.dismiss();
-      if (res.Success) {
-        this.hasMore = res.Data && res.Data.length === 20;
-        if (this.currentPage === 1 && res.Data) {
-          this.applications = res.Data;
+    this.warehouseService.getList(this.currentPage).subscribe({
+      next: (res) => {
+        loading.dismiss();
+        if (res.Success) {
+          this.hasMore = res.Data && res.Data.length === 20;
+          if (this.currentPage === 1 && res.Data) {
+            this.applications = res.Data;
+          } else {
+            this.applications = this.applications.concat(res.Data);
+          }
         } else {
-          this.applications = this.applications.concat(res.Data);
+          this.toastCtrl.create({
+            message: res.ErrMsg,
+            duration: 3000,
+            position: 'middle'
+          }).then(toast => toast.present());
         }
-      } else {
+      },
+      error: (_err) => {
+        loading.dismiss();
         this.toastCtrl.create({
-          message: res.ErrMsg,
+          message: '加载失败，请重试',
           duration: 3000,
           position: 'middle'
-        }).then(toast => toast.present());
+        });
       }
-    }, (err) => {
-      loading.dismiss();
-      this.toastCtrl.create({
-        message: '加载失败，请重试',
-        duration: 3000,
-        position: 'middle'
-      });
     });
   }
 

@@ -125,23 +125,26 @@ export class WarehouseApplicationDetailPage implements OnInit {
       buttons: [{
         text: "确认", handler: () => {
           this.loadingCtrl.create({ message: '正在取消...' }).then(loading => loading.present()).then(() => {
-            this.service.cancel(this.id).subscribe(res => {
-              this.loadingCtrl.dismiss();
-              if (res.Success) {
-                this.navCtrl.back();
-              } else {
+            this.service.cancel(this.id).subscribe({
+              next: (res) => {
+                this.loadingCtrl.dismiss();
+                if (res.Success) {
+                  this.navCtrl.back();
+                } else {
+                  this.alertCtrl.create({
+                    header: '操作失败',
+                    message: res.ErrMsg,
+                    buttons: ['确定']
+                  }).then(alert => alert.present());
+                }
+              },
+              error: (err) => {
+                this.loadingCtrl.dismiss();
                 this.alertCtrl.create({
                   header: '操作失败',
-                  message: res.ErrMsg,
-                  buttons: ['确定']
+                  message: err.message,
                 }).then(alert => alert.present());
               }
-            }, (err) => {
-              this.loadingCtrl.dismiss();
-              this.alertCtrl.create({
-                header: '操作失败',
-                message: err.message,
-              }).then(alert => alert.present());
             });
           });
         }

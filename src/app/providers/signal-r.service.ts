@@ -105,6 +105,10 @@ export class SignalRConnection {
     });
   }
 
+  getConnectionId(): string {
+    return this.connection && this.connection.id ? this.connection.id : '';
+  }
+
   stop(): void {
     this.isStopped = true;
     if (this.startRetryTimer) {

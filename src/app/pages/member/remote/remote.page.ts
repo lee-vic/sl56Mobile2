@@ -66,13 +66,12 @@ export class RemotePage implements OnInit {
 
     this.showCountryList = false;
     this.countryInput = item.Name;
+    this.myForm.get("countryId")?.setValue(item.Name, { emitEvent: false });
     this.selectedCountry = item;
   }
 
-  onCountryKeyup($event) {
-
-
-    if ($event.keyCode == 13) {
+  onCountryKeyup(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
       this.selectCountry();
     }
 
@@ -84,6 +83,7 @@ export class RemotePage implements OnInit {
     if (this.countrySearch.length == 1) {
       this.showCountryList = false;
       this.countryInput = this.countrySearch[0].Name;
+      this.myForm.get("countryId")?.setValue(this.countrySearch[0].Name, { emitEvent: false });
       this.selectedCountry = this.countrySearch[0];
     }
   }

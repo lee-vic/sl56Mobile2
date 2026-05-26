@@ -18,6 +18,17 @@ export class NoticeListPage implements OnInit {
   ngOnInit(): void {
     this.getItems();
   }
+
+  private disableInfiniteScroll(): void {
+    if (!this.infiniteScroll) return;
+    const setDisabled = (this.infiniteScroll as any).setDisabled;
+    if (typeof setDisabled === 'function') {
+      setDisabled.call(this.infiniteScroll, true);
+      return;
+    }
+    this.infiniteScroll.disabled = true;
+  }
+
   getItems() {
 
     if (this.isBusy)
@@ -28,7 +39,7 @@ export class NoticeListPage implements OnInit {
         this.items.push(res[i]);
       }
       if (res.length < 10) {
-        this.infiniteScroll.disabled = true;
+        this.disableInfiniteScroll();
       }
       else {
 

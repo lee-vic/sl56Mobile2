@@ -86,16 +86,28 @@ export class SubAccountDetailPage implements OnInit {
   ngOnInit(): void {
     if (this.id != 0) {
       this.service.detail(this.id).subscribe(res => {
-        
         this.data = res;
+        this.myForm.patchValue({
+          mobilephone: res.MobilePhone || '',
+          contactname: res.ContactName || '',
+          password1: res.Password1 || '',
+          discount: res.Discount
+        });
       });
     }
 
   }
   onSubmit(formValue) {
-    console.log(this.data);
+    const payload: SubAccount = {
+      ...this.data,
+      MobilePhone: formValue.mobilephone,
+      ContactName: formValue.contactname,
+      Discount: formValue.discount
+    };
+
     if (this.isNew) {
-      this.service.create(this.data).subscribe(res => {
+      payload.Password = formValue.password;
+      this.service.create(payload).subscribe(res => {
         if (res.Success) {
           this.navCtrl.back();
         }
@@ -111,7 +123,8 @@ export class SubAccountDetailPage implements OnInit {
       });
     }
     else {
-      this.service.edit(this.data).subscribe(res => {
+      payload.Password1 = formValue.password1;
+      this.service.edit(payload).subscribe(res => {
         if (res.Success) {
           this.navCtrl.back();
         }

@@ -152,12 +152,12 @@ export class CalculationPage implements OnInit {
   countryItemClick(item) {
     this.showCountryList = false;
     this.countryInput = item.Name;
+    this.myForm.get("countryId")?.setValue(item.Name, { emitEvent: false });
     this.selectedCountry = item;
   }
 
-  onCountryKeyup($event) {
-    let val = this.countryInput;
-    if ($event.keyCode == 13) {
+  onCountryKeyup(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
       this.selectCountry();
     }
   }
@@ -168,6 +168,7 @@ export class CalculationPage implements OnInit {
     if (this.countrySearch.length == 1) {
       this.showCountryList = false;
       this.countryInput = this.countrySearch[0].Name;
+      this.myForm.get("countryId")?.setValue(this.countrySearch[0].Name, { emitEvent: false });
       this.selectedCountry = this.countrySearch[0];
     }
   }
@@ -244,7 +245,7 @@ export class CalculationPage implements OnInit {
     let lastSizeIndex = this.sizes.length - 1;
     this.sizes.removeAt(lastSizeIndex);
   }
-  segmentChanged(ev) {
+  segmentChanged(ev: CustomEvent) {
     this.selectRuleIds = [];
     if (ev.detail.value == "1") this.myForm.get("actualWeight").enable();
     else if (this.myForm.value.isEditSize)

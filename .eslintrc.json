@@ -1,0 +1,37 @@
+{
+  "root": true,
+  "ignorePatterns": [
+    "www/**",
+    "test-results/**",
+    ".angular/**",
+    "node_modules/**"
+  ],
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module"
+      },
+      "plugins": ["@typescript-eslint", "@angular-eslint"],
+      "extends": [
+        "plugin:@angular-eslint/recommended",
+        "plugin:@angular-eslint/template/process-inline-templates"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@angular-eslint/component-class-suffix": "warn",
+        "@angular-eslint/no-empty-lifecycle-method": "warn",
+        "@angular-eslint/use-lifecycle-interface": "warn"
+      }
+    },
+    {
+      "files": ["*.html"],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "rules": {
+        "@angular-eslint/template/eqeqeq": "warn"
+      }
+    }
+  ]
+}

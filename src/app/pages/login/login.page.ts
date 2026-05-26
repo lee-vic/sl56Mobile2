@@ -44,30 +44,33 @@ export class LoginPage implements OnInit {
     formValue.clientType = 1;
     formValue.openId = this.cookieService.get('OpenId');
     formValue.unionId = this.cookieService.get('UnionId');
-    this.userService.auth(formValue).subscribe((res: any) => {
-      this.isLogin =  res.Success;
-      console.log("aa" + this.cookieService.get('sl56Auth'));
-      this.loadingCtrl.dismiss();
+    this.userService.auth(formValue).subscribe({
+      next: (res: any) => {
+        this.isLogin =  res.Success;
+        console.log("aa" + this.cookieService.get('sl56Auth'));
+        this.loadingCtrl.dismiss();
 
-      if (this.isLogin) {
-        this.router.navigateByUrl(this.cookieService.get('State'));
-      }
-      else {
+        if (this.isLogin) {
+          this.router.navigateByUrl(this.cookieService.get('State'));
+        }
+        else {
+          this.toastCtrl.create({
+            message: res.ErrMsg,
+            position: 'middle',
+            duration: 1500
+          }).then(p => p.present());
+
+        }
+      },
+      error: (err) => {
+        this.loadingCtrl.dismiss();
         this.toastCtrl.create({
-          message: res.ErrMsg,
+          message: err.message,
           position: 'middle',
-          duration: 1500
+          duration: 3000
         }).then(p => p.present());
 
       }
-    }, (err) => {
-      this.loadingCtrl.dismiss();
-      this.toastCtrl.create({
-        message: err.message,
-        position: 'middle',
-        duration: 3000
-      }).then(p => p.present());
-
     });
 
   }

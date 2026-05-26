@@ -16,7 +16,7 @@
     <ion-segment-button value="5"> 待跟进问题 </ion-segment-button>
   </ion-segment>
   <div [ngSwitch]="tab" class="ion-padding-top">
-    <div *ngSwitchCase="1">
+    <div *ngSwitchCase="'1'">
       <ion-list>
         <ion-item>
           <ion-label>原单号</ion-label>
@@ -65,7 +65,7 @@
         </ion-item>
       </ion-list>
     </div>
-    <div *ngSwitchCase="2">
+    <div *ngSwitchCase="'2'">
       <ion-list *ngFor="let item of data?.Sizes">
         <ion-item>
           <ion-label>编号</ion-label>
@@ -97,7 +97,7 @@
         </ion-item>
       </ion-list>
     </div>
-    <div *ngSwitchCase="3">
+    <div *ngSwitchCase="'3'">
       <div *ngIf="data?.IsShowPackageTracks">
         <div class="trackTips">点击包裹号，可以展开每个包裹的详细轨迹</div>
         <ion-list class="packageTrackList" *ngFor="let item of data?.PackageTracks">
@@ -127,7 +127,7 @@
         </ion-item>
       </ion-list>
     </div>
-    <div *ngSwitchCase="4">
+    <div *ngSwitchCase="'4'">
       <ion-list>
         <ion-item *ngFor="let item of data?.AccountReceivableDetails">
           <ion-label>
@@ -138,7 +138,7 @@
         </ion-item>
       </ion-list>
     </div>
-    <div *ngSwitchCase="5">
+    <div *ngSwitchCase="'5'">
       <ion-list>
         <ion-item *ngFor="let item of data?.Problems">
           <ion-label>

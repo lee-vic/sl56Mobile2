@@ -14,7 +14,7 @@
   <form (ngSubmit)="doNext(myForm.value)" [formGroup]="myForm" novalidate class="ion-margin-top ion-padding-top">
     <ion-item>
       <ion-label position="stacked" color="dark">手机号码</ion-label>
-      <ion-input type="tel" formControlName="mobilePhone" placeholder="请输入手机号码"></ion-input>
+      <ion-input aria-label="手机号码" type="tel" formControlName="mobilePhone" placeholder="请输入手机号码"></ion-input>
     </ion-item>
     <div class="validation-errors ion-padding-start">
       <div *ngFor="let validation of validation_messages.mobilePhone">
@@ -28,7 +28,7 @@
     </div>
     <ion-item>
       <ion-label position="stacked" color="dark">验证码</ion-label>
-      <ion-input type="text" formControlName="verifyCode" placeholder="请输入验证码"></ion-input>
+      <ion-input aria-label="验证码" type="text" formControlName="verifyCode" placeholder="请输入验证码"></ion-input>
       <ion-button (click)="sendCode()">获取验证码</ion-button>
     </ion-item>
     <div class="validation-errors ion-padding-start">
@@ -43,7 +43,7 @@
     </div>
     <ion-item>
       <ion-label position="stacked" color="dark">登录密码</ion-label>
-      <ion-input type="password" formControlName="password" placeholder="请输入密码，区分大小写"></ion-input>
+      <ion-input aria-label="登录密码" type="password" formControlName="password" placeholder="请输入密码，区分大小写"></ion-input>
     </ion-item>
     <div class="validation-errors ion-padding-start">
       <div *ngFor="let validation of validation_messages.password">
@@ -57,7 +57,7 @@
     </div>
     <ion-item>
       <ion-label position="stacked" color="dark">确认登录密码</ion-label>
-      <ion-input type="password" formControlName="rePassword" placeholder="请再一次输入密码"></ion-input>
+      <ion-input aria-label="确认登录密码" type="password" formControlName="rePassword" placeholder="请再一次输入密码"></ion-input>
     </ion-item>
     <div class="validation-errors ion-padding-start">
       <div *ngFor="let validation of validation_messages.rePassword">
@@ -71,12 +71,12 @@
     </div>
     <ion-item>
       <ion-label position="stacked" color="dark">推荐码</ion-label>
-      <ion-input type="text" formControlName="code" placeholder="推荐码(选填)"></ion-input>
+      <ion-input aria-label="推荐码" type="text" formControlName="code" placeholder="推荐码(选填)"></ion-input>
     </ion-item>
     <ion-button expand="block" type="submit" [disabled]="myForm.invalid || !isAgreement">注册</ion-button>
   </form>
   <div class="agreement">
-    <ion-checkbox [(ngModel)]="isAgreement" size="small"></ion-checkbox>
+    <ion-checkbox aria-label="同意入驻协议" [(ngModel)]="isAgreement" size="small"></ion-checkbox>
     <span>已阅读并同意</span>
     <a routerLink="/distribute-agreement">《升蓝分享平台入驻协议》</a>
   </div>

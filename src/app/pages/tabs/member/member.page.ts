@@ -74,14 +74,17 @@ export class MemberPage implements OnInit {
       message: '请稍后...'
     }).then(p => {
       p.present();
-      this.userService.isAuthenticated().subscribe(res => {
-        this.loadingCtrl.dismiss();
-        this.isLogin = true;
-        this.loginSuccess();
-      }, (err) => {
-        this.loadingCtrl.dismiss();
-        if (err.status == 401) {
-          this.isLogin = false;
+      this.userService.isAuthenticated().subscribe({
+        next: (_res) => {
+          this.loadingCtrl.dismiss();
+          this.isLogin = true;
+          this.loginSuccess();
+        },
+        error: (err) => {
+          this.loadingCtrl.dismiss();
+          if (err.status == 401) {
+            this.isLogin = false;
+          }
         }
       });
     });
@@ -107,31 +110,36 @@ export class MemberPage implements OnInit {
     }
   }
   forgetPasswordClick() {
+    this.releaseFocus();
     this.router.navigateByUrl("/member/reset-password");
   }
 
   doLogin(formValue) {
+    this.releaseFocus();
     this.showLoading("请稍后...");
     // Web application - always set clientType to web
     formValue.clientType = 1;
     formValue.openId = this.cookieService.get('OpenId');
     formValue.unionId = this.cookieService.get('UnionId');
-    this.userService.auth(formValue).subscribe((res: any) => {
-      this.isLogin = res.Success;
-      if (this.isLogin == true) {
-        this.loginSuccess();
-      }
+    this.userService.auth(formValue).subscribe({
+      next: (res: any) => {
+        this.isLogin = res.Success;
+        if (this.isLogin == true) {
+          this.loginSuccess();
+        }
 
-      this.loading.dismiss();
-      if (!this.isLogin) {
-        this.showToast(res.ErrMsg);
-      }
-      // else {
-      //   localStorage.setItem("username", formValue.username);
-      // }
+        this.loading.dismiss();
+        if (!this.isLogin) {
+          this.showToast(res.ErrMsg);
+        }
+        // else {
+        //   localStorage.setItem("username", formValue.username);
+        // }
 
-    }, (err) => {
-      this.showToast(err.message);
+      },
+      error: (err) => {
+        this.showToast(err.message);
+      }
     });
 
   }
@@ -192,6 +200,7 @@ export class MemberPage implements OnInit {
   }
 
   menuClick(item) {
+    this.releaseFocus();
 
 
     if (item.url == "") {
@@ -221,16 +230,27 @@ export class MemberPage implements OnInit {
     });
   }
   openMessage() {
+    this.releaseFocus();
     this.router.navigateByUrl("/member/unread-message-list");
   }
   openChat() {
+    this.releaseFocus();
     //this.router.navigateByUrl("/member/chat/0");
     this.router.navigate(["/member", "chat", 0])
   }
   wechatPay(id) {
+    this.releaseFocus();
     this.router.navigateByUrl("/member/wechat-pay/0?cid=" + id);
   }
   goToTest() {
+    this.releaseFocus();
     this.router.navigateByUrl("/member/test");
+  }
+
+  private releaseFocus() {
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (activeElement && typeof activeElement.blur === 'function') {
+      activeElement.blur();
+    }
   }
 }

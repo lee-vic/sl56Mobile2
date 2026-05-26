@@ -12,8 +12,7 @@
     <ion-list>
       <ion-item>
         <ion-label>姓名</ion-label>
-        <ion-input type="text" placeholder="姓名，便于你的管理" formControlName="contactname"
-          [(ngModel)]="data.ContactName"></ion-input>
+        <ion-input aria-label="姓名" type="text" placeholder="姓名，便于你的管理" formControlName="contactname"></ion-input>
       </ion-item>
       <div class="validation-errors ion-padding-start">
         <div *ngFor="let validation of validation_messages.contactname">
@@ -27,8 +26,7 @@
       </div>
       <ion-item>
         <ion-label>帐号</ion-label>
-        <ion-input type="text" placeholder="手机号码" formControlName="mobilephone"
-          [(ngModel)]="data.MobilePhone"></ion-input>
+        <ion-input aria-label="帐号" type="text" placeholder="手机号码" formControlName="mobilephone"></ion-input>
       </ion-item>
       <div class="validation-errors ion-padding-start">
         <div *ngFor="let validation of validation_messages.mobilephone">
@@ -42,8 +40,7 @@
       </div>
       <ion-item *ngIf="isNew">
         <ion-label>密码</ion-label>
-        <ion-input type="password" placeholder="登录本系统的密码，区分大小写" formControlName="password"
-          [(ngModel)]="data.Password"></ion-input>
+        <ion-input aria-label="密码" type="password" placeholder="登录本系统的密码，区分大小写" formControlName="password"></ion-input>
       </ion-item>
       <div class="validation-errors ion-padding-start">
         <div *ngFor="let validation of validation_messages.password">
@@ -57,12 +54,11 @@
       </div>
       <ion-item *ngIf="!isNew">
         <ion-label>密码</ion-label>
-        <ion-input type="password" placeholder="更改密码请直接输入" formControlName="password1"
-          [(ngModel)]="data.Password1"></ion-input>
+        <ion-input aria-label="密码" type="password" placeholder="更改密码请直接输入" formControlName="password1"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label>报价折扣</ion-label>
-        <ion-input type="number" placeholder="查询价格时对于我公司公开价的系数" formControlName="discount" [(ngModel)]="data.Discount">
+        <ion-input aria-label="报价折扣" type="number" placeholder="查询价格时对于我公司公开价的系数" formControlName="discount">
         </ion-input>
       </ion-item>
       <div class="validation-errors ion-padding-start">

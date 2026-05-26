@@ -17,21 +17,21 @@
     </ion-segment-button>
   </ion-segment>
   <div [ngSwitch]="calculateMode" class="ion-margin-top">
-    <div *ngSwitchCase="1">
+    <div *ngSwitchCase="'1'">
       <form (ngSubmit)="doCalculate(myForm.value)" [formGroup]="myForm">
         <ion-list>
 
           <ion-item>
             <ion-label>货物类型</ion-label>
-            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="ProductContentType">
+            <ion-select aria-label="货物类型" interface="alert" cancelText="取消" okText="确定" formControlName="ProductContentType">
               <ion-select-option value="1">包裹</ion-select-option>
               <ion-select-option value="0">文件</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
             <ion-label>国家</ion-label>
-            <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
-              (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)" [(ngModel)]="countryInput"
+            <ion-input aria-label="国家" type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
+              (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
               clearInput></ion-input>
           </ion-item>
           <ion-item *ngIf="showCountryList">
@@ -43,11 +43,11 @@
           </ion-item>
           <ion-item>
             <ion-label>重量</ion-label>
-            <ion-input type="number" formControlName="actualWeight"></ion-input>
+            <ion-input aria-label="重量" type="number" formControlName="actualWeight"></ion-input>
           </ion-item>
           <ion-item *ngFor="let item of priceRuleTemplateInfoList">
             <ion-label>{{item.Name}}</ion-label>
-            <ion-checkbox (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
+            <ion-checkbox aria-label="选择规则" (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
           </ion-item>
           <ion-button expand="block" type="submit" [disabled]="!myForm.valid">计算</ion-button>
           <ion-chip class="tips" color="danger">
@@ -56,19 +56,19 @@
         </ion-list>
       </form>
     </div>
-    <div *ngSwitchCase="2">
+    <div *ngSwitchCase="'2'">
       <form (ngSubmit)="doCalculate(myForm.value)" [formGroup]="myForm">
         <ion-list>
           <ion-item>
             <ion-label>运输方式</ion-label>
-            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportIdList">
+            <ion-select aria-label="运输方式" interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportIdList">
               <ion-select-option *ngFor="let item of modeOfTransportList" [value]="item.Id">
                 {{item.Name}}</ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item>
             <ion-label>货物类型</ion-label>
-            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="ProductContentType">
+            <ion-select aria-label="货物类型" interface="alert" cancelText="取消" okText="确定" formControlName="ProductContentType">
               <ion-select-option value="1">包裹</ion-select-option>
               <ion-select-option value="0">文件</ion-select-option>
             </ion-select>
@@ -76,8 +76,8 @@
 
           <ion-item>
             <ion-label>国家</ion-label>
-            <ion-input type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
-              (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)" [(ngModel)]="countryInput"
+            <ion-input aria-label="国家" type="text" formControlName="countryId" (ionBlur)="onCountryBlur()"
+              (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
               clearInput></ion-input>
           </ion-item>
           <ion-item *ngIf="showCountryList">
@@ -88,20 +88,20 @@
           </ion-item>
           <ion-item>
             <ion-label>邮编</ion-label>
-            <ion-input type="text" formControlName="postalCode"></ion-input>
+            <ion-input aria-label="邮编" type="text" formControlName="postalCode"></ion-input>
           </ion-item>
           <ion-item>
             <ion-label>城市</ion-label>
-            <ion-input type="text" formControlName="city"></ion-input>
+            <ion-input aria-label="城市" type="text" formControlName="city"></ion-input>
           </ion-item>
           <ion-item>
             <ion-label>申报价值</ion-label>
-            <ion-input type="text" formControlName="declaredValue"></ion-input>
+            <ion-input aria-label="申报价值" type="text" formControlName="declaredValue"></ion-input>
           </ion-item>
           
           <ion-item>
             <ion-label>输入尺寸</ion-label>
-            <ion-checkbox #isInputSize formControlName="isEditSize"></ion-checkbox>
+            <ion-checkbox #isInputSize aria-label="输入尺寸" formControlName="isEditSize"></ion-checkbox>
           </ion-item>
           <ion-item *ngIf="isInputSize.checked" formArrayName="sizes">
             <ion-grid>
@@ -157,19 +157,19 @@
           </ion-item>
           <ion-item *ngIf="!isInputSize.checked">
             <ion-label>实重</ion-label>
-            <ion-input type="number" formControlName="actualWeight"></ion-input>
+            <ion-input aria-label="实重" type="number" formControlName="actualWeight"></ion-input>
           </ion-item>
           <ion-item *ngIf="!isInputSize.checked">
             <ion-label>体积重</ion-label>
-            <ion-input type="number" formControlName="volumeWeight" placeholder="请选你输入的体积重除数"></ion-input>
-            <ion-select interface="alert" cancelText="取消" okText="确定" formControlName="volumetric">
+            <ion-input aria-label="体积重" type="number" formControlName="volumeWeight" placeholder="请选你输入的体积重除数"></ion-input>
+            <ion-select aria-label="体积重除数" interface="alert" cancelText="取消" okText="确定" formControlName="volumetric">
               <ion-select-option *ngFor="let item of volumetricDivisorList" [value]="item.Id">{{item.Name}}
               </ion-select-option>
             </ion-select>
           </ion-item>
           <ion-item *ngFor="let item of priceRuleTemplateInfoList">
             <ion-label>{{item.Name}}</ion-label>
-            <ion-checkbox (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
+            <ion-checkbox aria-label="选择规则" (ionChange)="ruleChanged(item,$event)" slot="start"></ion-checkbox>
           </ion-item>
           <ion-button expand="block" type="submit" [disabled]="!myForm.valid">计算</ion-button>
           <ion-chip class="tips" color="danger">

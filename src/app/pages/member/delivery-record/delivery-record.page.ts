@@ -51,13 +51,23 @@ export class DeliveryRecordPage implements OnInit, OnDestroy {
     this.getItems(this.searchbar.value,false);
   }
 
+  private disableInfiniteScroll(): void {
+    if (!this.infiniteScroll) return;
+    const setDisabled = (this.infiniteScroll as any).setDisabled;
+    if (typeof setDisabled === 'function') {
+      setDisabled.call(this.infiniteScroll, true);
+      return;
+    }
+    this.infiniteScroll.disabled = true;
+  }
+
   //加载数据
   getItems(key:string,isScroll:boolean) {
    
     this.service.loadList(this.currentPageIndex, key).subscribe(res => {
       let flag = res.length < 10;
       if(flag){
-        this.infiniteScroll.disabled=true;
+        this.disableInfiniteScroll();
       }
       for (var i = 0; i < res.length; i++) {
         this.items.push(res[i]);

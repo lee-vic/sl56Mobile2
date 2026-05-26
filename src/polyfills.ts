@@ -6,7 +6,7 @@
  * Learn more in https://angular.io/guide/browser-support
  */
 
-import './zone-flags.ts';
+import './zone-flags';
 
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.

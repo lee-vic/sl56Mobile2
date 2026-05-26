@@ -38,3 +38,17 @@ ion-footer{
         padding-right: 1rem;
     }
 }
+ion-item > ion-label:not([position=\"stacked\"]) {
+    flex: 0 0 6.5em;
+    max-width: 6.5em;
+    min-width: 6.5em;
+    white-space: normal;
+    word-break: keep-all;
+}
+ion-item > ion-label:not([position="stacked"]) {
+    flex: 0 0 6.5em;
+    max-width: 6.5em;
+    min-width: 6.5em;
+    white-space: normal;
+    word-break: keep-all;
+}

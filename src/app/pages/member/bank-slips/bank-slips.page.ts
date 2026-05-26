@@ -63,6 +63,16 @@ export class BankSlipsPage implements OnInit {
     el.click();
   }
 
+  private disableInfiniteScroll(): void {
+    if (!this.infiniteScroll) return;
+    const setDisabled = (this.infiniteScroll as any).setDisabled;
+    if (typeof setDisabled === 'function') {
+      setDisabled.call(this.infiniteScroll, true);
+      return;
+    }
+    this.infiniteScroll.disabled = true;
+  }
+
   getItems() {
     if (this.isBusy == true)
       return;
@@ -70,7 +80,7 @@ export class BankSlipsPage implements OnInit {
     this.service.getList(this.currentPageIndex).subscribe(res => {
 
       if (res.length < 15 && this.infiniteScroll != null) {
-        this.infiniteScroll.disabled=true;
+        this.disableInfiniteScroll();
       }
       for (var i = 0; i < res.length; i++) {
         res[i].Url = apiUrl + "/UploadBankSlips/Detail/" + res[i].Id;

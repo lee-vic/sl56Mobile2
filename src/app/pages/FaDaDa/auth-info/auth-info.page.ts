@@ -26,21 +26,24 @@ export class AuthInfoPage implements OnInit {
               this.loadingCtrl.create({
                 message: '加载中...'
               }).then(p => p.present());
-              this.service.getAuthUrl().subscribe(res => {
-                this.loadingCtrl.dismiss();
-                window.location.href = res;
-              }, err => {
-                this.loadingCtrl.dismiss();
-                this.alertCtrl.create({
-                  message: '操作异常，请重试，多次失败请联系业务员',
-                  buttons: [{
-                    text: '确定',
-                    handler: () => {
-                      this.navCtrl.back();
-                    }
-                  }],
-                  backdropDismiss: false,
-                }).then(p => p.present());
+              this.service.getAuthUrl().subscribe({
+                next: (res) => {
+                  this.loadingCtrl.dismiss();
+                  window.location.href = res;
+                },
+                error: (_err) => {
+                  this.loadingCtrl.dismiss();
+                  this.alertCtrl.create({
+                    message: '操作异常，请重试，多次失败请联系业务员',
+                    buttons: [{
+                      text: '确定',
+                      handler: () => {
+                        this.navCtrl.back();
+                      }
+                    }],
+                    backdropDismiss: false,
+                  }).then(p => p.present());
+                }
               });
             }
           }, {

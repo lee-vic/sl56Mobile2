@@ -15,6 +15,7 @@ import { TabsService } from './providers/tabs.service';
     BrowserModule,
     IonicModule.forRoot({
       backButtonText:"返回",
+      innerHTMLTemplatesEnabled: true,
     }),
     HttpClientModule,
     AppRoutingModule

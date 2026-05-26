@@ -21,6 +21,7 @@ describe('ChatPage', () => {
 
   const invokeSpy = jasmine.createSpy('invoke').and.returnValue(Promise.resolve('1'));
   const mockSignalRConnection = {
+    getConnectionId: () => 'conn-1',
     status: new Subject<any>(),
     start: () => Promise.resolve({
       listenFor: (eventName: string) => eventName === 'messageReceived' ? messageReceived$ : of({})
@@ -116,7 +117,7 @@ describe('ChatPage', () => {
 
     expect(component.messages.length).toBe(1);
     expect(component.messages[0].Content).toBe('hello');
-    expect(invokeSpy).toHaveBeenCalledWith('markRead', 100);
+    expect(invokeSpy).toHaveBeenCalledWith('markRead', 100, 'conn-1');
     tick(401);
   }));
 

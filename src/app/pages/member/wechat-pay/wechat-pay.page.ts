@@ -45,7 +45,8 @@ export class WechatPayPage implements OnInit, OnDestroy {
       message: '请稍后...'
     }).then(p => {
       p.present()
-      this.service.getList(this.openId,this.cid).subscribe(res => {
+      this.service.getList(this.openId,this.cid).subscribe({
+        next: (res) => {
         //支付外币时，不选择单号（若勾选单号，则支付金额会变成选择单号的总金额）
         if(this.cid!=1){
           res.ReceiveGoodsDetailList.forEach(p=>{
@@ -92,13 +93,15 @@ export class WechatPayPage implements OnInit, OnDestroy {
           console.log(this.otherCurrencyAmounts);
         })
 
-      }, (error) => {
-        this.loadingCtrl.dismiss();
-        this.toastCtrl.create({
-          message: error.statusText,
-          position: 'middle',
-          duration: 1500
-        }).then(p => p.present());
+        },
+        error: (error) => {
+          this.loadingCtrl.dismiss();
+          this.toastCtrl.create({
+            message: error.statusText,
+            position: 'middle',
+            duration: 1500
+          }).then(p => p.present());
+        }
       });
 
     });
@@ -203,7 +206,8 @@ export class WechatPayPage implements OnInit, OnDestroy {
       message: '请稍后...'
     }).then(p => {
       p.present();
-      this.service.pay(this.data).subscribe(res => {
+      this.service.pay(this.data).subscribe({
+        next: (res) => {
 
         this.loadingCtrl.dismiss();
         if (res.Success) {
@@ -218,13 +222,15 @@ export class WechatPayPage implements OnInit, OnDestroy {
           }).then(p => p.present());
         }
 
-      }, (err) => {
-        this.loadingCtrl.dismiss();
-        this.toastCtrl.create({
-          message: err.message,
-          position: 'middle',
-          duration: 3000
-        }).then(p => p.present());
+        },
+        error: (err) => {
+          this.loadingCtrl.dismiss();
+          this.toastCtrl.create({
+            message: err.message,
+            position: 'middle',
+            duration: 3000
+          }).then(p => p.present());
+        }
       });
     });
 
@@ -235,27 +241,30 @@ export class WechatPayPage implements OnInit, OnDestroy {
     this.loadingCtrl.create({
       message: '请稍后...'
     }).then(p => p.present());
-    this.service.pay(this.data).subscribe(res => {
-      console.log(res);
-      this.loadingCtrl.dismiss();
-      if (res.Success)
-        location.href = res.PayUrl;
-      else {
+    this.service.pay(this.data).subscribe({
+      next: (res) => {
+        console.log(res);
+        this.loadingCtrl.dismiss();
+        if (res.Success)
+          location.href = res.PayUrl;
+        else {
+          this.toastCtrl.create({
+            message: res.ErrMsg,
+            position: 'middle',
+            duration: 3000
+          }).then(p => p.present());
+        }
+      },
+      error: (err) => {
+        this.loadingCtrl.dismiss();
         this.toastCtrl.create({
-          message: res.ErrMsg,
+          message: err.message,
           position: 'middle',
           duration: 3000
         }).then(p => p.present());
+
+
       }
-    }, (err) => {
-      this.loadingCtrl.dismiss();
-      this.toastCtrl.create({
-        message: err.message,
-        position: 'middle',
-        duration: 3000
-      }).then(p => p.present());
-
-
     });
   }
 

@@ -36,7 +36,8 @@ export class EpidemicPage implements OnInit {
   }
   processForm(formValue){
     this.isBusy=true;
-    this.service.submit(formValue).subscribe(res=>{
+    this.service.submit(formValue).subscribe({
+      next: (res) => {
      
       let data=JSON.parse(res);
 
@@ -60,9 +61,11 @@ export class EpidemicPage implements OnInit {
         this.presentAlert("提交失败","请联系系统管理员","详细信息:"+data["ErrMsg"]);
       }
       this.isBusy=false;
-    },(err)=>{
-      this.presentAlert("提交错误","请联系系统管理员","");
-      this.isBusy=false;
+      },
+      error: (_err) => {
+        this.presentAlert("提交错误","请联系系统管理员","");
+        this.isBusy=false;
+      }
     });
   }
   async presentAlert(title,sTitle,msg) {

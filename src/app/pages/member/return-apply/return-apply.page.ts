@@ -90,36 +90,37 @@ export class ReturnApplyPage implements OnInit {
     }).then(p=>{
       p.present();
     });
-    this.service.apply1(form).subscribe(res => {
-      this.loadingController.dismiss();
-      if (res.IsSuccess == false) {
+    this.service.apply1(form).subscribe({
+      next: (res) => {
+        this.loadingController.dismiss();
+        if (res.IsSuccess == false) {
+          this.btnSubmit.disabled = false;
+          this.alertCtrl.create({
+            header: '提示',
+            message: res.ErrorMessage,
+            buttons: ['确定']
+          }).then(p => p.present());
+        }
+        else {
+          this.toastCtrl.create({
+            message: '您的退货申请已成功提交',
+            duration: 3000,
+            position: 'middle',
+          }).then(p => {
+            p.present();
+            this.navCtrl.back();
+          });
+        }
+      },
+      error: (_error) => {
         this.btnSubmit.disabled = false;
+        this.loadingController.dismiss();
         this.alertCtrl.create({
-          header: '提示',
-          message: res.ErrorMessage,
+          header: '出现错误，请重试',
+          message: '如果多次重试仍然失败，请联系您的服务专员',
           buttons: ['确定']
         }).then(p => p.present());
       }
-      else {
-        this.toastCtrl.create({
-          message: '您的退货申请已成功提交',
-          duration: 3000,
-          position: 'middle',
-        }).then(p => {
-          p.present();
-          this.navCtrl.back();
-        });
-      }
-    }, error => {
-      this.btnSubmit.disabled = false;
-      this.loadingController.dismiss();
-      this.alertCtrl.create({
-        header: '出现错误，请重试',
-        message: '如果多次重试仍然失败，请联系您的服务专员',
-        buttons: ['确定']
-      }).then(p => p.present());
-    }, () => {
-
     });
   }
 
@@ -152,7 +153,7 @@ export class ReturnApplyPage implements OnInit {
       component: ReturnApplyHistoryPage
     });
     modal.onDidDismiss().then((ev) => {
-      let val = ev.data['val'];
+      const val = ev?.data?.['val'];
       if (val != undefined) {
         let vals = val.split(' ');
         this.applyForm.controls["PersonName"].setValue(vals[0]);

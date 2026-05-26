@@ -25,7 +25,7 @@
             {{msg.RefContent}}
           </div>
           <p class="line-breaker " *ngIf="msg.IsFile===false">
-            <span style="background-color: #9fc2ff;border-radius: 3px;" *ngIf="msg.AtUserName!=null">@{{msg.AtUserName}}&nbsp;</span>
+            <span style="background-color: #9fc2ff;border-radius: 3px;" *ngIf="msg.AtUserName!=null">&#64;{{msg.AtUserName}}&nbsp;</span>
             <span *ngIf="isCanProcessBySelf(msg) as result; else msgContent">
               {{result.processMessage}}
               <a class="processLink" (click)="processProblem(result)">点击这里</a>
@@ -35,9 +35,9 @@
               {{msg.Content}}
           </ng-template>
           </p>
-          <a style="color: rgb(188, 234, 255);" href="{{serverUrl}}/DeliveryRecord/ChatFile/{{msg.Id}}" *ngIf="msg.IsFile===true && msg.FileType!='pic'">{{msg.Content}}</a>
+          <a style="color: rgb(188, 234, 255);" [href]="serverUrl + '/DeliveryRecord/ChatFile/' + msg.Id" *ngIf="msg.IsFile===true && msg.FileType!='pic'">{{msg.Content}}</a>
           <ion-thumbnail slot="start"  *ngIf="msg.IsFile===true && msg.FileType=='pic'" (click)="showImage(msg.Id)">
-            <ion-img src="{{serverUrl}}/DeliveryRecord/GetThumbnailImage?id={{msg.Id}}"></ion-img>
+            <ion-img [src]="serverUrl + '/DeliveryRecord/GetThumbnailImage?id=' + msg.Id"></ion-img>
           </ion-thumbnail>
         </div>
       </div>

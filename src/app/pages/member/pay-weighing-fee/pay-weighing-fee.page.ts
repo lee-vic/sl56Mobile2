@@ -131,21 +131,24 @@ export class PayWeighingFeePage implements OnInit {
     })
       .then((lc) => {
         lc.present();
-        this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, "").subscribe(result => {
-          //存在历史记录
-          if (result != null) {
-            this.data.VehicleNo = result.VehicleNo;
-            this.data.TareWeight = result.TareWeight;
+        this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, "").subscribe({
+          next: (result) => {
+            //存在历史记录
+            if (result != null) {
+              this.data.VehicleNo = result.VehicleNo;
+              this.data.TareWeight = result.TareWeight;
+            }
+            //不存在历史记录
+            else {
+              this.data.VehicleNo = null;
+              this.data.TareWeight = null;
+              this.autoShowInparkHistory = true;//将自动显示入场记录的标识置为true
+            }
+            lc.dismiss();
+          },
+          error: (_error) => {
+            lc.dismiss();
           }
-          //不存在历史记录
-          else {
-            this.data.VehicleNo = null;
-            this.data.TareWeight = null;
-            this.autoShowInparkHistory = true;//将自动显示入场记录的标识置为true
-          }
-          lc.dismiss();
-        }, error => {
-          lc.dismiss();
         });
       });
   }
@@ -518,16 +521,19 @@ export class PayWeighingFeePage implements OnInit {
     if (this.data.VehicleNo != null && this.data.VehicleNo != undefined && this.data.VehicleNo.length > 0) {
       this.data.VehicleNo = this.data.VehicleNo.toLocaleUpperCase();
       if (this.data.VehicleNo.length >= 7) {
-        this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, this.data.VehicleNo).subscribe(result => {
-          if (result != null) {
-            this.data.TareWeight = result.TareWeight;
-          }
-          else {
-            this.data.TareWeight = null;
-          }
+        this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, this.data.VehicleNo).subscribe({
+          next: (result) => {
+            if (result != null) {
+              this.data.TareWeight = result.TareWeight;
+            }
+            else {
+              this.data.TareWeight = null;
+            }
 
-        }, error => {
+          },
+          error: (_error) => {
 
+          }
         });
       }
     }
@@ -558,21 +564,41 @@ export class PayWeighingFeePage implements OnInit {
     }).then(p => p.present());
     //通知读数端开始读数
     this.weightBillService.start(this.data)
-      .subscribe(started => {
-        this.loadingCtrl.dismiss();
-        console.log(typeof (started));
-        console.log(started);
-        if (started == true) {
-          this.loadingCtrl.create({
-            message: '测量设备正在测量,请稍后...'
-          }).then(p => p.present());
+      .subscribe({
+        next: (started) => {
+          this.loadingCtrl.dismiss();
+          console.log(typeof (started));
+          console.log(started);
+          if (started == true) {
+            this.loadingCtrl.create({
+              message: '测量设备正在测量,请稍后...'
+            }).then(p => p.present());
 
-        }
-        else {
+          }
+          else {
+            this.alertController.create({
+              header: '启动失败',
+              subHeader: "非常抱歉，系统遇到了问题",
+              message: "请联系系统管理员！",
+              backdropDismiss: false,
+              keyboardClose: false,
+              buttons: [
+                {
+                  text: '确定',
+                  role: 'cancel'
+                }
+              ]
+            }).then(p => p.present());
+            return false;
+          }
+        },
+        error: (err) => {
+          this.loadingCtrl.dismiss();
+          console.log(err);
           this.alertController.create({
             header: '启动失败',
-            subHeader: "非常抱歉，系统遇到了问题",
-            message: "请联系系统管理员！",
+            subHeader: "启动测量设备请求超时",
+            message: "请重试！如果重试仍然提示此信息，请联系系统管理员！",
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [
@@ -582,24 +608,7 @@ export class PayWeighingFeePage implements OnInit {
               }
             ]
           }).then(p => p.present());
-          return false;
         }
-      }, err => {
-        this.loadingCtrl.dismiss();
-        console.log(err);
-        this.alertController.create({
-          header: '启动失败',
-          subHeader: "启动测量设备请求超时",
-          message: "请重试！如果重试仍然提示此信息，请联系系统管理员！",
-          backdropDismiss: false,
-          keyboardClose: false,
-          buttons: [
-            {
-              text: '确定',
-              role: 'cancel'
-            }
-          ]
-        }).then(p => p.present());
       });
   }
 

@@ -37,7 +37,7 @@
     </ion-item>
     <ion-item>
       <ion-label>运费金额</ion-label>
-      <ion-input type="number" inputmode="decimal" min="0.01" placeholder="请输入运费金额" [(ngModel)]="data.Amount"
+      <ion-input aria-label="运费金额" type="number" inputmode="decimal" min="0.01" placeholder="请输入运费金额" [(ngModel)]="data.Amount"
         (ngModelChange)="amountChange()" [disabled]="amountInputDisable">
       </ion-input>
       <ion-label slot="end">人民币</ion-label>
@@ -45,7 +45,7 @@
 
     <ion-item>
       <ion-label>产品类型</ion-label>
-      <ion-select interface="alert" cancelText="取消" okText="确定" placeholder="请选择产品类型" (ionChange)="typeChange($event)" value="0">
+      <ion-select aria-label="产品类型" interface="alert" cancelText="取消" okText="确定" placeholder="请选择产品类型" (ionChange)="typeChange($event)" value="0">
         <ion-select-option *ngFor="let item of productTypes" [value]="item.Key">{{item.Value}}</ion-select-option>
       </ion-select>
     </ion-item>
@@ -70,11 +70,11 @@
   <ion-list>
     <ion-item>
       <ion-label>{{allSelected?'反选':'全选'}}</ion-label>
-      <ion-checkbox (ionChange)="onAllClick()" [(ngModel)]="allSelected" slot="start"></ion-checkbox>
+      <ion-checkbox aria-label="全选" (ionChange)="onAllClick()" [(ngModel)]="allSelected" slot="start"></ion-checkbox>
     </ion-item>
     <ion-item *ngFor="let item of data?.ReceiveGoodsDetailList">
       <ion-label>{{item.ReferenceNumber}}</ion-label>
-      <ion-checkbox [(ngModel)]="item.Selected" (ionChange)="selectChange()" slot="start"></ion-checkbox>
+      <ion-checkbox aria-label="选择运单" [(ngModel)]="item.Selected" (ionChange)="selectChange()" slot="start"></ion-checkbox>
       <ion-note slot="end">{{item.Amount|currency:'CNY'}}</ion-note>
     </ion-item>
   </ion-list>

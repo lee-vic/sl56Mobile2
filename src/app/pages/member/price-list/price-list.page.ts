@@ -21,6 +21,17 @@ export class PriceListPage implements OnInit {
   ngOnInit(): void {
     this.getItems(null);
   }
+
+  private disableInfiniteScroll(): void {
+    if (!this.infiniteScroll) return;
+    const setDisabled = (this.infiniteScroll as any).setDisabled;
+    if (typeof setDisabled === 'function') {
+      setDisabled.call(this.infiniteScroll, true);
+      return;
+    }
+    this.infiniteScroll.disabled = true;
+  }
+
   getItems(ev) {
     if (this.isBusy == true)
       return;
@@ -28,7 +39,7 @@ export class PriceListPage implements OnInit {
     this.service.getList(this.currentPageIndex).subscribe(res => {
       this.allowDownload=res.AllowDownloadPrice;
       if (res.Items.length < 10&&ev!=null) {
-        this.infiniteScroll.disabled=true;
+        this.disableInfiniteScroll();
       }
       for (var i = 0; i < res.Items.length; i++) {
         this.items.push(res.Items[i]);

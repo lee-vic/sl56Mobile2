@@ -53,7 +53,31 @@ export class NewsPage implements OnInit {
     this.tabIndex=this.activeRoute.snapshot.paramMap.get('id');
     this.getItems(this.noticeTabs[0], null);
   }
-  getItems(tab: NoticeTab, infiniteScroll) {
+
+  private disableInfiniteScroll(infiniteEvent: any): void {
+    if (!infiniteEvent) return;
+    const target = (infiniteEvent.target as any) || infiniteEvent;
+    const setDisabled = target && target.setDisabled;
+    if (typeof setDisabled === 'function') {
+      setDisabled.call(target, true);
+    } else if (target) {
+      target.disabled = true;
+    }
+    if (typeof infiniteEvent.disabled !== 'undefined') {
+      infiniteEvent.disabled = true;
+    }
+  }
+
+  private completeInfiniteScroll(infiniteEvent: any): void {
+    const target = (infiniteEvent && (infiniteEvent.target as any)) || null;
+    if (!target) return;
+    const complete = target.complete;
+    if (typeof complete === 'function') {
+      complete.call(target);
+    }
+  }
+
+  getItems(tab: NoticeTab, infiniteEvent: any) {
 
     if (tab.isBusy)
       return;
@@ -61,7 +85,9 @@ export class NewsPage implements OnInit {
     this.service.getNewsList(tab.categoryId, tab.currentPageIndex).subscribe(res => {
       let rep = res as Notice[];
       if (rep.length == 0) {
-        infiniteScroll.disabled=true;
+        if (infiniteEvent != null) {
+          this.disableInfiniteScroll(infiniteEvent);
+        }
       }
       else {
         for (var i = 0; i < rep.length; i++) {
@@ -69,14 +95,14 @@ export class NewsPage implements OnInit {
         }
         tab.currentPageIndex++;
       }
-      if (infiniteScroll != null)
-        infiniteScroll.target.complete();
+      if (infiniteEvent != null)
+        this.completeInfiniteScroll(infiniteEvent);
       tab.isBusy = false;
     });
   }
-  segmentChanged(ev) {
+  segmentChanged(ev: CustomEvent) {
     
-    let findResult = this.noticeTabs.find(item => item.categoryId == ev.target.value);
+    let findResult = this.noticeTabs.find(item => item.categoryId == ev.detail.value);
     this.selectedTab(findResult);
   }
   selectedTab(tab: NoticeTab) {

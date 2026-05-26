@@ -13,24 +13,36 @@
 <ion-content [ngClass]="{'my-content':isLogin}">
   <div *ngIf="!isLogin">
     <form (ngSubmit)="doLogin(authForm.value)" [formGroup]="authForm" novalidate>
-      <ion-list lines="full" class="ion-no-margin ion-no-padding">
+      <ion-list inset lines="none" class="ion-no-margin">
         <ion-item>
-          <ion-label position="stacked">用户名 <ion-text color="danger">*</ion-text>
-          </ion-label>
-          <ion-input type="text" formControlName="username" placeholder="请输入用户名或者手机号码"></ion-input>
+          <ion-input
+            aria-label="用户名"
+            label="用户名 *"
+            labelPlacement="stacked"
+            fill="outline"
+            type="text"
+            formControlName="username"
+            placeholder="请输入用户名或者手机号码"
+          ></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label position="stacked">密码 <ion-text color="danger">*</ion-text>
-          </ion-label>
-          <ion-input type="password" formControlName="password" placeholder="请输入密码 区分大小写"></ion-input>
+          <ion-input
+            aria-label="密码"
+            label="密码 *"
+            labelPlacement="stacked"
+            fill="outline"
+            type="password"
+            formControlName="password"
+            placeholder="请输入密码 区分大小写"
+          ></ion-input>
         </ion-item>
-        <ion-item>
+        <ion-item lines="none">
+          <ion-checkbox aria-label="记住我" slot="start" formControlName="rememberMe"></ion-checkbox>
           <ion-label>记住我</ion-label>
-          <ion-checkbox slot="start" formControlName="rememberMe"></ion-checkbox>
         </ion-item>
       </ion-list>
       <div class="ion-padding">
-        <ion-button expand="block" type="submit" class="ion-no-margin" [disabled]="!authForm.valid">登录</ion-button>
+        <ion-button expand="block" shape="round" type="submit" class="ion-no-margin" [disabled]="!authForm.valid">登录</ion-button>
       </div>
 
     </form>
