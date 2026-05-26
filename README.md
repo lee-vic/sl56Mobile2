@@ -2,7 +2,7 @@
 
 ## 当前环境
 
-- 前端框架：Ionic 6 + Angular 14
+- 前端框架：Ionic 7 + Angular 17
 - 运行时：Node 24.x（以 CI 环境为准）
 - 单元测试：Jasmine + Karma
 - E2E：Playwright
@@ -23,8 +23,8 @@
 
 ### 发布门禁
 
-- 一键门禁：`npm run verify:phase0`
-- 门禁内容：`npm run build` + `npm run test:ci`
+- 一键门禁：`npm run verify`
+- 门禁内容：`npm run lint` + `npm run build` + `npm run test:ci`
 
 ## E2E 说明
 

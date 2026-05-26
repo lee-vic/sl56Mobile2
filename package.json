@@ -14,7 +14,7 @@
     "e2e:ci": "playwright test --reporter=line",
     "e2e:smoke:ci": "playwright test tests/e2e/smoke.spec.ts --reporter=line",
     "e2e:install": "playwright install chromium",
-    "verify:phase0": "set NG_CLI_ANALYTICS=false&& npm run lint && npm run build && npm run test:ci"
+    "verify": "set NG_CLI_ANALYTICS=false&& npm run lint && npm run build && npm run test:ci"
   },
   "engines": {
     "node": "24.x",
