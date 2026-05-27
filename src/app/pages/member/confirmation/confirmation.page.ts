@@ -12,6 +12,9 @@ import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
 export class ConfirmationPage implements OnInit {
   allSelected: boolean = false;
   total = 0;
+  selectedCount: number = 0;
+  selectedAmount: number = 0;
+  isSubmitting: boolean = false;
   receiveGoodsDetailList: DeliveryRecord[] = [];
   searchList: DeliveryRecord[] = [];
   canGoback: boolean = true;
@@ -25,6 +28,8 @@ export class ConfirmationPage implements OnInit {
   ngOnInit(): void {
     this.service.getReceiveGoodsDetailList().subscribe(res => {
       this.searchList = this.receiveGoodsDetailList = res;
+      this.updateStats();
+      this.updateAllSelectedState();
     });
     
 
@@ -33,7 +38,42 @@ export class ConfirmationPage implements OnInit {
     this.searchList.forEach(element => {
       element.Selected = this.allSelected;
     });
+    this.updateStats();
   }
+
+  onItemSelectionChange() {
+    this.updateStats();
+    this.updateAllSelectedState();
+  }
+
+  private updateAllSelectedState() {
+    if (!this.searchList || this.searchList.length === 0) {
+      this.allSelected = false;
+      return;
+    }
+    this.allSelected = this.searchList.every(item => item.Selected === true);
+  }
+
+  updateStats() {
+    this.selectedCount = this.receiveGoodsDetailList.filter(item => item.Selected === true).length;
+    this.selectedAmount = this.receiveGoodsDetailList
+      .filter(item => item.Selected === true)
+      .reduce((sum, item) => sum + (parseFloat((item.Amount as any)?.toString?.() || item.Amount as any) || 0), 0);
+  }
+
+  getVisibleCount(): number {
+    return this.searchList?.length || 0;
+  }
+
+  formatAmount(amount: any): string {
+    const value = parseFloat((amount ?? 0).toString());
+    return isNaN(value) ? '0.00' : value.toFixed(2);
+  }
+
+  trackByItemId(index: number, item: DeliveryRecord): any {
+    return item.Id;
+  }
+
   getItems(ev: CustomEvent) {
     const val = (ev.detail && ev.detail.value) ? ev.detail.value : '';
     console.log(val);
@@ -45,6 +85,8 @@ export class ConfirmationPage implements OnInit {
     else {
       this.searchList = this.receiveGoodsDetailList;
     }
+    this.updateAllSelectedState();
+    this.updateStats();
   }
   onItemConfirmClick(item: { Id: number | Number }) {
     this.alertCtrl.create({
@@ -65,6 +107,10 @@ export class ConfirmationPage implements OnInit {
 
   }
   onConfirmClick() {
+    if (this.isSubmitting) {
+      return;
+    }
+
     let selectedItems = this.receiveGoodsDetailList.filter(item => {
       return item.Selected == true;
     }).map(item => item.Id);
@@ -97,6 +143,11 @@ export class ConfirmationPage implements OnInit {
     }
   }
   doConfirm(selectedIdList: string) {
+    if (this.isSubmitting) {
+      return;
+    }
+    this.isSubmitting = true;
+
     this.loadingCtrl.create({
       message: '请稍后...',
     }).then(p => p.present());
@@ -104,10 +155,22 @@ export class ConfirmationPage implements OnInit {
     this.service.confirm(selectedIdList).subscribe({
       next: (res) => {
         this.loadingCtrl.dismiss();
+        this.isSubmitting = false;
+        const confirmedCount = selectedIdList.split(',').filter(p => p && p.trim() !== '').length;
         this.searchList = this.receiveGoodsDetailList = res;
+        this.allSelected = false;
+        this.updateStats();
+        this.updateAllSelectedState();
+        this.toastCtrl.create({
+          message: '已确认' + confirmedCount + '票运单',
+          position: 'middle',
+          duration: 1500,
+          color: 'success'
+        }).then(p => p.present());
       },
       error: (err) => {
         this.loadingCtrl.dismiss();
+        this.isSubmitting = false;
         this.toastCtrl.create({
           message: err.message,
           position: 'middle',
@@ -119,6 +182,10 @@ export class ConfirmationPage implements OnInit {
   }
   detail(item: { Id: number | Number }) {
     this.router.navigate(["/member/delivery-record/detail",item.Id]);
+  }
+
+  goMemberCenter() {
+    this.router.navigateByUrl('/app/tabs/member');
   }
 
 }

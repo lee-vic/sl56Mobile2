@@ -204,6 +204,72 @@ ion-content.calc-content {
     line-height: 1.5;
 }
 
+.rule-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.rule-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.98) 100%);
+    color: var(--calc-title);
+    text-align: left;
+    font: inherit;
+    letter-spacing: 0.01em;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.rule-card__text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.rule-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.rule-card__icon ion-icon {
+    font-size: 20px;
+}
+
+.rule-card.is-active {
+    border-color: rgba(37, 99, 235, 0.42);
+    background: linear-gradient(180deg, rgba(219, 234, 254, 0.94) 0%, rgba(239, 246, 255, 0.98) 100%);
+    color: #1d4ed8;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
+}
+
+.rule-card.is-active .rule-card__icon {
+    color: #2563eb;
+}
+
+.rule-card:active {
+    transform: scale(0.985);
+}
+
+.rule-card:focus-visible {
+    outline: 2px solid rgba(37, 99, 235, 0.28);
+    outline-offset: 3px;
+}
+
 .size-card {
     margin: 0;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
@@ -320,6 +386,21 @@ ion-content.calc-content {
 
     .piece-rule-list ion-chip {
         min-height: 36px;
+    }
+
+    .rule-card-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .rule-card {
+        min-height: 48px;
+        padding: 11px 12px;
+        border-radius: 12px;
+    }
+
+    .rule-card__text {
+        font-size: 13px;
     }
 
     .footer-inner {

@@ -106,4 +106,43 @@ describe('NewsPage (infinite-scroll migration)', () => {
     component.openDetail({ NoticeId: 99, Title: '', Summary: '', CreateAt: '', IsRead: false });
     expect(mockNavCtrl.navigateForward).toHaveBeenCalledWith('/member/notice-detail/99');
   });
+
+  it('retryLoadActiveTab() resets active tab and reloads page 1', () => {
+    component.tabIndex = '3';
+    const tab = component.noticeTabs[1];
+    tab.currentPageIndex = 4;
+    tab.items = [NOTICE_1];
+    mockService.getNewsList.calls.reset();
+
+    component.retryLoadActiveTab();
+
+    expect(mockService.getNewsList).toHaveBeenCalledWith('3', 1);
+    expect(tab.currentPageIndex).toBe(2);
+    expect(tab.items.length).toBe(2);
+  });
+
+  it('refreshActiveTab() should complete refresher and clear refreshing state', () => {
+    component.tabIndex = '2';
+    const tab = component.noticeTabs[0];
+    tab.currentPageIndex = 5;
+    tab.items = [NOTICE_1];
+    const completeSpy = jasmine.createSpy('refresh.complete');
+    mockService.getNewsList.and.returnValue(of([NOTICE_2]));
+
+    component.refreshActiveTab({ target: { complete: completeSpy } } as any);
+
+    expect(component.isRefreshing).toBe(false);
+    expect(tab.currentPageIndex).toBe(2);
+    expect(tab.items).toEqual([NOTICE_2]);
+    expect(completeSpy).toHaveBeenCalled();
+  });
+
+  it('refreshActiveTab() should complete refresher when active tab is missing', () => {
+    component.tabIndex = '999';
+    const completeSpy = jasmine.createSpy('refresh.complete');
+
+    component.refreshActiveTab({ target: { complete: completeSpy } } as any);
+
+    expect(completeSpy).toHaveBeenCalled();
+  });
 });

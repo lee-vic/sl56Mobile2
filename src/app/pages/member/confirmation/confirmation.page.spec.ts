@@ -132,4 +132,26 @@ describe('ConfirmationPage', () => {
     component.detail({ Id: 10 });
     expect(router.navigate).toHaveBeenCalledWith(['/member/delivery-record/detail', 10]);
   });
+
+  it('should format amount safely', () => {
+    expect(component.formatAmount(12.3)).toBe('12.30');
+    expect(component.formatAmount('bad')).toBe('0.00');
+    expect(component.formatAmount(null)).toBe('0.00');
+  });
+
+  it('should skip confirm request when submission is already in progress', () => {
+    component.isSubmitting = true;
+
+    component.doConfirm('1,2');
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+  });
+
+  it('should navigate to member center', () => {
+    spyOn(router, 'navigateByUrl');
+
+    component.goMemberCenter();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/app/tabs/member');
+  });
 });

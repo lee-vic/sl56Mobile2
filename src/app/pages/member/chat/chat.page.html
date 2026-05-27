@@ -1,31 +1,32 @@
 <ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
     <ion-title>与客服对话中</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="chat-content" [scrollEvents]="true" (ionScroll)="onContentScroll($event)">
   <div class="message-wrap">
+    <div class="message-tip" *ngIf="messages?.length === 0">暂无对话记录，输入消息开始沟通</div>
 
-    <div *ngFor="let msg of messages" class="message" [class.left]=" msg.Type === 1 " [class.right]=" msg.Type === 0 " >
+    <div *ngFor="let msg of messages; let i = index" class="message" [class.left]=" msg.Type === 1 " [class.right]=" msg.Type === 0 ">
+      <div class="time-divider" *ngIf="shouldShowDateSeparator(i)">{{getDateLabel(msg.Date)}}</div>
       <img class="user-img" [src]="msg.avatar" alt="" *ngIf="!msg.IsRevoke">
-    
+
       <div class="msg-detail" *ngIf="!msg.IsRevoke">
         <div class="msg-info">
-          <p>
-            {{msg.Name}}&nbsp;&nbsp;&nbsp;{{msg.Date}}</p>
+          <p>{{msg.Name}}&nbsp;&nbsp;&nbsp;{{msg.Date}}</p>
         </div>
         <div class="msg-content">
           <span class="triangle"></span>
-          <div style="font-size: 13px;background-color: #c3c3c3;margin-bottom: 5px;padding: 5px;border-radius: 3px;" *ngIf="msg.RefContent!=null">
+          <div class="ref-content" *ngIf="msg.RefContent!=null">
             {{msg.AtUserName}}<br>
             {{msg.RefContent}}
           </div>
-          <p class="line-breaker " *ngIf="msg.IsFile===false">
-            <span style="background-color: #9fc2ff;border-radius: 3px;" *ngIf="msg.AtUserName!=null">&#64;{{msg.AtUserName}}&nbsp;</span>
+          <p class="line-breaker" *ngIf="msg.IsFile===false">
+            <span class="at-user-tag" *ngIf="msg.AtUserName!=null">&#64;{{msg.AtUserName}}&nbsp;</span>
             <span *ngIf="isCanProcessBySelf(msg) as result; else msgContent">
               {{result.processMessage}}
               <a class="processLink" (click)="processProblem(result)">点击这里</a>
@@ -33,10 +34,14 @@
             </span>
             <ng-template #msgContent>
               {{msg.Content}}
-          </ng-template>
+            </ng-template>
           </p>
-          <a style="color: rgb(188, 234, 255);" [href]="serverUrl + '/DeliveryRecord/ChatFile/' + msg.Id" *ngIf="msg.IsFile===true && msg.FileType!='pic'">{{msg.Content}}</a>
-          <ion-thumbnail slot="start"  *ngIf="msg.IsFile===true && msg.FileType=='pic'" (click)="showImage(msg.Id)">
+          <a
+            class="file-link"
+            [href]="serverUrl + '/DeliveryRecord/ChatFile/' + msg.Id"
+            [attr.title]="msg.Content"
+            *ngIf="msg.IsFile===true && msg.FileType!='pic'">{{msg.Content}}</a>
+          <ion-thumbnail class="chat-thumbnail" slot="start" *ngIf="msg.IsFile===true && msg.FileType=='pic'" (click)="showImage(msg.Id)">
             <ion-img [src]="serverUrl + '/DeliveryRecord/GetThumbnailImage?id=' + msg.Id"></ion-img>
           </ion-thumbnail>
         </div>
@@ -44,22 +49,20 @@
     </div>
 
   </div>
+
+  <button type="button" class="scroll-bottom-btn" *ngIf="showScrollBottomButton" (click)="scrollToBottomManual()" aria-label="回到底部">
+    <ion-icon name="chevron-down"></ion-icon>
+  </button>
 </ion-content>
 <ion-footer class="ion-no-border">
   <div class="input-wrap">
-
-    <textarea #chat_input placeholder="请输入..." [(ngModel)]="editorMsg" (keyup.enter)="sendMsg()" (focusin)="onFocus()">
-    </textarea>
-    <ion-button fill="clear" (click)="sendMsg()">
+    <textarea #chat_input placeholder="请输入消息..." [(ngModel)]="editorMsg" (keydown)="handleInputKeydown($event)" (focusin)="onFocus()"></textarea>
+    <ion-button class="send-btn" fill="solid" (click)="sendMsg()" [disabled]="!canSendMessage()">
       <ion-icon slot="icon-only" name="send"></ion-icon>
     </ion-button>
     <input #file type="file" (change)="upload(file.files)" style="display:none" />
-    <ion-button fill="clear" (click)="file.click()" *ngIf="showFileUploadButton">
+    <ion-button class="attach-btn" fill="solid" (click)="file.click()" *ngIf="showFileUploadButton">
       <ion-icon slot="icon-only" name="share"></ion-icon>
     </ion-button>
   </div>
 </ion-footer>
-<script src="./baguetteBox.js"></script>
-<script>
-    console.log("baguetteBox:", baguetteBox);
-</script>

@@ -1,68 +1,63 @@
-<ion-content>
-  <ion-segment [(ngModel)]="tabIndex" mode="md" (ionChange)="segmentChanged($event)">
-    <ion-segment-button [value]="tab.categoryId" *ngFor="let tab of noticeTabs">
-      {{tab.title}}
-    </ion-segment-button>
-  </ion-segment>
-  <div [ngSwitch]="tabIndex" class="ion-padding-top">
-    <div *ngSwitchCase="'2'">
-      <ion-list>
-        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[0].items">
-          <ion-label class="ion-text-wrap">
-            <h3>{{item.CreateAt}}</h3>
-            <h2>{{item.Title}}</h2>
-            <p>{{item.Summary}}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      <ion-infinite-scroll (ionInfinite)="getItems(noticeTabs[0],$event)">
-        <ion-infinite-scroll-content></ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-    </div>
-    <div *ngSwitchCase="'3'">
-      <ion-list>
+<ion-content class="news-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshActiveTab($event)">
+    <ion-refresher-content pullingText="下拉即可刷新" refreshingSpinner="crescent" refreshingText="正在刷新，请稍候"></ion-refresher-content>
+  </ion-refresher>
 
-        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[1].items">
-          <ion-label class="ion-text-wrap">
-            <h3>{{item.CreateAt}}</h3>
-            <h2>{{item.Title}}</h2>
-            <p>{{item.Summary}}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      <ion-infinite-scroll (ionInfinite)="getItems(noticeTabs[1],$event)">
-        <ion-infinite-scroll-content></ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-    </div>
-    <div *ngSwitchCase="'4'">
-      <ion-list>
-
-        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[2].items">
-          <ion-label class="ion-text-wrap">
-            <h3>{{item.CreateAt}}</h3>
-            <h2>{{item.Title}}</h2>
-            <p>{{item.Summary}}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-      <ion-infinite-scroll (ionInfinite)="getItems(noticeTabs[2],$event)">
-        <ion-infinite-scroll-content></ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-    </div>
-    <div *ngSwitchCase="'5'">
-      <ion-list>
-        <ion-item [button]="true" [detail]="true" (click)="openDetail(item)" *ngFor="let item of noticeTabs[3].items">
-          <ion-label class="ion-text-wrap">
-            <h3>{{item.CreateAt}}</h3>
-            <h2>{{item.Title}}</h2>
-            <p>{{item.Summary}}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-
-      <ion-infinite-scroll (ionInfinite)="getItems(noticeTabs[3],$event)">
-        <ion-infinite-scroll-content></ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-    </div>
+  <div class="news-segment-wrap">
+    <ion-segment [(ngModel)]="tabIndex" mode="md" (ionChange)="segmentChanged($event)" class="news-segment">
+      <ion-segment-button [value]="tab.categoryId" *ngFor="let tab of noticeTabs">
+        {{tab.title}}
+      </ion-segment-button>
+    </ion-segment>
   </div>
+
+  <section class="news-panel ion-padding-top" *ngIf="isInitialLoading">
+    <ion-card class="news-skeleton-card" *ngFor="let row of [1,2,3]">
+      <ion-card-content>
+        <ion-skeleton-text animated style="width: 40%; height: 14px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 86%; height: 18px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 96%; height: 14px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+    <p class="loading-copy">正在加载，请稍候...</p>
+  </section>
+
+  <section class="news-panel" *ngIf="!isInitialLoading && loadError">
+    <ion-card class="state-card error">
+      <ion-card-content>
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <h3>{{loadError}}</h3>
+        <ion-button fill="outline" size="small" (click)="retryLoadActiveTab()">重新加载</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="news-panel" *ngIf="!isInitialLoading && !loadError && activeTab?.items?.length === 0">
+    <ion-card class="state-card empty">
+      <ion-card-content>
+        <ion-icon name="newspaper-outline"></ion-icon>
+        <h3>当前分类暂无内容</h3>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="news-panel" *ngIf="!isInitialLoading && !loadError && activeTab?.items?.length > 0">
+    <ion-list lines="none" class="news-list">
+      <ion-item
+        [button]="true"
+        [detail]="true"
+        (click)="openDetail(item)"
+        *ngFor="let item of activeTab.items; trackBy: trackByNotice">
+        <ion-label class="ion-text-wrap">
+          <h3 class="news-date">{{item.CreateAt}}</h3>
+          <h2 class="news-title">{{item.Title}}</h2>
+          <p class="news-summary">{{item.Summary}}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </section>
+
+  <ion-infinite-scroll *ngIf="activeTab && !isInitialLoading && !loadError" (ionInfinite)="getItems(activeTab, $event)">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="正在加载更多，请稍候"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

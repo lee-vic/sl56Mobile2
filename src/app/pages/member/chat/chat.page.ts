@@ -32,6 +32,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   currentEmployeeId: number;
   showFileUploadButton: boolean = false;
   chatGroupId: number;
+  showScrollBottomButton: boolean = false;
   /**
    * 0:售前咨询
    * 1:单号消息
@@ -194,7 +195,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     this.scrollToBottom();
   }
   sendMsg() {
-    if (!this.editorMsg.trim()) return;
+    if (!this.canSendMessage()) return;
     console.log("conn:", this.signalRConnection);
     this.signalRConnection
       .invoke(
@@ -236,6 +237,74 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  canSendMessage(): boolean {
+    return !!this.editorMsg && this.editorMsg.trim().length > 0;
+  }
+
+  handleInputKeydown(event: KeyboardEvent) {
+    if (event.isComposing || event.keyCode === 229) {
+      return;
+    }
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendMsg();
+    }
+  }
+
+  shouldShowDateSeparator(index: number): boolean {
+    if (!this.messages || index < 0 || index >= this.messages.length) {
+      return false;
+    }
+    if (index === 0) {
+      return true;
+    }
+
+    const currentDate = this.parseMessageDate(this.messages[index]?.Date);
+    const previousDate = this.parseMessageDate(this.messages[index - 1]?.Date);
+    if (!currentDate || !previousDate) {
+      return false;
+    }
+
+    return currentDate.toDateString() !== previousDate.toDateString();
+  }
+
+  getDateLabel(dateValue: string): string {
+    const messageDate = this.parseMessageDate(dateValue);
+    if (!messageDate) {
+      return dateValue || '';
+    }
+
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const messageStart = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+    const dayDiff = Math.round((todayStart.getTime() - messageStart.getTime()) / 86400000);
+
+    if (dayDiff === 0) {
+      return '今天';
+    }
+    if (dayDiff === 1) {
+      return '昨天';
+    }
+
+    const month = (messageDate.getMonth() + 1).toString().padStart(2, '0');
+    const day = messageDate.getDate().toString().padStart(2, '0');
+    return messageDate.getFullYear() + '-' + month + '-' + day;
+  }
+
+  private parseMessageDate(value: string): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const normalized = value.replace(/-/g, '/');
+    const parsed = new Date(normalized);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+
+    return null;
+  }
+
   private showConnectionUnavailableToast() {
     if (this.hasShownConnectionToast) return;
     this.hasShownConnectionToast = true;
@@ -258,8 +327,22 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       if (this.content.scrollToBottom) {
         this.content.scrollToBottom();
+        this.showScrollBottomButton = false;
       }
     }, 400);
+  }
+
+  onContentScroll(event: any) {
+    const scrollTop = event?.detail?.scrollTop || 0;
+    this.showScrollBottomButton = scrollTop > 260;
+  }
+
+  scrollToBottomManual() {
+    if (!this.content || !this.content.scrollToBottom) {
+      return;
+    }
+    this.content.scrollToBottom(280);
+    this.showScrollBottomButton = false;
   }
   /**
    *

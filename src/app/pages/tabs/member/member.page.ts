@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ToastController, LoadingController } from '@ionic/angular';
@@ -15,6 +15,19 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./member.page.scss'],
 })
 export class MemberPage implements OnInit {
+  readonly quickMenuMin = 3;
+  readonly quickMenuLimit = 6;
+  private readonly quickMenuStoragePrefix = 'member_quick_menu_custom_v2_';
+  private readonly quickMenuStorageVersion = 2;
+  private readonly quickMenuTitles = [
+    '价格查询',
+    '交货清单确认',
+    '问题跟进',
+    '交货记录',
+    '偏远查询',
+    '微信支付',
+  ];
+
   allMenus: Array<Menu> = [
     { title: "价格查询", image: "assets/imgs/member-2.png", type: [0, 1], url: "/member/calculation" },
     { title: "业务公告", image: "assets/imgs/member-19.png", type: [0, 1], url: "/member/notice-list" },
@@ -38,6 +51,14 @@ export class MemberPage implements OnInit {
     { title: "香港入仓申请", image: "assets/imgs/member-26.png", type: [0, 1], url: "/member/warehouse-application" }
   ];
   menus: Menus;
+  quickMenuRows: Array<MenuRow> = [];
+  quickMenuList: Array<Menu> = [];
+  otherMenuList: Array<Menu> = [];
+  quickMenuCustomTitles: Array<string> = [];
+  quickMenuManageOpen: boolean = false;
+  draftQuickMenuTitles: Array<string> = [];
+  visibleMenuOptions: Array<Menu> = [];
+  menuColumns: number = 3;
   isLogin: boolean = false;
   public authForm: FormGroup;
   public loading: any;
@@ -47,6 +68,7 @@ export class MemberPage implements OnInit {
   currencyAmount: any;
   unreadNoticeCount: number = 0;
   waitToSignTaskCount: number = 0;
+  visibleMenuCount: number = 0;
   noticeIsClicked: boolean = false;
   routerSub: Subscription;
   constructor(public toastCtrl: ToastController,
@@ -147,7 +169,8 @@ export class MemberPage implements OnInit {
     let toast = await this.toastCtrl.create({
       message: msg,
       position: 'middle',
-      duration: 2000
+      duration: 2000,
+      cssClass: 'member-theme-toast'
     });
     toast.present();
   }
@@ -170,18 +193,10 @@ export class MemberPage implements OnInit {
       let tempMenus = this.allMenus.filter(p => {
         return p.type.indexOf(this.customerType) > -1;
       });
-      let rowIndex = 0;
-      this.menus.rows = [];
-      for (var i = 0; i < tempMenus.length; i++) {
-        if (i % 3 == 0) {
-          let newRow = new MenuRow();
-          newRow.items = [];
-          this.menus.rows.push(newRow);
-          if (i > 0)
-            rowIndex++;
-        }
-        this.menus.rows[rowIndex].items.push(tempMenus[i]);
-      }
+      this.visibleMenuCount = tempMenus.length;
+      this.visibleMenuOptions = tempMenus;
+      this.applyQuickMenuCustomization(tempMenus, this.getStoredQuickMenuTitles(tempMenus));
+
       this.noticeService.getUnreadCount().subscribe(res => {
         this.unreadNoticeCount = res;
       });
@@ -197,6 +212,286 @@ export class MemberPage implements OnInit {
 
 
 
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    if (!this.isLogin) {
+      return;
+    }
+
+    const nextColumns = this.getMenuColumns();
+    if (nextColumns !== this.menuColumns) {
+      this.menuColumns = nextColumns;
+      this.rebuildMenuRows();
+    }
+  }
+
+  private getMenuColumns(): number {
+    const width = typeof window !== 'undefined' ? (window.innerWidth || 390) : 390;
+    if (width >= 992) {
+      return 5;
+    }
+    if (width >= 768) {
+      return 4;
+    }
+    return 3;
+  }
+
+  private rebuildMenuRows() {
+    this.menuColumns = this.getMenuColumns();
+    this.quickMenuRows = this.buildMenuRows(this.quickMenuList, this.menuColumns);
+    this.menus.rows = this.buildMenuRows(this.otherMenuList, this.menuColumns);
+  }
+
+  private buildMenuRows(items: Array<Menu>, columns: number): Array<MenuRow> {
+    const rows: Array<MenuRow> = [];
+    let rowIndex = -1;
+
+    for (let i = 0; i < items.length; i++) {
+      if (i % columns === 0) {
+        rows.push({ items: [] });
+        rowIndex++;
+      }
+      rows[rowIndex].items.push(items[i]);
+    }
+
+    return rows;
+  }
+
+  menuKeyup(event: KeyboardEvent, item: Menu) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.menuClick(item);
+    }
+  }
+
+  getMenuAriaLabel(item: Menu): string {
+    return '打开' + item.title;
+  }
+
+  formatBadgeCount(count: number): string {
+    return count > 99 ? '99+' : String(count);
+  }
+
+  private getDefaultQuickMenuTitles(tempMenus: Array<Menu>): Array<string> {
+    const visibleTitleSet = new Set(tempMenus.map(menu => menu.title));
+    return this.quickMenuTitles.filter(title => visibleTitleSet.has(title)).slice(0, this.quickMenuLimit);
+  }
+
+  private getQuickMenuStorageKey(): string {
+    return this.quickMenuStoragePrefix + (this.username || 'anonymous');
+  }
+
+  private normalizeQuickMenuTitles(rawTitles: Array<string>, tempMenus: Array<Menu>): Array<string> {
+    const visibleTitleSet = new Set(tempMenus.map(menu => menu.title));
+    const titles: Array<string> = [];
+    for (const title of rawTitles) {
+      if (typeof title !== 'string') {
+        continue;
+      }
+      if (!visibleTitleSet.has(title)) {
+        continue;
+      }
+      if (titles.indexOf(title) > -1) {
+        continue;
+      }
+      titles.push(title);
+      if (titles.length >= this.quickMenuLimit) {
+        break;
+      }
+    }
+    return titles;
+  }
+
+  private ensureQuickMenuMinimum(tempMenus: Array<Menu>, selectedTitles: Array<string>): Array<string> {
+    const requiredCount = Math.min(this.quickMenuMin, tempMenus.length);
+    if (selectedTitles.length >= requiredCount) {
+      return selectedTitles;
+    }
+
+    const filledTitles = [...selectedTitles];
+    const fallbackTitles = this.getDefaultQuickMenuTitles(tempMenus);
+    for (const title of fallbackTitles) {
+      if (filledTitles.indexOf(title) > -1) {
+        continue;
+      }
+      filledTitles.push(title);
+      if (filledTitles.length >= requiredCount) {
+        return filledTitles;
+      }
+    }
+
+    for (const menu of tempMenus) {
+      if (filledTitles.indexOf(menu.title) > -1) {
+        continue;
+      }
+      filledTitles.push(menu.title);
+      if (filledTitles.length >= requiredCount) {
+        break;
+      }
+    }
+
+    return filledTitles.slice(0, this.quickMenuLimit);
+  }
+
+  private getStoredQuickMenuTitles(tempMenus: Array<Menu>): Array<string> {
+    try {
+      const key = this.getQuickMenuStorageKey();
+      const raw = localStorage.getItem(key);
+      if (!raw) {
+        const defaults = this.getDefaultQuickMenuTitles(tempMenus);
+        this.quickMenuCustomTitles = defaults;
+        this.saveQuickMenuCustomization(defaults);
+        return defaults;
+      }
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') {
+        return this.getDefaultQuickMenuTitles(tempMenus);
+      }
+
+      const parsedTitles = Array.isArray(parsed.titles) ? parsed.titles : [];
+      const normalizedTitles = this.ensureQuickMenuMinimum(
+        tempMenus,
+        this.normalizeQuickMenuTitles(parsedTitles, tempMenus)
+      );
+      if (normalizedTitles.length === 0) {
+        return this.ensureQuickMenuMinimum(tempMenus, this.getDefaultQuickMenuTitles(tempMenus));
+      }
+      return normalizedTitles;
+    } catch {
+      return this.ensureQuickMenuMinimum(tempMenus, this.getDefaultQuickMenuTitles(tempMenus));
+    }
+  }
+
+  private saveQuickMenuCustomization(titles: Array<string>) {
+    try {
+      localStorage.setItem(this.getQuickMenuStorageKey(), JSON.stringify({
+        version: this.quickMenuStorageVersion,
+        titles,
+      }));
+    } catch {
+      // Ignore storage write failures in private mode or restricted browsers.
+    }
+  }
+
+  private applyQuickMenuCustomization(tempMenus: Array<Menu>, selectedTitles: Array<string>) {
+    const normalizedTitles = this.ensureQuickMenuMinimum(
+      tempMenus,
+      this.normalizeQuickMenuTitles(selectedTitles, tempMenus)
+    );
+    const selectedSet = new Set(normalizedTitles);
+    const menuByTitle = new Map(tempMenus.map(menu => [menu.title, menu] as [string, Menu]));
+
+    this.quickMenuList = normalizedTitles
+      .map(title => menuByTitle.get(title))
+      .filter((menu): menu is Menu => !!menu);
+    this.otherMenuList = tempMenus.filter(menu => !selectedSet.has(menu.title));
+    this.quickMenuCustomTitles = normalizedTitles;
+    this.rebuildMenuRows();
+  }
+
+  openQuickMenuManage() {
+    this.releaseFocus();
+    this.draftQuickMenuTitles = [...this.quickMenuCustomTitles];
+    this.quickMenuManageOpen = true;
+  }
+
+  closeQuickMenuManage() {
+    this.quickMenuManageOpen = false;
+  }
+
+  isDraftSelected(title: string): boolean {
+    return this.draftQuickMenuTitles.indexOf(title) > -1;
+  }
+
+  onDraftSelectionChange(title: string, checked: boolean) {
+    if (checked) {
+      if (this.draftQuickMenuTitles.length >= this.quickMenuLimit) {
+        this.showToast('常用功能最多选择6项');
+        return;
+      }
+      if (!this.isDraftSelected(title)) {
+        this.draftQuickMenuTitles = this.draftQuickMenuTitles.concat([title]);
+      }
+      return;
+    }
+
+    const requiredCount = Math.min(this.quickMenuMin, this.visibleMenuOptions.length);
+    if (this.isDraftSelected(title) && this.draftQuickMenuTitles.length <= requiredCount) {
+      this.showToast('常用功能至少选择' + requiredCount + '项');
+      return;
+    }
+
+    this.draftQuickMenuTitles = this.draftQuickMenuTitles.filter(item => item !== title);
+  }
+
+  onDraftReorder(event: CustomEvent) {
+    const detail = event.detail as { from: number; to: number; complete: (data?: any) => void };
+    const item = this.draftQuickMenuTitles.splice(detail.from, 1)[0];
+    this.draftQuickMenuTitles.splice(detail.to, 0, item);
+    detail.complete();
+  }
+
+  saveDraftQuickMenus() {
+    const normalizedTitles = this.normalizeQuickMenuTitles(this.draftQuickMenuTitles, this.visibleMenuOptions);
+    const requiredCount = Math.min(this.quickMenuMin, this.visibleMenuOptions.length);
+    if (normalizedTitles.length < requiredCount) {
+      this.showToast('常用功能至少选择' + requiredCount + '项');
+      return;
+    }
+    this.saveQuickMenuCustomization(normalizedTitles);
+    this.applyQuickMenuCustomization(this.visibleMenuOptions, normalizedTitles);
+    this.quickMenuManageOpen = false;
+    this.showToast('已保存常用功能设置');
+  }
+
+  getMenuByTitle(title: string): Menu | undefined {
+    return this.visibleMenuOptions.find(menu => menu.title === title);
+  }
+
+  getQuickMenuManageHint(): string {
+    return this.draftQuickMenuTitles.length + '/' + this.quickMenuLimit;
+  }
+
+  getQuickMenuRequiredCount(): number {
+    return Math.min(this.quickMenuMin, this.visibleMenuOptions.length);
+  }
+
+  getQuickMenuProgressValue(): number {
+    return Math.min(this.draftQuickMenuTitles.length / this.quickMenuLimit, 1);
+  }
+
+  canSaveDraftQuickMenus(): boolean {
+    return this.draftQuickMenuTitles.length >= this.getQuickMenuRequiredCount();
+  }
+
+  getQuickMenuRecommendations(): Array<Menu> {
+    const selectedSet = new Set(this.draftQuickMenuTitles);
+    return this.visibleMenuOptions
+      .filter(menu => this.quickMenuTitles.indexOf(menu.title) > -1)
+      .filter(menu => !selectedSet.has(menu.title))
+      .slice(0, 4);
+  }
+
+  addRecommendedQuickMenu(title: string) {
+    if (this.isDraftSelected(title)) {
+      return;
+    }
+
+    if (this.draftQuickMenuTitles.length >= this.quickMenuLimit) {
+      this.showToast('常用功能最多选择6项');
+      return;
+    }
+
+    this.draftQuickMenuTitles = this.draftQuickMenuTitles.concat([title]);
+  }
+
+  resetQuickMenus() {
+    const defaultTitles = this.getDefaultQuickMenuTitles(this.visibleMenuOptions);
+    this.saveQuickMenuCustomization(defaultTitles);
+    this.applyQuickMenuCustomization(this.visibleMenuOptions, defaultTitles);
+    this.showToast('已恢复默认常用功能');
   }
 
   menuClick(item) {
@@ -238,6 +533,17 @@ export class MemberPage implements OnInit {
     //this.router.navigateByUrl("/member/chat/0");
     this.router.navigate(["/member", "chat", 0])
   }
+
+  goToConfirmation() {
+    this.releaseFocus();
+    this.router.navigateByUrl('/member/confirmation');
+  }
+
+  goToProblemList() {
+    this.releaseFocus();
+    this.router.navigateByUrl('/member/problem-list');
+  }
+
   wechatPay(id) {
     this.releaseFocus();
     this.router.navigateByUrl("/member/wechat-pay/0?cid=" + id);

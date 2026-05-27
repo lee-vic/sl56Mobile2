@@ -84,6 +84,7 @@ describe('ChatPage', () => {
     component = fixture.componentInstance;
     component.messages = [];
     component.chatGroupId = 100;
+    component.content = { scrollToBottom: jasmine.createSpy('scrollToBottom') } as any;
     invokeSpy.calls.reset();
   });
 
@@ -146,4 +147,32 @@ describe('ChatPage', () => {
     expect(component.messages.length).toBe(0);
     expect(invokeSpy).not.toHaveBeenCalled();
   }));
+
+  it('should render send and attach buttons with solid fill in footer', () => {
+    component.showFileUploadButton = true;
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const sendBtn = host.querySelector('ion-button.send-btn');
+    const attachBtn = host.querySelector('ion-button.attach-btn');
+
+    expect(sendBtn).toBeTruthy();
+    expect(attachBtn).toBeTruthy();
+    expect(sendBtn?.getAttribute('fill')).toBe('solid');
+    expect(attachBtn?.getAttribute('fill')).toBe('solid');
+  });
+
+  it('should keep footer input structure as textarea plus two action buttons', () => {
+    component.showFileUploadButton = true;
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+    const inputWrap = host.querySelector('.input-wrap');
+    const textarea = inputWrap?.querySelector('textarea');
+    const actionButtons = inputWrap?.querySelectorAll('ion-button.send-btn, ion-button.attach-btn');
+
+    expect(inputWrap).toBeTruthy();
+    expect(textarea).toBeTruthy();
+    expect(actionButtons?.length).toBe(2);
+  });
 });

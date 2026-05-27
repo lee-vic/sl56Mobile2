@@ -2,8 +2,9 @@
 
 ## 当前环境
 
-- 前端框架：Ionic 7 + Angular 17
+- 前端框架：Ionic 8 + Angular 17
 - 运行时：Node 24.x（以 CI 环境为准）
+- 包管理：npm 11（约束：`>=10 <12`，当前锁定 `npm@11.12.1`）
 - 单元测试：Jasmine + Karma
 - E2E：Playwright
 
@@ -30,6 +31,30 @@
 
 - 默认执行：`npm run e2e`
 - 首次安装浏览器：`npm run e2e:install`
+
+## 环境自检
+
+- 检查 Node 版本：`node -v`（期望 `v24.x`）
+- 检查 npm 版本：`npm -v`（建议 `11.x`，约束 `>=10 <12`）
+- 检查引擎约束是否可见：`npm pkg get engines`
+- 执行发布门禁：`npm run verify`
+- 如需安装 E2E 浏览器：`npm run e2e:install`
+
+```powershell
+$ErrorActionPreference = 'Stop'
+
+Write-Host '== Runtime ==' -ForegroundColor Cyan
+node -v
+npm -v
+
+Write-Host "`n== Engines ==" -ForegroundColor Cyan
+npm pkg get engines
+
+Write-Host "`n== Verify ==" -ForegroundColor Cyan
+npm run verify
+
+Write-Host "`n环境自检完成" -ForegroundColor Green
+```
 
 ## 命令约定
 

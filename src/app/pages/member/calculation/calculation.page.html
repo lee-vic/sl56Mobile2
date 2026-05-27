@@ -203,15 +203,24 @@
 
       <ion-card class="panel-card">
         <ion-card-header>
-          <ion-card-title>货物属性</ion-card-title>
+          <ion-card-title>货物属性和增值服务</ion-card-title>
+          <ion-card-subtitle>可多选，常用附加项会直接影响报价结果</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
-          <ion-list class="calc-form-list" lines="full">
-            <ion-item *ngFor="let item of priceRuleTemplateInfoList" button detail="false">
-              <ion-label class="ion-text-wrap">{{ item.Name }}</ion-label>
-              <ion-checkbox aria-label="选择规则" [checked]="isRuleChecked(item.Id)" (ionChange)="ruleChanged(item, $event)" slot="end"></ion-checkbox>
-            </ion-item>
-          </ion-list>
+          <div class="rule-card-grid" role="group" aria-label="货物属性和增值服务">
+            <button
+              *ngFor="let item of priceRuleTemplateInfoList"
+              class="rule-card"
+              type="button"
+              [class.is-active]="isRuleChecked(item.Id)"
+              [attr.aria-pressed]="isRuleChecked(item.Id)"
+              (click)="toggleRule(item)">
+              <span class="rule-card__text">{{ item.Name }}</span>
+              <span class="rule-card__icon" aria-hidden="true">
+                <ion-icon [name]="isRuleChecked(item.Id) ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+              </span>
+            </button>
+          </div>
         </ion-card-content>
       </ion-card>
 

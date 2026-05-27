@@ -15,6 +15,7 @@ import { CalculationStateService } from 'src/app/providers/calculation-state.ser
   styleUrls: ["./calculation.page.scss"],
 })
 export class CalculationPage implements OnInit {
+  private readonly unlimitedTransportName = "不限";
   calculateMode = "1";
   countryList: Array<any> = [];
   pieceTemplateRules: Array<any> = [];
@@ -63,6 +64,7 @@ export class CalculationPage implements OnInit {
   ngOnInit(): void {
     this.service.getModeOfTransportList().subscribe((res: any) => {
       this.modeOfTransportList = Array.isArray(res) ? res : [];
+      this.applyDefaultTransportForFullMode();
     });
     this.service.getVolumetricDivisorList().subscribe((res: any) => {
       this.volumetricDivisorList = Array.isArray(res) ? res : [];
@@ -139,6 +141,7 @@ export class CalculationPage implements OnInit {
 
     if (this.calculateMode === "2") {
       transportControl?.setValidators([Validators.required]);
+      this.applyDefaultTransportForFullMode();
       isEditSizeControl?.enable({ emitEvent: false });
     } else {
       transportControl?.clearValidators();
@@ -149,6 +152,24 @@ export class CalculationPage implements OnInit {
 
     transportControl?.updateValueAndValidity({ emitEvent: false });
     this.applyWeightMode(!!isEditSizeControl?.value);
+  }
+
+  private applyDefaultTransportForFullMode() {
+    if (this.calculateMode !== "2") {
+      return;
+    }
+
+    const transportControl = this.myForm.get("ModeOfTransportIdList");
+    const currentValue = transportControl?.value;
+    const hasValue = currentValue !== null && currentValue !== undefined && currentValue !== "";
+    if (hasValue) {
+      return;
+    }
+
+    const unlimitedOption = this.modeOfTransportList.find((item) => item?.Name === this.unlimitedTransportName);
+    if (unlimitedOption?.Id !== null && unlimitedOption?.Id !== undefined) {
+      transportControl?.setValue(unlimitedOption.Id, { emitEvent: false });
+    }
   }
 
   private applyWeightMode(isEditSize: boolean) {
@@ -319,15 +340,24 @@ export class CalculationPage implements OnInit {
     this.selectedCountry = null;
     this.hasCountryValidationError = true;
   }
-  ruleChanged(item: any, event: CustomEvent) {
-    const checked = !!event.detail.checked;
-    if (checked === true) {
+
+  private setRuleChecked(item: any, checked: boolean) {
+    if (checked) {
       if (!this.selectRuleIds.includes(item.Id)) {
-        this.selectRuleIds.push(item.Id);
+        this.selectRuleIds = [...this.selectRuleIds, item.Id];
       }
-    } else {
-      this.selectRuleIds = this.selectRuleIds.filter((p) => p !== item.Id);
+      return;
     }
+
+    this.selectRuleIds = this.selectRuleIds.filter((p) => p !== item.Id);
+  }
+
+  ruleChanged(item: any, event: CustomEvent) {
+    this.setRuleChecked(item, !!event.detail.checked);
+  }
+
+  toggleRule(item: any) {
+    this.setRuleChecked(item, !this.isRuleChecked(item.Id));
   }
 
   isRuleChecked(ruleId: number) {

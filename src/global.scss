@@ -48,3 +48,21 @@ ion-content {
         max-height: none;
     }
 }
+
+ion-toast.member-theme-toast {
+    --width: min(92vw, 360px);
+    --border-radius: 12px;
+    --background: linear-gradient(145deg, rgba(39, 104, 184, 0.95) 0%, rgba(30, 88, 161, 0.95) 100%);
+    --color: #ffffff;
+    --box-shadow: 0 10px 24px rgba(16, 58, 112, 0.24);
+    --max-width: 360px;
+    --max-height: 72px;
+}
+
+ion-toast.member-theme-toast::part(message) {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    text-align: center;
+}

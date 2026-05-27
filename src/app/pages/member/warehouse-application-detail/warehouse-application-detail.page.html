@@ -24,7 +24,7 @@
 
     <ion-list>
       <ion-item>
-        <ion-label class="label-stacked">单号</ion-label>
+        <ion-label position="stacked">单号</ion-label>
         <ion-input aria-label="单号" type="text" formControlName="ReferenceNumber" 
                   placeholder="必填，请输入单号" [readonly]="status != 0"></ion-input>
         <ion-note *ngIf="form.get('ReferenceNumber')?.invalid && form.get('ReferenceNumber')?.touched" color="danger">
@@ -34,7 +34,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label class="label-stacked">件数</ion-label>
+        <ion-label position="stacked">件数</ion-label>
         <ion-input aria-label="件数" type="number" formControlName="Piece" 
                   placeholder="必填，请输入件数" [readonly]="status != 0"></ion-input>
         <ion-note *ngIf="form.get('Piece')?.invalid && form.get('Piece')?.touched" color="danger">
@@ -44,7 +44,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label class="label-stacked">送货方式</ion-label>
+        <ion-label position="stacked">送货方式</ion-label>
         <ion-select formControlName="Source" [disabled]="status != 0">
           <ion-select-option *ngFor="let item of sourceList" [value]="item.value">
             {{ item.text }}
@@ -56,7 +56,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-label class="label-stacked">费用</ion-label>
+        <ion-label position="stacked">费用</ion-label>
         <ion-input aria-label="费用" type="number" formControlName="Amount" readonly></ion-input>
       </ion-item>
     </ion-list>

@@ -31,4 +31,27 @@ describe('CalculationPage', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should default to 不限 when switching to full mode', () => {
+    component.modeOfTransportList = [
+      { Id: 0, Name: '不限' },
+      { Id: 1, Name: 'DHL' },
+    ];
+
+    component.segmentChanged({ detail: { value: '2' } } as any);
+
+    expect(component.myForm.get('ModeOfTransportIdList')?.value).toBe(0);
+  });
+
+  it('should keep selected transport when switching to full mode', () => {
+    component.modeOfTransportList = [
+      { Id: 0, Name: '不限' },
+      { Id: 2, Name: 'FEDEX' },
+    ];
+    component.myForm.get('ModeOfTransportIdList')?.setValue(2);
+
+    component.segmentChanged({ detail: { value: '2' } } as any);
+
+    expect(component.myForm.get('ModeOfTransportIdList')?.value).toBe(2);
+  });
 });

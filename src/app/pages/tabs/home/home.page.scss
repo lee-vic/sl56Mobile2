@@ -1,21 +1,43 @@
-ion-content {
-  --background: #fff;
+.home-content {
+  --background: linear-gradient(180deg, #f4f8fd 0%, #f9fbff 210px, #eef4fb 100%);
 }
 
 .hero-slider {
-  background: #fff;
+  padding: 10px 10px 2px;
 }
 
 .hero-swiper {
   width: 100%;
   --swiper-pagination-color: #ffffff;
-  --swiper-pagination-bullet-inactive-color: rgba(255, 255, 255, 0.7);
+  --swiper-pagination-bullet-inactive-color: rgba(255, 255, 255, 0.6);
+  --swiper-pagination-bottom: 8px;
 
   .swiper-slide {
     display: flex;
     align-items: center;
     justify-content: center;
   }
+}
+
+.hero-slide {
+  position: relative;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(8, 63, 122, 0.13);
+  transition: transform 0.18s ease, box-shadow 0.2s ease;
+}
+
+.hero-slide:active {
+  transform: translateY(1px) scale(0.995);
+  box-shadow: 0 4px 12px rgba(8, 63, 122, 0.1);
+}
+
+.hero-slide:focus-visible {
+  outline: 2px solid rgba(44, 117, 214, 0.42);
+  outline-offset: 2px;
 }
 
 .hero-slide img {
@@ -25,7 +47,191 @@ ion-content {
   object-fit: cover;
 }
 
-ion-item > ion-label{
-    padding-left: 1em;
+.hero-caption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 14px;
+  color: #ffffff;
+  text-align: left;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.hero-caption h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.hero-caption p {
+  margin: 6px 0 0;
+  font-size: 0.83rem;
+}
+
+.section-block {
+  margin: 10px 10px 0;
+  background: #ffffff;
+  border: 1px solid #dde8f6;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(20, 58, 108, 0.05);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 12px 6px;
+}
+
+.section-head.compact {
+  padding-bottom: 4px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--member-text-900);
+  font-weight: 700;
+}
+
+.section-head span {
+  color: var(--member-text-500);
+  font-size: 0.75rem;
+}
+
+.quick-entry-grid {
+  padding: 2px 8px 10px;
+}
+
+.quick-entry {
+  width: 100%;
+  border: 1px solid #dde8f6;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f2f8ff 100%);
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.quick-entry:active {
+  transform: translateY(1px) scale(0.992);
+  box-shadow: 0 2px 7px rgba(24, 62, 110, 0.08);
+  border-color: #c8dcf4;
+}
+
+.quick-entry:focus-visible {
+  outline: 2px solid rgba(44, 117, 214, 0.38);
+  outline-offset: 1px;
+}
+
+.quick-entry img {
+  width: 100%;
+  height: auto;
+}
+
+.news-block {
+  margin-bottom: 14px;
+}
+
+.news-list {
+  margin: 0;
+  padding: 4px 8px 10px;
+  background: transparent;
+}
+
+.news-list ion-item {
+  --background: #ffffff;
+  --border-radius: 12px;
+  --inner-padding-end: 12px;
+  --padding-start: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #dde8f6;
+  box-shadow: 0 4px 10px rgba(20, 58, 108, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.2s ease;
+}
+
+.news-list ion-item:active {
+  transform: translateY(1px) scale(0.997);
+  box-shadow: 0 2px 7px rgba(20, 58, 108, 0.04);
+}
+
+.news-list ion-item ion-label {
+  padding-left: 8px;
+}
+
+.news-list ion-thumbnail {
+  width: 72px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.news-list h3 {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--member-text-900);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.news-list p {
+  margin: 5px 0 0;
+  font-size: 0.78rem;
+  color: var(--member-text-500);
+  line-height: 1.4;
+}
+
+.news-list ion-note {
+  color: var(--member-brand-600);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+@media (max-width: 430px) {
+  .section-block {
+    margin: 9px 8px 0;
   }
+
+  .section-head {
+    padding: 10px 10px 4px;
+  }
+}
+
+@media (max-width: 390px) {
+  .hero-slide img {
+    max-height: 204px;
+  }
+
+  .hero-caption h1 {
+    font-size: 1rem;
+  }
+
+  .hero-caption p {
+    font-size: 0.78rem;
+  }
+
+  .quick-entry {
+    min-height: 72px;
+  }
+
+  .news-list h3 {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-slider {
+    padding: 8px 8px 0;
+  }
+
+  .quick-entry-grid {
+    padding: 0 6px 8px;
+  }
+
+  .news-list {
+    padding: 0 6px 8px;
+  }
+}
   

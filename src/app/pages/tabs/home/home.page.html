@@ -1,44 +1,52 @@
-<ion-content>
+<ion-content [fullscreen]="true" class="home-content">
   <section class="hero-slider" *ngIf="slides.length > 0">
     <swiper class="hero-swiper" [config]="swiperOptions">
       <ng-template swiperSlide *ngFor="let slide of slides; trackBy: trackBySlideImage">
-        <div class="hero-slide">
+        <button class="hero-slide" type="button" aria-label="查看产品业务" (click)="openProduct(products[0])">
           <img [src]="slide.image" alt="首页轮播图" />
-        </div>
+          
+        </button>
       </ng-template>
     </swiper>
   </section>
 
-  <ion-grid>
+  <section class="section-block quick-entry-block">
+    <div class="section-head compact">
+      <h2>核心业务</h2>
+      <span>快速进入</span>
+    </div>
+    <ion-grid class="quick-entry-grid" fixed>
+      <ion-row>
+        <ion-col size="4" *ngFor="let product of products">
+          <button class="quick-entry" type="button" (click)="openProduct(product)">
+            <img [src]="product.image" alt="产品业务" />
+          </button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </section>
 
-    <ion-row>
-      <ion-col size="12">
-        <h4>产品业务</h4>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col *ngFor="let product of products">
-        <div (click)="openProduct(product)">
-          <img [src]="product.image" />
-        </div>
-      </ion-col>
-
-    </ion-row>
-  </ion-grid>
-  <ion-list lines="none">
-    <ion-list-header>
-      <h2>升蓝动态</h2>
-    </ion-list-header>
-
-      <ion-item [button]="true" [detail]="true" *ngFor="let item of news" lines="none" (click)="openNews(item)">
+  <section class="section-block news-block">
+    <div class="section-head compact">
+      <h2>最新动态</h2>
+      <span>官方发布</span>
+    </div>
+    <ion-list lines="none" class="news-list">
+      <ion-item
+        [button]="item.cateId != null"
+        [detail]="item.cateId != null"
+        *ngFor="let item of news"
+        lines="none"
+        (click)="openNews(item)">
         <ion-thumbnail slot="start">
-          <img [src]="item.image">
+          <img [src]="item.image" alt="动态封面" />
         </ion-thumbnail>
         <ion-label>
-            <h2 class="ion-text-left">{{item.title}}</h2>
-            <p class="ion-text-left">{{item.description}}</p> 
+          <h3 class="ion-text-left">{{item.title}}</h3>
+          <p class="ion-text-left">{{item.description}}</p>
         </ion-label>
+        <ion-note slot="end">查看详情</ion-note>
       </ion-item>
-
-  </ion-list>
+    </ion-list>
+  </section>
 </ion-content>

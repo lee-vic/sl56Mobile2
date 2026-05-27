@@ -11,6 +11,7 @@ import {
   ProblemProcessType2ItemResultModel,
 } from "src/app/interfaces/problem";
 import { CommonService } from "src/app/providers/common.service";
+import { NgForm } from "@angular/forms";
 
 declare var wx: any;
 @Component({
@@ -23,6 +24,8 @@ export class ProblemDetailPage implements OnInit {
   problemId: Number;
   data: any;
   processType: string;
+  processOptions: Array<{ key: string; title: string }> = [];
+  private processActionMap: { [key: string]: "form" | "chat" | "return" | "confirm" } = {};
   checkListValue: Array<boolean>;
   submitFailMessage: string;
   fileFailMessage: string;
@@ -30,76 +33,157 @@ export class ProblemDetailPage implements OnInit {
   processModel: ProblemProcessResultModel;
   isFileProcessing: boolean = false;
   isSubmiting: boolean = false;
+  isLoading = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
+
   ngOnInit(): void {
+    this.isLoading = true;
     this.service.getProblemDetail(this.problemId).subscribe((res) => {
       this.data = res;
-      console.log("data:", this.data);
+      this.isLoading = false;
       this.processModel = this.data.ProcessResult;
-      console.log("model", this.processModel);
-      if (this.data.Problem.Pages.length > 0)
-        this.processType = this.data.Problem.Pages[0].Item1;
-      this.checkListValue = new Array();
+      this.ensureProcessModel();
+
+      this.checkListValue = [];
       for (let i = 0; i < this.data.Problem.ProcessSetting4.length; i++) {
         this.checkListValue.push(false);
       }
+
       let types: Array<number> = this.data.Problem.ProcessTypeList;
       let inputTypes = types.filter((p) => p >= 1 && p <= 4);
-      console.log("inputTypes", inputTypes);
       //存在发票以及其他填写资料项时，发票不是必须
       this.isFileRequired = !(
         inputTypes.length > 1 && inputTypes.indexOf(3) != -1
       );
-      console.log("isRequiredFile:", this.isFileRequired);
-      this.getWeAppFileStatus(true);
-      let that = this;
-      //生成跳转到小程序的按钮
-      if (
-        wx != null &&
-        inputTypes.indexOf(3) != -1
-      ) {
-        this.commonService
-          .getJsSdkConfig(
-            "https://mobile.sl56.com" + this.router.url,
-            null,
-            "wx-open-launch-weapp"
-          )
-          .subscribe((res) => {
-            let config = JSON.parse(res);
-            wx.config(config);
-            console.log("openLaunchWeAppConfig:", config);
-            const openAppDiv = document.getElementById(
-              "wxOpenLaunchWeApp"
-            ) as Element;
-            openAppDiv.innerHTML =
-              '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
-              this.problemId +
-              '"><template><style>.btn { padding: 5px;font-size:11px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
 
-            const weOpenLaunchWeappBtn = document.getElementById(
-              "launch-btn"
-            ) as Element;
-            console.log(weOpenLaunchWeappBtn);
-            weOpenLaunchWeappBtn.addEventListener("click", function () {
-              that.alertCtrl
-                .create({
-                  header: "提示",
-                  message: "点击确定进行下一步操作",
-                  buttons: [
-                    {
-                      text: "确定",
-                      handler: () => {
-                        that.getWeAppFileStatus(false);
-                      },
-                    },
-                  ],
-                })
-                .then((p) => p.present());
-            });
-          });
-      }
+      this.buildOptions();
+      this.getWeAppFileStatus(true);
+      this.renderWeAppButtonIfNeeded();
+    }, _ => {
+      this.isLoading = false;
     });
+  }
+
+  private ensureProcessModel(): void {
+    if (!this.processModel) {
+      this.processModel = {} as ProblemProcessResultModel;
+    }
+    if (!this.processModel.Type1Result) {
+      this.processModel.Type1Result = { Value: null } as any;
+    }
+    if (!this.processModel.Type2Result) {
+      this.processModel.Type2Result = { Items: [] } as any;
+    }
+    if (!this.processModel.Type3Result) {
+      this.processModel.Type3Result = { Value: null, AttachmentTypeId: "", FileName: null } as any;
+    }
+    if (!this.processModel.Type4Result) {
+      this.processModel.Type4Result = { Values: [] } as any;
+    } else if (!this.processModel.Type4Result.Values) {
+      this.processModel.Type4Result.Values = [];
+    }
+  }
+
+  private buildOptions(): void {
+    const pages = this.data?.Problem?.Pages || [];
+    const mapByKey: { [key: string]: { title: string; action: "form" | "chat" | "return" | "confirm" } } = {
+      Page1: { title: "更新信息", action: "form" },
+      Page2: { title: "更改渠道", action: "chat" },
+      Page3: { title: "退件处理", action: "return" },
+      Page4: { title: "直接确认", action: "confirm" },
+    };
+
+    this.processOptions = pages.map((page) => {
+      const key = page.Item1;
+      const preset = mapByKey[key] || { title: page.Item2 || key, action: "chat" as const };
+      this.processActionMap[key] = preset.action;
+      return {
+        key,
+        title: page.Item2 || preset.title,
+      };
+    });
+
+    if (this.processOptions.length > 0) {
+      this.processType = this.processOptions[0].key;
+    }
+  }
+
+  get isProblemDone(): boolean {
+    return this.data?.Problem?.Status == 1;
+  }
+
+  get hasSelfService(): boolean {
+    return this.data?.Problem?.Status == 0 && this.processOptions.length > 0;
+  }
+
+  hasProcessType(type: number): boolean {
+    return (this.data?.Problem?.ProcessTypeList || []).indexOf(type) !== -1;
+  }
+
+  getCurrentAction(): "form" | "chat" | "return" | "confirm" {
+    return this.processActionMap[this.processType] || "chat";
+  }
+
+  isFormOption(): boolean {
+    return this.getCurrentAction() === "form";
+  }
+
+  canSubmit(form: NgForm): boolean {
+    if (this.isSubmiting || this.isFileProcessing) {
+      return false;
+    }
+    if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) == -1) {
+      return false;
+    }
+    return (form?.valid || this.isWeAppUploadFile) === true;
+  }
+
+  private renderWeAppButtonIfNeeded(): void {
+    const openAppDiv = document.getElementById("wxOpenLaunchWeApp") as Element;
+    if (!openAppDiv) {
+      return;
+    }
+    if (!this.isFormOption() || !this.hasProcessType(3) || wx == null) {
+      openAppDiv.innerHTML = "";
+      return;
+    }
+
+    this.commonService
+      .getJsSdkConfig(
+        "https://mobile.sl56.com" + this.router.url,
+        null,
+        "wx-open-launch-weapp"
+      )
+      .subscribe((res) => {
+        let config = JSON.parse(res);
+        wx.config(config);
+        openAppDiv.innerHTML =
+          '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
+          this.problemId +
+          '"><template><style>.btn { padding: 6px 10px;font-size:12px;border-radius:8px;background:#0b61bd;color:#fff;border:0; }</style><button class="btn">打开微信小程序上传</button></template></wx-open-launch-weapp>';
+
+        const weOpenLaunchWeappBtn = document.getElementById("launch-btn") as Element;
+        if (!weOpenLaunchWeappBtn) {
+          return;
+        }
+        weOpenLaunchWeappBtn.addEventListener("click", () => {
+          this.alertCtrl
+            .create({
+              header: "上传提示",
+              message: "上传完成后请返回当前页面继续处理。",
+              buttons: [
+                {
+                  text: "我已完成上传",
+                  handler: () => {
+                    this.getWeAppFileStatus(false);
+                  },
+                },
+              ],
+            })
+            .then((p) => p.present());
+        });
+      });
   }
 
   constructor(
@@ -119,7 +203,6 @@ export class ProblemDetailPage implements OnInit {
       const nav = this.router.getCurrentNavigation();
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
-        console.log(data);
         if (data.confirmFile == false) {
           //如果是微信小程序上传的文件，则需要删除
           if (data.isWeAppFile) {
@@ -128,15 +211,14 @@ export class ProblemDetailPage implements OnInit {
               .subscribe((p) => console.log(p));
             this.isWeAppUploadFile = false;
           } else {
-            console.log("重选选择发票文件");
             let fileInputs: any = document.getElementsByName("type3Result");
-            fileInputs[0].value = null;
-            fileInputs[1].value = null;
+            if (fileInputs.length > 0) {
+              fileInputs[0].value = null;
+            }
           }
         }
       }
     });
-    console.log(this.receiveGoodsDetailId);
   }
 
   chat() {
@@ -153,13 +235,10 @@ export class ProblemDetailPage implements OnInit {
   }
 
   processTypeChanged(event) {
-    this.processType = event.detail.value;
-    const openAppDiv = document.getElementById("wxOpenLaunchWeApp") as Element;
-    openAppDiv.innerHTML =
-      '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
-      this.problemId +
-      '"><template><style>.btn { padding: 5px }</style><button class="btn">选择聊天文件</button></template></wx-open-launch-weapp>';
-    console.log("选项卡Changed");
+    this.processType = event?.detail?.value;
+    this.submitFailMessage = null;
+    this.confirmFailMessage = null;
+    this.renderWeAppButtonIfNeeded();
   }
 
   checkChange(_form) {}
@@ -240,14 +319,18 @@ export class ProblemDetailPage implements OnInit {
     }
   }
   submit(formGroup) {
+    if (!this.isFormOption()) {
+      return;
+    }
     this.isSubmiting = true;
+    this.submitFailMessage = null;
     let formValues = formGroup.form.value;
     //存在单选
-    if (this.data.Problem.ProcessTypeList.indexOf(1) != -1) {
+    if (this.hasProcessType(1)) {
       this.processModel.Type1Result.Value = formValues["type1Result"];
     }
     //存在填写内容
-    if (this.data.Problem.ProcessTypeList.indexOf(2) != -1) {
+    if (this.hasProcessType(2)) {
       this.processModel.Type2Result.Items = new Array();
       this.data.Problem.ProcessSetting2.forEach((element, index) => {
         let item: ProblemProcessType2ItemResultModel =
@@ -261,7 +344,8 @@ export class ProblemDetailPage implements OnInit {
     if (this.data.Problem.ProcessTypeList.indexOf(3) != -1) {
     }
     //存在多选
-    if (this.data.Problem.ProcessTypeList.indexOf(4) != -1) {
+    if (this.hasProcessType(4)) {
+      this.processModel.Type4Result.Values = [];
       this.checkListValue.forEach((element, index) => {
         if (element) {
           let checkValue = this.data.Problem.ProcessSetting4[index].Item1;
@@ -269,7 +353,6 @@ export class ProblemDetailPage implements OnInit {
         }
       });
     }
-    console.log("submitModel:", this.processModel);
     this.service.complete(this.processModel).subscribe((res) => {
       this.isSubmiting = false;
       if (res.Result == false) {
@@ -279,6 +362,7 @@ export class ProblemDetailPage implements OnInit {
       }
     });
   }
+
   getWeAppFileStatus(isInitPage) {
     this.loadingCtrl
       .create({
@@ -304,7 +388,6 @@ export class ProblemDetailPage implements OnInit {
                   this.isFileProcessing = false;
                   this.loadingCtrl.dismiss();
                   if (res.Result == true) {
-                    console.log("filePath:", res.Path);
                     this.fileFailMessage = null;
                     this.navCtrl.navigateForward("/member/invoice-preview", {
                       queryParams: {
@@ -315,14 +398,19 @@ export class ProblemDetailPage implements OnInit {
                       },
                     });
                   } else {
-                    console.log("fileFailMessage:", this.fileFailMessage);
                     this.fileFailMessage = res.Message;
                     this.isWeAppUploadFile = false;
                   }
                 });
             }
           } else {
-            alert("未检测到有上传的文件，请重新上传后再试");
+            this.alertCtrl
+              .create({
+                header: "未检测到文件",
+                message: "请先在微信小程序中完成上传，然后返回本页刷新状态。",
+                buttons: ["我知道了"],
+              })
+              .then((x) => x.present());
           }
         });
       });

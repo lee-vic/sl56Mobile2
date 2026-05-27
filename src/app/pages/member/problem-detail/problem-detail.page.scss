@@ -1,22 +1,47 @@
 ﻿
 .problem-content {
-    --background: linear-gradient(180deg, #eef4ff 0%, #f7faff 100%);
+    --background: linear-gradient(180deg, #e9f2ff 0%, #f7faff 100%);
 }
 
 .problem-shell {
     min-height: 100%;
 }
 
+.content-row {
+    padding-top: 8px;
+    padding-bottom: 10px;
+}
+
+.problem-shell ion-col > ion-card {
+    margin: 0 0 10px;
+}
+
+.problem-shell ion-col > ion-card:last-child {
+    margin-bottom: 0;
+}
+
 .summary-card {
-    border-radius: 18px;
-    box-shadow: 0 10px 28px rgba(0, 78, 162, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(0, 78, 162, 0.1);
+}
+
+.summary-card ion-card-header,
+.guide-card ion-card-header,
+.step-card ion-card-header {
+    padding: 14px 16px 8px;
+}
+
+.summary-card ion-card-content,
+.guide-card ion-card-content,
+.step-card ion-card-content {
+    padding: 8px 16px 14px;
 }
 
 .summary-card ion-card-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1.35rem;
+    font-size: 1.18rem;
 }
 
 .summary-card ion-card-subtitle {
@@ -24,19 +49,47 @@
     line-height: 1.5;
 }
 
-.action-hint {
-    --background: transparent;
-    --inner-border-width: 0;
-    margin-bottom: 12px;
+.guide-card {
+    border-radius: 14px;
+    border: 1px solid #bfdcff;
+    background: #eef6ff;
+    box-shadow: 0 6px 14px rgba(30, 95, 175, 0.08);
 }
 
-.subTitle{
-    font-size: 14px;
+.guide-card ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    color: #1f4f85;
 }
 
-ion-card {
+.guide-card p {
+    margin: 0;
+    color: #315b8a;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.step-card {
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(3, 59, 126, 0.1);
+}
+
+.step-card ion-segment {
+    margin-bottom: 8px;
+    background: var(--member-surface-100);
+    border-radius: 10px;
+}
+
+.step-card ion-card {
+    margin: 10px 0;
+    border-radius: 12px;
+}
+
+ion-card:not(.summary-card):not(.step-card) {
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 78, 162, 0.1);
+    box-shadow: 0 8px 18px rgba(0, 78, 162, 0.1);
 }
 
 ion-button[expand="full"],
@@ -44,18 +97,50 @@ ion-button[expand="block"] {
     --border-radius: 10px;
 }
 
-ion-item > ion-label:not([position=\"stacked\"]) {
-    flex: 0 0 clamp(8.5em, 36vw, 11em);
-    max-width: clamp(8.5em, 36vw, 11em);
-    min-width: clamp(8.5em, 36vw, 11em);
-    white-space: normal;
-    word-break: keep-all;
+.file-state {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-ion-item > ion-label:not(.label-stacked) {
-    flex: 0 0 clamp(8.5em, 36vw, 11em);
-    max-width: clamp(8.5em, 36vw, 11em);
-    min-width: clamp(8.5em, 36vw, 11em);
-    white-space: normal;
-    word-break: keep-all;
+
+.weapp-entry {
+    margin-top: 12px;
+}
+
+.hint-item {
+    --background: transparent;
+    --inner-border-width: 0;
+    margin-top: 6px;
+}
+
+.action-card p {
+    margin: 0 0 10px;
+    color: var(--member-text-800);
+    line-height: 1.5;
+}
+
+.done-card {
+    text-align: center;
+}
+
+.done-card ion-icon {
+    font-size: 2rem;
+}
+
+.done-card h3 {
+    margin: 10px 0 8px;
+}
+
+.done-card p {
+    margin: 0 0 10px;
+    color: var(--member-text-500);
+    line-height: 1.5;
+}
+
+@media (max-width: 576px) {
+    .summary-card ion-card-title {
+        font-size: 1.1rem;
+    }
 }
 

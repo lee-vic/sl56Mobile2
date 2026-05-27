@@ -43,15 +43,30 @@ export class NewsPage implements OnInit {
     }
   ];
   tab1PageIndex: number = 1;
-  tabIndex = "2";
+  tabIndex = '2';
+  isInitialLoading = false;
+  loadError = '';
+  isRefreshing = false;
+
   constructor(  private service: NoticeService,
     private router: Router,
     public navCtrl: NavController,
     public modalController: ModalController,
     public activeRoute: ActivatedRoute) {}
+
+  get activeTab(): NoticeTab | undefined {
+    return this.noticeTabs.find(item => item.categoryId === this.tabIndex);
+  }
+
   ngOnInit(): void {
-    this.tabIndex=this.activeRoute.snapshot.paramMap.get('id');
-    this.getItems(this.noticeTabs[0], null);
+    const routeTab = this.activeRoute.snapshot.paramMap.get('id');
+    if (routeTab) {
+      this.tabIndex = routeTab;
+    }
+
+    const targetTab = this.noticeTabs.find(item => item.categoryId === this.tabIndex) || this.noticeTabs[0];
+    this.tabIndex = targetTab.categoryId;
+    this.selectedTab(targetTab, true);
   }
 
   private disableInfiniteScroll(infiniteEvent: any): void {
@@ -81,41 +96,127 @@ export class NewsPage implements OnInit {
 
     if (tab.isBusy)
       return;
+
+    if (!infiniteEvent && tab.items.length === 0) {
+      this.isInitialLoading = true;
+      this.loadError = '';
+    }
+
     tab.isBusy = true;
-    this.service.getNewsList(tab.categoryId, tab.currentPageIndex).subscribe(res => {
-      let rep = res as Notice[];
-      if (rep.length == 0) {
+    this.service.getNewsList(tab.categoryId, tab.currentPageIndex).subscribe({
+      next: (res) => {
+        const rep = res as Notice[];
+        if (rep.length === 0) {
+          if (infiniteEvent != null) {
+            this.disableInfiniteScroll(infiniteEvent);
+          }
+        } else {
+          for (let i = 0; i < rep.length; i++) {
+            tab.items.push(rep[i]);
+          }
+          tab.currentPageIndex++;
+        }
+
         if (infiniteEvent != null) {
-          this.disableInfiniteScroll(infiniteEvent);
+          this.completeInfiniteScroll(infiniteEvent);
         }
-      }
-      else {
-        for (var i = 0; i < rep.length; i++) {
-          tab.items.push(rep[i]);
+      },
+      error: () => {
+        if (!infiniteEvent && tab.items.length === 0) {
+          this.loadError = '加载失败，请稍后重试';
         }
-        tab.currentPageIndex++;
+        if (infiniteEvent != null) {
+          this.completeInfiniteScroll(infiniteEvent);
+        }
+        tab.isBusy = false;
+        this.isInitialLoading = false;
+      },
+      complete: () => {
+        tab.isBusy = false;
+        this.isInitialLoading = false;
       }
-      if (infiniteEvent != null)
-        this.completeInfiniteScroll(infiniteEvent);
-      tab.isBusy = false;
     });
   }
+
+  retryLoadActiveTab() {
+    if (!this.activeTab) {
+      return;
+    }
+
+    this.activeTab.currentPageIndex = 1;
+    this.activeTab.items = [];
+    this.getItems(this.activeTab, null);
+  }
+
+  refreshActiveTab(event: CustomEvent) {
+    if (!this.activeTab) {
+      const noTabTarget = (event.target as any) || event.detail;
+      if (noTabTarget && typeof noTabTarget.complete === 'function') {
+        noTabTarget.complete();
+      }
+      return;
+    }
+
+    const tab = this.activeTab;
+    tab.currentPageIndex = 1;
+    tab.items = [];
+    tab.isBusy = true;
+    this.isRefreshing = true;
+    this.loadError = '';
+
+    this.service.getNewsList(tab.categoryId, tab.currentPageIndex).subscribe({
+      next: (res) => {
+        const rep = res as Notice[];
+        for (let i = 0; i < rep.length; i++) {
+          tab.items.push(rep[i]);
+        }
+        if (rep.length > 0) {
+          tab.currentPageIndex++;
+        }
+      },
+      error: () => {
+        this.loadError = '刷新失败，请稍后重试';
+      },
+      complete: () => {
+        tab.isBusy = false;
+        this.isRefreshing = false;
+        const target = (event.target as any) || event.detail;
+        if (target && typeof target.complete === 'function') {
+          target.complete();
+        }
+      }
+    });
+  }
+
   segmentChanged(ev: CustomEvent) {
-    
     let findResult = this.noticeTabs.find(item => item.categoryId == ev.detail.value);
     this.selectedTab(findResult);
   }
-  selectedTab(tab: NoticeTab) {
-  
+
+  selectedTab(tab: NoticeTab, fromInit = false) {
+    if (!tab) {
+      return;
+    }
+
     this.tabIndex = tab.categoryId;
-    if (tab.items.length == 0)
+    if (tab.items.length == 0) {
       this.getItems(tab, null);
+      return;
+    }
+
+    if (!fromInit) {
+      this.loadError = '';
+      this.isInitialLoading = false;
+    }
   }
- 
+
   openDetail(item:Notice) {
 
     this.navCtrl.navigateForward("/member/notice-detail/"+item.NoticeId);
 
   }
-  
+
+  trackByNotice(index: number, item: Notice): any {
+    return item.NoticeId || item.CreateAt || index;
+  }
 }

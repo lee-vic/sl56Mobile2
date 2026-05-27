@@ -1,0 +1,54 @@
+#myTabBar {
+	--background: var(--member-surface-0);
+	--border: 1px solid var(--member-border-200);
+	border-top: 1px solid var(--member-border-200);
+	box-shadow: 0 -8px 20px rgba(7, 48, 98, 0.08);
+	padding-top: 6px;
+	padding-bottom: calc(6px + env(safe-area-inset-bottom));
+}
+
+#myTabBar ion-tab-button {
+	--color: var(--member-text-500);
+	--color-selected: var(--member-brand-600);
+	min-height: 58px;
+	transition: transform 0.18s ease, color 0.18s ease;
+}
+
+#myTabBar ion-tab-button.tab-selected {
+	transform: translateY(-1px);
+}
+
+#myTabBar ion-icon {
+	font-size: 1.24rem;
+}
+
+#myTabBar ion-label {
+	font-size: 0.78rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+}
+
+@media (max-width: 390px) {
+	#myTabBar ion-tab-button {
+		min-height: 56px;
+	}
+
+	#myTabBar ion-icon {
+		font-size: 1.16rem;
+	}
+
+	#myTabBar ion-label {
+		font-size: 0.74rem;
+	}
+}
+
+@media (max-width: 360px) {
+	#myTabBar {
+		padding-top: 4px;
+		padding-bottom: calc(4px + env(safe-area-inset-bottom));
+	}
+
+	#myTabBar ion-tab-button {
+		min-height: 54px;
+	}
+}

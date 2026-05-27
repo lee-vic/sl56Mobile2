@@ -1,5 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { IonContent } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -8,36 +7,39 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./product.page.scss'],
 })
 export class ProductPage  implements OnInit {
-  
-  tab="1";
-  currentProduct:number=1;
-  @ViewChild('DHL',{static: false}) DHLElement:ElementRef;
-  @ViewChild('FedEx',{static: false}) FedExElement:ElementRef;
-  @ViewChild('UPS',{static: false}) UPSElement:ElementRef;
-  @ViewChild('TNT',{static: false}) TNTElement:ElementRef;
-  @ViewChild(IonContent,{static: false}) content;
+  tab = '1';
+  currentProduct = 1;
+
   constructor(public activeRoute: ActivatedRoute) {}
+
   ngOnInit(): void {
-      this.tab=this.activeRoute.snapshot.paramMap.get('id');
-
+    const routeTab = this.activeRoute.snapshot.paramMap.get('id');
+    if (routeTab) {
+      this.tab = routeTab;
+    }
   }
 
- 
-  gotoDHL(){
-    this.content.scrollToPoint(0,this.DHLElement.nativeElement.offsetTop,500);
-    this.currentProduct=1;
-  }
-  gotoFedEx(){
-    this.content.scrollToPoint(0,this.FedExElement.nativeElement.offsetTop,500);
-    this.currentProduct=2;
-  }
-  gotoUPS(){
-    this.content.scrollToPoint(0,this.UPSElement.nativeElement.offsetTop,500);
-    this.currentProduct=3;
-  }
-  gotoTNT(){
-    this.content.scrollToPoint(0,this.TNTElement.nativeElement.offsetTop,500);
-    this.currentProduct=4;
+  selectExpress(carrier: number) {
+    if (carrier < 1 || carrier > 4) {
+      return;
+    }
+
+    this.currentProduct = carrier;
   }
 
+  gotoDHL() {
+    this.selectExpress(1);
+  }
+
+  gotoFedEx() {
+    this.selectExpress(2);
+  }
+
+  gotoUPS() {
+    this.selectExpress(3);
+  }
+
+  gotoTNT() {
+    this.selectExpress(4);
+  }
 }

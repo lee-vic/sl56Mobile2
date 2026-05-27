@@ -20,53 +20,74 @@
           </ion-card-content>
         </ion-card>
 
-        <ion-card *ngFor="let item of searchList" class="record-card ion-no-margin ion-margin-bottom">
+        <ion-card class="stats-card ion-no-margin ion-margin-bottom" *ngIf="searchList?.length > 0">
+          <ion-card-content class="stats-content">
+            <div class="stat-item">
+              <span class="stat-label">已选运单</span>
+              <span class="stat-value">{{selectedCount}}</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-label">已选总金额</span>
+              <span class="stat-value amount">￥{{formatAmount(selectedAmount)}}</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-label">列表总数</span>
+              <span class="stat-value">{{getVisibleCount()}}</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card *ngFor="let item of searchList; trackBy: trackByItemId" class="record-card ion-no-margin ion-margin-bottom">
           <ion-list lines="none">
             <ion-item class="bottom-border">
-              <ion-checkbox aria-label="选择单号" [(ngModel)]="item.Selected" slot="start"></ion-checkbox>
-              <ion-label>单号:{{item.ReferenceNumber}}</ion-label>
-              <ion-note slot="end">目的地:{{item.CountryName}}</ion-note>
+              <ion-checkbox aria-label="选择单号" [(ngModel)]="item.Selected" (ionChange)="onItemSelectionChange()" slot="start"></ion-checkbox>
+              <ion-label class="record-head-label">
+                <h3>单号:{{item.ReferenceNumber}}</h3>
+                <p>目的地:{{item.CountryName}}</p>
+              </ion-label>
             </ion-item>
 
             <ion-item detail class="bottom-border" (click)="detail(item)">
               <ion-label>
-                <h2>{{item.PriceName}}</h2>
+                <h2 class="price-name">{{item.PriceName}}</h2>
                 <p>计费重:{{item.Weight}}Kg</p>
-                <p>货物属性:{{item.AttributeNames}}</p>
+                <p *ngIf="item.AttributeNames">货物属性:{{item.AttributeNames}}</p>
               </ion-label>
-              <ion-note slot="end" class="ion-margin-vertical">￥{{item.Amount}}</ion-note>
+              <ion-note slot="end" class="ion-margin-vertical amount-note">￥{{formatAmount(item.Amount)}}</ion-note>
             </ion-item>
 
-            <ion-item>
-              {{item.Date}}
-              <ion-button slot="end" fill="outline" (click)="onItemConfirmClick(item)">确认出货</ion-button>
+            <ion-item class="record-footer-item">
+              <ion-label color="medium">{{item.Date}}</ion-label>
+              <ion-button slot="end" fill="outline" (click)="onItemConfirmClick(item)" [disabled]="isSubmitting">确认出货</ion-button>
             </ion-item>
           </ion-list>
         </ion-card>
 
         <div class="empty-wrap" *ngIf="searchList?.length==0">
-          <img src="assets/imgs/empty.png">
+          <img src="assets/imgs/empty.png" alt="暂无待确认运单">
+          <p class="empty-title">暂无待确认的运单</p>
+          <p class="empty-subtitle">可尝试更换筛选条件，或返回会员中心继续其他操作。</p>
+          <ion-button fill="outline" size="small" (click)="goMemberCenter()">返回会员中心</ion-button>
         </div>
       </ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons>
-      <ion-checkbox aria-label="全选" slot="start" (ionChange)="onAllClick()" [(ngModel)]="allSelected" style="margin-left: 0.5rem;"></ion-checkbox>
-      <ion-label style="margin-left: 0.5rem;">{{allSelected?'反选':'全选'}}</ion-label>
-
+<ion-footer class="confirmation-footer">
+  <ion-toolbar class="footer-toolbar">
+    <ion-buttons class="footer-left">
+      <ion-checkbox aria-label="全选" slot="start" (ionChange)="onAllClick()" [(ngModel)]="allSelected" class="footer-checkbox"></ion-checkbox>
+      <ion-label class="footer-select-label">{{allSelected?'反选':'全选'}}</ion-label>
+      <ion-label class="footer-selected-label">已选 {{selectedCount}} / {{receiveGoodsDetailList.length}}</ion-label>
     </ion-buttons>
 
-
-
-    <ion-buttons slot="primary">
-      <ion-button (click)="onConfirmClick()">
-        确认所选
-
+    <ion-buttons slot="primary" class="footer-right">
+      <span class="footer-amount">￥{{formatAmount(selectedAmount)}}</span>
+      <ion-button (click)="onConfirmClick()" [disabled]="selectedCount===0 || isSubmitting">
+        {{isSubmitting ? '提交中...' : '确认所选 (' + selectedCount + ')'}}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-
 </ion-footer>

@@ -5,3 +5,24 @@
  * Ionic 8 ships default light palette variables in core.css.
  * Keep this file for project-specific CSS variables only.
  */
+
+:root {
+	--member-brand-300: #4ca0ff;
+	--member-brand-500: #0b61bd;
+	--member-brand-600: #084f9b;
+	--member-brand-700: #083f7a;
+	--member-brand-800: #062f5f;
+
+	--member-surface-0: #ffffff;
+	--member-surface-100: #f1f5fb;
+	--member-surface-200: #e8f1fe;
+
+	--member-text-900: #12213a;
+	--member-text-800: #1e3356;
+	--member-text-500: #5f759a;
+
+	--member-border-200: #d6e4f5;
+	--member-accent-danger: #ff4d4f;
+	--member-accent-success: #2f9e44;
+	--member-accent-warning: #c27a00;
+}

@@ -63,104 +63,192 @@
       </ion-row>
     </ion-grid>
   </div>
-  <div *ngIf="isLogin">
+  <div *ngIf="isLogin" class="member-dashboard">
+    <section class="dashboard-hero">
+      <div class="hero-top-row">
+        <div class="member-identity">
+          <img src="assets/imgs/member-14.png" alt="用户头像" class="hero-icon">
+          <div class="member-no">{{username}}</div>
+        </div>
+        <button type="button" class="message-entry" (click)="openMessage()" *ngIf="customerType==0" aria-label="打开消息中心">
+          <img src="assets/imgs/member-15.png" class="my-badge1" alt="消息">
+          <span *ngIf="userInfo?.UnReadMessageCount>0" class="my-badge" aria-live="polite">{{userInfo?.UnReadMessageCount>99?'99':userInfo.UnReadMessageCount}}</span>
+        </button>
+      </div>
 
-    <div class="user-heder-1">
-      <ion-grid id="titlte">
-        <ion-row class="ion-align-items-center">
-          <ion-col size="4" class="ion-align-self-center">
-            <div class="ion-float-left">
+      <ion-button id="btnPerson" (click)="openChat()" fill="clear">
+        我的客服专员
+        <ion-icon name="arrow-forward"></ion-icon>
+      </ion-button>
 
-              <img src="assets/imgs/member-14.png" style="width:30px;height:30px;">
+      <section *ngIf="customerType!=3" class="kpi-panel">
+        <div class="kpi-grid">
+          <button type="button" class="kpi-item" aria-label="待确认运单" (click)="goToConfirmation()">
+            <div class="title">{{userInfo?.Quantity1}}</div>
+            <div class="kpi-label">待确认运单</div>
+          </button>
+          <button type="button" class="kpi-item" aria-label="问题件" (click)="goToProblemList()">
+            <div class="title">{{userInfo?.Quantity2}}</div>
+            <div class="kpi-label">问题件</div>
+          </button>
+        </div>
+        <div class="debt-wrap">
+          <button type="button" class="debt-item" *ngFor="let item of currencyAmount" (click)="wechatPay(item.Id)" [attr.aria-label]="'支付欠款' + item.Name">
+            <span class="title">{{item.Amount}}</span>
+            <span class="smallFont">欠款({{item.Name}})</span>
+          </button>
+        </div>
+      </section>
+
+    </section>
+
+    <section class="menu-section" *ngIf="quickMenuRows.length > 0">
+      <div class="menu-section-header">
+        <h2>常用功能</h2>
+        <div class="menu-section-meta">
+          <span>{{quickMenuList.length}} 项 · 快速直达</span>
+          <button type="button" class="quick-manage-btn" (click)="openQuickMenuManage()" aria-label="管理常用功能">管理</button>
+          <button type="button" class="quick-reset-btn" (click)="resetQuickMenus()" aria-label="重置常用功能排序">重置</button>
+        </div>
+      </div>
+      <ion-grid id="menu-grid" class="menu-grid quick-menu-grid">
+        <ion-row *ngFor="let row of quickMenuRows; let rowIndex = index" class="row">
+          <ion-col *ngFor="let item of row.items; let i = index" class="col">
+            <div class="menu-item-wrap" [class.fade-flicker]="item.title=='业务公告' && unreadNoticeCount>0 && noticeIsClicked==false">
+              <div *ngIf="waitToSignTaskCount>0 && item.title=='合同签署'" class="menu-corner-badge" aria-live="polite">{{formatBadgeCount(waitToSignTaskCount)}}</div>
+              <div *ngIf="item.title=='业务公告' && unreadNoticeCount>0" class="menu-corner-badge" aria-live="polite">{{formatBadgeCount(unreadNoticeCount)}}</div>
+              <div
+                class="menu-item ion-text-center"
+                role="button"
+                tabindex="0"
+                [style.--menu-delay.ms]="(rowIndex * menuColumns + i) * 35"
+                [attr.aria-label]="getMenuAriaLabel(item)"
+                (click)="menuClick(item)"
+                (keyup)="menuKeyup($event, item)">
+                <div class="menu-icon-wrap">
+                  <img [src]="item.image" alt="" class="menu-icon">
+                </div>
+                <div class="menu-title">{{item.title}}</div>
+              </div>
             </div>
-            <div class="ion-float-left" id="name">{{username}}</div>
-          </ion-col>
-          <ion-col size="4" class="ion-align-self-center " class="ion-text-center">
-            <img src="assets/imgs/member-16.png" style="width:35px;height:35px;">
-
-          </ion-col>
-          <ion-col size="4" class="ion-align-self-center" class="ion-text-right">
-            <img src="assets/imgs/member-15.png" class="my-badge1"
-              [ngStyle]="{'margin-right':userInfo?.UnReadMessageCount > 0? '12px;': ''}" (click)="openMessage()"
-              *ngIf="customerType==0">
-            <div *ngIf="userInfo?.UnReadMessageCount>0" class="my-badge">
-              {{userInfo?.UnReadMessageCount>99?'99':userInfo.UnReadMessageCount}}</div>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          <ion-col size="2" class="ion-text-center">
-
-          </ion-col>
-          <ion-col size="8" class="ion-text-center">
-
-            <ion-button id="btnPerson" (click)="openChat()" fill="clear">
-              我的客服专员
-              <ion-icon name="arrow-forward"></ion-icon>
-            </ion-button>
-          </ion-col>
-          <ion-col size="2" class="ion-text-center">
-
           </ion-col>
         </ion-row>
       </ion-grid>
-      <div *ngIf="customerType!=3">
-        <ion-grid id="info">
-          <ion-row class="ion-align-items-center">
-            <ion-col size="6">
-              <div class="ion-text-center">
+    </section>
 
-                <div class="title"> {{userInfo?.Quantity1}}</div>
-                待确认运单
-
-              </div>
-            </ion-col>
-            <ion-col size="6" class="ion-text-center">
-              <div class="title"> {{userInfo?.Quantity2}}</div>
-              问题件
-            </ion-col>
-          </ion-row>
-
-        </ion-grid>
-
-        <ion-grid id="info">
-          <ion-row class="ion-align-items-center">
-            <ion-col size="12" *ngFor="let item of currencyAmount" (click)="wechatPay(item.Id)">
-              <div class="ion-text-center">
-                <div class="title">{{item.Amount}}</div>
-                <span class="smallFont">
-                  欠款({{item.Name}})
-                </span>
-              </div>
-            </ion-col>
-          </ion-row>
-
-        </ion-grid>
+    <section class="menu-section" *ngIf="menus.rows.length > 0">
+      <div class="menu-section-header">
+        <h2>全部功能</h2>
+        <span>{{visibleMenuCount}} 项服务</span>
       </div>
-    </div>
-    <ion-grid id="menu-grid">
-      <ion-row *ngFor="let row of menus.rows" class="row">
-        <ion-col *ngFor="let item of row.items" class="col">
-          <div [class.fade-flicker]="item.title=='业务公告' && unreadNoticeCount>0 && noticeIsClicked==false" >
-            <ion-badge color="danger"
-              *ngIf="this.waitToSignTaskCount>0 && item.title=='合同签署'">{{this.waitToSignTaskCount}}</ion-badge>
-
-            <div *ngIf="item.title=='业务公告' && unreadNoticeCount>0" class="my-badge2">
-              {{unreadNoticeCount}}</div>
-            <div (click)="menuClick(item)" class="ion-text-center">
-              <div>
-                <img [src]="item.image" style="max-width:1.5rem;height:auto;">
-              </div>
-              <div class="menu-title">
-                {{item.title}}
+      <ion-grid id="menu-grid-all" class="menu-grid">
+        <ion-row *ngFor="let row of menus.rows; let rowIndex = index" class="row">
+          <ion-col *ngFor="let item of row.items; let i = index" class="col">
+            <div class="menu-item-wrap" [class.fade-flicker]="item.title=='业务公告' && unreadNoticeCount>0 && noticeIsClicked==false">
+              <div *ngIf="waitToSignTaskCount>0 && item.title=='合同签署'" class="menu-corner-badge" aria-live="polite">{{formatBadgeCount(waitToSignTaskCount)}}</div>
+              <div *ngIf="item.title=='业务公告' && unreadNoticeCount>0" class="menu-corner-badge" aria-live="polite">{{formatBadgeCount(unreadNoticeCount)}}</div>
+              <div
+                class="menu-item ion-text-center"
+                role="button"
+                tabindex="0"
+                [style.--menu-delay.ms]="(rowIndex * menuColumns + i) * 35"
+                [attr.aria-label]="getMenuAriaLabel(item)"
+                (click)="menuClick(item)"
+                (keyup)="menuKeyup($event, item)">
+                <div class="menu-icon-wrap">
+                  <img [src]="item.image" alt="" class="menu-icon">
+                </div>
+                <div class="menu-title">{{item.title}}</div>
               </div>
             </div>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </section>
 
-
-    <ion-button expand="full" (click)="logOff()" *ngIf="isLogin" class="ion-margin-top">退出登录</ion-button>
-
+    <ion-button expand="full" (click)="logOff()" *ngIf="isLogin" class="logout-button">退出登录</ion-button>
   </div>
+
+  <ion-modal [isOpen]="quickMenuManageOpen" (didDismiss)="closeQuickMenuManage()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>管理常用功能</ion-title>
+          <ion-buttons slot="start">
+            <ion-button (click)="closeQuickMenuManage()">取消</ion-button>
+          </ion-buttons>
+          <ion-buttons slot="end">
+            <ion-button (click)="saveDraftQuickMenus()" [disabled]="!canSaveDraftQuickMenus()">保存</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <section class="quick-manage-overview">
+          <div class="quick-manage-overview-top">
+            <h3>已选 {{getQuickMenuManageHint()}}</h3>
+            <span>至少 {{getQuickMenuRequiredCount()}} 项</span>
+          </div>
+          <ion-progress-bar [value]="getQuickMenuProgressValue()"></ion-progress-bar>
+          <p *ngIf="!canSaveDraftQuickMenus()">请至少选择 {{getQuickMenuRequiredCount()}} 个常用功能后再保存。</p>
+        </section>
+
+        <section class="quick-manage-section">
+          <div class="quick-manage-header">
+            <h3>常用功能顺序</h3>
+            <span>{{getQuickMenuManageHint()}}</span>
+          </div>
+          <ion-list lines="full" class="quick-manage-list" *ngIf="draftQuickMenuTitles.length > 0">
+            <ion-reorder-group [disabled]="false" (ionItemReorder)="onDraftReorder($event)">
+              <ion-item *ngFor="let title of draftQuickMenuTitles">
+                <ion-thumbnail slot="start" class="quick-manage-icon" *ngIf="getMenuByTitle(title) as menu">
+                  <img [src]="menu.image" alt="">
+                </ion-thumbnail>
+                <ion-label>{{title}}</ion-label>
+                <ion-reorder slot="end"></ion-reorder>
+              </ion-item>
+            </ion-reorder-group>
+          </ion-list>
+          <p class="quick-manage-empty" *ngIf="draftQuickMenuTitles.length === 0">未选择常用功能，请从下方勾选。</p>
+        </section>
+
+        <section class="quick-manage-section" *ngIf="getQuickMenuRecommendations().length > 0">
+          <div class="quick-manage-header">
+            <h3>推荐添加</h3>
+            <span>一键补齐</span>
+          </div>
+          <div class="quick-manage-recommend-wrap">
+            <button
+              type="button"
+              class="quick-recommend-chip"
+              *ngFor="let menu of getQuickMenuRecommendations()"
+              (click)="addRecommendedQuickMenu(menu.title)">
+              {{menu.title}}
+            </button>
+          </div>
+        </section>
+
+        <section class="quick-manage-section">
+          <div class="quick-manage-header">
+            <h3>选择常用功能</h3>
+            <span>{{quickMenuMin}}-{{quickMenuLimit}}项</span>
+          </div>
+          <ion-list lines="full" class="quick-manage-list">
+            <ion-item *ngFor="let menu of visibleMenuOptions">
+              <ion-checkbox
+                slot="start"
+                [checked]="isDraftSelected(menu.title)"
+                [disabled]="(!isDraftSelected(menu.title) && draftQuickMenuTitles.length >= quickMenuLimit) || (isDraftSelected(menu.title) && draftQuickMenuTitles.length <= quickMenuMin)"
+                (ionChange)="onDraftSelectionChange(menu.title, $event.detail.checked)">
+              </ion-checkbox>
+              <ion-thumbnail slot="start" class="quick-manage-icon">
+                <img [src]="menu.image" alt="">
+              </ion-thumbnail>
+              <ion-label>{{menu.title}}</ion-label>
+            </ion-item>
+          </ion-list>
+        </section>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
