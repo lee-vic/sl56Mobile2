@@ -31,7 +31,6 @@ export class CalculationService {
   }
   calculate(form): Observable<Array<any>> {
     let data = JSON.stringify(form);
-    console.log(data);
     let seq = this.http.post<Array<any>>(
       apiUrl + "/Calculation/Calculate",
       data,

@@ -87,9 +87,6 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
         this.hasShownConnectionToast = false;
         this.multiMarkIsSend();
       } else {
-        if (p.name === "disconnected") {
-          this.showConnectionUnavailableToast();
-        }
         this.isConnected = false;
       }
     });

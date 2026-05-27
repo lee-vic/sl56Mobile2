@@ -1,7 +1,8 @@
-ion-item > ion-label:not([position="stacked"]) {
-	flex: 0 0 6.5em;
-	max-width: 6.5em;
-	min-width: 6.5em;
+﻿ion-item > ion-label:not([position="stacked"]) {
+	flex: 0 0 clamp(8.5em, 36vw, 11em);
+	max-width: clamp(8.5em, 36vw, 11em);
+	min-width: clamp(8.5em, 36vw, 11em);
 	white-space: normal;
 	word-break: keep-all;
 }
+

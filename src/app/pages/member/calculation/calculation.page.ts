@@ -5,7 +5,9 @@ import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
 import { Router } from '@angular/router';
-import { PieceRule, Size } from 'src/app/interfaces/size';
+import { PieceRule } from 'src/app/interfaces/size';
+import { finalize } from 'rxjs/operators';
+import { CalculationStateService } from 'src/app/providers/calculation-state.service';
 
 @Component({
   selector: "app-calculation",
@@ -14,21 +16,21 @@ import { PieceRule, Size } from 'src/app/interfaces/size';
 })
 export class CalculationPage implements OnInit {
   calculateMode = "1";
-  countryList: any;
+  countryList: Array<any> = [];
   pieceTemplateRules: Array<any> = [];
-  modeOfTransportList: any;
-  volumetricDivisorList: any;
-  priceRuleTemplateInfoList: any;
-  countrySearch: any;
-  modeOfTransportId: number;
+  modeOfTransportList: Array<any> = [];
+  volumetricDivisorList: Array<any> = [];
+  priceRuleTemplateInfoList: Array<any> = [];
+  countrySearch: Array<any> = [];
+  modeOfTransportId = 0;
   selectedCountry: any;
-  countryInput: string;
+  countryInput = "";
   showCountryList: boolean = false;
+  hasCountryValidationError: boolean = false;
   selectRuleIds: Array<number> = [];
-  // sizes: Array<Size> = [];
   public myForm: FormGroup;
-  public sizeForm: FormGroup;
   public loading: any;
+  public isSubmitting = false;
 
   constructor(
     public countryProvider: CountryService,
@@ -39,11 +41,12 @@ export class CalculationPage implements OnInit {
     private router: Router,
     private alertController: AlertController,
     public countryAutoCompleteService: CountryAutoCompleteService,
+    private calculationState: CalculationStateService,
 
     public service: CalculationService
   ) {
     this.myForm = this.formBuilder.group({
-      ModeOfTransportIdList: ["0", Validators.required],
+      ModeOfTransportIdList: [""],
       ProductContentType: ["1", Validators.required],
       countryId: ["", Validators.required],
       actualWeight: ["", Validators.required],
@@ -58,54 +61,46 @@ export class CalculationPage implements OnInit {
     });
   }
   ngOnInit(): void {
-    this.service.getModeOfTransportList().subscribe((res) => {
-      this.modeOfTransportList = res;
+    this.service.getModeOfTransportList().subscribe((res: any) => {
+      this.modeOfTransportList = Array.isArray(res) ? res : [];
     });
-    this.service.getVolumetricDivisorList().subscribe((res) => {
-      this.volumetricDivisorList = res;
+    this.service.getVolumetricDivisorList().subscribe((res: any) => {
+      this.volumetricDivisorList = Array.isArray(res) ? res : [];
     });
-    this.service.getPriceRuleTemplateInfoList().subscribe((res) => {
-      this.priceRuleTemplateInfoList = res;
+    this.service.getPriceRuleTemplateInfoList().subscribe((res: any) => {
+      this.priceRuleTemplateInfoList = Array.isArray(res) ? res : [];
     });
-    this.service.GetPieceRuleTemplates().subscribe((res) => {
-      this.pieceTemplateRules = res;
-      this.mapNewPieceRules.forEach((p) => {
-        this.sizes.value[0].PieceRules.push(p);
-      });
+    this.service.GetPieceRuleTemplates().subscribe((res: any) => {
+      this.pieceTemplateRules = Array.isArray(res) ? res : [];
+      this.initializePieceRules();
     });
-    this.countryProvider.getCoutryList().subscribe((res) => {
-      this.countryList = this.countrySearch = res;
+    this.countryProvider.getCoutryList().subscribe((res: any) => {
+      const list = Array.isArray(res) ? res : [];
+      this.countryList = list;
+      this.countrySearch = list;
     });
-    this.myForm.get("piece").valueChanges.subscribe((piece) => {
-      if (piece < 0) {
+    this.myForm.get("piece")?.valueChanges.subscribe((piece: number) => {
+      if (piece < 0 || piece == null || piece === 0) {
         return;
       }
-      if (piece == null || piece == 0) {
-        return;
-      } else if (piece < this.sizes.length) {
+
+      if (piece < this.sizes.length) {
         for (let i = this.sizes.length; i > piece; i--) {
           this.sizes.removeAt(i - 1);
         }
       } else if (piece > this.sizes.length) {
-        let diff = piece - this.sizes.length;
+        const diff = piece - this.sizes.length;
         for (let i = 0; i < diff; i++) {
-          this.addSize();
+          this.addSizeRow();
         }
       }
     });
-    this.myForm.get("isEditSize").valueChanges.subscribe((isEditSize) => {
-      //不输入尺寸时，跳过验证sizeform
-      if (!isEditSize) {
-        this.sizes.disable();
-        this.myForm.get("actualWeight").enable();
-      } else {
-        //输入尺寸时，跳过实重验证
-        this.sizes.enable();
-        this.myForm.get("actualWeight").disable();
-      }
+    this.myForm.get("isEditSize")?.valueChanges.subscribe((isEditSize: boolean) => {
+      this.applyWeightMode(!!isEditSize);
     });
-    //初始化时，默认不输入尺寸
-    this.sizes.disable();
+
+    this.applyModeRules();
+    this.applyWeightMode(false);
   }
 
   get mapNewPieceRules() {
@@ -131,15 +126,142 @@ export class CalculationPage implements OnInit {
     });
   }
 
+  private initializePieceRules() {
+    this.sizes.controls.forEach((ctrl) => {
+      ctrl.get("PieceRules")?.setValue(this.mapNewPieceRules, { emitEvent: false });
+      ctrl.get("SeletedTemplateRules")?.setValue([], { emitEvent: false });
+    });
+  }
+
+  private applyModeRules() {
+    const transportControl = this.myForm.get("ModeOfTransportIdList");
+    const isEditSizeControl = this.myForm.get("isEditSize");
+
+    if (this.calculateMode === "2") {
+      transportControl?.setValidators([Validators.required]);
+      isEditSizeControl?.enable({ emitEvent: false });
+    } else {
+      transportControl?.clearValidators();
+      transportControl?.setValue("", { emitEvent: false });
+      isEditSizeControl?.setValue(false, { emitEvent: false });
+      isEditSizeControl?.disable({ emitEvent: false });
+    }
+
+    transportControl?.updateValueAndValidity({ emitEvent: false });
+    this.applyWeightMode(!!isEditSizeControl?.value);
+  }
+
+  private applyWeightMode(isEditSize: boolean) {
+    const actualWeightControl = this.myForm.get("actualWeight");
+    const sizeMode = this.calculateMode === "2" && !!isEditSize;
+
+    if (sizeMode) {
+      this.sizes.enable({ emitEvent: false });
+      actualWeightControl?.clearValidators();
+      actualWeightControl?.setValue("", { emitEvent: false });
+      actualWeightControl?.disable({ emitEvent: false });
+    } else {
+      this.sizes.disable({ emitEvent: false });
+      actualWeightControl?.setValidators([Validators.required, Validators.min(0.01)]);
+      actualWeightControl?.enable({ emitEvent: false });
+    }
+
+    actualWeightControl?.updateValueAndValidity({ emitEvent: false });
+    this.sizes.updateValueAndValidity({ emitEvent: false });
+  }
+
   get sizes() {
-    console.log("getSizes:", this.myForm.get("sizes"));
     return this.myForm.get("sizes") as FormArray;
   }
 
-  filterCountryItems(ev) {
-    let val = ev.srcElement["value"];
+  get countryControl() {
+    return this.myForm.get("countryId");
+  }
+
+  get actualWeightControl() {
+    return this.myForm.get("actualWeight");
+  }
+
+  get isCountryErrorVisible() {
+    return this.hasCountryValidationError || (!!this.countryControl && this.countryControl.touched && !this.selectedCountry);
+  }
+
+  get isWeightErrorVisible() {
+    return !!this.actualWeightControl && this.actualWeightControl.touched && this.actualWeightControl.invalid;
+  }
+
+  get canSubmit() {
+    return !this.isSubmitting && !this.submitHint;
+  }
+
+  get formProgress() {
+    const requiredSteps = this.calculateMode === "2" ? 4 : 3;
+    let completedSteps = 0;
+
+    if (this.myForm.get("ProductContentType")?.valid) {
+      completedSteps += 1;
+    }
+    if (this.selectedCountry) {
+      completedSteps += 1;
+    }
+    if (this.isSizeMode ? this.sizes.valid : this.actualWeightControl?.valid) {
+      completedSteps += 1;
+    }
+    if (this.calculateMode === "2" && this.myForm.get("ModeOfTransportIdList")?.valid) {
+      completedSteps += 1;
+    }
+
+    return Math.min(completedSteps / requiredSteps, 1);
+  }
+
+  get formProgressLabel() {
+    const percentage = Math.round(this.formProgress * 100);
+    return `资料完成度 ${percentage}%`;
+  }
+
+  get isSizeMode() {
+    return this.calculateMode === "2" && !!this.myForm.get("isEditSize")?.value;
+  }
+
+  get submitHint() {
+    if (!this.selectedCountry) {
+      return "请先选择有效国家";
+    }
+    if (this.isSizeMode && this.sizes.invalid) {
+      return "请完善规格尺寸信息";
+    }
+    if (this.actualWeightControl?.enabled && this.actualWeightControl.invalid) {
+      return "请输入有效重量";
+    }
+    if (this.myForm.invalid) {
+      return "请完善必填信息后再计算";
+    }
+    return "";
+  }
+
+  private setSelectedCountry(item: any) {
+    this.showCountryList = false;
+    this.countryInput = item.Name;
+    this.myForm.get("countryId")?.setValue(item.Name, { emitEvent: false });
+    this.myForm.get("countryId")?.markAsTouched();
+    this.selectedCountry = item;
+    this.hasCountryValidationError = false;
+  }
+
+  onCountryFocus() {
+    this.showCountryList = true;
+  }
+
+  filterCountryItems(ev: any) {
+    const val = (
+      ev?.detail?.value ??
+      ev?.target?.value ??
+      ev?.srcElement?.value ??
+      ""
+    ).toString();
     this.showCountryList = true;
     this.selectedCountry = null;
+    this.hasCountryValidationError = false;
     if (val && val.trim() !== "") {
       this.countrySearch = this.countryList.filter(function (item) {
         return item.Name.toLowerCase().includes(val.toLowerCase());
@@ -149,11 +271,8 @@ export class CalculationPage implements OnInit {
     }
   }
 
-  countryItemClick(item) {
-    this.showCountryList = false;
-    this.countryInput = item.Name;
-    this.myForm.get("countryId")?.setValue(item.Name, { emitEvent: false });
-    this.selectedCountry = item;
+  countryItemClick(item: any) {
+    this.setSelectedCountry(item);
   }
 
   onCountryKeyup(event: KeyboardEvent) {
@@ -162,93 +281,219 @@ export class CalculationPage implements OnInit {
     }
   }
   onCountryBlur() {
-    this.selectCountry();
+    this.myForm.get("countryId")?.markAsTouched();
+    setTimeout(() => this.selectCountry(), 120);
   }
+
+  onCountryClear() {
+    this.countrySearch = this.countryList;
+    this.selectedCountry = null;
+    this.showCountryList = false;
+    this.hasCountryValidationError = false;
+    this.myForm.get("countryId")?.setValue("", { emitEvent: false });
+  }
+
   selectCountry() {
-    if (this.countrySearch.length == 1) {
+    const inputCountry = (this.myForm.get("countryId")?.value || "").toString().trim();
+    if (!inputCountry) {
+      this.selectedCountry = null;
       this.showCountryList = false;
-      this.countryInput = this.countrySearch[0].Name;
-      this.myForm.get("countryId")?.setValue(this.countrySearch[0].Name, { emitEvent: false });
-      this.selectedCountry = this.countrySearch[0];
+      this.hasCountryValidationError = true;
+      return;
     }
+
+    const exactMatch = this.countryList?.find(
+      (item) => item.Name.toLowerCase() === inputCountry.toLowerCase()
+    );
+
+    if (exactMatch) {
+      this.setSelectedCountry(exactMatch);
+      return;
+    }
+
+    if (this.countrySearch?.length === 1) {
+      this.setSelectedCountry(this.countrySearch[0]);
+      return;
+    }
+
+    this.selectedCountry = null;
+    this.hasCountryValidationError = true;
   }
-  ruleChanged(item: any, e: CustomEvent) {
-    let checked = e.detail.checked;
-    if (checked == true) {
-      this.selectRuleIds.push(item.Id);
+  ruleChanged(item: any, event: CustomEvent) {
+    const checked = !!event.detail.checked;
+    if (checked === true) {
+      if (!this.selectRuleIds.includes(item.Id)) {
+        this.selectRuleIds.push(item.Id);
+      }
     } else {
       this.selectRuleIds = this.selectRuleIds.filter((p) => p !== item.Id);
     }
-
-    console.log(this.selectRuleIds);
   }
-  doCalculate(formValue) {
-    console.log("calculateMode", this.calculateMode);
-    console.log(formValue);
-    if (this.selectedCountry == null) {
-      this.alertController.create({
+
+  isRuleChecked(ruleId: number) {
+    return this.selectRuleIds.includes(ruleId);
+  }
+
+  private buildPayload() {
+    const formValue = this.myForm.getRawValue();
+    const payload: any = {
+      ...formValue,
+      countryId: this.selectedCountry?.Id,
+      SeletedTemplateRules: this.selectRuleIds,
+    };
+
+    if (!this.isSizeMode || this.calculateMode === "1") {
+      payload.sizes = [];
+    }
+
+    if (this.calculateMode === "1") {
+      payload.ModeOfTransportIdList = "";
+      payload.postalCode = "";
+      payload.city = "";
+      payload.declaredValue = "";
+      payload.volumeWeight = "";
+      payload.volumetric = "1";
+    }
+
+    return payload;
+  }
+
+  async doCalculate() {
+    if (this.isSubmitting) {
+      return;
+    }
+
+    if (!this.selectedCountry) {
+      this.hasCountryValidationError = true;
+      this.myForm.get("countryId")?.markAsTouched();
+      const alert = await this.alertController.create({
         header: '信息不完整',
-        message: "您输入的国家不正确，请重新输入",
+        message: '您输入的国家不正确，请重新输入',
         backdropDismiss: false,
         keyboardClose: false,
-        buttons: [
-          {
-            text: '确定',
-            role: 'cancel'
-          }
-        ]
-      }).then(p => p.present());
-    }
-    else {
-      this.loadingCtrl
-        .create({
-          message: "请稍后...",
-        })
-        .then((res) => res.present());
-      if (this.sizes.status == "DISABLED" || this.calculateMode == "1") {
-        formValue.sizes = [];
-      }
-      formValue.countryId = this.selectedCountry.Id;
-      formValue.SeletedTemplateRules = this.selectRuleIds;
-      console.log(formValue);
-      this.service.calculate(formValue).subscribe((res) => {
-        this.loadingCtrl.dismiss();
-
-        if (res.length > 0) {
-          localStorage.setItem("CalculationResult", JSON.stringify(res));
-          this.router.navigateByUrl("/member/calculation/calculation-list");
-        } else {
-          this.toastCtrl
-            .create({
-              message: "当前条件未能找到合适报价，请修改条件重试",
-              position: "middle",
-              duration: 1500,
-            })
-            .then((res) => res.present());
-        }
+        buttons: [{ text: '确定', role: 'cancel' }],
       });
+      await alert.present();
+      return;
     }
+
+    this.isSubmitting = true;
+    const loading = await this.loadingCtrl.create({
+      message: '正在计算报价，请稍候...',
+      spinner: 'crescent',
+    });
+    await loading.present();
+
+    this.service
+      .calculate(this.buildPayload())
+      .pipe(
+        finalize(async () => {
+          this.isSubmitting = false;
+          await loading.dismiss();
+        })
+      )
+      .subscribe({
+        next: async (res) => {
+          if (Array.isArray(res) && res.length > 0) {
+            this.calculationState.setCalculationResults(res);
+            this.calculationState.clearCurrentDetail();
+            this.router.navigateByUrl('/member/calculation/calculation-list');
+            return;
+          }
+
+          const toast = await this.toastCtrl.create({
+            message: '当前条件未能找到合适报价，请修改条件重试',
+            position: 'middle',
+            duration: 1800,
+          });
+          await toast.present();
+        },
+        error: async () => {
+          const toast = await this.toastCtrl.create({
+            message: '计算请求失败，请检查网络后重试',
+            position: 'middle',
+            duration: 1800,
+            color: 'danger',
+          });
+          await toast.present();
+        },
+      });
   }
-  checkPieceRule(pieceIndex, ruleIndex) {
-    this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = !this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked;
+
+  submitFromFooter() {
+    this.myForm.markAllAsTouched();
+    this.selectCountry();
+    if (!this.canSubmit) {
+      return;
+    }
+    this.doCalculate();
+  }
+
+  private updatePieceRules(pieceIndex: number, ruleIndex: number, checked: boolean) {
+    this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = checked;
     //清空已选择的id
     this.sizes.value[pieceIndex].SeletedTemplateRules.splice(0, this.sizes.value[pieceIndex].SeletedTemplateRules.length);
     //重新添加已选择的id
-    this.sizes.value[pieceIndex].PieceRules.filter(p => p.Checked).map(p => p.ObjectId).forEach(p => {
+    this.sizes.value[pieceIndex].PieceRules.filter((p: any) => p.Checked).map((p: any) => p.ObjectId).forEach((p: any) => {
       this.sizes.value[pieceIndex].SeletedTemplateRules.push(p);
     });
   }
-  addSize() {
+
+  togglePieceRule(pieceIndex: number, ruleIndex: number) {
+    const checked = !this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked;
+    this.updatePieceRules(pieceIndex, ruleIndex, checked);
+  }
+
+  copyPreviousSize(pieceIndex: number) {
+    if (pieceIndex <= 0) {
+      return;
+    }
+
+    const previous = this.sizes.at(pieceIndex - 1);
+    const current = this.sizes.at(pieceIndex);
+    const valueFields = ["Piece", "Weight", "Length", "Width", "Height"];
+
+    valueFields.forEach((field) => {
+      current.get(field)?.setValue(previous.get(field)?.value);
+    });
+
+    const prevRules = (previous.get("PieceRules")?.value || []) as Array<any>;
+    const clonedRules = prevRules.map((rule) => ({ ...rule }));
+    const selectedIds = clonedRules.filter((rule) => rule.Checked).map((rule) => rule.ObjectId);
+
+    current.get("PieceRules")?.setValue(clonedRules);
+    current.get("SeletedTemplateRules")?.setValue(selectedIds);
+  }
+
+  sizePreview(pieceIndex: number) {
+    const sizeGroup = this.sizes.at(pieceIndex);
+    const weight = sizeGroup.get("Weight")?.value || "-";
+    const length = sizeGroup.get("Length")?.value || "-";
+    const width = sizeGroup.get("Width")?.value || "-";
+    const height = sizeGroup.get("Height")?.value || "-";
+
+    return `${weight}kg / ${length}x${width}x${height}cm`;
+  }
+
+  addSizeRow() {
     this.sizes.push(this.createSizeForm());
   }
-  removeSize() {
-    let lastSizeIndex = this.sizes.length - 1;
-    this.sizes.removeAt(lastSizeIndex);
+
+  addSize() {
+    const nextPiece = this.sizes.length + 1;
+    this.myForm.get("piece")?.setValue(nextPiece);
   }
+
+  removeSize() {
+    const nextPiece = Math.max(1, this.sizes.length - 1);
+    this.myForm.get("piece")?.setValue(nextPiece);
+  }
+
   segmentChanged(ev: CustomEvent) {
     this.selectRuleIds = [];
-    if (ev.detail.value == "1") this.myForm.get("actualWeight").enable();
-    else if (this.myForm.value.isEditSize)
-      this.myForm.get("actualWeight").disable();
+    this.showCountryList = false;
+    this.hasCountryValidationError = false;
+    this.calculateMode = ev.detail.value as string;
+    this.applyModeRules();
   }
 }

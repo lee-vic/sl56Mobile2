@@ -7,36 +7,51 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list>
+<ion-content class="problem-content">
+  <ion-grid fixed class="problem-shell">
+    <ion-row class="ion-justify-content-center ion-padding-top">
+      <ion-col size="12" size-md="10" size-lg="8">
+        <ion-card class="summary-card ion-no-margin ion-margin-bottom">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              问题详情
+            </ion-card-title>
+            <ion-card-subtitle>请查看问题信息并在下方选择处理方案。</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="none">
 
-    <ion-item>
-      <ion-label>目的地国家</ion-label>
-      <ion-note slot="end">{{data?.CountryName}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>价格名称</ion-label>
-      <ion-note slot="end">{{data?.PriceName}}</ion-note>
-    </ion-item>
-    <ion-item *ngIf="data?.Problem?.Status==1">
-      <ion-label color="success">当前问题已处理完成</ion-label>
-    </ion-item>
-    <ion-item>
-      <ion-label>问题名称</ion-label>
-      <ion-note slot="end" color="dark">{{data?.Problem?.ObjectName}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>问题详情</ion-label>
-      <ion-note slot="end" color="dark">{{data?.Problem?.Remark}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>处理指引</ion-label>
-      <ion-note slot="end" color="secondary">{{data?.Problem?.Remark1}}</ion-note>
-    </ion-item>
-  </ion-list>
-  <ion-item
-    *ngIf="data?.Problem.ProcessTypeList.length>0 && data?.Problem?.Status==0 then problemActions else btnContactCS">
-  </ion-item>
+              <ion-item>
+                <ion-label>目的地国家</ion-label>
+                <ion-note slot="end">{{data?.CountryName}}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>价格名称</ion-label>
+                <ion-note slot="end">{{data?.PriceName}}</ion-note>
+              </ion-item>
+              <ion-item *ngIf="data?.Problem?.Status==1">
+                <ion-label color="success">当前问题已处理完成</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label>问题名称</ion-label>
+                <ion-note slot="end" color="dark">{{data?.Problem?.ObjectName}}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>问题详情</ion-label>
+                <ion-note slot="end" color="dark">{{data?.Problem?.Remark}}</ion-note>
+              </ion-item>
+              <ion-item>
+                <ion-label>处理指引</ion-label>
+                <ion-note slot="end" color="secondary">{{data?.Problem?.Remark1}}</ion-note>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-item class="action-hint"
+          *ngIf="data?.Problem.ProcessTypeList.length>0 && data?.Problem?.Status==0 then problemActions else btnContactCS">
+        </ion-item>
 
   <ng-template #problemActions>
     <ion-item>
@@ -55,7 +70,7 @@
   </ng-template>
 
   <!-- 显示Page1（更新信息） -->
-  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page1'">
+  <ion-item-group class="ion-margin-bottom" *ngIf="data?.Problem?.Status==0 && processType=='Page1'">
     <form #page1Form="ngForm" (ngSubmit)="submit(page1Form)">
       <!-- 显示补充信息-单项选择 -->
       <ion-card *ngIf="data?.Problem?.ProcessTypeList.indexOf(1)!=-1">
@@ -143,7 +158,7 @@
   </ion-item-group>
 
   <!-- 显示Page2（更改渠道） -->
-  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page2'">
+  <ion-item-group class="ion-margin-bottom" *ngIf="data?.Problem?.Status==0 && processType=='Page2'">
     <ion-card>
       <ion-card-header>
         <ion-card-subtitle>如果你需要更改渠道，请点击联系客服按钮</ion-card-subtitle>
@@ -155,7 +170,7 @@
   </ion-item-group>
 
   <!-- 显示Page3（退件） -->
-  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page3'">
+  <ion-item-group class="ion-margin-bottom" *ngIf="data?.Problem?.Status==0 && processType=='Page3'">
     <ion-card>
       <ion-card-header>
         <ion-card-subtitle>如果你需要退货处理，请点击退货申请按钮</ion-card-subtitle>
@@ -167,7 +182,7 @@
   </ion-item-group>
 
   <!-- 显示Page4（直接确认） -->
-  <ion-item-group *ngIf="data?.Problem?.Status==0 && processType=='Page4'">
+  <ion-item-group class="ion-margin-bottom" *ngIf="data?.Problem?.Status==0 && processType=='Page4'">
     <ion-card>
       <ion-card-header>
         <ion-card-subtitle>当前问题可以直接确认，请点击确认按钮进行确认操作</ion-card-subtitle>
@@ -179,6 +194,9 @@
     </ion-card>
   </ion-item-group>
 
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 
 <ng-template #btnContactCS>

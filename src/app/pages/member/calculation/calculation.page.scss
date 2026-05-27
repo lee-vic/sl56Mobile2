@@ -1,18 +1,282 @@
-ion-auto-complete{
-    width: 100% !important;
-}
-ion-auto-complete  ul{
-    width: 100% !important;
-}
-
-ion-item > ion-label:not([position="stacked"]) {
-    flex: 0 0 6.5em;
-    max-width: 6.5em;
-    min-width: 6.5em;
-    white-space: normal;
-    word-break: keep-all;
+﻿:host {
+    --calc-radius: 16px;
+    --calc-soft-radius: 12px;
+    --calc-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+    --calc-card-bg: rgba(255, 255, 255, 0.92);
+    --calc-border: rgba(148, 163, 184, 0.26);
+    --calc-title: #0f172a;
+    --calc-subtitle: #475569;
+    --calc-note: #64748b;
 }
 
-.tips{
-    height: 50px;
+ion-content.calc-content {
+    --background:
+        radial-gradient(1200px 500px at 10% -10%, rgba(14, 165, 233, 0.16), transparent 45%),
+        radial-gradient(900px 420px at 100% 0%, rgba(59, 130, 246, 0.14), transparent 48%),
+        linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+    --padding-bottom: 132px;
+}
+
+.calc-shell {
+    max-width: 940px;
+    margin: 0 auto;
+    display: grid;
+    gap: 14px;
+}
+
+.mode-card,
+.panel-card,
+.size-card {
+    border-radius: var(--calc-radius);
+    box-shadow: var(--calc-shadow);
+    border: 1px solid var(--calc-border);
+    background: var(--calc-card-bg);
+}
+
+.mode-card {
+    margin: 0;
+}
+
+.mode-card ion-card-content {
+    padding: 14px;
+}
+
+.mode-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.mode-header h2 {
+    margin: 0;
+    font-size: 19px;
+    letter-spacing: 0.01em;
+    color: var(--calc-title);
+}
+
+.mode-note {
+    display: block;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--calc-note);
+}
+
+.progress-wrap {
+    margin-top: 12px;
+}
+
+.progress-label {
+    font-size: 12px;
+    color: var(--calc-subtitle);
+    margin-bottom: 6px;
+}
+
+.progress-wrap ion-progress-bar {
+    --background: rgba(148, 163, 184, 0.25);
+    --progress-background: linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%);
+    border-radius: 999px;
+    height: 6px;
+}
+
+.calc-form-list {
+    background: transparent;
+    padding-bottom: 0;
+}
+
+.panel-card {
+    margin: 0;
+}
+
+.calc-form-list ion-item {
+    --background: transparent;
+    --inner-padding-top: 10px;
+    --inner-padding-bottom: 10px;
+    --min-height: 82px;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+    --inner-padding-start: 0;
+}
+
+.panel-card ion-card-header {
+    padding-bottom: 0;
+}
+
+.panel-card ion-card-title {
+    color: var(--calc-title);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.panel-card ion-card-subtitle {
+    color: var(--calc-subtitle);
+    margin-top: 4px;
+    font-size: 13px;
+}
+
+.calc-form-list ion-input,
+.calc-form-list ion-select,
+.calc-form-list ion-searchbar {
+    padding: 0;
+    --background: #f8fbff;
+    --border-radius: var(--calc-soft-radius);
+    --box-shadow: none;
+    --placeholder-color: #94a3b8;
+}
+
+.country-result-list {
+    margin: 2px 0 10px;
+    border-radius: var(--calc-soft-radius);
+    overflow: hidden;
+    border: 1px solid var(--calc-border);
+    background: #fff;
+}
+
+.country-result-list ion-item {
+    --min-height: 44px;
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
+}
+
+.invalid-field {
+    --highlight-color-invalid: #ef4444;
+}
+
+.validation-errors {
+    margin-top: -4px;
+    margin-bottom: 6px;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 12px;
+    line-height: 1.4;
+    padding-bottom: 6px;
+}
+
+.toggle-item {
+    --min-height: 60px;
+}
+
+.toggle-note {
+    display: block;
+    margin-top: -4px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.size-card {
+    margin: 0;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.size-card ion-card-title {
+    font-size: 15px;
+}
+
+.piece-item {
+    --min-height: 78px;
+}
+
+.size-block {
+    border: 1px solid var(--calc-border);
+    border-radius: var(--calc-soft-radius);
+    background: #ffffff;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.size-block ion-item[slot="header"] {
+    --min-height: 64px;
+    --padding-start: 12px;
+    --padding-end: 6px;
+    --inner-padding-end: 4px;
+}
+
+.size-block h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.size-block p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.size-block ion-item {
+    --min-height: 72px;
+}
+
+.piece-rule-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.piece-rule-list ion-chip {
+    cursor: pointer;
+    min-height: 38px;
+}
+
+.size-action-row {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.calc-footer {
+    box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.12);
+    --background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+}
+
+.calc-footer ion-toolbar {
+    --background: transparent;
+    --border-color: var(--calc-border);
+}
+
+.footer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.footer-inner ion-note {
+    font-size: 12px;
+}
+
+@media (max-width: 576px) {
+    .calc-shell {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .mode-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .calc-form-list ion-item,
+    .size-block ion-item {
+        --inner-padding-top: 8px;
+        --inner-padding-bottom: 8px;
+        --min-height: 76px;
+    }
+
+    .piece-rule-list ion-chip {
+        min-height: 36px;
+    }
+
+    .footer-inner {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
 }

@@ -7,89 +7,152 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-segment [(ngModel)]="tab" scrollable>
-    <ion-segment-button value="1">
-      基本信息
-    </ion-segment-button>
-    <ion-segment-button value="5">
-      费用明细
-    </ion-segment-button>
-    <ion-segment-button value="2">
-      报价声明
-    </ion-segment-button>
-    <ion-segment-button value="3">
-      报价备注
-    </ion-segment-button>
-    <ion-segment-button value="4">
-      国家备注
-    </ion-segment-button>
-  </ion-segment>
-  <div [ngSwitch]="tab" class="ion-margin-top">
-    <div *ngSwitchCase="'1'">
-      <ion-list>
-        <ion-item>
-          <ion-label>目的地</ion-label>
+<ion-content class="detail-content">
+  <ng-container *ngIf="data">
+    <div class="detail-shell ion-padding">
+      <ion-card class="summary-card">
+        <ion-card-header>
+          <ion-card-title>{{ data.PriceCode }} <span class="summary-series">{{ data.Series }}</span></ion-card-title>
+          <ion-card-subtitle>{{ data.PriceName }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="summary-actions">
+            <ion-button fill="outline" size="small" (click)="copyPriceCode()">复制报价代码</ion-button>
+            <ion-button fill="clear" size="small" (click)="copyPriceName()">复制报价名称</ion-button>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-metric" *ngFor="let item of summaryCards" [class.summary-metric-price]="item.type === 'price'">
+              <div class="metric-label">{{ item.label }}</div>
+              <div class="metric-value">
+                <span class="metric-emphasis" *ngIf="item.type === 'price'">{{ item.emphasis }}</span>
+                <span>{{ item.value }}</span>
+                <span class="metric-emphasis" *ngIf="item.type === 'metric'">{{ item.emphasis }}</span>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
 
-          <ion-input aria-label="目的地" class="ion-text-right" readonly [value]="data.CountryName"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>报价代码</ion-label>
-          <ion-input aria-label="报价代码" class="ion-text-right" readonly [value]="data.PriceCode"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>报价名称</ion-label>
+      <div *ngIf="hasImportantTip" class="detail-tip" [class.detail-tip-danger]="isHighRiskTip(data.ImportantTip)">
+        <ion-icon [name]="isHighRiskTip(data.ImportantTip) ? 'warning-outline' : 'information-circle-outline'"></ion-icon>
+        <div>
+          <div class="detail-tip-title">重要提醒</div>
+          <div class="detail-tip-text">{{ data.ImportantTip }}</div>
+        </div>
+      </div>
 
-          <ion-input aria-label="报价名称" class="ion-text-right" readonly [value]="data.PriceName"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>运输方式</ion-label>
-          <ion-input aria-label="运输方式" class="ion-text-right" readonly [value]="data.ModeOfTransportName"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>金额</ion-label>
-          <ion-input aria-label="金额" class="ion-text-right" readonly [value]="data.TotalAmount"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>币别</ion-label>
-          <ion-input aria-label="币别" class="ion-text-right" readonly [value]="data.Currency"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>计费重量</ion-label>
-          <ion-input aria-label="计费重量" class="ion-text-right" readonly [value]="data.ChargeableWeight"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>体积除数</ion-label>
-          <ion-input aria-label="体积除数" class="ion-text-right" readonly [value]="data.Volumetric"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>含油参价</ion-label>
-          <ion-input aria-label="含油参价" class="ion-text-right" readonly [value]="data.UnitPrice"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>重要提醒</ion-label>
-          <ion-input aria-label="重要提醒" class="ion-text-right" readonly [value]="data.ImportantTip" color="danger"></ion-input>
-        </ion-item>
-      </ion-list>
+      <div class="segment-wrap">
+        <ion-segment [(ngModel)]="tab" scrollable>
+          <ion-segment-button value="1">
+            基本信息
+          </ion-segment-button>
+          <ion-segment-button value="5">
+            费用明细
+          </ion-segment-button>
+          <ion-segment-button value="more">
+            更多说明
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <div [ngSwitch]="tab" class="detail-body">
+        <div *ngSwitchCase="'1'">
+          <ion-card class="section-card">
+            <ion-card-header>
+              <ion-card-title>基础信息</ion-card-title>
+              <ion-card-subtitle>报价识别与计费关键字段</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="info-list">
+                <div class="info-row" *ngFor="let item of basicInfoRows">
+                  <div class="info-label">{{ item.label }}</div>
+                  <div class="info-value">{{ item.value }}</div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <div *ngSwitchCase="'5'">
+          <ion-card class="section-card">
+            <ion-card-header>
+              <ion-card-title>费用明细</ion-card-title>
+              <ion-card-subtitle>按费用项查看公式与金额</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="charge-list" *ngIf="hasCharges; else emptyCharges">
+                <div class="charge-row" *ngFor="let item of data.Charges">
+                  <div class="charge-main">
+                    <div class="charge-name">{{ item.ChargeName }}</div>
+                    <div class="charge-expression">{{ item.Expression }}</div>
+                  </div>
+                  <div class="charge-amount">{{ item.Amount }}</div>
+                </div>
+              </div>
+              <ng-template #emptyCharges>
+                <div class="empty-section">暂无费用明细</div>
+              </ng-template>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <div *ngSwitchCase="'more'">
+          <ion-card class="section-card">
+            <ion-card-header>
+              <ion-card-title>更多说明</ion-card-title>
+              <ion-card-subtitle>查看报价声明、备注与国家补充信息</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-accordion-group [multiple]="true" value="common">
+                <ion-accordion value="common">
+                  <ion-item slot="header" color="light">
+                    <ion-label>报价声明</ion-label>
+                  </ion-item>
+                  <div class="accordion-content" slot="content">
+                    <div *ngIf="hasRemarkContent('common'); else emptyCommonRemark" [innerHTML]="getRemarkContent('common')" class="rich-content"></div>
+                    <ng-template #emptyCommonRemark>
+                      <div class="empty-section">暂无报价声明</div>
+                    </ng-template>
+                  </div>
+                </ion-accordion>
+
+                <ion-accordion value="remark">
+                  <ion-item slot="header" color="light">
+                    <ion-label>报价备注</ion-label>
+                  </ion-item>
+                  <div class="accordion-content" slot="content">
+                    <div *ngIf="hasRemarkContent('remark'); else emptyRemark" [innerHTML]="getRemarkContent('remark')" class="rich-content"></div>
+                    <ng-template #emptyRemark>
+                      <div class="empty-section">暂无报价备注</div>
+                    </ng-template>
+                  </div>
+                </ion-accordion>
+
+                <ion-accordion value="country">
+                  <ion-item slot="header" color="light">
+                    <ion-label>国家备注</ion-label>
+                  </ion-item>
+                  <div class="accordion-content" slot="content">
+                    <div *ngIf="hasRemarkContent('country'); else emptyCountryRemark" [innerHTML]="getRemarkContent('country')" class="rich-content"></div>
+                    <ng-template #emptyCountryRemark>
+                      <div class="empty-section">暂无国家备注</div>
+                    </ng-template>
+                  </div>
+                </ion-accordion>
+              </ion-accordion-group>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
     </div>
-    <div *ngSwitchCase="'2'" [innerHTML]="data.CommonRemark" class="ion-padding">
-
-    </div>
-    <div *ngSwitchCase="'3'" [innerHTML]="data.Remark" class="ion-padding">
-
-    </div>
-    <div *ngSwitchCase="'4'" [innerHTML]="data.CountryRemark" class="ion-padding">
-
-    </div>
-    <div *ngSwitchCase="'5'">
-      <ion-list>
-
-        <ion-item *ngFor="let item of data.Charges">
-          <ion-label>{{item.ChargeName}}</ion-label>
-
-          <ion-input aria-label="费用明细" class="ion-text-right" readonly [value]="item.Expression + '=' + item.Amount"></ion-input>
-        </ion-item>
-      </ion-list>
-    </div>
-  </div>
+  </ng-container>
 </ion-content>
+
+<ion-footer class="detail-footer" translucent="true">
+  <ion-toolbar>
+    <div class="footer-inner ion-padding-start ion-padding-end ion-padding-top ion-padding-bottom">
+      <ion-button expand="block" fill="outline" (click)="backToList()">返回结果</ion-button>
+      <ion-button expand="block" (click)="recalculate()">重新计算</ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

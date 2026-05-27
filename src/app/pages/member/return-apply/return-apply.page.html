@@ -12,35 +12,50 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <form (ngSubmit)="doSubmit(applyForm.value)" [formGroup]="applyForm" novalidate>
+<ion-content class="return-content">
+  <ion-grid fixed class="return-shell">
+    <ion-row class="ion-justify-content-center ion-padding-top">
+      <ion-col size="12" size-md="10" size-lg="8">
+        <ion-card class="return-card ion-no-margin">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="arrow-undo-outline"></ion-icon>
+              退货申请
+            </ion-card-title>
+            <ion-card-subtitle>请完整填写提货信息，提交后客服将尽快处理。</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <form (ngSubmit)="doSubmit(applyForm.value)" [formGroup]="applyForm" novalidate class="return-form">
+              <ion-list lines="none" class="ion-no-margin">
+                <ion-item>
+                  <ion-label position="fixed">退货单号</ion-label>
+                  <ion-input aria-label="退货单号" type="text" formControlName="ReferenceNumber" readonly></ion-input>
+                </ion-item>
 
-    <ion-list>
-
-      <ion-item>
-        <ion-label position="fixed">退货单号</ion-label>
-        <ion-input aria-label="退货单号" type="text" formControlName="ReferenceNumber" readonly></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="fixed">提货人名</ion-label>
-        <ion-input aria-label="提货人名" type="text" formControlName="PersonName"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="fixed">手机号码</ion-label>
-        <ion-input aria-label="手机号码" type="text" formControlName="MobilePhone"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="fixed">提货日期</ion-label>
-        <ion-datetime presentation="date" formControlName="RequiredDate">
-        </ion-datetime>
-      </ion-item>
-      <ion-item>
-        <ion-label position="fixed">其它备注</ion-label>
-        <ion-input aria-label="其它备注" type="text" formControlName="Remark"></ion-input>
-      </ion-item>
-    </ion-list>
-    <ion-button #btnSubmit expand="full" type="submit">提交</ion-button>
-  </form>
+                <ion-item>
+                  <ion-label position="fixed">提货人名</ion-label>
+                  <ion-input aria-label="提货人名" type="text" formControlName="PersonName"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="fixed">手机号码</ion-label>
+                  <ion-input aria-label="手机号码" type="text" formControlName="MobilePhone"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="fixed">提货日期</ion-label>
+                  <ion-datetime presentation="date" formControlName="RequiredDate"></ion-datetime>
+                </ion-item>
+                <ion-item>
+                  <ion-label position="fixed">其它备注</ion-label>
+                  <ion-input aria-label="其它备注" type="text" formControlName="Remark"></ion-input>
+                </ion-item>
+              </ion-list>
+              <ion-note color="medium" class="form-tip">提交后可在退货管理查看处理进度。</ion-note>
+              <ion-button #btnSubmit size="large" expand="block" type="submit" class="ion-margin-top">提交</ion-button>
+            </form>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 

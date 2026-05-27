@@ -1,4 +1,4 @@
-ion-item {
+﻿ion-item {
     --inner-border-width: 0;
 }
 .bottom-border{
@@ -8,6 +8,20 @@ ion-item {
 .item-last{
     border-bottom: none !important;
 }
+
+.item-last > ion-label {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.item-last > ion-note {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 ion-content{
     --background: #f7f7f7;
 }
@@ -22,17 +36,38 @@ ion-toolbar{
     z-index: 999;
     right: -10px;
 }
-ion-item > ion-label:not([position=\"stacked\"]) {
-    flex: 0 0 6.5em;
-    max-width: 6.5em;
-    min-width: 6.5em;
-    white-space: normal;
-    word-break: keep-all;
+
+.order-head {
+    --align-items: center;
 }
-ion-item > ion-label:not([position="stacked"]) {
-    flex: 0 0 6.5em;
-    max-width: 6.5em;
-    min-width: 6.5em;
-    white-space: normal;
-    word-break: keep-all;
+
+.order-head.with-selector {
+    --align-items: flex-start;
 }
+
+.order-head.with-selector ion-checkbox {
+    margin-top: 10px;
+}
+
+.order-head > ion-label.head-label {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+}
+
+.order-head .head-label .ref-no,
+.order-head .head-label .track-no {
+    display: block;
+    line-height: 1.4;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.order-head .head-label .track-no {
+    margin-top: 4px;
+    color: var(--ion-color-medium);
+}
+
+

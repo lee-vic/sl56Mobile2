@@ -1,51 +1,67 @@
 <ion-header translucent *ngIf="!isLogin">
   <ion-toolbar>
-
     <ion-title>登录</ion-title>
     <ion-buttons slot="primary">
-      <ion-button (click)="forgetPasswordClick()">
+      <ion-button fill="clear" (click)="forgetPasswordClick()">
+        <ion-icon name="help-circle-outline" slot="start"></ion-icon>
         忘记密码?
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [ngClass]="{'my-content':isLogin}">
-  <div *ngIf="!isLogin">
-    <form (ngSubmit)="doLogin(authForm.value)" [formGroup]="authForm" novalidate>
-      <ion-list inset lines="none" class="ion-no-margin">
-        <ion-item>
-          <ion-input
-            aria-label="用户名"
-            label="用户名 *"
-            labelPlacement="stacked"
-            fill="outline"
-            type="text"
-            formControlName="username"
-            placeholder="请输入用户名或者手机号码"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-input
-            aria-label="密码"
-            label="密码 *"
-            labelPlacement="stacked"
-            fill="outline"
-            type="password"
-            formControlName="password"
-            placeholder="请输入密码 区分大小写"
-          ></ion-input>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-checkbox aria-label="记住我" slot="start" formControlName="rememberMe"></ion-checkbox>
-          <ion-label>记住我</ion-label>
-        </ion-item>
-      </ion-list>
-      <div class="ion-padding">
-        <ion-button expand="block" shape="round" type="submit" class="ion-no-margin" [disabled]="!authForm.valid">登录</ion-button>
-      </div>
-
-    </form>
+<ion-content [ngClass]="{'my-content':isLogin, 'member-login-content': !isLogin}">
+  <div *ngIf="!isLogin" class="member-login-shell">
+    <ion-grid fixed>
+      <ion-row class="ion-justify-content-center ion-padding-top">
+        <ion-col size="12" size-md="10" size-lg="8">
+          <ion-card class="member-login-card ion-no-margin">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="person-circle-outline"></ion-icon>
+                欢迎登录
+              </ion-card-title>
+              <ion-card-subtitle>请输入账号信息，登录后可查看运单、欠款和消息提醒。</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <form (ngSubmit)="doLogin(authForm.value)" [formGroup]="authForm" novalidate class="login-form">
+                <ion-list lines="none" class="ion-no-margin">
+                  <ion-item class="login-input-item">
+                    <ion-input
+                      aria-label="用户名"
+                      label="用户名 *"
+                      labelPlacement="stacked"
+                      fill="outline"
+                      type="text"
+                      formControlName="username"
+                      placeholder="请输入用户名或者手机号码"
+                    ></ion-input>
+                  </ion-item>
+                  <ion-item class="login-input-item">
+                    <ion-input
+                      aria-label="密码"
+                      label="密码 *"
+                      labelPlacement="stacked"
+                      fill="outline"
+                      type="password"
+                      formControlName="password"
+                      placeholder="请输入密码 区分大小写"
+                    ></ion-input>
+                  </ion-item>
+                  <ion-item lines="none" class="remember-item">
+                    <ion-checkbox aria-label="记住我" slot="start" formControlName="rememberMe"></ion-checkbox>
+                    <ion-label>记住我</ion-label>
+                    <ion-button fill="clear" size="small" slot="end" (click)="forgetPasswordClick()">找回密码</ion-button>
+                  </ion-item>
+                </ion-list>
+                <ion-note color="medium" class="login-tip">账号与密码区分大小写，请确认输入无误。</ion-note>
+                <ion-button expand="block" shape="round" size="large" type="submit" class="ion-margin-top" [disabled]="!authForm.valid">登录</ion-button>
+              </form>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </div>
   <div *ngIf="isLogin">
 

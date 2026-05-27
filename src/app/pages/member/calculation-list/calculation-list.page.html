@@ -7,24 +7,66 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-segment [(ngModel)]="currentTabIndex">
-    <ion-segment-button *ngFor="let item of tabsData;let i=index" value={{i}}>
-      <ion-label>{{item.PriceType}}</ion-label>
-    </ion-segment-button>
-  </ion-segment>
-  <ion-list class="result_list">
-    <ion-item detail *ngFor="let item of tabsData[currentTabIndex].PriceList" (click)="detail(item)">
-      <ion-label>
+<ion-content class="result-content">
+  <div class="segment-wrap" *ngIf="tabsData?.length">
+    <ion-segment [(ngModel)]="currentTabIndex" (ionChange)="onTabChange()" class="result-segment">
+      <ion-segment-button *ngFor="let item of tabsData;let i=index" [value]="i">
+        <ion-label>{{ getTabLabel(item) }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
 
-        <h2>{{item.PriceCode}}&nbsp;&nbsp;{{item.Series}}</h2>
-        <p>{{item.PriceName}}</p>
-        <ion-text color="danger" class="multiline-text">
-          {{item.ImportantTip}}
-        </ion-text>
-      </ion-label>
-      <ion-note slot="end" class="ion-margin-vertical">{{item.TotalAmount|currency:'CNY'}}</ion-note>
-    </ion-item>
+  <ion-list class="result-list" lines="none" *ngIf="tabsData?.length; else emptyResult">
+    <div class="quote-card" *ngFor="let item of currentPriceList; let i = index" [class.recommended-card]="isRecommended(i)">
+      <ion-item class="quote-item" detail="true" (click)="detail(item)">
+        <ion-label class="quote-label ion-text-wrap">
+          <div class="quote-header-row">
+            <h2>
+              {{ item.PriceCode }}
+              <span class="series">{{ item.Series }}</span>
+            </h2>
+            <ion-badge color="success" *ngIf="isRecommended(i)">推荐</ion-badge>
+          </div>
 
+          <p class="quote-subtitle">{{ item.PriceName }}</p>
+        </ion-label>
+
+        <div slot="end" class="price-box">
+          <span class="price-currency">CNY</span>
+          <span class="price-amount">{{ item.TotalAmount | number:'1.2-2' }}</span>
+        </div>
+      </ion-item>
+
+      <div *ngIf="item.ImportantTip" class="tip-row" [class.tip-row-danger]="isHighRiskTip(item.ImportantTip)" (click)="detail(item)">
+        <ion-icon [name]="isHighRiskTip(item.ImportantTip) ? 'warning-outline' : 'information-circle-outline'"></ion-icon>
+        <div class="tip-main">
+          <ion-text [color]="getTipColor(item.ImportantTip)" class="quote-tip" [class.tip-clamped]="isTipLong(item.ImportantTip) && !isTipExpanded(item)">
+            {{ item.ImportantTip }}
+          </ion-text>
+          <ion-button fill="clear" size="small" class="tip-toggle" *ngIf="isTipLong(item.ImportantTip)" (click)="toggleTip(item, $event)">
+            {{ isTipExpanded(item) ? '收起' : '展开' }}
+          </ion-button>
+        </div>
+      </div>
+    </div>
   </ion-list>
+
+  <ng-template #emptyResult>
+    <div class="empty-wrap ion-padding ion-text-center">
+      <ion-icon name="file-tray-outline"></ion-icon>
+      <h3>暂无计算结果</h3>
+      <ion-note color="medium">当前条件暂未匹配到报价，建议返回调整重量或规则后重试。</ion-note>
+      <ion-button class="empty-action" fill="outline" (click)="recalculate()">返回重新计算</ion-button>
+    </div>
+  </ng-template>
+
+  <div class="content-safe-gap"></div>
 </ion-content>
+
+<ion-footer class="result-footer" translucent="true">
+  <ion-toolbar>
+    <div class="footer-inner ion-padding-start ion-padding-end ion-padding-top ion-padding-bottom">
+      <ion-button expand="block" shape="round" (click)="recalculate()">重新计算</ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
