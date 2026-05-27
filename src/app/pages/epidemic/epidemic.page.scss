@@ -1,4 +1,4 @@
-ion-item > ion-label:not([position="stacked"]) {
+ion-item > ion-label:not(.label-stacked) {
 	flex: 0 0 6.5em;
 	max-width: 6.5em;
 	min-width: 6.5em;

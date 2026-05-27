@@ -26,7 +26,7 @@ test.describe('app smoke', () => {
   test('renders modify-delivery-password form shell', async ({ page }) => {
     await page.goto('/member/modify-deliverypassword');
 
-    await expect(page.locator('ion-header ion-title')).toContainText('修改密码');
+    await expect(page.locator('ion-header ion-title')).toContainText('修改交货密码');
     await expect(page.locator('form')).toBeVisible();
     await expect(page.locator('ion-button[type="submit"]')).toBeVisible();
     await expect(page.locator('form ion-item')).toHaveCount(3);
@@ -96,7 +96,7 @@ test.describe('app smoke', () => {
     await expect(page.locator('ion-segment-button')).toHaveCount(2);
     await expect(page.locator('ion-segment-button:nth-of-type(1) ion-label')).toContainText('精简模式');
     await expect(page.locator('ion-segment-button:nth-of-type(2) ion-label')).toContainText('完整模式');
-    await expect(page.locator('ion-button[type="submit"]')).toBeVisible();
+    await expect(page.locator('ion-footer ion-button')).toContainText('立即计算');
   });
 
   test('renders problem-list shell', async ({ page }) => {

@@ -12,10 +12,7 @@
     <div class="calc-shell ion-padding">
       <ion-card class="mode-card">
         <ion-card-content>
-          <div class="mode-header">
-            <h2>计算模式</h2>
-            <ion-note color="medium">根据运单信息快速计算参考价格</ion-note>
-          </div>
+          
           <ion-segment [(ngModel)]="calculateMode" [ngModelOptions]="{standalone: true}" (ionChange)="segmentChanged($event)">
             <ion-segment-button value="1">
               <ion-label>精简模式</ion-label>
@@ -33,15 +30,12 @@
       </ion-card>
 
       <ion-card class="panel-card">
-        <ion-card-header>
-          <ion-card-title>基础信息</ion-card-title>
-          <ion-card-subtitle>先完成必要字段，可快速得到报价结果</ion-card-subtitle>
-        </ion-card-header>
+       
         <ion-card-content>
           <ion-list class="calc-form-list" lines="full">
-            <ion-item *ngIf="calculateMode === '2'" [class.invalid-field]="myForm.get('ModeOfTransportIdList')?.touched && myForm.get('ModeOfTransportIdList')?.invalid">
-              <ion-select aria-label="运输方式" formControlName="ModeOfTransportIdList" label="运输方式 *" labelPlacement="stacked" interface="popover"
-                cancelText="取消" okText="确定" placeholder="请选择运输方式">
+            <ion-item *ngIf="calculateMode === '2'" class="form-item-inline" [class.invalid-field]="myForm.get('ModeOfTransportIdList')?.touched && myForm.get('ModeOfTransportIdList')?.invalid">
+              <ion-select aria-label="运输方式" class="inline-control" formControlName="ModeOfTransportIdList" label="运输方式 *" labelPlacement="fixed" interface="popover"
+                cancelButtonText="取消" okButtonText="确定" placeholder="请选择运输方式">
                 <ion-select-option *ngFor="let item of modeOfTransportList" [value]="item.Id">{{ item.Name }}</ion-select-option>
               </ion-select>
             </ion-item>
@@ -49,17 +43,17 @@
               <div class="error-message">请选择运输方式</div>
             </div>
 
-            <ion-item>
-              <ion-select aria-label="货物类型" formControlName="ProductContentType" label="货物类型 *" labelPlacement="stacked" interface="popover"
-                cancelText="取消" okText="确定">
+            <ion-item class="form-item-inline">
+              <ion-select aria-label="货物类型" class="inline-control" formControlName="ProductContentType" label="货物类型 *" labelPlacement="fixed" interface="popover"
+                cancelButtonText="取消" okButtonText="确定">
                 <ion-select-option value="1">包裹</ion-select-option>
                 <ion-select-option value="0">文件</ion-select-option>
               </ion-select>
             </ion-item>
 
-            <ion-item [class.invalid-field]="isCountryErrorVisible" class="country-item">
-              <ion-label position="stacked">国家 *</ion-label>
-              <ion-searchbar aria-label="国家" formControlName="countryId" debounce="120" (ionFocus)="onCountryFocus()" (ionBlur)="onCountryBlur()"
+            <ion-item [class.invalid-field]="isCountryErrorVisible" class="country-item form-item-inline">
+              <ion-label class="inline-label">国家 *</ion-label>
+              <ion-searchbar aria-label="国家" class="inline-searchbar" formControlName="countryId" debounce="120" searchIcon="" (ionFocus)="onCountryFocus()" (ionBlur)="onCountryBlur()"
                 (keyup)="onCountryKeyup($event)" (ionInput)="filterCountryItems($event)" (ionClear)="onCountryClear()"
                 showClearButton="focus" placeholder="输入国家名称，如 United States"></ion-searchbar>
             </ion-item>
@@ -76,9 +70,9 @@
               </ion-item>
             </ion-list>
 
-            <ion-item *ngIf="!isSizeMode" [class.invalid-field]="isWeightErrorVisible">
-              <ion-input aria-label="重量" type="number" formControlName="actualWeight" inputmode="decimal"
-                label="实际重量(kg) *" labelPlacement="stacked" placeholder="请输入重量"></ion-input>
+            <ion-item *ngIf="!isSizeMode" class="form-item-inline" [class.invalid-field]="isWeightErrorVisible">
+              <ion-input aria-label="重量" class="inline-control" type="number" formControlName="actualWeight" inputmode="decimal"
+                label="重量(kg) *" labelPlacement="fixed" placeholder="请输入重量"></ion-input>
             </ion-item>
             <div class="validation-errors" *ngIf="isWeightErrorVisible">
               <div class="error-message">请输入有效重量，需大于 0</div>
@@ -90,24 +84,22 @@
       <ion-card class="panel-card" *ngIf="calculateMode === '2'">
         <ion-card-header>
           <ion-card-title>高级参数</ion-card-title>
-          <ion-card-subtitle>高价值或复杂货件建议补充以下信息</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
           <ion-list class="calc-form-list" lines="full">
-            <ion-item>
-              <ion-input aria-label="邮编" type="text" formControlName="postalCode" label="邮编" labelPlacement="stacked"
+            <ion-item class="form-item-inline">
+              <ion-input aria-label="邮编" class="inline-control" type="text" formControlName="postalCode" label="邮编" labelPlacement="fixed"
                 placeholder="可选，输入后可提高报价准确度"></ion-input>
             </ion-item>
-            <ion-note class="toggle-note" color="medium">301KG 起输入邮编有美国空卡快线，敬请参选。高值、大件欢迎进入完整模式补充邮编信息。</ion-note>
 
-            <ion-item>
-              <ion-input aria-label="城市" type="text" formControlName="city" label="城市" labelPlacement="stacked"
+            <ion-item class="form-item-inline">
+              <ion-input aria-label="城市" class="inline-control" type="text" formControlName="city" label="城市" labelPlacement="fixed"
                 placeholder="可选"></ion-input>
             </ion-item>
 
-            <ion-item>
-              <ion-input aria-label="申报价值" type="number" formControlName="declaredValue" inputmode="decimal"
-                label="申报价值" labelPlacement="stacked" placeholder="可选"></ion-input>
+            <ion-item class="form-item-inline">
+              <ion-input aria-label="申报价值" class="inline-control" type="number" formControlName="declaredValue" inputmode="decimal"
+                label="申报价值" labelPlacement="fixed" placeholder="可选"></ion-input>
             </ion-item>
 
             <ion-item class="toggle-item">
@@ -117,14 +109,14 @@
             <ion-note class="toggle-note" color="medium">开启后将按尺寸计算体积重，实际重量输入将自动关闭</ion-note>
 
             <ng-container *ngIf="!isSizeMode">
-              <ion-item>
-                <ion-input aria-label="体积重" type="number" formControlName="volumeWeight" inputmode="decimal"
-                  label="体积重" labelPlacement="stacked" placeholder="可选"></ion-input>
+              <ion-item class="form-item-inline">
+                <ion-input aria-label="体积重" class="inline-control" type="number" formControlName="volumeWeight" inputmode="decimal"
+                  label="体积重" labelPlacement="fixed" placeholder="可选"></ion-input>
               </ion-item>
 
-              <ion-item>
-                <ion-select aria-label="体积重除数" formControlName="volumetric" label="体积重除数" labelPlacement="stacked"
-                  interface="popover" cancelText="取消" okText="确定">
+              <ion-item class="form-item-inline">
+                <ion-select aria-label="体积重除数" class="inline-control" formControlName="volumetric" label="体积重除数" labelPlacement="fixed"
+                  interface="popover" cancelButtonText="取消" okButtonText="确定">
                   <ion-select-option *ngFor="let item of volumetricDivisorList" [value]="item.Id">{{ item.Name }}</ion-select-option>
                 </ion-select>
               </ion-item>
@@ -212,7 +204,6 @@
       <ion-card class="panel-card">
         <ion-card-header>
           <ion-card-title>货物属性</ion-card-title>
-          <ion-card-subtitle>勾选后将参与计费规则匹配</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
           <ion-list class="calc-form-list" lines="full">
@@ -221,6 +212,12 @@
               <ion-checkbox aria-label="选择规则" [checked]="isRuleChecked(item.Id)" (ionChange)="ruleChanged(item, $event)" slot="end"></ion-checkbox>
             </ion-item>
           </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card class="panel-card bottom-info-card">
+        <ion-card-content>
+          <ion-note color="medium">301KG 起输入邮编有美国空卡快线，敬请参选。高值、大件欢迎进入完整模式补充邮编信息。</ion-note>
         </ion-card-content>
       </ion-card>
     </div>

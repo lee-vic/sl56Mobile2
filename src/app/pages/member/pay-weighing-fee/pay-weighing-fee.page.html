@@ -78,8 +78,8 @@
             </ion-item>
             <ion-item>
               <ion-label>磅费打印14元/次或1元/吨</ion-label>
-              <ion-select interface="alert" formControlName="pricePerTon" [(ngModel)]="data.PricePerTon" cancelText="取消"
-                okText="确定">
+              <ion-select interface="alert" formControlName="pricePerTon" [(ngModel)]="data.PricePerTon" cancelButtonText="取消"
+                okButtonText="确定">
                 <ion-select-option *ngFor="let item of prices" [value]="item.value">{{item.text}}</ion-select-option>
               </ion-select>
             </ion-item>

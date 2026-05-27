@@ -112,12 +112,11 @@
             *ngIf="isWeAppUploadFile">已通过微信小程序上传了文件(当前页面重新上传文件并提交将会覆盖旧文件)</ion-card-subtitle>
         </ion-card-header>
         <ion-card-content>
-          <ion-input aria-label="上传文件" type="file" name="type3Result" ngModel required={{isFileRequired}} #attFile
-            (ionChange)="changeFile($event,page1Form.form)" accept="image/*,
+          <input type="file" name="type3Result" ngModel [required]="isFileRequired" #attFile
+            (change)="changeFile($event,page1Form.form)" accept="image/*,
           application/pdf,
           application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-          application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-          </ion-input>
+          application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
           <ion-label *ngIf="isFileProcessing">发票文件处理中</ion-label>
           <ion-spinner *ngIf="isFileProcessing" name="lines-small"></ion-spinner>
           <ion-label class="ion-text-wrap" color="danger" *ngIf="fileFailMessage">文件处理失败：{{fileFailMessage}}</ion-label>

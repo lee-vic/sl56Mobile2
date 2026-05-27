@@ -9,7 +9,7 @@ ion-item > ion-label:not([position=\"stacked\"]) {
     white-space: normal;
     word-break: keep-all;
 }
-ion-item > ion-label:not([position="stacked"]) {
+ion-item > ion-label:not(.label-stacked) {
     flex: 0 0 clamp(8.5em, 36vw, 11em);
     max-width: clamp(8.5em, 36vw, 11em);
     min-width: clamp(8.5em, 36vw, 11em);

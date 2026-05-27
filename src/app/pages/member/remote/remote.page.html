@@ -12,7 +12,7 @@
       <ion-list>
         <ion-item>
           <ion-label>运输方式</ion-label>
-          <ion-select aria-label="运输方式" interface="alert" cancelText="取消" okText="确定" formControlName="ModeOfTransportTypeId">
+          <ion-select aria-label="运输方式" interface="alert" cancelButtonText="取消" okButtonText="确定" formControlName="ModeOfTransportTypeId">
             <ion-select-option *ngFor="let item of modeOfTransportTypeList" [value]="item.Id">{{item.Name}}</ion-select-option>
           </ion-select>
         </ion-item>

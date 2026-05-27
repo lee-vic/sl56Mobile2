@@ -185,8 +185,12 @@ export class ProblemDetailPage implements OnInit {
   }
   changeFile(event, form) {
     let file = null;
-    if (event.target.firstChild.files.length > 0) {
-      file = event.target.firstChild.files[0];
+    const target = event?.target as HTMLInputElement | null;
+    if (target?.files && target.files.length > 0) {
+      file = target.files[0];
+    } else if (target?.firstChild && (target.firstChild as any).files?.length > 0) {
+      // Keep compatibility for existing event mocks that still provide firstChild.files.
+      file = (target.firstChild as any).files[0];
     }
     if (file != null) {
       console.log("file select");

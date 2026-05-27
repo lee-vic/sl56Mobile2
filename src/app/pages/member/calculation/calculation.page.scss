@@ -14,14 +14,14 @@ ion-content.calc-content {
         radial-gradient(1200px 500px at 10% -10%, rgba(14, 165, 233, 0.16), transparent 45%),
         radial-gradient(900px 420px at 100% 0%, rgba(59, 130, 246, 0.14), transparent 48%),
         linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
-    --padding-bottom: 132px;
+    --padding-bottom: 112px;
 }
 
 .calc-shell {
     max-width: 940px;
     margin: 0 auto;
     display: grid;
-    gap: 14px;
+    gap: 10px;
 }
 
 .mode-card,
@@ -38,14 +38,14 @@ ion-content.calc-content {
 }
 
 .mode-card ion-card-content {
-    padding: 14px;
+    padding: 12px;
 }
 
 .mode-header {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     gap: 10px;
 }
 
@@ -58,19 +58,19 @@ ion-content.calc-content {
 
 .mode-note {
     display: block;
-    margin-top: 10px;
+    margin-top: 8px;
     font-size: 12px;
     color: var(--calc-note);
 }
 
 .progress-wrap {
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
 .progress-label {
     font-size: 12px;
     color: var(--calc-subtitle);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .progress-wrap ion-progress-bar {
@@ -91,13 +91,39 @@ ion-content.calc-content {
 
 .calc-form-list ion-item {
     --background: transparent;
-    --inner-padding-top: 10px;
-    --inner-padding-bottom: 10px;
-    --min-height: 82px;
+    --inner-padding-top: 8px;
+    --inner-padding-bottom: 8px;
+    --min-height: 72px;
     --padding-start: 0;
     --padding-end: 0;
     --inner-padding-end: 0;
     --inner-padding-start: 0;
+}
+
+.calc-form-list ion-item.form-item-inline {
+    --min-height: 56px;
+    align-items: center;
+}
+
+.calc-form-list .inline-control {
+    --label-width: 108px;
+}
+
+.calc-form-list .country-item .inline-label {
+    flex: 0 0 108px;
+    max-width: 108px;
+    margin: 0 12px 0 0;
+    color: var(--calc-title);
+}
+
+.calc-form-list .country-item .inline-searchbar {
+    flex: 1;
+    padding: 0;
+    --padding-start: 10px;
+}
+
+.calc-form-list .country-item .inline-searchbar::part(search-icon) {
+    display: none !important;
 }
 
 .panel-card ion-card-header {
@@ -127,7 +153,7 @@ ion-content.calc-content {
 }
 
 .country-result-list {
-    margin: 2px 0 10px;
+    margin: 0 0 8px;
     border-radius: var(--calc-soft-radius);
     overflow: hidden;
     border: 1px solid var(--calc-border);
@@ -146,7 +172,7 @@ ion-content.calc-content {
 
 .validation-errors {
     margin-top: -4px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .error-message {
@@ -163,8 +189,19 @@ ion-content.calc-content {
 .toggle-note {
     display: block;
     margin-top: -4px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-size: 12px;
+}
+
+.bottom-info-card ion-card-content {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.bottom-info-card ion-note {
+    display: block;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .size-card {
@@ -177,19 +214,19 @@ ion-content.calc-content {
 }
 
 .piece-item {
-    --min-height: 78px;
+    --min-height: 70px;
 }
 
 .size-block {
     border: 1px solid var(--calc-border);
     border-radius: var(--calc-soft-radius);
     background: #ffffff;
-    margin-top: 10px;
+    margin-top: 8px;
     overflow: hidden;
 }
 
 .size-block ion-item[slot="header"] {
-    --min-height: 64px;
+    --min-height: 58px;
     --padding-start: 12px;
     --padding-end: 6px;
     --inner-padding-end: 4px;
@@ -208,14 +245,14 @@ ion-content.calc-content {
 }
 
 .size-block ion-item {
-    --min-height: 72px;
+    --min-height: 66px;
 }
 
 .piece-rule-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .piece-rule-list ion-chip {
@@ -224,7 +261,7 @@ ion-content.calc-content {
 }
 
 .size-action-row {
-    margin-top: 14px;
+    margin-top: 10px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -244,8 +281,8 @@ ion-content.calc-content {
 .footer-inner {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    gap: 8px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
 }
 
 .footer-inner ion-note {
@@ -254,8 +291,8 @@ ion-content.calc-content {
 
 @media (max-width: 576px) {
     .calc-shell {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 8px;
+        padding-right: 8px;
     }
 
     .mode-header {
@@ -266,9 +303,19 @@ ion-content.calc-content {
 
     .calc-form-list ion-item,
     .size-block ion-item {
-        --inner-padding-top: 8px;
-        --inner-padding-bottom: 8px;
-        --min-height: 76px;
+        --inner-padding-top: 6px;
+        --inner-padding-bottom: 6px;
+        --min-height: 68px;
+    }
+
+    .calc-form-list .inline-control {
+        --label-width: 94px;
+    }
+
+    .calc-form-list .country-item .inline-label {
+        flex-basis: 94px;
+        max-width: 94px;
+        margin-right: 10px;
     }
 
     .piece-rule-list ion-chip {
@@ -276,7 +323,7 @@ ion-content.calc-content {
     }
 
     .footer-inner {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 8px;
+        padding-right: 8px;
     }
 }
