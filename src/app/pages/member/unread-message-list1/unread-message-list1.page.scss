@@ -1,16 +1,115 @@
-ion-content{
-    --background: #f7f7f7;
+:host {
+    --waybill-radius-soft: 12px;
+    --waybill-radius-card: 14px;
+    --waybill-shadow-card: 0 6px 12px rgba(20, 49, 90, 0.06);
 }
-ion-list{
-    border-radius: 10px;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 15px;
+
+ion-content {
+    --background: linear-gradient(180deg, #f5f8fd 0%, #f8fafe 36%, #fbfcff 100%);
 }
-ion-label{
-    margin-bottom: 0;
-    margin-top: 0;
+
+.waybill-message-content {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --padding-top: 10px;
+    --padding-bottom: 18px;
+    font-family: 'Noto Sans SC', 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
 }
-ion-item{
-    --min-height:30px;
+
+.waybill-message-panel {
+    margin-bottom: 8px;
+    border: 1px solid #dde8f6;
+    border-radius: var(--waybill-radius-card);
+    background: var(--member-surface-0);
+    box-shadow: var(--waybill-shadow-card);
+    overflow: hidden;
+}
+
+.waybill-message-list {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+ion-item {
+    --padding-start: 14px;
+    --inner-padding-end: 14px;
+    --background: transparent;
+    --inner-border-width: 0 0 1px 0;
+    --border-color: var(--member-border-200);
+}
+
+.waybill-message-list ion-item:first-child {
+    --min-height: 44px;
+}
+
+.waybill-message-list ion-item:last-child {
+    --min-height: 62px;
+    --inner-border-width: 0;
+}
+
+.waybill-message-panel ion-item:active {
+    --background: #f8fbff;
+}
+
+.waybill-message-panel ion-item:focus-visible {
+    outline: 2px solid var(--member-brand-500);
+    outline-offset: -2px;
+}
+
+.loading-panel {
+    pointer-events: none;
+}
+
+.loading-panel ion-item {
+    --background: #fcfeff;
+}
+
+.loading-panel ion-label,
+.loading-panel ion-note {
+    width: 100%;
+}
+
+.loading-panel ion-badge {
+    opacity: 0.4;
+}
+
+ion-label {
+    margin: 0;
+    color: var(--member-text-900);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+ion-note {
+    color: var(--member-text-500);
+    font-size: 12px;
+}
+
+ion-badge {
+    min-width: 28px;
+    font-weight: 700;
+}
+
+.waybill-empty {
+    border: 1px solid #dde8f6;
+    border-radius: var(--waybill-radius-card);
+    padding: 16px 12px;
+    text-align: center;
+    color: var(--member-text-500);
+    background: var(--member-surface-0);
+    box-shadow: var(--waybill-shadow-card);
+}
+
+.waybill-empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+@media (min-width: 768px) {
+    .waybill-message-content {
+        --padding-start: 24px;
+        --padding-end: 24px;
+        --padding-top: 16px;
+    }
 }

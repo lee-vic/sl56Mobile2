@@ -1,29 +1,32 @@
 :host {
-    --chat-brand: #1f6fd0;
+    --chat-brand: var(--member-brand-600);
+    --chat-brand-strong: var(--member-brand-700);
     --chat-bg: #ecf2fb;
-    --chat-ink-900: #10263f;
-    --chat-ink-500: #6d7d92;
-    --chat-line: #d6e3f4;
+    --chat-ink-900: var(--member-text-900);
+    --chat-ink-500: var(--member-text-500);
+    --chat-line: var(--member-border-200);
+    --chat-radius-soft: 12px;
+    --chat-shadow-card: 0 6px 12px rgba(20, 49, 90, 0.06);
 }
 
 ion-content.chat-content {
-    --background: radial-gradient(circle at 20% -5%, #f5f9ff 0%, #eaf2fd 55%, #e5eefb 100%);
+    --background: linear-gradient(180deg, #f5f8fd 0%, #f8fafe 36%, #fbfcff 100%);
 }
 
 .scroll-bottom-btn {
     position: absolute;
     right: 14px;
-    bottom: 86px;
+    bottom: 82px;
     width: 38px;
     height: 38px;
     border: 0;
-    border-radius: 50%;
-    background: rgba(31, 111, 208, 0.95);
+    border-radius: 12px;
+    background: rgba(8, 79, 155, 0.94);
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 18px rgba(13, 47, 86, 0.24);
+    box-shadow: 0 8px 14px rgba(0, 82, 168, 0.14);
     z-index: 6;
 }
 
@@ -41,23 +44,23 @@ ion-content.chat-content {
 }
 
 .message-wrap {
-    padding: 12px 10px 84px;
+    padding: 10px 10px 80px;
 }
 
 .message-tip {
-    margin: 10px auto 18px;
+    margin: 8px auto 14px;
     width: fit-content;
     padding: 5px 10px;
     border-radius: 999px;
     font-size: 12px;
     color: var(--chat-ink-500);
-    background: rgba(255, 255, 255, 0.75);
+    background: #f8fbff;
     border: 1px solid var(--chat-line);
 }
 
 .message {
     position: relative;
-    padding: 10px 0;
+    padding: 8px 0;
 }
 
 .time-divider {
@@ -65,9 +68,9 @@ ion-content.chat-content {
     width: fit-content;
     padding: 2px 10px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.78);
-    border: 1px solid rgba(196, 211, 231, 0.95);
-    color: #6a7890;
+    background: #f8fbff;
+    border: 1px solid var(--chat-line);
+    color: var(--member-text-500);
     font-size: 11px;
     font-weight: 600;
 }
@@ -78,7 +81,7 @@ ion-content.chat-content {
     height: 42px;
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: 0 4px 12px rgba(18, 51, 88, 0.18);
+    box-shadow: 0 4px 10px rgba(20, 49, 90, 0.12);
 }
 
 .msg-detail {
@@ -102,12 +105,12 @@ ion-content.chat-content {
 .msg-content {
     position: relative;
     margin-top: 2px;
-    border-radius: 14px;
-    padding: 10px 12px;
+    border-radius: var(--chat-radius-soft);
+    padding: 9px 11px;
     width: fit-content;
     max-width: calc(100% - 56px);
     border: 1px solid var(--chat-line);
-    box-shadow: 0 2px 8px rgba(14, 42, 78, 0.08);
+    box-shadow: var(--chat-shadow-card);
     overflow-wrap: anywhere;
     word-break: break-word;
 }
@@ -127,11 +130,11 @@ ion-content.chat-content {
 
 .ref-content {
     font-size: 12px;
-    background-color: #dce2ea;
+    background-color: #edf5ff;
     margin-bottom: 7px;
     padding: 6px 8px;
     border-radius: 8px;
-    color: #2b3d55;
+    color: var(--member-text-800);
 }
 
 .line-breaker {
@@ -142,7 +145,7 @@ ion-content.chat-content {
 }
 
 .at-user-tag {
-    background-color: rgba(159, 194, 255, 0.55);
+    background-color: #e8f1fe;
     border-radius: 4px;
     padding: 1px 4px;
 }
@@ -176,7 +179,7 @@ ion-content.chat-content {
 }
 
 .message.left .file-link {
-    color: #1e60b1;
+    color: var(--member-brand-600);
 }
 
 .message.left .msg-detail {
@@ -207,51 +210,52 @@ ion-content.chat-content {
 }
 
 .message.right .msg-content {
-    background: linear-gradient(145deg, #2f88ea 0%, var(--chat-brand) 100%);
-    border-color: #2f88ea;
+    background: linear-gradient(145deg, var(--member-brand-500) 0%, var(--chat-brand) 72%, var(--chat-brand-strong) 100%);
+    border-color: var(--member-brand-500);
     color: #ffffff;
     float: right;
 }
 
 .message.right .msg-content .triangle {
-    background: var(--chat-brand);
+    background: var(--chat-brand-strong);
     border-bottom-width: 0;
     border-left-width: 0;
-    border-color: #2f88ea;
+    border-color: var(--member-brand-500);
     right: -6px;
 }
 
 .processLink {
-    color: #fef089;
+    color: #ffec99;
     font-weight: 700;
     text-decoration: underline;
 }
 
 ion-footer {
     --background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 -6px 16px rgba(15, 42, 77, 0.12);
+    box-shadow: 0 -6px 16px rgba(15, 42, 77, 0.08);
+    border-top: 1px solid var(--member-border-200);
 }
 
 .input-wrap {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     background: rgba(255, 255, 255, 0.96);
 }
 
 .input-wrap textarea {
     flex: 1;
     resize: none;
-    min-height: 38px;
+    min-height: 36px;
     max-height: 104px;
     border: 1px solid #cfe0f4;
-    border-radius: 12px;
+    border-radius: var(--chat-radius-soft);
     background: #f8fbff;
-    padding: 9px 10px;
+    padding: 8px 10px;
     line-height: 1.35;
     font-size: 14px;
-    color: #1a2f4b;
+    color: var(--member-text-900);
 }
 
 .input-wrap textarea:focus {
@@ -264,12 +268,12 @@ ion-footer {
 .attach-btn {
     --padding-start: 0;
     --padding-end: 0;
-    --border-radius: 12px;
-    width: 42px;
-    height: 42px;
+    --border-radius: var(--chat-radius-soft);
+    width: 40px;
+    height: 40px;
     align-self: center;
     margin: 0;
-    box-shadow: 0 6px 14px rgba(16, 45, 80, 0.16);
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.12);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -281,8 +285,8 @@ ion-footer {
 
 .send-btn {
     --background: var(--chat-brand);
-    --background-hover: #2f88ea;
-    --background-activated: #1b62b8;
+    --background-hover: var(--member-brand-500);
+    --background-activated: var(--chat-brand-strong);
     --color: #ffffff;
 }
 
@@ -293,9 +297,9 @@ ion-footer {
 }
 
 .attach-btn {
-    --background: #e8f1fd;
-    --background-hover: #deebfc;
-    --background-activated: #cfe2fb;
+    --background: #eef6ff;
+    --background-hover: #e3f0ff;
+    --background-activated: #d6e8ff;
     --color: var(--chat-brand);
     --border-width: 0;
 }

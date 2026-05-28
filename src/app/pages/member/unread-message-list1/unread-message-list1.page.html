@@ -7,17 +7,42 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content class="waybill-message-content">
+  <ng-container *ngIf="isLoading">
+    <section class="waybill-message-panel loading-panel" *ngFor="let _ of loadingPlaceholders">
+      <ion-list lines="none" class="waybill-message-list">
+        <ion-item>
+          <ion-label>
+            <ion-skeleton-text animated style="width: 42%"></ion-skeleton-text>
+          </ion-label>
+          <ion-note slot="end">
+            <ion-skeleton-text animated style="width: 72px"></ion-skeleton-text>
+          </ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>
+            <ion-skeleton-text animated style="width: 92%"></ion-skeleton-text>
+          </ion-label>
+          <ion-badge slot="end" color="medium">--</ion-badge>
+        </ion-item>
+      </ion-list>
+    </section>
+  </ng-container>
 
+  <section class="waybill-message-panel" *ngFor="let item of items" (click)="detail(item)">
+    <ion-list lines="none" class="waybill-message-list">
+      <ion-item>
+        <ion-label>{{ item.ObjectNo }}</ion-label>
+        <ion-note slot="end">{{ item.Time }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>{{ item.Content }}</ion-label>
+        <ion-badge slot="end" color="danger">{{ item.Count }}</ion-badge>
+      </ion-item>
+    </ion-list>
+  </section>
 
-  <ion-list lines="none" *ngFor="let item of items" (click)="detail(item)">
-    <ion-item>
-      <ion-label>{{ item.ObjectNo }}</ion-label>
-      <ion-note slot="end">{{ item.Time }}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>{{ item.Content }}</ion-label>
-      <ion-badge slot="end" color="danger">{{item.Count}}</ion-badge>
-    </ion-item>
-  </ion-list>
+  <section class="waybill-empty" *ngIf="!isLoading && items.length === 0">
+    <p>暂无单号消息</p>
+  </section>
 </ion-content>

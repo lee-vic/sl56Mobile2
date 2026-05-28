@@ -7,9 +7,17 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <h3>{{notice?.Title}}</h3>
-  <p>发表于{{notice?.CreateAt}}</p>
-  <hr>
-  <div [innerHTML]="notice?.Summary"></div>
+<ion-content class="notice-detail-content">
+  <section class="notice-detail-card" *ngIf="notice; else noticeDetailEmpty">
+    <h1>{{ notice?.Title }}</h1>
+    <p class="notice-meta">发表于 {{ notice?.CreateAt }}</p>
+    <div class="notice-divider"></div>
+    <div class="notice-body" [innerHTML]="notice?.Summary"></div>
+  </section>
+
+  <ng-template #noticeDetailEmpty>
+    <section class="notice-detail-empty">
+      <p>公告内容加载中或已失效</p>
+    </section>
+  </ng-template>
 </ion-content>

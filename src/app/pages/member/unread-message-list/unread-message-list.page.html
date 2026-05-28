@@ -3,33 +3,114 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>未读消息</ion-title>
+    <ion-title>消息中心</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-list lines="none">
+<ion-content class="message-center-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
 
-    <ion-item detail (click)="detail(0)">
-      <ion-thumbnail slot="start">
-        <img src="assets/imgs/unread-message-list-1.png">
-      </ion-thumbnail>
-      <ion-label>咨询业务</ion-label>
-      <ion-badge slot="end" color="danger">{{data?.Count2}}</ion-badge>
-    </ion-item>
+  <section class="message-summary" [class.summary-loading]="isLoading">
+    <div>
+      <p>聚合入口</p>
+      <h1>{{formatBadgeCount(totalUnreadCount)}}</h1>
+      <span>当前未读提醒</span>
+    </div>
+    <div class="summary-grid">
+      <div>
+        <strong [class.is-limited]="formatBadgeCount(getConsultUnreadCount()) === '99+'" [class.is-zero]="getConsultUnreadCount() === 0">{{formatBadgeCount(getConsultUnreadCount())}}</strong>
+        <span>咨询业务</span>
+      </div>
+      <div>
+        <strong [class.is-limited]="formatBadgeCount(getWaybillUnreadCount()) === '99+'" [class.is-zero]="getWaybillUnreadCount() === 0">{{formatBadgeCount(getWaybillUnreadCount())}}</strong>
+        <span>单号消息</span>
+      </div>
+      <div>
+        <strong [class.is-limited]="formatBadgeCount(noticeUnreadCount) === '99+'" [class.is-zero]="noticeUnreadCount === 0">{{formatBadgeCount(noticeUnreadCount)}}</strong>
+        <span>业务公告</span>
+      </div>
+    </div>
+  </section>
 
-  </ion-list>
-  <ion-list lines="none" class="ion-margin-top">
+  <section class="message-status" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>正在加载消息中心...</span>
+  </section>
 
-    <ion-item detail (click)="detail(1)">
-      <ion-thumbnail slot="start">
-        <img src="assets/imgs/unread-message-list-2.png">
+  <section class="message-status error-status" *ngIf="loadError && !isLoading">
+    <div>
+      <h2>消息中心加载失败</h2>
+      <p>请检查网络后重试，当前页面不会影响已有消息入口。</p>
+    </div>
+    <ion-button fill="outline" size="small" (click)="retryLoad()">重试</ion-button>
+  </section>
 
-      </ion-thumbnail>
-      <ion-label>单号消息</ion-label>
-      <ion-badge slot="end" color="danger">{{data?.Count1}}</ion-badge>
-    </ion-item>
+  <section class="message-section" *ngIf="!isLoading">
+    <h2>客服消息</h2>
+    <ion-list lines="none">
+      <ion-item detail button (click)="openEntry(item)" *ngFor="let item of customerServiceEntries">
+        <ion-thumbnail slot="start">
+          <img [src]="item.image" alt="">
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{item.title}}</h3>
+          <p>{{item.description}}</p>
+        </ion-label>
+        <ion-note *ngIf="!item.badge" slot="end">暂无未读</ion-note>
+        <ion-badge *ngIf="item.badge > 0" slot="end" color="danger">{{formatBadgeCount(item.badge)}}</ion-badge>
+      </ion-item>
+    </ion-list>
+  </section>
 
+  <section class="message-section" *ngIf="!isLoading">
+    <div class="section-header">
+      <h2>业务通知</h2>
+      <button type="button" (click)="openNoticeList()">查看全部公告</button>
+    </div>
+    <ion-list lines="none">
+      <ion-item detail button (click)="openEntry(item)" *ngFor="let item of businessNoticeEntries">
+        <ion-thumbnail slot="start">
+          <img [src]="item.image" alt="">
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{item.title}}</h3>
+          <p>{{item.description}}</p>
+        </ion-label>
+        <ion-note *ngIf="!item.badge" slot="end">暂无未读</ion-note>
+        <ion-badge *ngIf="item.badge > 0" slot="end" color="danger">{{formatBadgeCount(item.badge)}}</ion-badge>
+      </ion-item>
+    </ion-list>
 
-  </ion-list>
+    <div class="notice-preview" *ngIf="recentNotices.length > 0">
+      <button type="button" class="notice-preview-item" *ngFor="let notice of recentNotices" (click)="openNoticeDetail(notice)">
+        <div>
+          <span>{{notice.CreateAt}}</span>
+          <strong>{{notice.Title}}</strong>
+          <p>{{notice.Summary}}</p>
+        </div>
+        <ion-badge [color]="notice.IsRead ? 'success' : 'danger'">{{notice.IsRead ? '已读' : '未读'}}</ion-badge>
+      </button>
+    </div>
+
+    <div class="empty-state" *ngIf="recentNotices.length === 0 && !loadError">
+      <p>暂无最近业务公告</p>
+    </div>
+  </section>
+
+  <section class="message-section" *ngIf="!isLoading">
+    <h2>消息设置</h2>
+    <ion-list lines="none">
+      <ion-item detail button (click)="openEntry(item)" *ngFor="let item of messageSettingEntries">
+        <ion-thumbnail slot="start">
+          <img [src]="item.image" alt="">
+        </ion-thumbnail>
+        <ion-label>
+          <h3>{{item.title}}</h3>
+          <p>{{item.description}}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </section>
 </ion-content>

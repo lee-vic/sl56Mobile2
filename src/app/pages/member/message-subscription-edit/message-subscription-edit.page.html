@@ -3,18 +3,59 @@
     <ion-buttons>
       <ion-back-button slot="start"></ion-back-button>
     </ion-buttons>
-    <ion-title>
-      {{typeNames[type-1]}}消息推送修改
-    </ion-title>
+    <ion-title>{{channelName}}消息推送修改</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-list lines="none">
-    <ion-item *ngFor="let item of items">
-      <ion-label>{{item.ObjectName}}</ion-label>
-      <ion-toggle [(ngModel)]="item.IsSelected" ></ion-toggle>
+<ion-content class="subscription-edit-content">
+  <section class="edit-summary" *ngIf="user">
+    <ion-label>
+      <h1>{{user.Name}} <ion-note *ngIf="user.ShortName">{{user.ShortName}}</ion-note></h1>
+      <p>正在设置 {{channelName}} 接收的业务提醒</p>
+    </ion-label>
+    <ion-badge color="light">已选 {{selectedCount}}</ion-badge>
+  </section>
+
+  <section class="edit-actions" *ngIf="!isLoading && !loadError && items.length > 0">
+    <ion-button fill="clear" size="small" (click)="selectAll()">全选</ion-button>
+    <ion-button fill="clear" size="small" (click)="clearAll()">清空</ion-button>
+  </section>
+
+  <ion-list class="type-list" lines="none" *ngIf="isLoading">
+    <ion-item *ngFor="let item of [1,2,3,4]">
+      <ion-label>
+        <h2><ion-skeleton-text animated style="width: 50%"></ion-skeleton-text></h2>
+        <p><ion-skeleton-text animated style="width: 70%"></ion-skeleton-text></p>
+      </ion-label>
     </ion-item>
   </ion-list>
-  
-  <ion-button color="primary" expand="block" (click)="save()">保存</ion-button>
+
+  <section class="state-panel" *ngIf="loadError && !isLoading">
+    <h2>加载失败</h2>
+    <p>暂时无法获取提醒类型，请稍后重试。</p>
+    <ion-button fill="outline" size="small" (click)="retryLoad()">重试</ion-button>
+  </section>
+
+  <section class="state-panel" *ngIf="!isLoading && !loadError && items.length === 0">
+    <h2>暂无可订阅提醒</h2>
+    <p>当前渠道暂未开放可设置的消息类型。</p>
+  </section>
+
+  <ion-list class="type-list" lines="none" *ngIf="!isLoading && !loadError && items.length > 0">
+    <ion-item *ngFor="let item of items">
+      <ion-label>
+        <h2>{{item.ObjectName}}</h2>
+        <p>{{item.IsSelected ? '已开启此类提醒' : '关闭后不再接收此类提醒'}}</p>
+      </ion-label>
+      <ion-toggle slot="end" [(ngModel)]="item.IsSelected"></ion-toggle>
+    </ion-item>
+  </ion-list>
 </ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-button color="primary" expand="block" (click)="save()" [disabled]="isLoading || loadError || isSaving">
+      <ion-spinner name="crescent" *ngIf="isSaving"></ion-spinner>
+      <span *ngIf="!isSaving">保存设置</span>
+      <span *ngIf="isSaving">保存中...</span>
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

@@ -7,20 +7,27 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list lines="full">
-    <ion-item detail (click)="openDetail(item)" *ngFor="let item of items">
+<ion-content class="notice-list-content">
+  <section class="notice-list-stack" *ngIf="items.length > 0">
+    <button type="button" class="notice-card" *ngFor="let item of items" (click)="openDetail(item)">
+      <div class="notice-card-head">
+        <span class="notice-card-time">{{ item.CreateAt }}</span>
+        <ion-badge class="notice-card-badge" [color]="item.IsRead ? 'success' : 'danger'">{{ item.IsRead ? '已读' : '未读' }}</ion-badge>
+      </div>
 
-      <ion-label class="ion-text-wrap">
-        <p>{{item.CreateAt}}</p>
-        <ion-text>
-          <h3>{{item.Title}}</h3>
-        </ion-text>
-        <p>{{item.Summary}}</p>
-      </ion-label>
-      <ion-badge slot="end" [color]="item.IsRead ? 'success' : 'danger'">{{item.IsRead?"已读":"未读"}}</ion-badge>
-    </ion-item>
-  </ion-list>
+      <div class="notice-card-body">
+        <h3>{{ item.Title }}</h3>
+        <p>{{ item.Summary }}</p>
+      </div>
+
+      <ion-icon class="notice-card-chevron" name="chevron-forward"></ion-icon>
+    </button>
+  </section>
+
+  <section class="notice-empty" *ngIf="!isBusy && items.length === 0">
+    <p>暂无业务公告</p>
+  </section>
+
   <ion-infinite-scroll (ionInfinite)="getItems()">
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll>

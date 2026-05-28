@@ -12,10 +12,13 @@ import { WechatUser } from 'src/app/interfaces/wechat-user';
 })
 export class MessageSubscriptionEditPage implements OnInit {
 
-  items : Array<MessageType>;
-  type : any;
+  items : Array<MessageType> = [];
+  type : number;
   user : WechatUser;
-  typeNames=["微信公众号","短信","邮件"];
+  typeNames = ['微信公众号', '短信', '邮件'];
+  isLoading = false;
+  isSaving = false;
+  loadError = false;
   constructor(public route:ActivatedRoute,public service:MessageSubscriptionService,public nav:NavController,public alert:AlertController) { }
 
   ngOnInit(): void {
@@ -27,22 +30,55 @@ export class MessageSubscriptionEditPage implements OnInit {
   }
 
   getMessageTypes(type){
-      this.service.getMessageTypes(type).subscribe((res:Array<MessageType>)=>{
+    this.isLoading = true;
+    this.loadError = false;
+    this.service.getMessageTypes(type).subscribe({
+      next: (res:Array<MessageType>)=>{
+        const selectedNames = this.user && this.user.SubscribeMessageTypeNames ? this.user.SubscribeMessageTypeNames : '';
         res.forEach(p=>{
-            if(this.user.SubscribeMessageTypeNames.indexOf(p.ObjectName)!=-1){
-              p.IsSelected=true;
-            }
-          });
+          p.IsSelected = selectedNames.indexOf(p.ObjectName) !== -1;
+        });
         this.items=res;
-        console.log(res);
-      });
+        this.isLoading = false;
+      },
+      error: () => {
+        this.items = [];
+        this.loadError = true;
+        this.isLoading = false;
+      }
+    });
+  }
+
+  get channelName(): string {
+    return this.typeNames[this.type - 1] || '消息';
+  }
+
+  get selectedCount(): number {
+    return this.items ? this.items.filter(p => p.IsSelected).length : 0;
+  }
+
+  selectAll() {
+    this.items.forEach(item => item.IsSelected = true);
+  }
+
+  clearAll() {
+    this.items.forEach(item => item.IsSelected = false);
+  }
+
+  retryLoad() {
+    this.getMessageTypes(this.type);
   }
 
   save(){
+    if (this.isSaving || !this.user) {
+      return;
+    }
+    this.isSaving = true;
     let selectedList=this.items.filter(p=>p.IsSelected);
     this.user.SubscribeMessageTypes.length=0;
     selectedList.forEach(p=>this.user.SubscribeMessageTypes.push(p.ObjectId));
     this.service.subscribeWechatMessageType(this.type,this.user).subscribe(async res=>{
+      this.isSaving = false;
       if(res.Success){
         this.nav.back();
       }else{
@@ -54,6 +90,14 @@ export class MessageSubscriptionEditPage implements OnInit {
         });
         errorAlert.present();
       }
+    }, async () => {
+      this.isSaving = false;
+      const errorAlert = await this.alert.create({
+        header: '操作失败',
+        message: '网络异常，请稍后重试',
+        buttons: ['确定']
+      });
+      errorAlert.present();
     });
   }
 

@@ -9,6 +9,8 @@ import { Router, NavigationExtras, ActivatedRoute } from '@angular/router';
 })
 export class UnreadMessageList1Page implements OnInit {
   items: Array<any> = [];
+  isLoading: boolean = true;
+  readonly loadingPlaceholders = [1, 2, 3];
   constructor(public service: InstantMessageService, private router: Router, private route: ActivatedRoute) {
 
   }
@@ -17,16 +19,21 @@ export class UnreadMessageList1Page implements OnInit {
     this.getData();
   }
   getData() {
-    this.service.getMessages1().subscribe(res => {
-      this.items = res;
-      console.log(this.items);
+    this.isLoading = true;
+    this.service.getMessages1().subscribe({
+      next: res => {
+        this.items = res || [];
+      },
+      error: () => {
+        this.items = [];
+      },
+      complete: () => {
+        this.isLoading = false;
+      }
     });
   }
   getData1() {
-    this.service.getMessages1().subscribe(res => {
-      this.items = res;
-      console.log(this.items);
-    });
+    this.getData();
   }
 
   detail(data) {

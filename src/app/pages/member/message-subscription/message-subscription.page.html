@@ -1,18 +1,28 @@
 <ion-header>
   <ion-toolbar>
     <ion-back-button slot="start"></ion-back-button>
-    <ion-title>
-      消息订阅
-    </ion-title>
+    <ion-title>消息订阅</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-item detail lines="none" *ngFor="let item of items" [routerLink]="['/member/message-subscription/member',item.type]">
-    <ion-avatar class="type-image" slot="start">
-      <img src="assets/imgs/{{item.image}}.png">
-    </ion-avatar>
-    <ion-label>
-      <h2>{{item.name}}</h2>
-    </ion-label>
-  </ion-item>
+<ion-content class="subscription-content">
+  <section class="subscription-intro">
+    <ion-text>
+      <h1>选择接收渠道</h1>
+      <p>为联系人设置需要接收的业务提醒，避免遗漏交货、问题件和账务通知。</p>
+    </ion-text>
+  </section>
+
+  <ion-list lines="none" class="channel-list">
+    <ion-item detail button *ngFor="let item of items" (click)="openChannel(item)">
+      <ion-thumbnail class="type-image" slot="start">
+        <img src="assets/imgs/{{item.image}}.png" alt="">
+      </ion-thumbnail>
+      <ion-label>
+        <h2>{{item.name}}</h2>
+        <p>{{item.description}}</p>
+        <ion-note>{{item.scenario}}</ion-note>
+      </ion-label>
+      <ion-badge slot="end" color="light">{{item.shortName}}</ion-badge>
+    </ion-item>
+  </ion-list>
 </ion-content>

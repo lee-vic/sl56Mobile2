@@ -3,30 +3,61 @@
     <ion-buttons>
       <ion-back-button slot="start"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{typeNames[type-1]}}消息订阅设置</ion-title>
+    <ion-title>{{channelName}}消息订阅设置</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-card *ngFor="let item of items">
-    <ion-item class="name-info" lines="none">
-      {{item.Name}} {{item.ShortName}}
+<ion-content class="subscription-member-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="member-summary">
+    <h1>{{channelName}}提醒</h1>
+    <p>{{channelTip}}</p>
+  </section>
+
+  <ion-list class="member-list" lines="none" *ngIf="isLoading">
+    <ion-item *ngFor="let item of [1,2,3]">
+      <ion-avatar slot="start">
+        <ion-skeleton-text animated></ion-skeleton-text>
+      </ion-avatar>
+      <ion-label>
+        <h2><ion-skeleton-text animated style="width: 45%"></ion-skeleton-text></h2>
+        <p><ion-skeleton-text animated style="width: 72%"></ion-skeleton-text></p>
+      </ion-label>
     </ion-item>
-    <ion-card-content *ngIf="item.SubscribeMessageTypeNames.length>0">
-      <ion-chip outline *ngFor="let subitem of item.SubscribeMessageTypeNames.split(',')">
-        <ion-label>{{subitem}}</ion-label>
-      </ion-chip>
-    </ion-card-content>
-    <ion-card-content *ngIf="item.SubscribeMessageTypeNames.length==0">
-      <ion-label>未订阅任何消息</ion-label>
-    </ion-card-content>
-    <ion-item lines="none">
-      <ion-label></ion-label>
-      <ion-buttons>
-        <ion-button slot="end" (click)="edit(item)">
-          <ion-icon name="filing"></ion-icon>
-          编辑
-        </ion-button>
-      </ion-buttons>
+  </ion-list>
+
+  <section class="state-panel" *ngIf="loadError && !isLoading">
+    <h2>加载失败</h2>
+    <p>暂时无法获取{{channelName}}联系人，请稍后重试。</p>
+    <ion-button fill="outline" size="small" (click)="retryLoad()">重试</ion-button>
+  </section>
+
+  <section class="state-panel" *ngIf="!isLoading && !loadError && items.length === 0">
+    <h2>暂无联系人</h2>
+    <p>当前渠道下还没有可设置的联系人。</p>
+  </section>
+
+  <ion-list class="member-list" lines="none" *ngIf="!isLoading && !loadError && items.length > 0">
+    <ion-item *ngFor="let item of items">
+      <ion-avatar slot="start">
+        <img [src]="item.HeadUrl || 'assets/imgs/member-14.png'" alt="">
+      </ion-avatar>
+      <ion-label>
+        <h2>{{item.Name}} <ion-note *ngIf="item.ShortName">{{item.ShortName}}</ion-note></h2>
+        <p *ngIf="getSubscriptionCount(item) > 0">已开启 {{getSubscriptionCount(item)}} 类提醒</p>
+        <p *ngIf="getSubscriptionCount(item) === 0">未开启任何提醒</p>
+        <div class="chip-wrap" *ngIf="getSubscriptionCount(item) > 0">
+          <ion-chip outline *ngFor="let subitem of getSubscriptionNames(item)">
+            <ion-label>{{subitem}}</ion-label>
+          </ion-chip>
+        </div>
+      </ion-label>
+      <ion-button slot="end" fill="clear" (click)="edit(item)">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        {{getSubscriptionCount(item) > 0 ? '编辑' : '去设置'}}
+      </ion-button>
     </ion-item>
-  </ion-card>
+  </ion-list>
 </ion-content>
