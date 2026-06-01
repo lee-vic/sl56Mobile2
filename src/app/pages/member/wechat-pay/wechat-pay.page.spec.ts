@@ -79,7 +79,7 @@ describe('WechatPayPage', () => {
         {
           provide: LoadingController,
           useValue: {
-            create: () => Promise.resolve({ present: loadingPresentSpy }),
+            create: () => Promise.resolve({ present: loadingPresentSpy, dismiss: loadingDismissSpy }),
             dismiss: loadingDismissSpy
           }
         },

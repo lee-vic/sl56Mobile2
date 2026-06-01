@@ -1,44 +1,156 @@
-<ion-header>
+<ion-header class="delivery-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-	<ion-buttons slot="end">
-		<ion-button (click)="batchReturn()">{{isShowCheckbox?'完成':'批量退货'}}</ion-button>
-	</ion-buttons>
     <ion-title>交货记录</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        fill="clear"
+        class="batch-toggle-btn"
+        [class.batch-active]="isShowCheckbox"
+        [disabled]="isBatchSubmitting"
+        (click)="onBatchEntryClick()">
+        {{ isShowCheckbox ? '结束勾选' : '我要退货' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      [value]="searchKeyword"
+      placeholder="原/转单号、国家、报价、运输方式"
+      showClearButton="focus"
+      autocomplete="off"
+      aria-label="搜索交货记录"
+      (ionInput)="onSearchInput($event)"
+      (ionClear)="clearSearch()">
+    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding-top" style="background-color: #fff;"></div>
+<ion-content class="delivery-content" [class.with-footer]="isShowCheckbox || waitReturnCount > 0">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshItems($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingSpinner="crescent" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
 
-    <ion-searchbar placeholder="原、转单号，国家，报价，运输方式，类型，子单号" showClearButton="focus" (ionInput)="searchItems()"></ion-searchbar>
+  <section class="list-wrap" *ngIf="isLoading && items.length === 0" aria-label="加载中">
+    <ion-card class="record-card skeleton-card" *ngFor="let sk of [1,2,3]">
+      <ion-card-content>
+        <ion-skeleton-text animated style="width: 58%; height: 16px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 68%; height: 14px; margin-top: 12px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 48%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
 
-  <ion-list *ngFor="let item of items" lines="none">
-    <ion-item class="bottom-border order-head" [class.with-selector]="isShowCheckbox" (click)="clickCheckBox(item)">
-	    <ion-checkbox aria-label="选择退货记录" *ngIf="isShowCheckbox" slot="start" [checked]="item.Selected"></ion-checkbox>
-      <ion-label class="head-label">
-        <div class="ref-no">原单号:{{item.ReferenceNumber}}</div>
-        <div class="track-no">转单号:{{item.TrackNumber}}</div>
-      </ion-label>
-    </ion-item>
-    <ion-item detail class="item-last" (click)="detail(item)">
-      <ion-label>
-        <h3>{{item.PriceName}}</h3>
-        <p>计费重:{{item.Weight}}Kg</p>
-        <p>计价时间:{{item.Date}}</p>
-      </ion-label>
-      <ion-note slot="end" class="ion-margin-vertical">{{item.Amount |currency:'CNY'}}</ion-note>
-    </ion-item>
-  </ion-list>
-  <ion-fab horizontal="end" vertical="bottom" slot="fixed" (click)="waitingReturnList()">
-    <ion-badge class="waitReturnCount" [color]="waitReturnCount > 0 ? 'danger' : 'medium'">{{waitReturnCount}}</ion-badge>
-  	<ion-fab-button color="light">
-      <ion-icon name="trash"></ion-icon>
-  	</ion-fab-button>
-  </ion-fab>
+  <section class="list-wrap" *ngIf="!isLoading || items.length > 0">
+    <ion-card class="record-card" *ngFor="let item of items; trackBy: trackByDelivery">
+      <ion-item lines="none" class="record-head" [class.selection-mode]="isShowCheckbox" (click)="onRecordClick(item)">
+        <ion-checkbox
+          *ngIf="isShowCheckbox"
+          slot="start"
+          aria-label="选择退货记录"
+          [checked]="item.Selected"
+          (click)="$event.stopPropagation()"
+          (ionChange)="clickCheckBox(item)">
+        </ion-checkbox>
+
+        <ion-label>
+          <div class="record-nos">
+            <div class="no-row">
+              <span class="no-label">原单号</span>
+              <span class="no-value">{{ item.ReferenceNumber || '-' }}</span>
+            </div>
+            <div class="no-row">
+              <span class="no-label">转单号</span>
+              <span class="no-value muted">{{ item.TrackNumber || '-' }}</span>
+            </div>
+          </div>
+        </ion-label>
+
+        <ion-badge slot="end" color="medium" class="country-badge">{{ getCountryLabel(item) }}</ion-badge>
+      </ion-item>
+
+      <ion-card-content class="record-body" (click)="onRecordClick(item)">
+        <div class="channel-line">
+          <span class="channel-prefix">渠道</span>
+          <span class="channel-name">{{ item.PriceName || '-' }}</span>
+        </div>
+        <div class="compact-fields">
+          <div class="compact-field">
+            <span class="field-label">计费重</span>
+            <span class="field-value">{{ item.Weight || item.ChargeableWeight || '-' }} Kg</span>
+          </div>
+          <div class="compact-field">
+            <span class="field-label">计价时间</span>
+            <span class="field-value">{{ item.Date || '-' }}</span>
+          </div>
+        </div>
+
+        <div class="card-foot">
+          <div class="amount-wrap">
+            <span class="amount-label">金额</span>
+            <ion-text class="amount-text">{{ item.Amount | currency:'CNY' }}</ion-text>
+          </div>
+          <ion-button fill="clear" size="small" (click)="$event.stopPropagation(); detail(item)">
+            查看详情
+            <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="empty-wrap" *ngIf="isLoaded && !isLoading && items.length === 0 && !hasLoadError">
+      <img src="assets/imgs/empty.png" alt="暂无交货记录">
+      <p class="empty-title">{{ searchKeyword ? '未找到匹配记录' : '暂无交货记录' }}</p>
+      <p class="empty-subtitle">
+        {{ searchKeyword ? '可以尝试更换关键词或清空搜索。' : '当前没有可展示的交货数据。' }}
+      </p>
+      <ion-button *ngIf="searchKeyword" size="small" fill="outline" (click)="clearSearch()">清空搜索</ion-button>
+    </div>
+
+    <div class="error-wrap" *ngIf="hasLoadError && !isLoading">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <p class="error-title">加载失败</p>
+      <p class="error-subtitle">网络或服务暂时不可用，请稍后重试。</p>
+      <ion-button size="small" fill="outline" (click)="loadFirstPage(searchKeyword)">重新加载</ion-button>
+    </div>
+  </section>
+
   <ion-infinite-scroll (ionInfinite)="scrollItems($event)">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    <ion-infinite-scroll-content loadingSpinner="dots" loadingText="加载更多..."></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
+
+<ion-footer class="delivery-footer" *ngIf="isShowCheckbox || waitReturnCount > 0">
+  <ion-toolbar class="footer-toolbar">
+    <div class="footer-info-row" role="status" aria-live="polite">
+      <button
+        type="button"
+        class="footer-summary-link"
+        aria-label="前往待退货列表"
+        [disabled]="isBatchSubmitting"
+        (click)="waitingReturnList()">
+        <span class="summary-left">
+          <ion-icon name="list-outline" aria-hidden="true"></ion-icon>
+          <span>前往待退货</span>
+          <strong>{{ waitReturnCount }}</strong>
+          <span>条</span>
+        </span>
+        <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+
+    <div class="footer-divider" aria-hidden="true" *ngIf="isShowCheckbox"></div>
+
+    <div class="footer-action-row" *ngIf="isShowCheckbox">
+      <div class="footer-buttons footer-buttons-full">
+        <ion-button fill="outline" color="medium" [disabled]="isBatchSubmitting" (click)="cancelBatchMode()">取消</ion-button>
+        <ion-button [disabled]="!canSubmitBatch" (click)="batchReturn()">
+          {{ footerSubmitText }}
+        </ion-button>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-footer>

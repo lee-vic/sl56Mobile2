@@ -1,12 +1,12 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AlertController, IonicModule, LoadingController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { ConfirmationPage } from './confirmation.page';
 import { ConfirmationService } from 'src/app/providers/confirmation.service';
@@ -30,9 +30,12 @@ describe('ConfirmationPage', () => {
   const loadingPresentSpy = jasmine
     .createSpy('loadingPresent')
     .and.returnValue(Promise.resolve());
-  const loadingDismissSpy = jasmine
+  const loadingElementDismissSpy = jasmine
     .createSpy('loadingDismiss')
     .and.returnValue(Promise.resolve());
+  const loadingCreateSpy = jasmine
+    .createSpy('loadingCreate')
+    .and.returnValue(Promise.resolve({ present: loadingPresentSpy, dismiss: loadingElementDismissSpy }));
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -51,8 +54,7 @@ describe('ConfirmationPage', () => {
         {
           provide: LoadingController,
           useValue: {
-            create: () => Promise.resolve({ present: loadingPresentSpy }),
-            dismiss: loadingDismissSpy,
+            create: loadingCreateSpy,
           },
         },
       ],
@@ -68,9 +70,12 @@ describe('ConfirmationPage', () => {
     router = TestBed.inject(Router);
     spyOn(router, 'navigate');
     confirmSpy.calls.reset();
+    getReceiveGoodsDetailListSpy.calls.reset();
     toastCreateSpy.calls.reset();
     alertCreateSpy.calls.reset();
-    loadingDismissSpy.calls.reset();
+    loadingCreateSpy.calls.reset();
+    loadingPresentSpy.calls.reset();
+    loadingElementDismissSpy.calls.reset();
   });
 
   it('should create', () => {
@@ -89,6 +94,18 @@ describe('ConfirmationPage', () => {
     expect(component.searchList.every((item) => item.Selected === true)).toBe(true);
   });
 
+  it('should load list on init', () => {
+    const list = [{ Id: 1, ReferenceNumber: 'A001', Selected: false }] as any;
+    getReceiveGoodsDetailListSpy.and.returnValue(of(list));
+
+    component.ngOnInit();
+
+    expect(getReceiveGoodsDetailListSpy).toHaveBeenCalled();
+    expect(component.receiveGoodsDetailList.length).toBe(1);
+    expect(component.searchList.length).toBe(1);
+    expect(component.isLoading).toBe(false);
+  });
+
   it('should filter receive goods list by reference number', () => {
     component.receiveGoodsDetailList = [
       { Id: 1, ReferenceNumber: 'ABC123' },
@@ -100,6 +117,34 @@ describe('ConfirmationPage', () => {
 
     expect(component.searchList.length).toBe(1);
     expect(component.searchList[0].ReferenceNumber).toBe('ABC123');
+  });
+
+  it('should filter to selected items when segment changed', () => {
+    component.receiveGoodsDetailList = [
+      { Id: 1, ReferenceNumber: 'ABC123', Selected: true },
+      { Id: 2, ReferenceNumber: 'XYZ999', Selected: false },
+    ] as any;
+
+    component.onFilterChange({ detail: { value: 'selected' } } as CustomEvent);
+
+    expect(component.viewFilter).toBe('selected');
+    expect(component.searchList.length).toBe(1);
+    expect(component.searchList[0].Id).toBe(1);
+  });
+
+  it('should reset filters to all view', () => {
+    component.receiveGoodsDetailList = [
+      { Id: 1, ReferenceNumber: 'ABC123', Selected: true },
+      { Id: 2, ReferenceNumber: 'XYZ999', Selected: false },
+    ] as any;
+    component.searchKeyword = 'abc';
+    component.viewFilter = 'selected';
+
+    component.resetFilters();
+
+    expect(component.searchKeyword).toBe('');
+    expect(component.viewFilter).toBe('all');
+    expect(component.searchList.length).toBe(2);
   });
 
   it('should show toast when no item is selected before confirmation', fakeAsync(() => {
@@ -119,14 +164,43 @@ describe('ConfirmationPage', () => {
     const resultList = [{ Id: 99, ReferenceNumber: 'DONE' }];
     confirmSpy.and.returnValue(of(resultList as any));
 
-    component.doConfirm('1,2');
+    component.doConfirm('1, 2,,');
+    flushMicrotasks();
     tick();
 
     expect(confirmSpy).toHaveBeenCalledWith('1,2');
     expect(component.receiveGoodsDetailList).toEqual(resultList as any);
     expect(component.searchList).toEqual(resultList as any);
-    expect(loadingDismissSpy).toHaveBeenCalled();
+    expect(loadingCreateSpy).toHaveBeenCalled();
+    expect(loadingPresentSpy).toHaveBeenCalled();
+    expect(loadingElementDismissSpy).toHaveBeenCalled();
+
+    tick(2000);
   }));
+
+  it('should show error toast when confirm request fails', fakeAsync(() => {
+    confirmSpy.and.returnValue(throwError(() => ({ message: '网络异常' })));
+
+    component.doConfirm('3');
+    flushMicrotasks();
+    tick();
+
+    expect(confirmSpy).toHaveBeenCalledWith('3');
+    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(loadingElementDismissSpy).toHaveBeenCalled();
+    expect(component.isSubmitting).toBe(false);
+  }));
+
+  it('should complete refresher when load fails', () => {
+    getReceiveGoodsDetailListSpy.and.returnValue(throwError(() => new Error('failed')));
+    const completeSpy = jasmine.createSpy('complete');
+
+    component.onRefresh({ detail: { complete: completeSpy } } as any);
+
+    expect(completeSpy).toHaveBeenCalled();
+    expect(component.isLoading).toBe(false);
+    expect(toastCreateSpy).toHaveBeenCalled();
+  });
 
   it('should navigate to delivery record detail', () => {
     component.detail({ Id: 10 });

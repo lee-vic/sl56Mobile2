@@ -54,4 +54,23 @@ describe('CalculationPage', () => {
 
     expect(component.myForm.get('ModeOfTransportIdList')?.value).toBe(2);
   });
+
+  it('should update selected template rules when toggling piece rule', () => {
+    component.pieceTemplateRules = [{ ObjectName: '电池', ObjectId: 8, Checked: false }];
+    component.sizes.at(0).get('PieceRules')?.setValue([
+      { ObjectName: '电池', ObjectId: 8, Checked: false }
+    ]);
+
+    component.togglePieceRule(0, 0);
+
+    const selected = component.sizes.at(0).get('SeletedTemplateRules')?.value;
+    expect(selected).toEqual([8]);
+  });
+
+  it('should show country hint before selection', () => {
+    component.selectedCountry = null;
+    component.myForm.get('actualWeight')?.setValue('2');
+
+    expect(component.submitHint).toBe('请先选择有效国家');
+  });
 });

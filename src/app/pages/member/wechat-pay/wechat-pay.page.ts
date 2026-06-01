@@ -14,14 +14,14 @@ declare var WeixinJSBridge: any;
 })
 export class WechatPayPage implements OnInit, OnDestroy {
   data: any = {};
-  openId: any;
-  cid:any;
+  openId: string;
+  cid: number;
   allSelected: boolean = true;
   amountInputDisable: boolean = false;
-  signalRConnection: SignalRConnection;
-  selectedProductType:any=0;
-  productTypes:any;
-  otherCurrencyAmounts:any;
+  signalRConnection?: SignalRConnection;
+  selectedProductType: any = 0;
+  productTypes: any[] = [];
+  otherCurrencyAmounts: any[] = [];
   constructor(public toastCtrl: ToastController,
     public alertCtrl: AlertController,
     public loadingCtrl: LoadingController,
@@ -36,19 +36,16 @@ export class WechatPayPage implements OnInit, OnDestroy {
       if(this.route.snapshot.queryParams['cid']==null){
         this.cid=1;
       }else{
-        this.cid =this.route.snapshot.queryParams['cid'];
+        this.cid = Number(this.route.snapshot.queryParams['cid']) || 1;
       }
   }
 
   ngOnInit(): void {
-    this.loadingCtrl.create({
-      message: '请稍后...'
-    }).then(p => {
-      p.present()
+    this.presentLoading('请稍后...').then(loader => {
       this.service.getList(this.openId,this.cid).subscribe({
         next: (res) => {
         //支付外币时，不选择单号（若勾选单号，则支付金额会变成选择单号的总金额）
-        if(this.cid!=1){
+        if(this.cid !== 1){
           res.ReceiveGoodsDetailList.forEach(p=>{
             p.Selected=false;
           });
@@ -56,15 +53,15 @@ export class WechatPayPage implements OnInit, OnDestroy {
         }
         this.data = res;
         this.data.ProductType=this.selectedProductType;
-        if (this.data.ReceiveGoodsDetailList.length > 0 && this.cid==1) {
+        if (this.data.ReceiveGoodsDetailList.length > 0 && this.cid === 1) {
           this.amountInputDisable = true;
         }
         else {
           this.amountInputDisable = false;
         }
-        this.loadingCtrl.dismiss();
+        loader.dismiss();
         this.signalRConnection = this.signalR.createConnection();
-        this.signalRConnection.status.subscribe((p) => console.warn(p.name));
+        this.signalRConnection.status.subscribe();
         this.signalRConnection.start().then((c) => {
           let listener = c.listenFor("messageReceived");
           listener.subscribe((msg: any) => {
@@ -75,41 +72,32 @@ export class WechatPayPage implements OnInit, OnDestroy {
               return;
             }
             if (!obj || typeof obj !== 'object') return;
-            if (obj.MsgContent == "True") {
+            if (obj.MsgContent === "True") {
               this.payHistory();
             }
             else {
-              this.toastCtrl.create({
-                message: "支付失败",
-                position: 'middle',
-                duration: 1500
-              }).then(p => p.present());
+              this.presentToast("支付失败", 1500);
     
             }
           });
         });
         this.userService.getHomeInfo().subscribe(res=>{
           this.otherCurrencyAmounts = res.CurrencyAmount.filter(p=>p.Id!=this.cid);
-          console.log(this.otherCurrencyAmounts);
         })
 
         },
         error: (error) => {
-          this.loadingCtrl.dismiss();
-          this.toastCtrl.create({
-            message: error.statusText,
-            position: 'middle',
-            duration: 1500
-          }).then(p => p.present());
+          loader.dismiss();
+          this.presentToast(error.statusText, 1500);
         }
       });
 
     });
 
-   this.service.getProductTypes().subscribe(res=>{
-    this.productTypes=res;
-    console.log(res);
-   });
+  this.service.getProductTypes().subscribe(res=>{
+    this.productTypes = Array.isArray(res) ? res : [];
+   this.setDefaultProductType();
+  });
 
 
 
@@ -122,17 +110,32 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
 
   onAllClick() {
-    if (this.data != undefined && this.data.ReceiveGoodsDetailList != undefined) {
+    if (this.data !== undefined && this.data.ReceiveGoodsDetailList !== undefined) {
       this.data.ReceiveGoodsDetailList.forEach(element => {
         element.Selected = this.allSelected;
       });
+      // Ionic 8 does not always emit child checkbox change events for programmatic updates.
+      this.selectChange();
     }
 
   }
+  setDefaultProductType() {
+    if (!this.productTypes || this.productTypes.length === 0) {
+      return;
+    }
+    let defaultItem = this.productTypes[0];
+    for (const item of this.productTypes) {
+      if (item && item.Value === '国际快递') {
+        defaultItem = item;
+        break;
+      }
+    }
+    this.selectedProductType = defaultItem.Key;
+    this.data.ProductType = this.selectedProductType;
+  }
   selectChange() {
-    console.log("select changed");
     let selectedAmount: number = 0;
-    let selectedList = new Array();
+    let selectedList: number[] = [];
     this.data.ReceiveGoodsDetailList.filter(item => {
       return item.Selected;
     }).forEach(item => {
@@ -159,7 +162,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   calculateAmount() {
     let tempAmount: number = 0;
-    if (this.data.Amount != "" && this.data.Amount != null)
+    if (this.data.Amount !== "" && this.data.Amount != null)
       tempAmount = parseFloat(this.data.Amount);
     if (this.data.WXPaymentCommission) {
       this.data.Commission = (tempAmount * this.data.WXPaymentCommissionRate).toFixed(2);
@@ -168,7 +171,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
       this.data.Commission = 0;
     }
     this.data.Amount=tempAmount;
-    console.log("tempAmount:",tempAmount);
     this.data.TotalAmount = (tempAmount + parseFloat(this.data.Commission)).toFixed(2);
   }
   payClick() {
@@ -189,47 +191,29 @@ export class WechatPayPage implements OnInit, OnDestroy {
       }
       else {
         // this.payByH5();
-        this.alertCtrl.create({
-          header: '提示',
-          subHeader: "暂不支持此支付方式",
-          message: "请使用我司公众号、小程序、PC版本网站进行支付",
-          buttons: [{
-            text: "确定",
-          }]
-        }).then(p => p.present());
+        this.presentAlert("暂不支持此支付方式", "请使用我司公众号、小程序、PC版本网站进行支付");
       }
     }
   }
   payByJsApi() {
     this.data.TradeType = "JSAPI";
-    this.loadingCtrl.create({
-      message: '请稍后...'
-    }).then(p => {
-      p.present();
+    this.presentLoading('请稍后...').then(loader => {
       this.service.pay(this.data).subscribe({
         next: (res) => {
 
-        this.loadingCtrl.dismiss();
+        loader.dismiss();
         if (res.Success) {
           let jsApiParam = JSON.parse(res.Data);
           this.callpay(jsApiParam);
         }
         else {
-          this.toastCtrl.create({
-            message: res.ErrMsg,
-            position: 'middle',
-            duration: 3000
-          }).then(p => p.present());
+          this.presentToast(res.ErrMsg, 3000);
         }
 
         },
         error: (err) => {
-          this.loadingCtrl.dismiss();
-          this.toastCtrl.create({
-            message: err.message,
-            position: 'middle',
-            duration: 3000
-          }).then(p => p.present());
+          loader.dismiss();
+          this.presentToast(err.message, 3000);
         }
       });
     });
@@ -238,34 +222,22 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   payByH5() {
     this.data.TradeType = "MWEB";
-    this.loadingCtrl.create({
-      message: '请稍后...'
-    }).then(p => p.present());
-    this.service.pay(this.data).subscribe({
+    this.presentLoading('请稍后...').then(loader => this.service.pay(this.data).subscribe({
       next: (res) => {
-        console.log(res);
-        this.loadingCtrl.dismiss();
+        loader.dismiss();
         if (res.Success)
           location.href = res.PayUrl;
         else {
-          this.toastCtrl.create({
-            message: res.ErrMsg,
-            position: 'middle',
-            duration: 3000
-          }).then(p => p.present());
+          this.presentToast(res.ErrMsg, 3000);
         }
       },
       error: (err) => {
-        this.loadingCtrl.dismiss();
-        this.toastCtrl.create({
-          message: err.message,
-          position: 'middle',
-          duration: 3000
-        }).then(p => p.present());
+        loader.dismiss();
+        this.presentToast(err.message, 3000);
 
 
       }
-    });
+    }));
   }
 
 
@@ -273,14 +245,12 @@ export class WechatPayPage implements OnInit, OnDestroy {
     let ua = navigator.userAgent.toLowerCase();
     let m = ua.match(/MicroMessenger/i);
 
-    if (m != null && m.toString() == "micromessenger") {
+    if (m != null && m.toString() === "micromessenger") {
       return true;
     }
     return false;
   }
 
-  listClick() {
-  }
   callpay(jsApiParam) {
     if (typeof WeixinJSBridge == "undefined") {
       if (document.addEventListener) {
@@ -296,12 +266,8 @@ export class WechatPayPage implements OnInit, OnDestroy {
       'getBrandWCPayRequest',
       jsApiParam,//josn串
       (res) => {
-        if (res.err_msg == "get_brand_wcpay_request:ok") {
-          this.toastCtrl.create({
-            message: "支付成功",
-            position: 'middle',
-            duration: 1000
-          }).then(p => p.present());
+        if (res.err_msg === "get_brand_wcpay_request:ok") {
+          this.presentToast("支付成功", 1000);
 
         }
         else {
@@ -320,9 +286,11 @@ export class WechatPayPage implements OnInit, OnDestroy {
   typeChange(e){
     this.selectedProductType=e.detail.value;
     this.data.ProductType=this.selectedProductType;
-    console.log("selectedType:",this.selectedProductType);
   }
   async presentActionSheet() {
+    if (!this.otherCurrencyAmounts || this.otherCurrencyAmounts.length === 0) {
+      return;
+    }
     let buttons = new Array();
     this.otherCurrencyAmounts.forEach(p=>{
       buttons.push({
@@ -345,5 +313,28 @@ export class WechatPayPage implements OnInit, OnDestroy {
       buttons: buttons
     });
     await actionSheet.present();
+  }
+
+  private presentToast(message: string, duration = 1500): void {
+    this.toastCtrl.create({
+      message,
+      position: 'middle',
+      duration,
+    }).then(p => p.present());
+  }
+
+  private presentAlert(subHeader: string, message: string): void {
+    this.alertCtrl.create({
+      header: '提示',
+      subHeader,
+      message,
+      buttons: [{ text: '确定' }],
+    }).then(p => p.present());
+  }
+
+  private async presentLoading(message: string) {
+    const loader = await this.loadingCtrl.create({ message });
+    await loader.present();
+    return loader;
   }
 }

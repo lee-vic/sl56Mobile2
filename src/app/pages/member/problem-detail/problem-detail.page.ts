@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
 import {
   AlertController,
@@ -36,6 +36,7 @@ export class ProblemDetailPage implements OnInit {
   isLoading = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
+  @ViewChild('page1Form') formRef: NgForm;
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -54,7 +55,7 @@ export class ProblemDetailPage implements OnInit {
       let inputTypes = types.filter((p) => p >= 1 && p <= 4);
       //存在发票以及其他填写资料项时，发票不是必须
       this.isFileRequired = !(
-        inputTypes.length > 1 && inputTypes.indexOf(3) != -1
+        inputTypes.length > 1 && inputTypes.indexOf(3) !== -1
       );
 
       this.buildOptions();
@@ -110,11 +111,11 @@ export class ProblemDetailPage implements OnInit {
   }
 
   get isProblemDone(): boolean {
-    return this.data?.Problem?.Status == 1;
+    return this.data?.Problem?.Status === 1;
   }
 
   get hasSelfService(): boolean {
-    return this.data?.Problem?.Status == 0 && this.processOptions.length > 0;
+    return this.data?.Problem?.Status === 0 && this.processOptions.length > 0;
   }
 
   hasProcessType(type: number): boolean {
@@ -133,7 +134,7 @@ export class ProblemDetailPage implements OnInit {
     if (this.isSubmiting || this.isFileProcessing) {
       return false;
     }
-    if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) == -1) {
+    if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) === -1) {
       return false;
     }
     return (form?.valid || this.isWeAppUploadFile) === true;
@@ -203,12 +204,12 @@ export class ProblemDetailPage implements OnInit {
       const nav = this.router.getCurrentNavigation();
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
-        if (data.confirmFile == false) {
+        if (data.confirmFile === false) {
           //如果是微信小程序上传的文件，则需要删除
           if (data.isWeAppFile) {
             this.service
               .deleteProblemTempFile(this.problemId)
-              .subscribe((p) => console.log(p));
+              .subscribe();
             this.isWeAppUploadFile = false;
           } else {
             let fileInputs: any = document.getElementsByName("type3Result");
@@ -228,7 +229,6 @@ export class ProblemDetailPage implements OnInit {
         problemId: this.data.Problem.ObjectId,
         attachmentTypeId: this.data.Problem.AttachmentTypeId,
       },
-      replaceUrl: true,
     };
 
     this.router.navigate(["/member/chat/1"], params);
@@ -241,9 +241,9 @@ export class ProblemDetailPage implements OnInit {
     this.renderWeAppButtonIfNeeded();
   }
 
-  checkChange(_form) {}
-
-  checkProcessSetting4() {}
+  checkProcessSetting4(): void {
+    this.submitFailMessage = null;
+  }
 
   returnGoods() {
     let params = {
@@ -262,6 +262,12 @@ export class ProblemDetailPage implements OnInit {
       }
     });
   }
+
+  triggerFormSubmit(): void {
+    if (this.formRef) {
+      this.submit(this.formRef);
+    }
+  }
   changeFile(event, form) {
     let file = null;
     const target = event?.target as HTMLInputElement | null;
@@ -272,25 +278,21 @@ export class ProblemDetailPage implements OnInit {
       file = (target.firstChild as any).files[0];
     }
     if (file != null) {
-      console.log("file select");
       let fileReader = new FileReader();
       fileReader.addEventListener("load", (res) => {
         //文件名
-        let fileName = file.name;
         //base64字符串
         let fileString = (res.target as FileReader).result.toString();
         this.processModel.Type3Result.FileName = file.name;
         this.processModel.Type3Result.Value = fileString;
         //发票，预览处理
         if (this.processModel.Type3Result.AttachmentTypeId == "1") {
-          console.log("uploadFile start");
           this.isFileProcessing = true;
           this.service
             .invoicePretreatment(this.processModel)
             .subscribe((res) => {
               this.isFileProcessing = false;
-              if (res.Result == true) {
-                console.log("filePath:", res.Path);
+              if (res.Result === true) {
                 this.fileFailMessage = null;
                 this.navCtrl.navigateForward("/member/invoice-preview", {
                   queryParams: {
@@ -301,7 +303,6 @@ export class ProblemDetailPage implements OnInit {
                   },
                 });
               } else {
-                console.log("fileFailMessage:", this.fileFailMessage);
                 this.fileFailMessage = res.Message;
                 let fileInputs: any = document.getElementsByName("type3Result");
                 fileInputs[0].value = null;
@@ -309,13 +310,11 @@ export class ProblemDetailPage implements OnInit {
               }
             });
         }
-        console.log(this.processModel.Type3Result);
       });
       fileReader.readAsDataURL(file);
     } else {
       this.processModel.Type3Result.FileName = null;
       this.processModel.Type3Result.Value = null;
-      console.log("file clean");
     }
   }
   submit(formGroup) {
@@ -341,7 +340,7 @@ export class ProblemDetailPage implements OnInit {
       });
     }
     //存在上传文件
-    if (this.data.Problem.ProcessTypeList.indexOf(3) != -1) {
+    if (this.data.Problem.ProcessTypeList.indexOf(3) !== -1) {
     }
     //存在多选
     if (this.hasProcessType(4)) {
@@ -355,7 +354,7 @@ export class ProblemDetailPage implements OnInit {
     }
     this.service.complete(this.processModel).subscribe((res) => {
       this.isSubmiting = false;
-      if (res.Result == false) {
+      if (res.Result === false) {
         this.submitFailMessage = res.Message;
       } else {
         this.data.Problem.Status = 1;
@@ -375,7 +374,7 @@ export class ProblemDetailPage implements OnInit {
           this.loadingCtrl.dismiss();
           if (isInitPage) return;
           if (res) {
-            if (this.processModel.Type3Result.AttachmentTypeId == "1") {
+            if (this.processModel.Type3Result.AttachmentTypeId === "1") {
               this.isFileProcessing = true;
               this.loadingCtrl
                 .create({
@@ -387,7 +386,7 @@ export class ProblemDetailPage implements OnInit {
                 .subscribe((res) => {
                   this.isFileProcessing = false;
                   this.loadingCtrl.dismiss();
-                  if (res.Result == true) {
+                  if (res.Result === true) {
                     this.fileFailMessage = null;
                     this.navCtrl.navigateForward("/member/invoice-preview", {
                       queryParams: {

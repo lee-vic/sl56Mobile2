@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>申请退货</ion-title>
+    <ion-title>{{ pageTitleText }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="history()">
         历史提货人
@@ -16,41 +16,110 @@
   <ion-grid fixed class="return-shell">
     <ion-row class="ion-justify-content-center ion-padding-top">
       <ion-col size="12" size-md="10" size-lg="8">
-        <ion-card class="return-card ion-no-margin">
+        <ion-card class="return-state-card" *ngIf="isInitialLoading">
+          <ion-card-content>
+            <p class="state-kicker">LOADING</p>
+            <h3>正在加载申请信息</h3>
+            <p>请稍候，我们正在准备当前单号的申请数据。</p>
+            <ion-skeleton-text animated style="width: 100%; height: 16px; border-radius: 6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 78%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 64%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="return-state-card blocked" *ngIf="isApplyBlocked && !isInitialLoading">
+          <ion-card-content>
+            <p class="state-kicker">UNAVAILABLE</p>
+            <h3>当前暂不可申请</h3>
+            <p>{{ blockedMessage }}</p>
+            <div class="state-actions">
+              <ion-button fill="outline" color="medium" (click)="backToWaitingList()">返回待退货</ion-button>
+              <ion-button (click)="backToDeliveryRecord()">返回交货记录</ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="return-state-card error" *ngIf="hasInitError && !isInitialLoading">
+          <ion-card-content>
+            <p class="state-kicker">LOAD FAILED</p>
+            <h3>信息加载失败</h3>
+            <p>{{ initErrorMessage }}</p>
+            <div class="state-actions">
+              <ion-button fill="outline" color="medium" (click)="backToWaitingList()">返回待退货</ion-button>
+              <ion-button (click)="retryLoad()">重试加载</ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="return-state-card success" *ngIf="submitSuccess && !isInitialLoading">
+          <ion-card-content>
+            <p class="state-kicker">SUBMITTED</p>
+            <h3>提交成功</h3>
+            <p>{{ submitSuccessMessage }}</p>
+            <div class="state-actions">
+              <ion-button fill="outline" color="medium" (click)="backToWaitingList()">返回待退货</ion-button>
+              <ion-button (click)="backToDeliveryRecord()">返回交货记录</ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="return-card ion-no-margin" *ngIf="canShowForm">
           <ion-card-header>
-            <ion-card-title>
-              <ion-icon name="arrow-undo-outline"></ion-icon>
-              退货申请
-            </ion-card-title>
-            <ion-card-subtitle>请完整填写提货信息，提交后客服将尽快处理。</ion-card-subtitle>
+            <ion-card-title>退货申请信息</ion-card-title>
+            <ion-card-subtitle>本次申请包含 {{ selectedCount }} 条单号，请确认提货信息后提交。</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <form (ngSubmit)="doSubmit(applyForm.value)" [formGroup]="applyForm" novalidate class="return-form">
-              <ion-list lines="none" class="ion-no-margin">
+              <ion-list lines="full" class="ion-no-margin">
                 <ion-item>
-                  <ion-label position="fixed">退货单号</ion-label>
+                  <ion-label position="stacked">退货单号</ion-label>
                   <ion-input aria-label="退货单号" type="text" formControlName="ReferenceNumber" readonly></ion-input>
                 </ion-item>
 
                 <ion-item>
-                  <ion-label position="fixed">提货人名</ion-label>
+                  <ion-label position="stacked">提货人名</ion-label>
                   <ion-input aria-label="提货人名" type="text" formControlName="PersonName"></ion-input>
                 </ion-item>
+                <ion-note color="danger" class="field-error" *ngIf="applyForm.controls['PersonName'].touched && applyForm.controls['PersonName'].invalid">
+                  请填写提货人姓名
+                </ion-note>
+
                 <ion-item>
-                  <ion-label position="fixed">手机号码</ion-label>
+                  <ion-label position="stacked">手机号码</ion-label>
                   <ion-input aria-label="手机号码" type="text" formControlName="MobilePhone"></ion-input>
                 </ion-item>
+                <ion-note color="danger" class="field-error" *ngIf="applyForm.controls['MobilePhone'].touched && applyForm.controls['MobilePhone'].invalid">
+                  请填写正确的手机号
+                </ion-note>
+
                 <ion-item>
-                  <ion-label position="fixed">提货日期</ion-label>
-                  <ion-datetime presentation="date" formControlName="RequiredDate"></ion-datetime>
+                  <ion-label position="stacked">提货日期</ion-label>
+                  <ion-datetime aria-label="提货日期" presentation="date" formControlName="RequiredDate"></ion-datetime>
                 </ion-item>
+
                 <ion-item>
-                  <ion-label position="fixed">其它备注</ion-label>
-                  <ion-input aria-label="其它备注" type="text" formControlName="Remark"></ion-input>
+                  <ion-label position="stacked">其它备注</ion-label>
+                  <ion-textarea
+                    aria-label="其它备注"
+                    autoGrow="true"
+                    maxlength="200"
+                    formControlName="Remark"
+                    placeholder="可填写提货时间偏好、特殊包装说明等">
+                  </ion-textarea>
                 </ion-item>
               </ion-list>
+
               <ion-note color="medium" class="form-tip">提交后可在退货管理查看处理进度。</ion-note>
-              <ion-button #btnSubmit size="large" expand="block" type="submit" class="ion-margin-top">提交</ion-button>
+              <div class="action-row">
+                <ion-button
+                  size="large"
+                  expand="block"
+                  type="submit"
+                  [disabled]="applyForm.invalid || isSubmitting"
+                  class="submit-btn">
+                  {{ submitButtonText }}
+                </ion-button>
+              </div>
             </form>
           </ion-card-content>
         </ion-card>

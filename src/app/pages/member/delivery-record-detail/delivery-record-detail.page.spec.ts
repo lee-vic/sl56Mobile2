@@ -116,4 +116,28 @@ describe('DeliveryRecordDetailPage', () => {
 
     expect(router.navigate).toHaveBeenCalled();
   });
+
+  it('should filter problems by processing and done states', () => {
+    component.data = {
+      Problems: [
+        { Name: 'A', StatusName: '处理中' },
+        { Name: 'B', StatusName: '已处理' },
+        { Name: 'C', StatusName: '待处理' },
+      ],
+    } as any;
+
+    component.setProblemFilter('processing');
+    expect(component.filteredProblems.length).toBe(2);
+    expect(component.processingProblemCount).toBe(2);
+
+    component.setProblemFilter('done');
+    expect(component.filteredProblems.length).toBe(1);
+    expect(component.doneProblemCount).toBe(1);
+  });
+
+  it('should return proper problem status color', () => {
+    expect(component.problemStatusColor('已处理')).toBe('success');
+    expect(component.problemStatusColor('处理中')).toBe('warning');
+    expect(component.problemStatusColor('未知状态')).toBe('medium');
+  });
 });

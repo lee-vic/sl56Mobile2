@@ -1,5 +1,5 @@
 <ion-content class="product-content ion-padding-start ion-padding-end">
-  <ion-segment [(ngModel)]="tab" mode="md" class="segment-main">
+  <ion-segment [(ngModel)]="tab" class="segment-main">
     <ion-segment-button value="1">国际快件</ion-segment-button>
     <ion-segment-button value="2">国际空运</ion-segment-button>
     <ion-segment-button value="3">广深莞汽运</ion-segment-button>
@@ -7,7 +7,7 @@
 
   <div [ngSwitch]="tab" class="product-switch ion-padding-top">
     <div *ngSwitchCase="'1'">
-      <ion-segment mode="md" [value]="currentProduct + ''" class="segment-sub" (ionChange)="selectExpress(+$event.detail.value)">
+      <ion-segment [value]="currentProduct + ''" class="segment-sub" (ionChange)="selectExpress(+$event.detail.value)">
         <ion-segment-button value="1">DHL</ion-segment-button>
         <ion-segment-button value="2">FedEx</ion-segment-button>
         <ion-segment-button value="3">UPS</ion-segment-button>

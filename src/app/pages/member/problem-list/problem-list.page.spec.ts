@@ -97,4 +97,30 @@ describe('ProblemListPage', () => {
     expect(completeSpy).toHaveBeenCalled();
     expect(refresherCompleteSpy).toHaveBeenCalled();
   });
+
+  it('should clear pending debounce timer on destroy', fakeAsync(() => {
+    spyOn(component, 'loadFirstPage');
+
+    component.onSearchInput({ detail: { value: 'abc' } } as any);
+    component.ngOnDestroy();
+    tick(300);
+
+    expect(component.loadFirstPage).not.toHaveBeenCalled();
+  }));
+
+  it('should navigate to problem detail when query params contain problem context', () => {
+    const injectedRoute = TestBed.inject(ActivatedRoute) as any;
+    injectedRoute.snapshot.queryParams = {
+      problemId: 11,
+      receiveGoodsDetailId: 22,
+    };
+
+    fixture = TestBed.createComponent(ProblemListPage);
+    component = fixture.componentInstance;
+    spyOn(component, 'problemDetail');
+
+    component.ngOnInit();
+
+    expect(component.problemDetail).toHaveBeenCalledWith(22, 11);
+  });
 });

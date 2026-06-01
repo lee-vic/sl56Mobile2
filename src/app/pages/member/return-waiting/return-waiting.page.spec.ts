@@ -5,7 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AlertController, IonicModule, NavController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
 
 import { ReturnWaitingPage } from './return-waiting.page';
@@ -17,6 +17,7 @@ describe('ReturnWaitingComponent', () => {
   let fixture: ComponentFixture<ReturnWaitingPage>;
   let routerEvents$: Subject<any>;
   let router: Router;
+  let waitingEventsService: any;
 
   const getWaitReturnListSpy = jasmine.createSpy('getWaitReturnList').and.returnValue(of([
     { Id: 1, Selected: false },
@@ -50,7 +51,6 @@ describe('ReturnWaitingComponent', () => {
         } },
         { provide: WaitingReturnEventsService, useValue: { notifyReloadWaitingReturn: jasmine.createSpy('notifyReloadWaitingReturn') } },
         { provide: Router, useValue: mockRouter },
-        { provide: ActivatedRoute, useValue: {} },
         { provide: NavController, useValue: mockNavCtrl },
         { provide: AlertController, useValue: mockAlert },
       ],
@@ -64,7 +64,7 @@ describe('ReturnWaitingComponent', () => {
     fixture = TestBed.createComponent(ReturnWaitingPage);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
-    component.ckAll = { checked: false } as any;
+    waitingEventsService = TestBed.inject(WaitingReturnEventsService) as any;
     getWaitReturnListSpy.calls.reset();
     removeWaitReturnListSpy.calls.reset();
     clearWaitReturnListSpy.calls.reset();
@@ -79,7 +79,7 @@ describe('ReturnWaitingComponent', () => {
 
     expect(getWaitReturnListSpy).toHaveBeenCalled();
     expect(component.items.length).toBe(2);
-    expect(component.selectedCount).toBe(0);
+    expect(component.selectedCount).toBe(2);
   });
 
   it('should toggle selected status and update selected count', () => {
@@ -99,12 +99,34 @@ describe('ReturnWaitingComponent', () => {
       { Id: 1, Selected: false },
       { Id: 2, Selected: false }
     ] as any;
-    component.ckAll = { checked: false } as any;
-
     component.selectAll();
 
     expect(component.items.every((item) => item.Selected)).toBe(true);
     expect(component.selectedCount).toBe(2);
+  });
+
+  it('should unselect all items when ionChange emits unchecked', () => {
+    component.items = [
+      { Id: 1, Selected: true },
+      { Id: 2, Selected: true }
+    ] as any;
+    component.selectedCount = 2;
+
+    component.selectAll({ detail: { checked: false } } as any);
+
+    expect(component.items.every((item) => !item.Selected)).toBe(true);
+    expect(component.selectedCount).toBe(0);
+    expect(component.allSelected).toBe(false);
+  });
+
+  it('should compute allSelected from selectedCount and items length', () => {
+    component.items = [
+      { Id: 1, Selected: true },
+      { Id: 2, Selected: true }
+    ] as any;
+    component.selectedCount = 2;
+
+    expect(component.allSelected).toBe(true);
   });
 
   it('should remove selected items from list', () => {
@@ -112,8 +134,7 @@ describe('ReturnWaitingComponent', () => {
       { Id: 1, Selected: true },
       { Id: 2, Selected: false }
     ] as any;
-    component.ckAll = { checked: true } as any;
-
+    component.selectedCount = 1;
     component.remove();
 
     expect(removeWaitReturnListSpy).toHaveBeenCalledWith('1');
@@ -127,9 +148,30 @@ describe('ReturnWaitingComponent', () => {
       { Id: 1, Selected: true },
       { Id: 2, Selected: true }
     ] as any;
+    component.selectedCount = 2;
 
     component.goReturn();
 
     expect(mockNavCtrl.navigateForward).toHaveBeenCalledWith('/member/return-apply', { queryParams: { type: 0, ids: '1,2' } });
+  });
+
+  it('should remove one item from waiting list', () => {
+    component.items = [
+      { Id: 1, Selected: false },
+      { Id: 2, Selected: true }
+    ] as any;
+    component.selectedCount = 1;
+    component.removeOne(component.items[0] as any);
+
+    expect(removeWaitReturnListSpy).toHaveBeenCalledWith('1');
+    expect(component.items.length).toBe(1);
+    expect(component.items[0].Id).toBe(2);
+    expect(component.selectedCount).toBe(1);
+  });
+
+  it('should notify reload event when back is triggered', () => {
+    component.back();
+
+    expect(waitingEventsService.notifyReloadWaitingReturn).toHaveBeenCalled();
   });
 });

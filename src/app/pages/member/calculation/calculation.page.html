@@ -34,7 +34,8 @@
         <ion-card-content>
           <ion-list class="calc-form-list" lines="full">
             <ion-item *ngIf="calculateMode === '2'" class="form-item-inline" [class.invalid-field]="myForm.get('ModeOfTransportIdList')?.touched && myForm.get('ModeOfTransportIdList')?.invalid">
-              <ion-select aria-label="运输方式" class="inline-control" formControlName="ModeOfTransportIdList" label="运输方式 *" labelPlacement="fixed" interface="popover"
+              <ion-label class="inline-label">运输方式 *</ion-label>
+              <ion-select aria-label="运输方式" class="inline-control" formControlName="ModeOfTransportIdList" interface="popover"
                 cancelButtonText="取消" okButtonText="确定" placeholder="请选择运输方式">
                 <ion-select-option *ngFor="let item of modeOfTransportList" [value]="item.Id">{{ item.Name }}</ion-select-option>
               </ion-select>
@@ -44,7 +45,8 @@
             </div>
 
             <ion-item class="form-item-inline">
-              <ion-select aria-label="货物类型" class="inline-control" formControlName="ProductContentType" label="货物类型 *" labelPlacement="fixed" interface="popover"
+              <ion-label class="inline-label">货物类型 *</ion-label>
+              <ion-select aria-label="货物类型" class="inline-control" formControlName="ProductContentType" interface="popover"
                 cancelButtonText="取消" okButtonText="确定">
                 <ion-select-option value="1">包裹</ion-select-option>
                 <ion-select-option value="0">文件</ion-select-option>
@@ -71,8 +73,9 @@
             </ion-list>
 
             <ion-item *ngIf="!isSizeMode" class="form-item-inline" [class.invalid-field]="isWeightErrorVisible">
+              <ion-label class="inline-label">重量(kg) *</ion-label>
               <ion-input aria-label="重量" class="inline-control" type="number" formControlName="actualWeight" inputmode="decimal"
-                label="重量(kg) *" labelPlacement="fixed" placeholder="请输入重量"></ion-input>
+                placeholder="请输入重量"></ion-input>
             </ion-item>
             <div class="validation-errors" *ngIf="isWeightErrorVisible">
               <div class="error-message">请输入有效重量，需大于 0</div>
@@ -88,18 +91,21 @@
         <ion-card-content>
           <ion-list class="calc-form-list" lines="full">
             <ion-item class="form-item-inline">
-              <ion-input aria-label="邮编" class="inline-control" type="text" formControlName="postalCode" label="邮编" labelPlacement="fixed"
+              <ion-label class="inline-label">邮编</ion-label>
+              <ion-input aria-label="邮编" class="inline-control" type="text" formControlName="postalCode"
                 placeholder="可选，输入后可提高报价准确度"></ion-input>
             </ion-item>
 
             <ion-item class="form-item-inline">
-              <ion-input aria-label="城市" class="inline-control" type="text" formControlName="city" label="城市" labelPlacement="fixed"
+              <ion-label class="inline-label">城市</ion-label>
+              <ion-input aria-label="城市" class="inline-control" type="text" formControlName="city"
                 placeholder="可选"></ion-input>
             </ion-item>
 
             <ion-item class="form-item-inline">
+              <ion-label class="inline-label">申报价值</ion-label>
               <ion-input aria-label="申报价值" class="inline-control" type="number" formControlName="declaredValue" inputmode="decimal"
-                label="申报价值" labelPlacement="fixed" placeholder="可选"></ion-input>
+                placeholder="可选"></ion-input>
             </ion-item>
 
             <ion-item class="toggle-item">
@@ -110,12 +116,14 @@
 
             <ng-container *ngIf="!isSizeMode">
               <ion-item class="form-item-inline">
+                <ion-label class="inline-label">体积重</ion-label>
                 <ion-input aria-label="体积重" class="inline-control" type="number" formControlName="volumeWeight" inputmode="decimal"
-                  label="体积重" labelPlacement="fixed" placeholder="可选"></ion-input>
+                  placeholder="可选"></ion-input>
               </ion-item>
 
               <ion-item class="form-item-inline">
-                <ion-select aria-label="体积重除数" class="inline-control" formControlName="volumetric" label="体积重除数" labelPlacement="fixed"
+                <ion-label class="inline-label">体积重除数</ion-label>
+                <ion-select aria-label="体积重除数" class="inline-control" formControlName="volumetric"
                   interface="popover" cancelButtonText="取消" okButtonText="确定">
                   <ion-select-option *ngFor="let item of volumetricDivisorList" [value]="item.Id">{{ item.Name }}</ion-select-option>
                 </ion-select>

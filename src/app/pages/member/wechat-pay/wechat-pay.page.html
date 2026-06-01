@@ -13,8 +13,8 @@
 </ion-header>
 
 <ion-content>
-  <div class="tips" *ngIf="this.cid!=1">
-    <ion-label color="danger">当前正在支付外币：{{this.data?.PayMessage}}</ion-label>
+  <div class="tips" *ngIf="cid !== 1">
+    <ion-label color="danger">当前正在支付外币：{{data?.PayMessage}}</ion-label>
   </div>
   <div class="my-head">
     <div class="total-amount">{{data?.TotalAmount|currency:'CNY'}}</div>
@@ -32,7 +32,7 @@
   </div>
 
   <ion-list style="clear: both;">
-    <ion-item *ngIf="this.cid!=1">
+    <ion-item *ngIf="cid !== 1">
       <ion-label>当前金额将优先转换外币：{{data?.CurrencyName?.length>0?data?.CurrencyName:"人民币"}}</ion-label>
     </ion-item>
     <ion-item>
@@ -45,7 +45,7 @@
 
     <ion-item>
       <ion-label>产品类型</ion-label>
-      <ion-select aria-label="产品类型" interface="alert" cancelButtonText="取消" okButtonText="确定" placeholder="请选择产品类型" (ionChange)="typeChange($event)" value="0">
+      <ion-select aria-label="产品类型" interface="alert" cancelButtonText="取消" okButtonText="确定" placeholder="请选择产品类型" (ionChange)="typeChange($event)" [(ngModel)]="selectedProductType">
         <ion-select-option *ngFor="let item of productTypes" [value]="item.Key">{{item.Value}}</ion-select-option>
       </ion-select>
     </ion-item>

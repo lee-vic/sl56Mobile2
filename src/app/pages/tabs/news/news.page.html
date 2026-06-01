@@ -4,7 +4,7 @@
   </ion-refresher>
 
   <div class="news-segment-wrap">
-    <ion-segment [(ngModel)]="tabIndex" mode="md" (ionChange)="segmentChanged($event)" class="news-segment">
+    <ion-segment [(ngModel)]="tabIndex" (ionChange)="segmentChanged($event)" class="news-segment">
       <ion-segment-button [value]="tab.categoryId" *ngFor="let tab of noticeTabs">
         {{tab.title}}
       </ion-segment-button>

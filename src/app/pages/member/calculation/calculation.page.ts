@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder, FormArray } from '@angular/forms';
-import { ModalController, LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
@@ -23,19 +23,16 @@ export class CalculationPage implements OnInit {
   volumetricDivisorList: Array<any> = [];
   priceRuleTemplateInfoList: Array<any> = [];
   countrySearch: Array<any> = [];
-  modeOfTransportId = 0;
   selectedCountry: any;
   countryInput = "";
   showCountryList: boolean = false;
   hasCountryValidationError: boolean = false;
   selectRuleIds: Array<number> = [];
   public myForm: FormGroup;
-  public loading: any;
   public isSubmitting = false;
 
   constructor(
     public countryProvider: CountryService,
-    public modalCtrl: ModalController,
     public formBuilder: FormBuilder,
     public loadingCtrl: LoadingController,
     public toastCtrl: ToastController,
@@ -82,7 +79,7 @@ export class CalculationPage implements OnInit {
       this.countrySearch = list;
     });
     this.myForm.get("piece")?.valueChanges.subscribe((piece: number) => {
-      if (piece < 0 || piece == null || piece === 0) {
+      if (piece == null || piece <= 0) {
         return;
       }
 
@@ -352,10 +349,6 @@ export class CalculationPage implements OnInit {
     this.selectRuleIds = this.selectRuleIds.filter((p) => p !== item.Id);
   }
 
-  ruleChanged(item: any, event: CustomEvent) {
-    this.setRuleChecked(item, !!event.detail.checked);
-  }
-
   toggleRule(item: any) {
     this.setRuleChecked(item, !this.isRuleChecked(item.Id));
   }
@@ -460,13 +453,19 @@ export class CalculationPage implements OnInit {
   }
 
   private updatePieceRules(pieceIndex: number, ruleIndex: number, checked: boolean) {
-    this.sizes.value[pieceIndex].PieceRules[ruleIndex].Checked = checked;
-    //清空已选择的id
-    this.sizes.value[pieceIndex].SeletedTemplateRules.splice(0, this.sizes.value[pieceIndex].SeletedTemplateRules.length);
-    //重新添加已选择的id
-    this.sizes.value[pieceIndex].PieceRules.filter((p: any) => p.Checked).map((p: any) => p.ObjectId).forEach((p: any) => {
-      this.sizes.value[pieceIndex].SeletedTemplateRules.push(p);
+    const sizeControl = this.sizes.at(pieceIndex);
+    const pieceRules = ((sizeControl.get("PieceRules")?.value || []) as Array<any>).map((rule, index) => {
+      if (index === ruleIndex) {
+        return { ...rule, Checked: checked };
+      }
+      return rule;
     });
+    const selectedTemplateRules = pieceRules
+      .filter((rule) => !!rule.Checked)
+      .map((rule) => rule.ObjectId);
+
+    sizeControl.get("PieceRules")?.setValue(pieceRules);
+    sizeControl.get("SeletedTemplateRules")?.setValue(selectedTemplateRules);
   }
 
   togglePieceRule(pieceIndex: number, ruleIndex: number) {

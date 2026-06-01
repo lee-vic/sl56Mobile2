@@ -83,26 +83,120 @@ describe('DeliveryRecordPage', () => {
       { Id: 2, Selected: false } as any,
       { Id: 3, Selected: true } as any,
     ];
+    component.isShowCheckbox = true;
 
     component.batchReturn();
     expect(component.isShowCheckbox).toBe(true);
-
-    component.batchReturn();
-
-    expect(component.isShowCheckbox).toBe(false);
-    expect(component.addWaitingReturnList).toHaveBeenCalledWith('1,3');
-    expect(component.items.every((item) => item.Selected === false)).toBe(true);
+    expect(component.addWaitingReturnList).toHaveBeenCalledWith([1, 3], 2);
   });
 
   it('should call return service when selected ids are not empty', () => {
-    component.addWaitingReturnList('1,2');
+    getWaitReturnListSpy.and.returnValue(of([]));
+
+    component.addWaitingReturnList([1, 2]);
 
     expect(addToWaitReturnListSpy).toHaveBeenCalledWith('1,2');
+  });
+
+  it('should skip duplicated ids before adding into waiting return list', () => {
+    getWaitReturnListSpy.and.returnValue(of([{ Id: 2 }] as any));
+
+    component.addWaitingReturnList([1, 2, 3]);
+
+    expect(addToWaitReturnListSpy).toHaveBeenCalledWith('1,3');
+  });
+
+  it('should keep selected items checked after adding to waiting list', () => {
+    getWaitReturnListSpy.and.returnValue(of([]));
+    component.items = [
+      { Id: 1, Selected: true } as any,
+      { Id: 2, Selected: true } as any,
+    ];
+
+    component.addWaitingReturnList([1, 2]);
+
+    expect(component.items.every((item) => item.Selected === true)).toBe(true);
+  });
+
+  it('should not call add api when all selected ids already exist in waiting list', () => {
+    getWaitReturnListSpy.and.returnValue(of([{ Id: 1 }, { Id: 2 }] as any));
+
+    component.addWaitingReturnList([1, 2]);
+
+    expect(addToWaitReturnListSpy).not.toHaveBeenCalled();
+    expect(component.isBatchSubmitting).toBe(false);
+  });
+
+  it('should auto check items already in waiting list when entering batch mode', () => {
+    component.items = [
+      { Id: 1, Selected: false } as any,
+      { Id: 2, Selected: false } as any,
+    ];
+    getWaitReturnListSpy.and.returnValue(of([{ Id: 2 }] as any));
+
+    component.getWaitingReturnList();
+    component.onBatchEntryClick();
+
+    expect(component.isShowCheckbox).toBe(true);
+    expect(component.items[0].Selected).toBe(false);
+    expect(component.items[1].Selected).toBe(true);
+  });
+
+  it('should toggle selection through onRecordClick when in batch mode', () => {
+    component.isShowCheckbox = true;
+    component.items = [{ Id: 7, Selected: false } as any];
+
+    component.onRecordClick(component.items[0] as any);
+
+    expect(component.items[0].Selected).toBe(true);
+  });
+
+  it('should navigate detail through onRecordClick when not in batch mode', () => {
+    component.isShowCheckbox = false;
+    const item = { Id: 8, Selected: false } as any;
+
+    component.onRecordClick(item);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/member/delivery-record/detail', 8]);
+  });
+
+  it('should clear selected state when canceling batch mode', () => {
+    component.isShowCheckbox = true;
+    component.items = [
+      { Id: 1, Selected: true } as any,
+      { Id: 2, Selected: false } as any,
+    ];
+
+    component.cancelBatchMode();
+
+    expect(component.isShowCheckbox).toBe(false);
+    expect(component.items.every(item => item.Selected === false)).toBe(true);
   });
 
   it('should navigate to waiting return list page', () => {
     component.waitingReturnList();
 
     expect(router.navigate).toHaveBeenCalledWith(['/member/return-waiting']);
+  });
+
+  it('should refresh waiting list when page re-enters', () => {
+    component.ionViewWillEnter();
+
+    expect(getWaitReturnListSpy).toHaveBeenCalled();
+  });
+
+  it('should sync selected state when waiting-return reload event is emitted', () => {
+    component.ngOnInit();
+    component.items = [
+      { Id: 1, Selected: true } as any,
+      { Id: 2, Selected: false } as any,
+    ];
+    component.isShowCheckbox = true;
+    getWaitReturnListSpy.and.returnValue(of([{ Id: 2 }] as any));
+
+    reload$.next();
+
+    expect(component.items[0].Selected).toBe(false);
+    expect(component.items[1].Selected).toBe(true);
   });
 });

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, IonSearchbar, NavController } from '@ionic/angular';
 import { Problem } from 'src/app/interfaces/problem';
 import { ProblemService } from 'src/app/providers/problem.service';
@@ -17,17 +17,24 @@ export class ProblemListPage implements OnInit {
   isBusy: boolean = false;
   isLoaded = false;
   hasLoadError = false;
+  isLoading: boolean = false;
   searchKeyword = '';
   problemId:number;
   receiveGoodsDetailId:number;
-  private searchDebounceTimer: any;
+  private searchDebounceTimer?: ReturnType<typeof setTimeout>;
   @ViewChild(IonInfiniteScroll,{ static: false }) infiniteScroll: IonInfiniteScroll;
   @ViewChild(IonSearchbar,{ static: false }) searchbar: IonSearchbar;
 
   ngOnInit(): void {
     this.loadFirstPage('');
-    if(this.problemId!=undefined){
+    if(this.problemId !== undefined){
         this.problemDetail(this.receiveGoodsDetailId,this.problemId);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
     }
   }
 
@@ -41,10 +48,10 @@ export class ProblemListPage implements OnInit {
   }
 
  
-  detail(item) {
+  detail(item: Problem) {
     this.navCtrl.navigateForward("/member/delivery-record/detail/"+item.Id);
   }
-  problemDetail(_receiveGoodsDetailId,_problemId){
+  problemDetail(_receiveGoodsDetailId: number,_problemId: number){
     this.navCtrl.navigateForward("/member/problem-detail/"+_receiveGoodsDetailId,{queryParams:{problemid:_problemId}});
   }
 
@@ -72,13 +79,14 @@ export class ProblemListPage implements OnInit {
     return this.items.reduce((sum, item) => sum + (item.ProblemList?.length || 0), 0);
   }
 
-  trackByProblem(_index: number, item: Problem): Number {
-    return item.Id;
+  trackByProblem(_index: number, item: Problem): number {
+    return Number(item.Id);
   }
 
   loadFirstPage(keyword: string, refresherEvent?: CustomEvent): void {
     this.currentPageIndex = 1;
     this.items = [];
+    this.isLoading = true;
     this.enableInfiniteScroll();
     this.getItems(keyword, false, refresherEvent);
   }
@@ -104,7 +112,7 @@ export class ProblemListPage implements OnInit {
   }
 
   getItems(key:string,isScroll:boolean, refresherEvent?: CustomEvent) {
-    if (this.isBusy == true)
+    if (this.isBusy === true)
       return;
     this.isBusy = true;
     this.hasLoadError = false;
@@ -114,15 +122,12 @@ export class ProblemListPage implements OnInit {
       if(flag){
         this.disableInfiniteScroll();
       }
-      for (var i = 0; i < res.length; i++) {
-        this.items.push(res[i]);
-      }
+      this.items.push(...res);
       this.currentPageIndex++;
       if(isScroll)
         this.infiniteScroll.complete();
-      if (refresherEvent) {
-        refresherEvent.target['complete']();
-      }
+      this.completeRefresher(refresherEvent);
+      this.isLoading = false;
       this.isBusy = false;
     }, _ => {
       this.isLoaded = true;
@@ -130,14 +135,19 @@ export class ProblemListPage implements OnInit {
       if(isScroll && this.infiniteScroll) {
         this.infiniteScroll.complete();
       }
-      if (refresherEvent) {
-        refresherEvent.target['complete']();
-      }
+      this.completeRefresher(refresherEvent);
+      this.isLoading = false;
       this.isBusy = false;
     });
   }
 
-  scrollItems($event) {
+  scrollItems(_event: CustomEvent) {
     this.getItems(this.searchKeyword, true);
+  }
+
+  private completeRefresher(refresherEvent?: CustomEvent): void {
+    if (refresherEvent) {
+      refresherEvent.target['complete']();
+    }
   }
 }

@@ -105,14 +105,18 @@ ion-content.calc-content {
     align-items: center;
 }
 
-.calc-form-list .inline-control {
-    --label-width: 108px;
-}
-
-.calc-form-list .country-item .inline-label {
+.calc-form-list .inline-label {
     flex: 0 0 108px;
     max-width: 108px;
     margin: 0 12px 0 0;
+    color: var(--calc-title);
+}
+
+.calc-form-list .inline-control {
+    flex: 1;
+}
+
+.calc-form-list .country-item .inline-label {
     color: var(--calc-title);
 }
 

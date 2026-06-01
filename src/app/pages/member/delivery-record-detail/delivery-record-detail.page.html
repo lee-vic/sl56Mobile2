@@ -7,160 +7,257 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-segment [(ngModel)]="tab" class="my-content-ios" scrollable>
-    <ion-segment-button value="1"> 基本信息 </ion-segment-button>
-    <ion-segment-button value="2"> 规格 </ion-segment-button>
-    <ion-segment-button value="3"> 轨迹信息 </ion-segment-button>
-    <ion-segment-button value="4"> 费用明细 </ion-segment-button>
-    <ion-segment-button value="5"> 待跟进问题 </ion-segment-button>
-  </ion-segment>
-  <div [ngSwitch]="tab" class="ion-padding-top">
-    <div *ngSwitchCase="'1'">
-      <ion-list>
-        <ion-item>
-          <ion-label>原单号</ion-label>
-          <ion-note slot="end">{{data?.ObjectNo}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>目的地</ion-label>
-          <ion-note slot="end">{{data?.CountryName}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>费用(元)</ion-label>
-          <ion-note slot="end">{{data?.TotalAmount}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>计费重(KG)</ion-label>
-          <ion-note slot="end">{{data?.Weight}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>件数</ion-label>
-          <ion-note slot="end">{{data?.Piece}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>转单号</ion-label>
-          <ion-note slot="end">{{data?.TrackNumber}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>运输方式</ion-label>
-          <ion-note slot="end">{{data?.ModeOfTransportName}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>类型</ion-label>
-          <ion-note slot="end">{{data?.ProductType}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>货物属性</ion-label>
-          <ion-note slot="end">{{data?.AttributeNames}}</ion-note>
-        </ion-item>
-        <ion-item *ngIf="data?.LabelUrl!=null">
-          <ion-label>托运标签</ion-label>
-          <ion-button href="{{data?.LabelUrl}}" fill="outline" slot="end">下载</ion-button>
-        </ion-item>
+<ion-content #detailContent class="detail-content" [scrollEvents]="true" (ionScroll)="onContentScroll($event)">
+  <div class="detail-shell ion-padding">
+    <ion-segment [(ngModel)]="tab" (ionChange)="onSegmentChanged($event)" scrollable class="section-segment">
+      <ion-segment-button value="1">
+        <ion-label class="segment-label">
+          <span>基本信息</span>
+          <span class="segment-count">7</span>
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="2">
+        <ion-label class="segment-label">
+          <span>规格</span>
+          <span class="segment-count">{{ sizesCount }}</span>
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="3">
+        <ion-label class="segment-label">
+          <span>轨迹</span>
+          <span class="segment-count">{{ tracksCount }}</span>
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="4">
+        <ion-label class="segment-label">
+          <span>费用</span>
+          <span class="segment-count">{{ receivableCount }}</span>
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="5">
+        <ion-label class="segment-label">
+          <span>问题</span>
+          <span class="segment-count">{{ problemCount }}</span>
+        </ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-        <ion-item>
-          <ion-label>计价时间</ion-label>
-          <ion-note slot="end">{{data?.Date}}</ion-note>
+    <div class="section-content">
+      <section class="detail-section" id="section-1">
+        <ion-item lines="none" class="section-head">
+          <ion-label>基本信息</ion-label>
+          <ion-note slot="end">共 7 项</ion-note>
         </ion-item>
-      </ion-list>
-    </div>
-    <div *ngSwitchCase="'2'">
-      <ion-list *ngFor="let item of data?.Sizes">
-        <ion-item>
-          <ion-label>编号</ion-label>
-          <ion-note slot="end">{{item?.Seq}}</ion-note>
+        <ion-card class="section-card">
+          <ion-list lines="full">
+            <ion-item>
+              <ion-label>原单号</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.ObjectNo) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>目的地</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.CountryName) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>转单号</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.TrackNumber) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>件数</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.Piece) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>类型</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.ProductType) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>货物属性</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.AttributeNames) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>计价时间</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.Date) }}</ion-note>
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </section>
+
+      <section class="detail-section" id="section-2">
+        <ion-item lines="none" class="section-head">
+          <ion-label>规格</ion-label>
+          <ion-note slot="end">{{ sizesCount }} 件</ion-note>
         </ion-item>
-        <ion-item>
-          <ion-label>实重(KG)</ion-label>
-          <ion-note slot="end">{{item?.ActualWeight}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>体积重(KG)</ion-label>
-          <ion-note slot="end">{{item?.VolumeWeight}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>计费重(KG)</ion-label>
-          <ion-note slot="end">{{item?.ChargeableWeight}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>长</ion-label>
-          <ion-note slot="end">{{item?.Length}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>宽</ion-label>
-          <ion-note slot="end">{{item?.Width}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>高</ion-label>
-          <ion-note slot="end">{{item?.Height}}</ion-note>
-        </ion-item>
-      </ion-list>
-    </div>
-    <div *ngSwitchCase="'3'">
-      <div *ngIf="data?.IsShowPackageTracks">
-        <div class="trackTips">点击包裹号，可以展开每个包裹的详细轨迹</div>
-        <ion-list class="packageTrackList" *ngFor="let item of data?.PackageTracks">
-          <div class="packageNumber">
-            <div (click)="trackToggle(item)">{{item?.PackageNumber}}</div>
-            <div class="sub_font_color sub_font_size">当前活动：{{item?.CurrentActivity}}</div>
-            <div class="sub_font_color sub_font_size">当前地点：{{item?.CurrentLocation}}</div>
-          </div>
-          <div *ngIf="item?.open">
-            <ion-item *ngFor="let track of item.Tracks">
+        <ion-card class="empty-card" *ngIf="sizesCount === 0">
+          <ion-card-content>暂无规格信息</ion-card-content>
+        </ion-card>
+
+        <ion-accordion-group *ngIf="sizesCount > 0" [multiple]="true" value="size-0">
+          <ion-accordion *ngFor="let item of data?.Sizes; let i = index" [value]="'size-' + i" class="section-card">
+            <ion-item slot="header">
               <ion-label>
-                <h2>{{track?.ActivityDate}}</h2>
-                <p>{{track?.Location}}</p>
-                <p>{{track?.Activity}}</p>
+                <h3>第 {{ item?.Seq || i + 1 }} 件</h3>
+                <p>计费重 {{ displayValue(item?.ChargeableWeight) }} KG</p>
               </ion-label>
             </ion-item>
-          </div>
-        </ion-list>
-      </div>
-      <ion-list *ngIf="!data?.IsShowPackageTracks">
-        <ion-item *ngFor="let item of data?.Tracks">
-          <ion-label>
-            <h2>{{item?.Date}}</h2>
-            <p>{{item?.Location}}</p>
-            <p>{{item?.Activity}}</p>
-          </ion-label>
+            <div slot="content" class="accordion-content">
+              <ion-grid>
+                <ion-row>
+                  <ion-col size="6">
+                    <div class="kv-row"><span>实重</span><strong>{{ displayValue(item?.ActualWeight) }} KG</strong></div>
+                  </ion-col>
+                  <ion-col size="6">
+                    <div class="kv-row"><span>体积重</span><strong>{{ displayValue(item?.VolumeWeight) }} KG</strong></div>
+                  </ion-col>
+                  <ion-col size="6">
+                    <div class="kv-row"><span>长</span><strong>{{ displayValue(item?.Length) }} CM</strong></div>
+                  </ion-col>
+                  <ion-col size="6">
+                    <div class="kv-row"><span>宽</span><strong>{{ displayValue(item?.Width) }} CM</strong></div>
+                  </ion-col>
+                  <ion-col size="12">
+                    <div class="kv-row"><span>高</span><strong>{{ displayValue(item?.Height) }} CM</strong></div>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+      </section>
+
+      <section class="detail-section" id="section-3">
+        <ion-item lines="none" class="section-head">
+          <ion-label>轨迹</ion-label>
+          <ion-note slot="end">{{ tracksCount }} 条</ion-note>
         </ion-item>
-      </ion-list>
-    </div>
-    <div *ngSwitchCase="'4'">
-      <ion-list>
-        <ion-item *ngFor="let item of data?.AccountReceivableDetails">
-          <ion-label>
-            <h3>{{item?.Name}}</h3>
-            <p>{{item?.Remark}}</p>
-          </ion-label>
-          <ion-note slot="end">{{item?.Amount|currency:'CNY'}}</ion-note>
+        <ion-card class="empty-card" *ngIf="tracksCount === 0">
+          <ion-card-content>暂无轨迹信息</ion-card-content>
+        </ion-card>
+
+        <ion-note class="section-note" *ngIf="data?.IsShowPackageTracks && tracksCount > 0">
+          点击包裹号展开详细轨迹
+        </ion-note>
+
+        <ion-accordion-group *ngIf="data?.IsShowPackageTracks && tracksCount > 0" [multiple]="false">
+          <ion-accordion *ngFor="let item of data?.PackageTracks; let i = index" [value]="'package-' + i" class="section-card">
+            <ion-item slot="header">
+              <ion-label>
+                <h3>{{ displayValue(item?.PackageNumber) }}</h3>
+                <p>当前活动：{{ displayValue(item?.CurrentActivity) }}</p>
+                <p>当前地点：{{ displayValue(item?.CurrentLocation) }}</p>
+              </ion-label>
+            </ion-item>
+            <div slot="content" class="accordion-content">
+              <ion-list lines="none" class="timeline-list">
+                <ion-item *ngFor="let track of item?.Tracks" class="timeline-item">
+                  <div class="timeline-marker" slot="start">
+                    <span class="timeline-dot"></span>
+                  </div>
+                  <ion-label>
+                    <h3>{{ displayValue(track?.ActivityDate) }}</h3>
+                    <p>{{ displayValue(track?.Location) }}</p>
+                    <p>{{ displayValue(track?.Activity) }}</p>
+                    <div class="track-tools">
+                      <ion-button fill="clear" size="small" (click)="copyTrackText(track?.Location, '地点')">复制地点</ion-button>
+                      <ion-button fill="clear" size="small" (click)="copyTrackText(track?.ActivityDate, '时间')">复制时间</ion-button>
+                      <ion-button fill="clear" size="small" (click)="copyTrackSummary(track?.ActivityDate, track?.Location, track?.Activity)">复制整条</ion-button>
+                    </div>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+
+        <ion-card class="section-card" *ngIf="!data?.IsShowPackageTracks && tracksCount > 0">
+          <ion-list lines="none" class="timeline-list">
+            <ion-item *ngFor="let item of data?.Tracks" class="timeline-item">
+              <div class="timeline-marker" slot="start">
+                <span class="timeline-dot"></span>
+              </div>
+              <ion-label>
+                <h3>{{ displayValue(item?.Date) }}</h3>
+                <p>{{ displayValue(item?.Location) }}</p>
+                <p>{{ displayValue(item?.Activity) }}</p>
+                <div class="track-tools">
+                  <ion-button fill="clear" size="small" (click)="copyTrackText(item?.Location, '地点')">复制地点</ion-button>
+                  <ion-button fill="clear" size="small" (click)="copyTrackText(item?.Date, '时间')">复制时间</ion-button>
+                  <ion-button fill="clear" size="small" (click)="copyTrackSummary(item?.Date, item?.Location, item?.Activity)">复制整条</ion-button>
+                </div>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </section>
+
+      <section class="detail-section" id="section-4">
+        <ion-item lines="none" class="section-head">
+          <ion-label>费用明细</ion-label>
+          <ion-note slot="end">{{ receivableCount }} 项</ion-note>
         </ion-item>
-      </ion-list>
-    </div>
-    <div *ngSwitchCase="'5'">
-      <ion-list>
-        <ion-item *ngFor="let item of data?.Problems">
-          <ion-label>
-            <h3>{{item?.Name}}</h3>
-            <p>{{item?.Remark}}</p>
-          </ion-label>
-          <ion-note slot="end">{{item?.StatusName}}</ion-note>
+        <ion-card class="empty-card" *ngIf="receivableCount === 0">
+          <ion-card-content>暂无费用明细</ion-card-content>
+        </ion-card>
+
+        <ion-card class="section-card" *ngIf="receivableCount > 0">
+          <ion-list lines="full">
+            <ion-item *ngFor="let item of data?.AccountReceivableDetails">
+              <ion-label>
+                <h3>{{ displayValue(item?.Name) }}</h3>
+                <p>{{ displayValue(item?.Remark) }}</p>
+              </ion-label>
+              <ion-note slot="end" class="amount-note">{{ formatCurrency(item?.Amount) }}</ion-note>
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </section>
+
+      <section class="detail-section" id="section-5">
+        <ion-item lines="none" class="section-head">
+          <ion-label>待跟进问题</ion-label>
+          <ion-note slot="end">{{ problemCount }} 项</ion-note>
         </ion-item>
-      </ion-list>
+        <div class="problem-filter-row" *ngIf="problemCount > 0">
+          <ion-chip [outline]="problemFilter !== 'all'" [color]="problemFilter === 'all' ? 'primary' : 'medium'" (click)="setProblemFilter('all')">
+            <ion-label>全部 {{ problemCount }}</ion-label>
+          </ion-chip>
+          <ion-chip [outline]="problemFilter !== 'processing'" [color]="problemFilter === 'processing' ? 'warning' : 'medium'" (click)="setProblemFilter('processing')">
+            <ion-label>处理中 {{ processingProblemCount }}</ion-label>
+          </ion-chip>
+          <ion-chip [outline]="problemFilter !== 'done'" [color]="problemFilter === 'done' ? 'success' : 'medium'" (click)="setProblemFilter('done')">
+            <ion-label>已处理 {{ doneProblemCount }}</ion-label>
+          </ion-chip>
+        </div>
+        <ion-card class="empty-card" *ngIf="problemCount === 0">
+          <ion-card-content>暂无待跟进问题</ion-card-content>
+        </ion-card>
+
+        <ion-card class="empty-card" *ngIf="problemCount > 0 && filteredProblems.length === 0">
+          <ion-card-content>当前筛选下暂无问题</ion-card-content>
+        </ion-card>
+
+        <ion-card class="section-card" *ngIf="filteredProblems.length > 0">
+          <ion-list lines="full">
+            <ion-item *ngFor="let item of filteredProblems">
+              <ion-label>
+                <h3>{{ displayValue(item?.Name) }}</h3>
+                <p>{{ displayValue(item?.Remark) }}</p>
+              </ion-label>
+              <ion-chip slot="end" [color]="problemStatusColor(item?.StatusName)" outline>
+                <ion-label>{{ displayValue(item?.StatusName) }}</ion-label>
+              </ion-chip>
+            </ion-item>
+          </ion-list>
+        </ion-card>
+      </section>
     </div>
   </div>
 </ion-content>
-<ion-footer>
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-button expand="full" (click)="more()" color="secondary">暂扣&退货</ion-button>
-      </ion-col>
-      <ion-col>
-        <ion-button expand="full" (click)="chat()" color="primary">联系客服</ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-  <!-- <ion-button expand="full"  (click)="chat()">功能选择</ion-button> -->
+
+<ion-footer class="detail-footer">
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button fill="outline" (click)="more()">更多操作</ion-button>
+      <ion-button (click)="chat()">联系客服</ion-button>
+    </div>
+  </ion-toolbar>
 </ion-footer>

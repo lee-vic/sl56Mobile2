@@ -66,7 +66,7 @@ describe('ReturnApplyPage', () => {
         {
           provide: LoadingController,
           useValue: {
-            create: () => Promise.resolve({ present: loadingPresentSpy }),
+            create: () => Promise.resolve({ present: loadingPresentSpy, dismiss: loadingDismissSpy }),
             dismiss: loadingDismissSpy,
           },
         },
@@ -78,11 +78,19 @@ describe('ReturnApplyPage', () => {
   }));
 
   beforeEach(() => {
+    mockRoute.snapshot.queryParams = {
+      type: 0,
+      ids: '1,2'
+    };
     fixture = TestBed.createComponent(ReturnApplyPage);
     component = fixture.componentInstance;
-    component.btnSubmit = { disabled: false } as any;
     navBackSpy.calls.reset();
     applySpy.calls.reset();
+    applySpy.and.returnValue(of({
+      AllowApply: true,
+      RequiredDate: '2026-05-23',
+      ReferenceNumber: 'RGD-001'
+    }));
     apply1Spy.calls.reset();
     apply1Spy.and.returnValue(of({ IsSuccess: true }));
     fillSpy.calls.reset();
@@ -107,15 +115,15 @@ describe('ReturnApplyPage', () => {
     expect(component.applyForm.controls['ReferenceNumber'].value).toBe('RGD-001');
   });
 
-  it('should disable submit and navigate back after successful apply submit', fakeAsync(() => {
+  it('should mark success state after successful apply submit', fakeAsync(() => {
     const form = component.applyForm.value;
 
     component.doApply(form);
     tick();
 
-    expect(component.btnSubmit.disabled).toBe(true);
+    expect(component.isSubmitting).toBe(false);
     expect(apply1Spy).toHaveBeenCalled();
-    expect(navBackSpy).toHaveBeenCalled();
+    expect(component.submitSuccess).toBe(true);
     expect(loadingDismissSpy).toHaveBeenCalled();
   }));
 
@@ -125,12 +133,16 @@ describe('ReturnApplyPage', () => {
     component.doApply(component.applyForm.value);
     tick();
 
-    expect(component.btnSubmit.disabled).toBe(false);
+    expect(component.isSubmitting).toBe(false);
     expect(alertCreateSpy).toHaveBeenCalled();
   }));
 
   it('should dispatch doSubmit to fill flow when type is 1', () => {
     component.type = 1;
+    component.applyForm.patchValue({
+      PersonName: '张三',
+      MobilePhone: '13800138000'
+    });
     spyOn(component, 'doFill');
 
     component.doSubmit(component.applyForm.value);
@@ -145,4 +157,56 @@ describe('ReturnApplyPage', () => {
     expect(component.applyForm.controls['PersonName'].value).toBe('张三');
     expect(component.applyForm.controls['MobilePhone'].value).toBe('13800138000');
   }));
+
+  it('should normalize ids and deduplicate from query params', () => {
+    mockRoute.snapshot.queryParams = {
+      type: 0,
+      ids: ' 1,2, 2,abc, ,03 '
+    };
+
+    fixture = TestBed.createComponent(ReturnApplyPage);
+    component = fixture.componentInstance;
+
+    expect(component.ids).toBe('1,2,03');
+    expect(component.selectedCount).toBe(3);
+    expect(component.applyForm.controls['IdList'].value).toBe('1,2,03');
+  });
+
+  it('should fallback type to 0 when query type is invalid', () => {
+    mockRoute.snapshot.queryParams = {
+      type: 'unknown',
+      ids: '1'
+    };
+
+    fixture = TestBed.createComponent(ReturnApplyPage);
+    component = fixture.componentInstance;
+
+    expect(component.type).toBe(0);
+  });
+
+  it('should show toast when submit is triggered with invalid form', () => {
+    component.applyForm.patchValue({
+      PersonName: '',
+      MobilePhone: '',
+    });
+
+    component.doSubmit(component.applyForm.value);
+
+    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(apply1Spy).not.toHaveBeenCalled();
+    expect(fill1Spy).not.toHaveBeenCalled();
+  });
+
+  it('should enter blocked state when apply response does not allow submission', () => {
+    applySpy.and.returnValue(of({
+      AllowApply: false,
+      ErrorMessage: '当前不可申请'
+    }));
+
+    component.ngOnInit();
+
+    expect(component.isApplyBlocked).toBe(true);
+    expect(component.blockedMessage).toBe('当前不可申请');
+    expect(component.canShowForm).toBe(false);
+  });
 });
