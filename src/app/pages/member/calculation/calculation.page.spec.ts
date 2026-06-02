@@ -73,4 +73,14 @@ describe('CalculationPage', () => {
 
     expect(component.submitHint).toBe('请先选择有效国家');
   });
+
+  it('should stop reacting to piece changes after destroy', () => {
+    component.myForm.get('piece')?.setValue(3);
+    expect(component.sizes.length).toBe(3);
+
+    component.ngOnDestroy();
+    component.myForm.get('piece')?.setValue(5);
+
+    expect(component.sizes.length).toBe(3);
+  });
 });

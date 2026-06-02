@@ -1,20 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder, FormArray } from '@angular/forms';
-import { LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
 import { Router } from '@angular/router';
 import { PieceRule } from 'src/app/interfaces/size';
-import { finalize } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { CalculationStateService } from 'src/app/providers/calculation-state.service';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 @Component({
   selector: "app-calculation",
   templateUrl: "./calculation.page.html",
   styleUrls: ["./calculation.page.scss"],
 })
-export class CalculationPage implements OnInit {
+export class CalculationPage implements OnInit, OnDestroy {
   private readonly unlimitedTransportName = "不限";
   calculateMode = "1";
   countryList: Array<any> = [];
@@ -30,16 +32,16 @@ export class CalculationPage implements OnInit {
   selectRuleIds: Array<number> = [];
   public myForm: FormGroup;
   public isSubmitting = false;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     public countryProvider: CountryService,
     public formBuilder: FormBuilder,
-    public loadingCtrl: LoadingController,
-    public toastCtrl: ToastController,
     private router: Router,
     private alertController: AlertController,
     public countryAutoCompleteService: CountryAutoCompleteService,
     private calculationState: CalculationStateService,
+    private readonly uiFeedback: UiFeedbackService,
 
     public service: CalculationService
   ) {
@@ -59,26 +61,26 @@ export class CalculationPage implements OnInit {
     });
   }
   ngOnInit(): void {
-    this.service.getModeOfTransportList().subscribe((res: any) => {
+    this.service.getModeOfTransportList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       this.modeOfTransportList = Array.isArray(res) ? res : [];
       this.applyDefaultTransportForFullMode();
     });
-    this.service.getVolumetricDivisorList().subscribe((res: any) => {
+    this.service.getVolumetricDivisorList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       this.volumetricDivisorList = Array.isArray(res) ? res : [];
     });
-    this.service.getPriceRuleTemplateInfoList().subscribe((res: any) => {
+    this.service.getPriceRuleTemplateInfoList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       this.priceRuleTemplateInfoList = Array.isArray(res) ? res : [];
     });
-    this.service.GetPieceRuleTemplates().subscribe((res: any) => {
+    this.service.GetPieceRuleTemplates().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       this.pieceTemplateRules = Array.isArray(res) ? res : [];
       this.initializePieceRules();
     });
-    this.countryProvider.getCoutryList().subscribe((res: any) => {
+    this.countryProvider.getCoutryList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       const list = Array.isArray(res) ? res : [];
       this.countryList = list;
       this.countrySearch = list;
     });
-    this.myForm.get("piece")?.valueChanges.subscribe((piece: number) => {
+    this.myForm.get("piece")?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((piece: number) => {
       if (piece == null || piece <= 0) {
         return;
       }
@@ -94,12 +96,17 @@ export class CalculationPage implements OnInit {
         }
       }
     });
-    this.myForm.get("isEditSize")?.valueChanges.subscribe((isEditSize: boolean) => {
+    this.myForm.get("isEditSize")?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((isEditSize: boolean) => {
       this.applyWeightMode(!!isEditSize);
     });
 
     this.applyModeRules();
     this.applyWeightMode(false);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get mapNewPieceRules() {
@@ -401,18 +408,15 @@ export class CalculationPage implements OnInit {
     }
 
     this.isSubmitting = true;
-    const loading = await this.loadingCtrl.create({
-      message: '正在计算报价，请稍候...',
-      spinner: 'crescent',
-    });
-    await loading.present();
+    const loading = await this.uiFeedback.presentLoading('正在计算报价，请稍候...');
 
     this.service
       .calculate(this.buildPayload())
       .pipe(
-        finalize(async () => {
+        takeUntil(this.destroy$),
+        finalize(() => {
           this.isSubmitting = false;
-          await loading.dismiss();
+          this.uiFeedback.dismissLoading(loading);
         })
       )
       .subscribe({
@@ -424,21 +428,10 @@ export class CalculationPage implements OnInit {
             return;
           }
 
-          const toast = await this.toastCtrl.create({
-            message: '当前条件未能找到合适报价，请修改条件重试',
-            position: 'middle',
-            duration: 1800,
-          });
-          await toast.present();
+          await this.uiFeedback.presentToast('当前条件未能找到合适报价，请修改条件重试', 1800, 'middle', 'member-theme-toast');
         },
         error: async () => {
-          const toast = await this.toastCtrl.create({
-            message: '计算请求失败，请检查网络后重试',
-            position: 'middle',
-            duration: 1800,
-            color: 'danger',
-          });
-          await toast.present();
+          await this.uiFeedback.presentToast('计算请求失败，请检查网络后重试', 1800, 'middle', 'member-theme-toast', 'danger');
         },
       });
   }

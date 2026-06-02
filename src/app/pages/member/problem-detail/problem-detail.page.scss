@@ -1,6 +1,15 @@
 ﻿/* ─── Content ─── */
+:host {
+  --problem-surface: var(--member-surface-0, #ffffff);
+  --problem-surface-soft: var(--member-surface-100, #f1f5fb);
+  --problem-brand: var(--member-brand-500, #0b61bd);
+  --problem-text-main: var(--member-text-900, #12213a);
+  --problem-text-sub: var(--member-text-500, #5f759a);
+  --problem-card-radius: var(--member-radius-md, 16px);
+}
+
 .problem-detail-content {
-  --background: #f2f6fc;
+  --background: var(--problem-surface-soft);
   --padding-bottom: calc(72px + env(safe-area-inset-bottom));
 }
 
@@ -24,7 +33,7 @@
 .hero-problem-card {
   background: linear-gradient(145deg, #ffffff 0%, #f5f9ff 60%, #eaf2ff 100%);
   border: 1px solid rgba(11, 97, 189, 0.12);
-  border-radius: 18px;
+  border-radius: var(--problem-card-radius);
   box-shadow: 0 8px 22px rgba(11, 61, 130, 0.1);
   padding: 16px;
   animation: fade-up 300ms ease-out both;
@@ -42,7 +51,7 @@
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  color: #10274a;
+  color: var(--problem-text-main);
   line-height: 1.4;
   flex: 1;
   min-width: 0;
@@ -70,14 +79,14 @@
 
 .meta-key {
   font-size: 12px;
-  color: #8a9ec0;
+  color: color-mix(in srgb, var(--problem-text-sub) 80%, #ffffff);
   flex-shrink: 0;
   min-width: 32px;
 }
 
 .meta-val {
   font-size: 13.5px;
-  color: #1e3355;
+  color: var(--problem-text-main);
   font-weight: 500;
 }
 
@@ -109,7 +118,7 @@
 .remark-text {
   margin: 0;
   font-size: 13px;
-  color: #5a7292;
+  color: var(--problem-text-sub);
   line-height: 1.65;
 }
 
@@ -141,9 +150,9 @@
 
 /* ─── Step shell ─── */
 .step-shell {
-  background: #ffffff;
+  background: var(--problem-surface);
   border: 1px solid rgba(190, 215, 245, 0.55);
-  border-radius: 18px;
+  border-radius: var(--problem-card-radius);
   box-shadow: 0 6px 18px rgba(11, 61, 130, 0.07);
   padding: 14px;
   display: grid;
@@ -279,13 +288,13 @@
   margin: 0 0 8px;
   font-size: 20px;
   font-weight: 700;
-  color: #10274a;
+  color: var(--problem-text-main);
 }
 
 .done-sub {
   margin: 0;
   font-size: 13px;
-  color: #7086a4;
+  color: var(--problem-text-sub);
   line-height: 1.65;
   max-width: 280px;
 }

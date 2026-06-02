@@ -1,41 +1,129 @@
-<ion-header>
+<ion-header translucent="true">
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
     <ion-title>偏远查询</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-    <form (ngSubmit)="doQuery(myForm.value)" [formGroup]="myForm">
-      <ion-list>
-        <ion-item>
-          <ion-label>运输方式</ion-label>
-          <ion-select aria-label="运输方式" interface="alert" cancelButtonText="取消" okButtonText="确定" formControlName="ModeOfTransportTypeId">
-            <ion-select-option *ngFor="let item of modeOfTransportTypeList" [value]="item.Id">{{item.Name}}</ion-select-option>
-          </ion-select>
-        </ion-item>
-        <ion-item>
-          <ion-label>国家</ion-label>
-          <ion-input aria-label="国家" type="text" formControlName="countryId" (ionBlur)="onCountryBlur()" (keyup)="onCountryKeyup($event)" (input)="filterCountryItems($event)"
-            clearInput placeholder="国家二字代码、中文名"></ion-input>
-        </ion-item>
-        <ion-item *ngIf="showCountryList">
-          <ion-list style="width: 100%;">
-            <ion-item *ngFor="let item of countrySearch" (click)="countryItemClick(item)">{{item.Name}}</ion-item>
+<ion-content class="remote-content" fullscreen="true">
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content pullingText="下拉刷新基础数据" refreshingSpinner="crescent" refreshingText="正在刷新..."></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="remote-shell">
+
+    <section *ngIf="isInitializing && !isLoaded" class="state-wrap" aria-live="polite" aria-busy="true">
+      <ion-card class="skeleton-card" *ngFor="let s of [1,2,3]">
+        <ion-card-content>
+          <ion-skeleton-text animated style="width: 40%; height: 18px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 100%; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 80%; height: 14px;"></ion-skeleton-text>
+        </ion-card-content>
+      </ion-card>
+    </section>
+
+    <ion-card class="error-card" *ngIf="hasLoadError && !isInitializing">
+      <ion-card-content>
+        <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+        <h2>基础数据加载失败</h2>
+        <p>请检查网络后重试，或使用下拉刷新重新获取国家和运输方式。</p>
+        <ion-button fill="outline" (click)="loadInitialOptions()">重新加载</ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="query-card" *ngIf="!isInitializing">
+      <ion-card-header>
+        <ion-card-title>查询条件</ion-card-title>
+        <ion-card-subtitle>使用国家名称精确选择可获得更稳定结果</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="myForm" (ngSubmit)="doQuery(myForm.value)" novalidate [attr.aria-busy]="isQuerying">
+          <ion-list class="query-form-list" lines="full">
+            <ion-item>
+              <ion-label position="stacked">运输方式 *</ion-label>
+              <ion-select
+                aria-label="运输方式"
+                interface="popover"
+                cancelButtonText="取消"
+                okButtonText="确定"
+                placeholder="请选择运输方式"
+                formControlName="ModeOfTransportTypeId">
+                <ion-select-option *ngFor="let item of modeOfTransportTypeList" [value]="item.Id">{{ item.Name }}</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item [class.invalid-item]="isCountryInvalid">
+              <ion-label position="stacked">国家 *</ion-label>
+              <ion-searchbar
+                aria-label="国家"
+                formControlName="countryId"
+                debounce="160"
+                showClearButton="focus"
+                placeholder="输入国家名称，支持回车快速确认"
+                (ionFocus)="onCountryFocus()"
+                (ionBlur)="onCountryBlur()"
+                (ionInput)="filterCountryItems($event)"
+                (keyup)="onCountryKeyup($event)"
+                (ionClear)="onCountryClear()"></ion-searchbar>
+            </ion-item>
+            <div class="validation-errors" *ngIf="isCountryInvalid">
+              <span>请从下拉结果中选择有效国家</span>
+            </div>
+
+            <ion-list *ngIf="showCountryList" class="country-list" lines="none">
+              <ion-item button detail="false" *ngFor="let item of countrySearch" (click)="countryItemClick(item)">
+                <ion-label>{{ item.Name }}</ion-label>
+              </ion-item>
+              <ion-item *ngIf="countrySearch.length === 0">
+                <ion-label color="medium">没有匹配国家，请继续输入关键字</ion-label>
+              </ion-item>
+            </ion-list>
+
+            <ion-item *ngIf="shouldShowPostalCode">
+              <ion-label position="stacked">邮编</ion-label>
+              <ion-input aria-label="邮编" type="text" formControlName="postalCode" clearInput placeholder="可选，建议填写"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">城市</ion-label>
+              <ion-input aria-label="城市" type="text" formControlName="city" clearInput placeholder="可选"></ion-input>
+            </ion-item>
           </ion-list>
-        </ion-item>
-        <ion-item>
-          <ion-label>邮编</ion-label>
-          <ion-input aria-label="邮编" type="text" formControlName="postalCode" clearInput></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>城市</ion-label>
-          <ion-input aria-label="城市" type="text" formControlName="city" clearInput></ion-input>
-        </ion-item>
-        
-        <ion-button expand="block" type="submit" [disabled]="!myForm.valid">查询</ion-button>
-      </ion-list>
-    </form>
-  </ion-content>
+
+          <div class="action-row">
+            <ion-button type="submit" expand="block" [disabled]="!canSubmit">
+              {{ isQuerying ? '查询中...' : '立即查询' }}
+            </ion-button>
+            <ion-button type="button" fill="clear" expand="block" (click)="resetResult()" *ngIf="queryResult || queryErrorMessage">
+              清除查询结果
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="error-card query-error" *ngIf="queryErrorMessage">
+      <ion-card-content>
+        <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
+        <h2>查询请求未完成</h2>
+        <p>{{ queryErrorMessage }}</p>
+        <ion-button fill="outline" (click)="retryQuery()">再次尝试</ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="result-card" *ngIf="queryResult" [class.result-remote]="queryResult.success && queryResult.isRemote" [class.result-safe]="queryResult.success && !queryResult.isRemote" [class.result-fail]="!queryResult.success">
+      <ion-card-content>
+        <div class="result-head">
+          <ion-badge [color]="queryResult.success ? (queryResult.isRemote ? 'danger' : 'success') : 'warning'">
+            {{ queryResult.success ? '查询成功' : '查询失败' }}
+          </ion-badge>
+          <span class="result-time">{{ queryResult.success ? '结果已更新' : '请重试查询' }}</span>
+        </div>
+        <h2>{{ queryResult.title }}</h2>
+        <p>{{ queryResult.message }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CalculationStateService } from 'src/app/providers/calculation-state.service';
-import { ToastController } from '@ionic/angular';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 
 @Component({
@@ -16,7 +16,7 @@ export class CalculationDetailPage implements OnInit {
   constructor(
     private router: Router,
     private calculationState: CalculationStateService,
-    private toastCtrl: ToastController
+    private readonly uiFeedback: UiFeedbackService
   ) { }
 
   ngOnInit() {
@@ -130,13 +130,7 @@ export class CalculationDetailPage implements OnInit {
   }
 
   private async presentToast(message: string, color: 'success' | 'danger' | 'medium') {
-    const toast = await this.toastCtrl.create({
-      message,
-      position: 'middle',
-      duration: 1800,
-      color,
-    });
-    await toast.present();
+    await this.uiFeedback.presentToast(message, 1800, 'middle', undefined, color);
   }
 
   backToList() {

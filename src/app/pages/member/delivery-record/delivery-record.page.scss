@@ -1,5 +1,11 @@
 ﻿:host {
     display: block;
+    --delivery-surface: var(--member-surface-0, #ffffff);
+    --delivery-surface-soft: var(--member-surface-100, #f1f5fb);
+    --delivery-brand: var(--member-brand-500, #0b61bd);
+    --delivery-text-main: var(--member-text-900, #12213a);
+    --delivery-text-sub: var(--member-text-500, #5f759a);
+    --delivery-card-radius: var(--member-radius-sm, 12px);
 }
 
 .delivery-header ion-toolbar {
@@ -13,8 +19,8 @@
 }
 
 .waiting-link-btn {
-    --color: #1f6fd6;
-    --background: rgba(31, 111, 214, 0.1);
+    --color: var(--delivery-brand);
+    --background: color-mix(in srgb, var(--delivery-brand) 12%, transparent);
     --border-radius: 999px;
     font-weight: 600;
 }
@@ -25,8 +31,8 @@
 }
 
 .batch-toggle-btn.batch-active {
-    --color: #0c66cc;
-    --background: rgba(12, 102, 204, 0.12);
+    --color: var(--delivery-brand);
+    --background: color-mix(in srgb, var(--delivery-brand) 12%, transparent);
     --border-radius: 999px;
 }
 
@@ -36,7 +42,7 @@
 }
 
 .search-toolbar ion-searchbar {
-    --background: #edf4ff;
+    --background: var(--delivery-surface-soft);
     --border-radius: 12px;
     --box-shadow: none;
     --padding-top: 0;
@@ -66,9 +72,9 @@
 
 .record-card {
     margin: 0;
-    border-radius: 12px;
+    border-radius: var(--delivery-card-radius);
     border: 1px solid rgba(167, 203, 241, 0.62);
-    background: rgba(255, 255, 255, 0.92);
+    background: color-mix(in srgb, var(--delivery-surface) 92%, transparent);
     box-shadow: 0 6px 16px rgba(8, 62, 120, 0.08);
     overflow: hidden;
     animation: rise-in 300ms ease-out both;
@@ -102,13 +108,13 @@
 }
 
 .no-label {
-    color: #6b86a2;
+    color: var(--delivery-text-sub);
     font-size: 11px;
     white-space: nowrap;
 }
 
 .no-value {
-    color: #1c3c5f;
+    color: var(--delivery-text-main);
     font-size: 12.5px;
     font-weight: 700;
     white-space: nowrap;
@@ -179,14 +185,14 @@
 }
 
 .field-label {
-    color: #6b85a2;
+    color: var(--delivery-text-sub);
     font-size: 10.5px;
     flex: 0 0 auto;
     white-space: nowrap;
 }
 
 .field-value {
-    color: #173f65;
+    color: var(--delivery-text-main);
     font-size: 12.5px;
     font-weight: 700;
     line-height: 1.25;

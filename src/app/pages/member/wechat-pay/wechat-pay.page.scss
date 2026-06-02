@@ -1,58 +1,500 @@
-﻿.my-head{
-    height: 9rem;
-    background-color: #004ea2;
-    color: white;
-}
-.my-head1{
-    height: 5rem;
-    background-color: #004ea2;
-    color: white;
-}
-.head-col{
-    width: 50%;
-    text-align: center;
-    height: 5rem;
-    float: left;
-    font-size: 1.5rem;
-}
-.total-amount{
-    font-size: 3rem;
-    text-align: center;
-    padding-top: 1.5rem;
-}
-.total-text{
-    text-align: center;
-  
-    font-size: 1.5rem;
-}
-.content-ios{
-    background-color: #f7f7f7;
-}
-.my-button{
-    padding: 0;
-    margin: 0;
-    background-color: #004ea2;
-}
-.otherCurrencyAmountFont{
-    font-size: 13px;
-    color: red;
-}
-.tips{
-    background: wheat;
-    font-size: 14px;
-}
-ion-item > ion-label:not([position=\"stacked\"]) {
-    flex: 0 0 clamp(8.5em, 36vw, 11em);
-    max-width: clamp(8.5em, 36vw, 11em);
-    min-width: clamp(8.5em, 36vw, 11em);
-    white-space: normal;
-    word-break: keep-all;
-}
-ion-item > ion-label:not(.label-stacked) {
-    flex: 0 0 clamp(8.5em, 36vw, 11em);
-    max-width: clamp(8.5em, 36vw, 11em);
-    min-width: clamp(8.5em, 36vw, 11em);
-    white-space: normal;
-    word-break: keep-all;
+﻿:host {
+  --wx-glass-surface: rgba(255, 255, 255, 0.82);
+  --wx-glass-border: rgba(132, 178, 227, 0.38);
+  --wx-glass-shadow: 0 12px 28px rgba(10, 66, 131, 0.13);
+  --wx-brand-strong: var(--member-brand-600, #084f9b);
+  --wx-brand-soft: var(--member-brand-300, #4ca0ff);
 }
 
+.wx-pay-content {
+  --background:
+    radial-gradient(circle at 8% -4%, rgba(124, 187, 255, 0.26), transparent 36%),
+    radial-gradient(circle at 100% 22%, rgba(0, 178, 169, 0.12), transparent 45%),
+    linear-gradient(180deg, #eff6ff 0%, #edf5ff 58%, #f4f8ff 100%);
+}
+
+.pay-header ion-toolbar {
+  --background: rgba(247, 251, 255, 0.9);
+  --border-color: rgba(11, 97, 189, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.history-btn {
+  --color: var(--wx-brand-strong);
+  font-weight: 600;
+}
+
+.warning-banner {
+  margin: 12px 12px 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
+  border-left: 4px solid var(--ion-color-warning, #ffc409);
+  box-shadow: none;
+
+  ion-card-content {
+    padding: 12px 16px;
+  }
+
+  .banner-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .banner-icon {
+    font-size: 22px;
+    color: var(--ion-color-warning, #ffc409);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .banner-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #856404;
+    margin-bottom: 2px;
+  }
+
+  .banner-desc {
+    font-size: 12px;
+    color: #856404;
+    opacity: 0.85;
+  }
+}
+
+.hero-card {
+  margin: 10px 12px 0;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 176, 238, 0.45);
+  background: linear-gradient(138deg, var(--wx-brand-soft) 0%, #4a87cf 38%, var(--member-brand-500, #0b61bd) 74%, var(--wx-brand-strong) 100%) !important;
+  box-shadow: 0 10px 24px rgba(21, 84, 159, 0.28);
+  color: #ffffff;
+  overflow: hidden;
+
+  ion-card-content {
+    padding: 14px 16px 12px;
+    text-align: center;
+  }
+
+  .hero-customer {
+    margin-bottom: 8px;
+
+    .customer-chip {
+      --background: rgba(255, 255, 255, 0.14);
+      --color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.3);
+      font-size: 12px;
+      height: 28px;
+
+      ion-icon {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      ion-label {
+        color: #ffffff;
+      }
+    }
+  }
+
+  .hero-amount {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.1;
+    color: #ffffff;
+    margin-bottom: 2px;
+  }
+
+  .hero-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.88);
+    letter-spacing: 0.4px;
+    margin-bottom: 10px;
+  }
+
+  .hero-breakdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 9px;
+    padding: 7px 0;
+
+    .breakdown-item {
+      flex: 1;
+      text-align: center;
+
+      .breakdown-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #ffffff;
+      }
+
+      .breakdown-key {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.82);
+        margin-top: 1px;
+      }
+    }
+
+    .breakdown-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.28);
+    }
+  }
+}
+
+.danger-card {
+  margin: 10px 12px 0;
+  border-radius: 12px;
+  border: 1px solid rgba(235, 68, 90, 0.25);
+  box-shadow: none;
+
+  ion-card-content {
+    padding: 12px 16px;
+  }
+
+  .danger-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .danger-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .danger-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .danger-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ion-color-danger, #eb445a);
+    margin-bottom: 2px;
+  }
+
+  .danger-items {
+    font-size: 12px;
+    color: var(--ion-color-medium, #92949c);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.form-card {
+  margin: 10px 12px 0;
+  border-radius: 12px;
+  border: 1px solid var(--wx-glass-border);
+  background: var(--wx-glass-surface);
+  box-shadow: var(--wx-glass-shadow);
+  backdrop-filter: blur(8px);
+
+  ion-card-header {
+    padding: 14px 16px 0;
+  }
+
+  ion-card-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #5f7b99;
+  }
+
+  .form-card-content {
+    padding: 4px 0;
+  }
+
+  ion-list {
+    padding: 0;
+    background: transparent;
+  }
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    --min-height: 52px;
+  }
+
+  .currency-notice-item {
+    ion-label {
+      font-size: 14px;
+    }
+  }
+
+  .amount-help-item {
+    --min-height: 40px;
+
+    .amount-help-note {
+      font-size: 12px;
+      color: #687f9c;
+      margin-left: 34px;
+    }
+  }
+
+  .currency-unit {
+    font-size: 13px;
+    color: var(--ion-color-medium, #92949c);
+    margin-top: 8px;
+  }
+
+  .inline-field-item {
+    --inner-border-width: 0;
+
+    ion-label {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+      flex: 0 0 5.2em;
+      min-width: 5.2em;
+      max-width: 5.2em;
+      margin-right: 10px;
+      white-space: nowrap;
+      word-break: normal;
+      writing-mode: horizontal-tb;
+      line-height: 1.2;
+    }
+
+    & + .inline-field-item {
+      border-top: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    &.product-type-item {
+      border-top: 0 !important;
+    }
+
+    .inline-field-value {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      min-width: 0;
+      width: min(230px, 55vw);
+      margin-left: auto;
+      padding: 2px 10px;
+      border-radius: 12px;
+      background: transparent;
+      transition: opacity 120ms ease, box-shadow 120ms ease;
+    }
+
+    .inline-field-value.is-editable {
+      box-shadow: none;
+    }
+
+    .inline-field-value.is-disabled {
+      opacity: 0.78;
+      background: transparent;
+    }
+
+    ion-input {
+      --padding-top: 0;
+      --padding-bottom: 0;
+      --padding-start: 0;
+      --padding-end: 0;
+      --placeholder-color: #8ea1bb;
+      min-height: 24px;
+      text-align: right;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1c3c5f;
+      --background: transparent;
+    }
+
+    .amount-input {
+      width: 156px;
+      --background: transparent;
+      --border-radius: 12px;
+      --box-shadow: none;
+      --highlight-color-focused: rgba(74, 134, 206, 0.35);
+      --padding-start: 6px;
+      --padding-end: 6px;
+    }
+
+    .editable-state {
+      margin: 0 2px 0 6px;
+      font-size: 11px;
+      color: #7f94af;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .amount-input[disabled] {
+      --background: transparent;
+      opacity: 0.82;
+    }
+
+    .currency-unit {
+      margin: 0;
+      white-space: nowrap;
+      color: #6b86a2;
+      font-size: 13px;
+    }
+
+    .inline-select-field {
+      --padding-top: 6px;
+      --padding-bottom: 6px;
+      --padding-start: 12px;
+      --padding-end: 10px;
+      --background: transparent;
+      --border-radius: 12px;
+      --box-shadow: none;
+      min-width: 126px;
+      max-width: 230px;
+      margin-left: auto;
+      text-align: right;
+      font-size: 17px;
+      font-weight: 600;
+      color: #1c3c5f;
+    }
+  }
+}
+
+.selection-card {
+  margin: 10px 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--wx-glass-border);
+  background: var(--wx-glass-surface);
+  box-shadow: var(--wx-glass-shadow);
+  backdrop-filter: blur(8px);
+
+  ion-card-header {
+    padding: 14px 16px 0;
+  }
+
+  .selection-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  ion-card-subtitle {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ion-color-medium, #92949c);
+  }
+
+  .selection-summary {
+    font-size: 12px;
+    color: var(--wx-brand-strong);
+    font-weight: 500;
+  }
+
+  .selection-card-content {
+    padding: 4px 0;
+  }
+
+  ion-list {
+    padding: 0;
+    background: transparent;
+  }
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 12px;
+    --inner-padding-end: 16px;
+  }
+
+  .all-select-item {
+    --border-color: var(--ion-color-light-shade, #d7d8da);
+  }
+
+  .waybill-label {
+    font-size: 14px;
+  }
+
+  .waybill-amount {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ion-color-dark, #222428);
+  }
+
+  .waybill-item {
+    transition: background-color 160ms ease;
+  }
+
+  .waybill-item:active {
+    --background: rgba(11, 97, 189, 0.08);
+  }
+}
+
+.pay-footer {
+  --background: var(--ion-background-color, #fff);
+  --border-color: transparent;
+  box-shadow: 0 -6px 20px rgba(8, 62, 120, 0.08);
+
+  .pay-footer-inner {
+    padding: 8px 16px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .pay-btn {
+    --border-radius: 12px;
+    --background: var(--member-brand-500, #0b61bd);
+    --background-activated: var(--member-brand-600, #084f9b);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    height: 52px;
+  }
+}
+
+ion-button:focus-visible,
+ion-item:focus-visible,
+ion-checkbox:focus-visible,
+ion-toggle:focus-visible,
+ion-select:focus-visible {
+  outline: 2px solid rgba(22, 105, 200, 0.56);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .selection-card .waybill-item {
+    transition: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --wx-glass-surface: rgba(24, 32, 45, 0.86);
+    --wx-glass-border: rgba(98, 127, 167, 0.38);
+    --wx-glass-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .wx-pay-content {
+    --background: linear-gradient(180deg, #0e1622 0%, #121d2c 56%, #162338 100%);
+  }
+}
+
+@media (max-width: 360px) {
+  .form-card ion-item ion-input,
+  .form-card ion-item ion-select {
+    font-size: 16px;
+  }
+
+  .form-card .inline-field-item .inline-select-field {
+    font-size: 18px;
+  }
+
+  .hero-card .hero-amount {
+    font-size: 1.9rem;
+  }
+  .pay-footer .pay-btn {
+    font-size: 14px;
+    height: 46px;
+  }
+}

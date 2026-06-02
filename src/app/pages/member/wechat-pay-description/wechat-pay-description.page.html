@@ -1,34 +1,88 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
     <ion-title>支付说明</ion-title>
-    
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-    <ion-card>
+<ion-content class="desc-content">
 
+  <ion-card class="intro-card">
+    <ion-card-content>
+      <div class="desc-intro">
+        <ion-icon name="sparkles-outline" class="intro-icon"></ion-icon>
+        <div class="intro-copy">
+          <p class="intro-title">两种支付模式，按业务场景快速选择</p>
+          <p class="intro-text">输入模式适合批量结清，选择模式适合精准支付指定运单。</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
 
-        <ion-card-header>
-            输入模式
-          </ion-card-header>
-      <ion-card-content>
-          列表未选择任何项时，进入手动输入模式。此模式系统根据您支付的金额进行放货(按交货时间先后)
-      </ion-card-content>
-  
-    </ion-card>
-    <ion-card>
-  
-        <ion-card-header>
-            选择模式
-          </ion-card-header>
-  
-      <ion-card-content>
-          列表选中任意一项时，不可手动输入金额，进入选择模式。此模式根据你的选择来进行放货
-      </ion-card-content>
-  
-    </ion-card>
+  <ion-card class="mode-card mode-input">
+    <ion-card-header>
+      <div class="mode-header">
+        <div class="mode-icon-wrap mode-icon-primary">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div>
+          <ion-card-title>输入模式</ion-card-title>
+          <ion-card-subtitle>手动填写支付金额</ion-card-subtitle>
+        </div>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <p class="mode-desc">列表中<strong>未选择任何运单</strong>时进入此模式。</p>
+      <p class="mode-desc">系统将根据您输入的金额，按<strong>交货时间先后</strong>顺序自动放货，无需手动指定具体运单。</p>
+      <div class="mode-tip">
+        <ion-icon name="bulb-outline" color="primary"></ion-icon>
+        <span>适合需要一次性结清多票运单运费的场景</span>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="mode-card mode-select">
+    <ion-card-header>
+      <div class="mode-header">
+        <div class="mode-icon-wrap mode-icon-success">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </div>
+        <div>
+          <ion-card-title>选择模式</ion-card-title>
+          <ion-card-subtitle>勾选指定运单支付</ion-card-subtitle>
+        </div>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <p class="mode-desc">列表中<strong>勾选一项或多项运单</strong>后进入此模式。</p>
+      <p class="mode-desc">支付金额将自动锁定为所选运单的合计金额，不可手动修改，系统将按您的选择进行精准放货。</p>
+      <div class="mode-tip">
+        <ion-icon name="bulb-outline" color="success"></ion-icon>
+        <span>适合只需支付特定运单运费的场景</span>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="rule-card">
+    <ion-card-header>
+      <ion-card-title>操作建议</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-icon slot="start" name="checkmark-done-outline" color="primary"></ion-icon>
+          <ion-label>支付前先核对总金额、手续费与币种信息。</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="checkmark-done-outline" color="primary"></ion-icon>
+          <ion-label>选择模式下金额锁定，不支持手工修改。</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon slot="start" name="checkmark-done-outline" color="primary"></ion-icon>
+          <ion-label>如支付状态未及时更新，请前往“支付记录”刷新查看。</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
 </ion-content>

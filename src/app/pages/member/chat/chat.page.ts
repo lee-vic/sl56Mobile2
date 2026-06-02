@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { ToastController,IonContent, AlertController } from '@ionic/angular';
+import { IonContent, AlertController } from '@ionic/angular';
 import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
 import { apiUrl } from 'src/app/global';
 import { ProblemService } from 'src/app/providers/problem.service';
@@ -7,6 +7,9 @@ import { InstantMessageService } from 'src/app/providers/instant-message.service
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 declare var baguetteBox: any;
 @Component({
   selector: "app-chat",
@@ -39,18 +42,24 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
    */
   messageType: number;
   private hasShownConnectionToast: boolean = false;
+  private readonly destroy$ = new Subject<void>();
+  private connectionStatusSub?: Subscription;
+  private messageReceivedSub?: Subscription;
+  private routeQueryParamsSub?: Subscription;
   constructor(
     private signalR: SignalR,
     public service: ProblemService,
     public imService: InstantMessageService,
-    public toastCtrl: ToastController,
     private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,
-    private alertController:AlertController
+    private alertController:AlertController,
+    private uiFeedbackService: UiFeedbackService
   ) {
     this.messageType = parseInt(this.route.snapshot.paramMap.get("id"));
-    this.route.queryParams.subscribe((params) => {
+    this.routeQueryParamsSub = this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((_params) => {
       const nav = this.router.getCurrentNavigation();
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (
@@ -74,6 +83,17 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     });
   }
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    if (this.routeQueryParamsSub) {
+      this.routeQueryParamsSub.unsubscribe();
+    }
+    if (this.connectionStatusSub) {
+      this.connectionStatusSub.unsubscribe();
+    }
+    if (this.messageReceivedSub) {
+      this.messageReceivedSub.unsubscribe();
+    }
     if (this.signalRConnection) {
       this.signalRConnection.stop();
     }
@@ -81,7 +101,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     console.log("now.init");
     this.signalRConnection = this.signalR.createConnection();
-    this.signalRConnection.status.subscribe((p) => {
+    this.connectionStatusSub = this.signalRConnection.status.subscribe((p) => {
       console.warn(p.name);
       if (p.name == "connected") {
         this.isConnected = true;
@@ -93,7 +113,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     });
     this.signalRConnection.start().then((c) => {
       let listener = c.listenFor("messageReceived");
-      listener.subscribe((msg: any) => {
+      this.messageReceivedSub = listener.subscribe((msg: any) => {
         let obj: any = null;
         try {
           obj = typeof msg === "string" ? JSON.parse(msg) : msg;
@@ -121,7 +141,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
       this.showConnectionUnavailableToast();
     });
     if (this.messageType == 0) {
-      this.imService.getMessages2().subscribe((res) => {
+      this.imService.getMessages2().pipe(takeUntil(this.destroy$)).subscribe((res) => {
         this.messages = res.Data;
         this.chatGroupId = res.ChatGroupId;
         this.processMessages();
@@ -129,6 +149,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     } else if (this.messageType == 1 && this.messages == undefined) {
       this.imService
         .getMessages3(this.receiveGoodsDetailId, this.chatGroupId)
+        .pipe(takeUntil(this.destroy$))
         .subscribe((res) => {
           this.messages = res.Data;
           this.chatGroupId = res.ChatGroupId;
@@ -227,13 +248,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
         }
       })
       .catch(() => {
-        this.toastCtrl
-          .create({
-            message: "消息发送失败，请稍后重试",
-            duration: 1500,
-            position: "middle",
-          })
-          .then((p) => p.present());
+        this.uiFeedbackService.presentToast('消息发送失败，请稍后重试', 1500, 'middle');
       });
   }
 
@@ -308,13 +323,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   private showConnectionUnavailableToast() {
     if (this.hasShownConnectionToast) return;
     this.hasShownConnectionToast = true;
-    this.toastCtrl
-      .create({
-        message: "实时消息服务暂不可用，系统正在尝试重连",
-        duration: 1800,
-        position: "middle",
-      })
-      .then((p) => p.present());
+    this.uiFeedbackService.presentToast('实时消息服务暂不可用，系统正在尝试重连', 1800, 'middle');
   }
   onFocus() {
     //this.content.
@@ -407,13 +416,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
         if (res.Success == true) {
           this.sendFileMsg(res);
         } else {
-          this.toastCtrl
-            .create({
-              message: "上传失败,错误信息:" + res.Text,
-              position: "middle",
-              duration: 1500,
-            })
-            .then((p) => p.present());
+          this.uiFeedbackService.presentToast('上传失败,错误信息:' + res.Text, 1500, 'middle');
         }
       });
     } else if (this.messageType == 2) {
@@ -426,13 +429,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
         if (res.Success == true) {
           this.sendFileMsg(res);
         } else {
-          this.toastCtrl
-            .create({
-              message: "上传失败,错误信息:" + res.Text,
-              position: "middle",
-              duration: 3000,
-            })
-            .then((p) => p.present());
+          this.uiFeedbackService.presentToast('上传失败,错误信息:' + res.Text, 3000, 'middle');
         }
       });
     }

@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActionSheetController, AlertController, IonicModule, LoadingController, ToastController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { of, Subject } from 'rxjs';
@@ -12,6 +12,7 @@ import { WechatPayPage } from './wechat-pay.page';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalR } from 'src/app/providers/signal-r.service';
 import { UserService } from 'src/app/providers/user.service';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 describe('WechatPayPage', () => {
   let component: WechatPayPage;
@@ -19,10 +20,10 @@ describe('WechatPayPage', () => {
   let messageReceived$: Subject<any>;
   let routerEvents$: Subject<any>;
 
-  const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const alertCreateSpy = jasmine.createSpy('alertCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
-  const loadingPresentSpy = jasmine.createSpy('loadingPresent').and.returnValue(Promise.resolve());
-  const loadingDismissSpy = jasmine.createSpy('loadingDismiss').and.returnValue(Promise.resolve());
+  const presentToastSpy = jasmine.createSpy('presentToast');
+  const presentLoadingSpy = jasmine.createSpy('presentLoading').and.returnValue(Promise.resolve({ dismiss: jasmine.createSpy('dismiss') }));
+  const dismissLoadingSpy = jasmine.createSpy('dismissLoading').and.returnValue(Promise.resolve());
 
   const getListSpy = jasmine.createSpy('getList').and.returnValue(of({
     ReceiveGoodsDetailList: [],
@@ -74,21 +75,21 @@ describe('WechatPayPage', () => {
       imports: [HttpClientTestingModule, RouterTestingModule, FormsModule, ReactiveFormsModule, IonicModule.forRoot()],
       providers: [
         CookieService,
-        { provide: ToastController, useValue: { create: toastCreateSpy } },
         { provide: AlertController, useValue: { create: alertCreateSpy } },
-        {
-          provide: LoadingController,
-          useValue: {
-            create: () => Promise.resolve({ present: loadingPresentSpy, dismiss: loadingDismissSpy }),
-            dismiss: loadingDismissSpy
-          }
-        },
         { provide: ActionSheetController, useValue: { create: jasmine.createSpy('sheetCreate') } },
         { provide: SignalR, useValue: mockSignalR },
         { provide: ActivatedRoute, useValue: mockRoute },
         { provide: Router, useValue: mockRouter },
         { provide: WechatPayService, useValue: mockWechatPayService },
-        { provide: UserService, useValue: mockUserService }
+        { provide: UserService, useValue: mockUserService },
+        {
+          provide: UiFeedbackService,
+          useValue: {
+            presentToast: presentToastSpy,
+            presentLoading: presentLoadingSpy,
+            dismissLoading: dismissLoadingSpy,
+          }
+        }
       ],
       declarations: [ WechatPayPage ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -99,12 +100,14 @@ describe('WechatPayPage', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(WechatPayPage);
     component = fixture.componentInstance;
-    toastCreateSpy.calls.reset();
     alertCreateSpy.calls.reset();
-    loadingDismissSpy.calls.reset();
+    presentToastSpy.calls.reset();
+    presentLoadingSpy.calls.reset();
+    dismissLoadingSpy.calls.reset();
     getListSpy.calls.reset();
     getProductTypesSpy.calls.reset();
     mockRouter.navigateByUrl.calls.reset();
+    mockSignalRConnection.stop.calls.reset();
   });
 
   it('should create', () => {
@@ -113,10 +116,11 @@ describe('WechatPayPage', () => {
 
   it('should calculate commission and total amount', () => {
     component.data = {
+      ...component.data,
       Amount: '100.10',
       WXPaymentCommission: true,
       WXPaymentCommissionRate: 0.006
-    };
+    } as any;
 
     component.calculateAmount();
 
@@ -127,6 +131,7 @@ describe('WechatPayPage', () => {
 
   it('should toggle release state when select list changes', () => {
     component.data = {
+      ...component.data,
       ReceiveGoodsDetailList: [
         { Id: 1, Amount: '12.30', Selected: true },
         { Id: 2, Amount: '5.00', Selected: false }
@@ -134,7 +139,7 @@ describe('WechatPayPage', () => {
       Amount1: 1.2,
       WXPaymentCommission: false,
       WXPaymentCommissionRate: 0
-    };
+    } as any;
 
     component.selectChange();
 
@@ -145,7 +150,7 @@ describe('WechatPayPage', () => {
   });
 
   it('should show amount error alert when total amount is too small', () => {
-    component.data = { TotalAmount: 0 };
+    component.data = { ...component.data, TotalAmount: 0 } as any;
 
     component.payClick();
 
@@ -160,5 +165,13 @@ describe('WechatPayPage', () => {
 
     expect(() => messageReceived$.next('{not-json')).not.toThrow();
     expect(component.payHistory).not.toHaveBeenCalled();
+  }));
+
+  it('should stop signalR connection on destroy', fakeAsync(() => {
+    component.ngOnInit();
+    tick();
+    component.ngOnDestroy();
+
+    expect(mockSignalRConnection.stop).toHaveBeenCalled();
   }));
 });

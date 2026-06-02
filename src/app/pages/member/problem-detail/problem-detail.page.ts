@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
 import {
   AlertController,
@@ -12,6 +12,8 @@ import {
 } from "src/app/interfaces/problem";
 import { CommonService } from "src/app/providers/common.service";
 import { NgForm } from "@angular/forms";
+import { Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 
 declare var wx: any;
 @Component({
@@ -19,7 +21,7 @@ declare var wx: any;
   templateUrl: "./problem-detail.page.html",
   styleUrls: ["./problem-detail.page.scss"],
 })
-export class ProblemDetailPage implements OnInit {
+export class ProblemDetailPage implements OnInit, OnDestroy {
   receiveGoodsDetailId: Number;
   problemId: Number;
   data: any;
@@ -34,24 +36,45 @@ export class ProblemDetailPage implements OnInit {
   isFileProcessing: boolean = false;
   isSubmiting: boolean = false;
   isLoading = false;
+  hasInitError = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
   @ViewChild('page1Form') formRef: NgForm;
+  private readonly destroy$ = new Subject<void>();
 
   ngOnInit(): void {
+    this.loadProblemDetail();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  retryInit(): void {
+    this.loadProblemDetail();
+  }
+
+  private loadProblemDetail(): void {
     this.isLoading = true;
-    this.service.getProblemDetail(this.problemId).subscribe((res) => {
-      this.data = res;
-      this.isLoading = false;
+    this.hasInitError = false;
+    this.service.getProblemDetail(this.problemId).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => {
+        this.isLoading = false;
+      })
+    ).subscribe((res) => {
+      this.data = res || { Problem: { ProcessTypeList: [], ProcessSetting4: [], Pages: [] }, ProcessResult: {} };
       this.processModel = this.data.ProcessResult;
       this.ensureProcessModel();
 
+      const setting4 = this.data?.Problem?.ProcessSetting4 || [];
       this.checkListValue = [];
-      for (let i = 0; i < this.data.Problem.ProcessSetting4.length; i++) {
+      for (let i = 0; i < setting4.length; i++) {
         this.checkListValue.push(false);
       }
 
-      let types: Array<number> = this.data.Problem.ProcessTypeList;
+      let types: Array<number> = (this.data?.Problem?.ProcessTypeList || []);
       let inputTypes = types.filter((p) => p >= 1 && p <= 4);
       //存在发票以及其他填写资料项时，发票不是必须
       this.isFileRequired = !(
@@ -62,7 +85,7 @@ export class ProblemDetailPage implements OnInit {
       this.getWeAppFileStatus(true);
       this.renderWeAppButtonIfNeeded();
     }, _ => {
-      this.isLoading = false;
+      this.hasInitError = true;
     });
   }
 
@@ -156,6 +179,7 @@ export class ProblemDetailPage implements OnInit {
         null,
         "wx-open-launch-weapp"
       )
+      .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         let config = JSON.parse(res);
         wx.config(config);
@@ -200,7 +224,7 @@ export class ProblemDetailPage implements OnInit {
     this.receiveGoodsDetailId = new Number(
       this.route.snapshot.paramMap.get("id")
     );
-    this.route.queryParams.subscribe((_res) => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((_res) => {
       const nav = this.router.getCurrentNavigation();
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
@@ -209,6 +233,7 @@ export class ProblemDetailPage implements OnInit {
           if (data.isWeAppFile) {
             this.service
               .deleteProblemTempFile(this.problemId)
+              .pipe(takeUntil(this.destroy$))
               .subscribe();
             this.isWeAppUploadFile = false;
           } else {
@@ -254,7 +279,7 @@ export class ProblemDetailPage implements OnInit {
   }
 
   confirm() {
-    this.service.confirm(this.processModel.Id).subscribe((res) => {
+    this.service.confirm(this.processModel.Id).pipe(takeUntil(this.destroy$)).subscribe((res) => {
       if (!res.IsSuccess) {
         this.confirmFailMessage = res.Message;
       } else {
@@ -290,6 +315,7 @@ export class ProblemDetailPage implements OnInit {
           this.isFileProcessing = true;
           this.service
             .invoicePretreatment(this.processModel)
+            .pipe(takeUntil(this.destroy$))
             .subscribe((res) => {
               this.isFileProcessing = false;
               if (res.Result === true) {
@@ -352,13 +378,16 @@ export class ProblemDetailPage implements OnInit {
         }
       });
     }
-    this.service.complete(this.processModel).subscribe((res) => {
+    this.service.complete(this.processModel).pipe(takeUntil(this.destroy$)).subscribe((res) => {
       this.isSubmiting = false;
       if (res.Result === false) {
         this.submitFailMessage = res.Message;
       } else {
         this.data.Problem.Status = 1;
       }
+    }, _ => {
+      this.isSubmiting = false;
+      this.submitFailMessage = '提交失败，请稍后重试';
     });
   }
 
@@ -369,7 +398,7 @@ export class ProblemDetailPage implements OnInit {
       })
       .then((p) => {
         p.present();
-        this.service.isWeAppUploadFile(this.problemId).subscribe((res) => {
+        this.service.isWeAppUploadFile(this.problemId).pipe(takeUntil(this.destroy$)).subscribe((res) => {
           this.isWeAppUploadFile = res;
           this.loadingCtrl.dismiss();
           if (isInitPage) return;
@@ -383,6 +412,7 @@ export class ProblemDetailPage implements OnInit {
                 .then((p) => p.present());
               this.service
                 .invoicePretreatment(this.processModel)
+                .pipe(takeUntil(this.destroy$))
                 .subscribe((res) => {
                   this.isFileProcessing = false;
                   this.loadingCtrl.dismiss();
@@ -400,6 +430,10 @@ export class ProblemDetailPage implements OnInit {
                     this.fileFailMessage = res.Message;
                     this.isWeAppUploadFile = false;
                   }
+                }, _ => {
+                  this.isFileProcessing = false;
+                  this.loadingCtrl.dismiss();
+                  this.fileFailMessage = '获取附件预览失败，请稍后重试';
                 });
             }
           } else {
@@ -411,6 +445,15 @@ export class ProblemDetailPage implements OnInit {
               })
               .then((x) => x.present());
           }
+        }, _ => {
+          this.loadingCtrl.dismiss();
+          this.alertCtrl
+            .create({
+              header: '获取失败',
+              message: '当前无法获取附件状态，请稍后重试。',
+              buttons: ['我知道了'],
+            })
+            .then((x) => x.present());
         });
       });
   }

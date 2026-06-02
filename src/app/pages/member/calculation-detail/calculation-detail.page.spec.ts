@@ -1,31 +1,30 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { CalculationDetailPage } from './calculation-detail.page';
 import { CalculationStateService } from 'src/app/providers/calculation-state.service';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 describe('CalculationDetailPage', () => {
   let component: CalculationDetailPage;
   let fixture: ComponentFixture<CalculationDetailPage>;
   let router: Router;
   let calculationState: jasmine.SpyObj<CalculationStateService>;
-  let toastCtrl: jasmine.SpyObj<ToastController>;
-  let toastElement: jasmine.SpyObj<HTMLIonToastElement>;
+  let uiFeedback: jasmine.SpyObj<UiFeedbackService>;
 
   beforeEach(async(() => {
     calculationState = jasmine.createSpyObj<CalculationStateService>('CalculationStateService', ['getCurrentDetail']);
-    toastElement = jasmine.createSpyObj<HTMLIonToastElement>('HTMLIonToastElement', ['present']);
-    toastCtrl = jasmine.createSpyObj<ToastController>('ToastController', ['create']);
-    toastCtrl.create.and.returnValue(Promise.resolve(toastElement));
+    uiFeedback = jasmine.createSpyObj<UiFeedbackService>('UiFeedbackService', ['presentToast']);
+    uiFeedback.presentToast.and.returnValue(Promise.resolve());
 
     TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
         { provide: CalculationStateService, useValue: calculationState },
-        { provide: ToastController, useValue: toastCtrl },
+        { provide: UiFeedbackService, useValue: uiFeedback },
       ],
       declarations: [ CalculationDetailPage ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -87,11 +86,7 @@ describe('CalculationDetailPage', () => {
 
     await component.copyPriceCode();
 
-    expect(toastCtrl.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: '暂无可复制内容',
-      color: 'medium',
-    }));
-    expect(toastElement.present).toHaveBeenCalled();
+    expect(uiFeedback.presentToast).toHaveBeenCalledWith('暂无可复制内容', 1800, 'middle', undefined, 'medium');
   });
 
   it('should copy the price code and show a success toast', async () => {
@@ -105,9 +100,19 @@ describe('CalculationDetailPage', () => {
     await component.copyPriceCode();
 
     expect(writeText).toHaveBeenCalledWith('SL-001');
-    expect(toastCtrl.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: '报价代码已复制',
-      color: 'success',
-    }));
+    expect(uiFeedback.presentToast).toHaveBeenCalledWith('报价代码已复制', 1800, 'middle', undefined, 'success');
+  });
+
+  it('should show danger toast when copy throws', async () => {
+    const writeText = jasmine.createSpy('writeText').and.returnValue(Promise.reject(new Error('copy failed')));
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    component.data = { PriceCode: 'SL-ERR' };
+
+    await component.copyPriceCode();
+
+    expect(uiFeedback.presentToast).toHaveBeenCalledWith('复制失败，请手动长按复制', 1800, 'middle', undefined, 'danger');
   });
 });

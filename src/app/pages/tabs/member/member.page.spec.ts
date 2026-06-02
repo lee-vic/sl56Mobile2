@@ -84,4 +84,19 @@ describe('MemberPage', () => {
     expect(component.draftQuickMenuTitles).toEqual(['价格查询', '偏远查询', '业务公告']);
     expect(component.showToast).toHaveBeenCalledWith('常用功能至少选择3项');
   });
+
+  it('should unsubscribe router subscription on destroy', () => {
+    const unsubscribeSpy = jasmine.createSpy('unsubscribe');
+    component.routerSub = { unsubscribe: unsubscribeSpy } as any;
+
+    component.ngOnDestroy();
+
+    expect(unsubscribeSpy).toHaveBeenCalled();
+  });
+
+  it('should format badge count over 99 as 99+', () => {
+    expect(component.formatBadgeCount(18)).toBe('18');
+    expect(component.formatBadgeCount(99)).toBe('99');
+    expect(component.formatBadgeCount(100)).toBe('99+');
+  });
 });

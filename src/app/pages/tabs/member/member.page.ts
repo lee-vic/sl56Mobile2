@@ -1,20 +1,21 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { ToastController, LoadingController } from '@ionic/angular';
 import { NavigationEnd, Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
 import { User } from 'src/app/interfaces/user';
 import { NoticeService } from 'src/app/providers/notice.service';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 @Component({
   selector: 'app-member',
   templateUrl: './member.page.html',
   styleUrls: ['./member.page.scss'],
 })
-export class MemberPage implements OnInit {
+export class MemberPage implements OnInit, OnDestroy {
   readonly quickMenuMin = 3;
   readonly quickMenuLimit = 6;
   private readonly quickMenuStoragePrefix = 'member_quick_menu_custom_v2_';
@@ -71,12 +72,12 @@ export class MemberPage implements OnInit {
   visibleMenuCount: number = 0;
   noticeIsClicked: boolean = false;
   routerSub: Subscription;
-  constructor(public toastCtrl: ToastController,
-    private userService: UserService,
+  private readonly destroy$ = new Subject<void>();
+  constructor(private userService: UserService,
     private router: Router,
     private cookieService: CookieService,
     private noticeService: NoticeService,
-    public loadingCtrl: LoadingController) {
+    private uiFeedbackService: UiFeedbackService) {
     this.authForm = new FormGroup({
       username: new FormControl('', Validators.required),
       password: new FormControl('', Validators.required),
@@ -92,41 +93,46 @@ export class MemberPage implements OnInit {
   ngOnInit() {
     this.menus = new Menus();
     this.menus.rows = [];
-    this.loadingCtrl.create({
-      message: '请稍后...'
-    }).then(p => {
-      p.present();
-      this.userService.isAuthenticated().subscribe({
-        next: (_res) => {
-          this.loadingCtrl.dismiss();
-          this.isLogin = true;
-          this.loginSuccess();
-        },
-        error: (err) => {
-          this.loadingCtrl.dismiss();
-          if (err.status == 401) {
-            this.isLogin = false;
+    this.uiFeedbackService.presentLoading('请稍后...').then(loading => {
+      this.loading = loading;
+      this.userService.isAuthenticated()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.uiFeedbackService.dismissLoading(this.loading);
+            this.loading = null;
+            this.isLogin = true;
+            this.loginSuccess();
+          },
+          error: (err) => {
+            this.uiFeedbackService.dismissLoading(this.loading);
+            this.loading = null;
+            if (err.status == 401) {
+              this.isLogin = false;
+            }
           }
-        }
-      });
+        });
     });
-    if (this.isLogin) {
-      this.routerSub = this.router.events.subscribe(evt => {
-        if (evt instanceof NavigationEnd) {
 
-          if (this.router.url === '/app/tabs/member' || this.router.url.startsWith('/app/tabs/member')) {
-            //刷新未读公告数量
-            this.noticeService.getUnreadCount().subscribe(res => {
-              this.unreadNoticeCount = res;
-            });
-          }
+    this.routerSub = this.router.events
+      .pipe(
+        takeUntil(this.destroy$),
+        filter(evt => evt instanceof NavigationEnd)
+      )
+      .subscribe(() => {
+        if (!this.isLogin) {
+          return;
+        }
+        if (this.router.url === '/app/tabs/member' || this.router.url.startsWith('/app/tabs/member')) {
+          this.refreshUnreadCount();
         }
       });
-    }
 
 
   }
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
     if (this.routerSub) {
       this.routerSub.unsubscribe();
     }
@@ -166,24 +172,16 @@ export class MemberPage implements OnInit {
 
   }
   async showToast(msg: string) {
-    let toast = await this.toastCtrl.create({
-      message: msg,
-      position: 'middle',
-      duration: 2000,
-      cssClass: 'member-theme-toast'
-    });
-    toast.present();
+    await this.uiFeedbackService.presentToast(msg, 2000, 'middle', 'member-theme-toast');
   }
   async showLoading(msg: string) {
-    this.loading = await this.loadingCtrl.create({
-      duration: 5000,
-      message: msg,
-    });
-    this.loading.present();
+    this.loading = await this.uiFeedbackService.presentLoading(msg, 5000);
   }
 
   loginSuccess() {
-    this.userService.getHomeInfo().subscribe(res => {
+    this.userService.getHomeInfo()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
       console.log(res);
       this.userInfo = res;
       this.username = res.CustomerNo;
@@ -196,10 +194,7 @@ export class MemberPage implements OnInit {
       this.visibleMenuCount = tempMenus.length;
       this.visibleMenuOptions = tempMenus;
       this.applyQuickMenuCustomization(tempMenus, this.getStoredQuickMenuTitles(tempMenus));
-
-      this.noticeService.getUnreadCount().subscribe(res => {
-        this.unreadNoticeCount = res;
-      });
+      this.refreshUnreadCount();
       // if(this.customerType==3){
       //   this.navCtrl.navigateForward("/member/distribute-manager",{replaceUrl:true});
       // }
@@ -520,9 +515,17 @@ export class MemberPage implements OnInit {
     return false;
   }
   logOff() {
-    this.userService.logOff().subscribe(res => {
+    this.userService.logOff().pipe(takeUntil(this.destroy$)).subscribe(_res => {
       this.isLogin = false;
     });
+  }
+
+  private refreshUnreadCount() {
+    this.noticeService.getUnreadCount()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.unreadNoticeCount = res;
+      });
   }
   openMessage() {
     this.releaseFocus();

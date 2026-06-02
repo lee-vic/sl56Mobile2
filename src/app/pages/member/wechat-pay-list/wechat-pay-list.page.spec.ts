@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LoadingController } from '@ionic/angular';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { WechatPay } from 'src/app/interfaces/wechat-pay';
 import { WechatPayListService } from 'src/app/providers/wechat-pay-list.service';
@@ -87,5 +87,18 @@ describe('WechatPayListPage (infinite-scroll migration)', () => {
 
     expect(component.items.length).toBe(4);
     expect(component.currentPageIndex).toBe(3);
+  });
+
+  it('sets error state when service request fails', () => {
+    mockService.getList.and.returnValue(throwError(() => ({ statusText: 'network down' })));
+    component.items = [];
+    component.currentPageIndex = 1;
+    component.isBusy = false;
+
+    component.getItems();
+
+    expect(component.hasError).toBe(true);
+    expect(component.errorMessage).toBe('network down');
+    expect(component.isBusy).toBe(false);
   });
 });

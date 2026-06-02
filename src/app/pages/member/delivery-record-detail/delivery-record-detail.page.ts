@@ -19,6 +19,7 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
   @ViewChild("detailContent", { static: false }) detailContent?: IonContent;
 
   data: any;
+  isLoading = false;
   id: any;
   tab = "1";
   problemFilter: "all" | "processing" | "done" = "all";
@@ -54,6 +55,7 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
   ngOnInit() {
     this.id = +this.route.snapshot.paramMap.get("id");
     this.restoreProblemFilter();
+    this.isLoading = true;
 
     //不能返回的视为站外链接
     this.service.getDetail(!this.canGoBack, this.id).subscribe(
@@ -81,6 +83,7 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
             this.scrollToSection(this.tab, false);
           }
         }, 0);
+        this.isLoading = false;
 
       },
       (err) => {
@@ -90,6 +93,7 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
         //    duration: 2000
         //  });
         //  toast.present();
+        this.isLoading = false;
       }
     );
   }
@@ -258,6 +262,11 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
     return !!this.data?.LabelUrl;
   }
 
+  get basicInfoCount(): number {
+    const baseCount = 10;
+    return this.hasLabel ? baseCount + 1 : baseCount;
+  }
+
   get sizesCount(): number {
     return this.data?.Sizes?.length || 0;
   }
@@ -283,6 +292,22 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
       return "￥0.00";
     }
     return `￥${value.toFixed(2)}`;
+  }
+
+  displayCurrencyValue(value: any): string {
+    if (value === null || value === undefined || value === "") {
+      return "--";
+    }
+    return this.formatCurrency(value);
+  }
+
+  formatDimensions(length: any, width: any, height: any): string {
+    const values = [length, width, height];
+    const hasEmpty = values.some((item) => item === null || item === undefined || item === "");
+    if (hasEmpty) {
+      return "--";
+    }
+    return `${length}*${width}*${height}`;
   }
 
   displayValue(value: any): string {

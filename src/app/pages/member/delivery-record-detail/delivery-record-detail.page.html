@@ -8,12 +8,22 @@
 </ion-header>
 
 <ion-content #detailContent class="detail-content" [scrollEvents]="true" (ionScroll)="onContentScroll($event)">
-  <div class="detail-shell ion-padding">
+  <div class="detail-loading ion-padding" *ngIf="isLoading" aria-label="详情加载中">
+    <ion-card class="loading-card" *ngFor="let sk of [1,2,3]">
+      <ion-card-content>
+        <ion-skeleton-text animated style="width: 52%; height: 16px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 88%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 74%; height: 14px; margin-top: 8px; border-radius: 6px;"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="detail-shell ion-padding" *ngIf="!isLoading">
     <ion-segment [(ngModel)]="tab" (ionChange)="onSegmentChanged($event)" scrollable class="section-segment">
       <ion-segment-button value="1">
         <ion-label class="segment-label">
           <span>基本信息</span>
-          <span class="segment-count">7</span>
+          <span class="segment-count">{{ basicInfoCount }}</span>
         </ion-label>
       </ion-segment-button>
       <ion-segment-button value="2">
@@ -46,7 +56,7 @@
       <section class="detail-section" id="section-1">
         <ion-item lines="none" class="section-head">
           <ion-label>基本信息</ion-label>
-          <ion-note slot="end">共 7 项</ion-note>
+          <ion-note slot="end">共 {{ basicInfoCount }} 项</ion-note>
         </ion-item>
         <ion-card class="section-card">
           <ion-list lines="full">
@@ -59,12 +69,36 @@
               <ion-note slot="end">{{ displayValue(data?.CountryName) }}</ion-note>
             </ion-item>
             <ion-item>
+              <ion-label>费用(元)</ion-label>
+              <ion-note slot="end">{{ displayCurrencyValue(data?.TotalAmount) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>计费重(KG)</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.Weight) }}</ion-note>
+            </ion-item>
+            <ion-item>
               <ion-label>转单号</ion-label>
               <ion-note slot="end">{{ displayValue(data?.TrackNumber) }}</ion-note>
+            </ion-item>
+            <ion-item *ngIf="hasLabel">
+              <ion-label>托运标签</ion-label>
+              <ion-button
+                slot="end"
+                fill="outline"
+                size="small"
+                [href]="data?.LabelUrl"
+                target="_blank"
+                rel="noopener noreferrer">
+                下载
+              </ion-button>
             </ion-item>
             <ion-item>
               <ion-label>件数</ion-label>
               <ion-note slot="end">{{ displayValue(data?.Piece) }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>运输方式</ion-label>
+              <ion-note slot="end">{{ displayValue(data?.ModeOfTransportName) }}</ion-note>
             </ion-item>
             <ion-item>
               <ion-label>类型</ion-label>
@@ -108,14 +142,8 @@
                   <ion-col size="6">
                     <div class="kv-row"><span>体积重</span><strong>{{ displayValue(item?.VolumeWeight) }} KG</strong></div>
                   </ion-col>
-                  <ion-col size="6">
-                    <div class="kv-row"><span>长</span><strong>{{ displayValue(item?.Length) }} CM</strong></div>
-                  </ion-col>
-                  <ion-col size="6">
-                    <div class="kv-row"><span>宽</span><strong>{{ displayValue(item?.Width) }} CM</strong></div>
-                  </ion-col>
                   <ion-col size="12">
-                    <div class="kv-row"><span>高</span><strong>{{ displayValue(item?.Height) }} CM</strong></div>
+                    <div class="kv-row"><span>尺寸(长*宽*高)</span><strong>{{ formatDimensions(item?.Length, item?.Width, item?.Height) }} CM</strong></div>
                   </ion-col>
                 </ion-row>
               </ion-grid>
@@ -153,13 +181,13 @@
                     <span class="timeline-dot"></span>
                   </div>
                   <ion-label>
-                    <h3>{{ displayValue(track?.ActivityDate) }}</h3>
-                    <p>{{ displayValue(track?.Location) }}</p>
-                    <p>{{ displayValue(track?.Activity) }}</p>
-                    <div class="track-tools">
-                      <ion-button fill="clear" size="small" (click)="copyTrackText(track?.Location, '地点')">复制地点</ion-button>
-                      <ion-button fill="clear" size="small" (click)="copyTrackText(track?.ActivityDate, '时间')">复制时间</ion-button>
-                      <ion-button fill="clear" size="small" (click)="copyTrackSummary(track?.ActivityDate, track?.Location, track?.Activity)">复制整条</ion-button>
+                    <div class="track-content-row">
+                      <div class="track-text-wrap">
+                        <h3>{{ displayValue(track?.ActivityDate) }}</h3>
+                        <p>{{ displayValue(track?.Location) }}</p>
+                        <p>{{ displayValue(track?.Activity) }}</p>
+                      </div>
+                      <ion-button class="track-copy-btn" fill="clear" size="small" (click)="copyTrackSummary(track?.ActivityDate, track?.Location, track?.Activity)">复制</ion-button>
                     </div>
                   </ion-label>
                 </ion-item>
@@ -175,13 +203,13 @@
                 <span class="timeline-dot"></span>
               </div>
               <ion-label>
-                <h3>{{ displayValue(item?.Date) }}</h3>
-                <p>{{ displayValue(item?.Location) }}</p>
-                <p>{{ displayValue(item?.Activity) }}</p>
-                <div class="track-tools">
-                  <ion-button fill="clear" size="small" (click)="copyTrackText(item?.Location, '地点')">复制地点</ion-button>
-                  <ion-button fill="clear" size="small" (click)="copyTrackText(item?.Date, '时间')">复制时间</ion-button>
-                  <ion-button fill="clear" size="small" (click)="copyTrackSummary(item?.Date, item?.Location, item?.Activity)">复制整条</ion-button>
+                <div class="track-content-row">
+                  <div class="track-text-wrap">
+                    <h3>{{ displayValue(item?.Date) }}</h3>
+                    <p>{{ displayValue(item?.Location) }}</p>
+                    <p>{{ displayValue(item?.Activity) }}</p>
+                  </div>
+                  <ion-button class="track-copy-btn" fill="clear" size="small" (click)="copyTrackSummary(item?.Date, item?.Location, item?.Activity)">复制</ion-button>
                 </div>
               </ion-label>
             </ion-item>
@@ -253,7 +281,7 @@
   </div>
 </ion-content>
 
-<ion-footer class="detail-footer">
+<ion-footer class="detail-footer" *ngIf="!isLoading && data">
   <ion-toolbar>
     <div class="footer-actions">
       <ion-button fill="outline" (click)="more()">更多操作</ion-button>

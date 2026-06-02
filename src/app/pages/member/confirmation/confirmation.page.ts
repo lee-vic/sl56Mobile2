@@ -1,9 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfirmationService } from 'src/app/providers/confirmation.service';
-import { ToastController, AlertController, LoadingController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
-import { finalize } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 @Component({
   selector: 'app-confirmation',
@@ -24,10 +26,10 @@ export class ConfirmationPage implements OnInit, OnDestroy {
   receiveGoodsDetailList: DeliveryRecord[] = [];
   searchList: DeliveryRecord[] = [];
   private successHintTimer?: ReturnType<typeof setTimeout>;
-  constructor(public service: ConfirmationService, 
-    public toastCtrl: ToastController, 
-    public alertCtrl: AlertController, 
-    public loadingCtrl: LoadingController,
+  private readonly destroy$ = new Subject<void>();
+  constructor(public service: ConfirmationService,
+    public alertCtrl: AlertController,
+    private readonly uiFeedback: UiFeedbackService,
     private router: Router
     ) { }
 
@@ -37,26 +39,28 @@ export class ConfirmationPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearSuccessHintTimer();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadRecords(event?: CustomEvent): void {
     this.isLoading = true;
-    this.service.getReceiveGoodsDetailList().subscribe(res => {
-      this.receiveGoodsDetailList = res || [];
-      this.applyFilters();
-      this.updateStats();
-      this.updateAllSelectedState();
-      this.isLoading = false;
-      if (event) {
-        event.detail.complete();
-      }
-    }, () => {
-      this.isLoading = false;
-      if (event) {
-        event.detail.complete();
-      }
-      this.presentToast('清单加载失败，请稍后重试', 'warning', 2200);
-    });
+    this.service.getReceiveGoodsDetailList()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoading = false;
+          event?.detail?.complete();
+        })
+      )
+      .subscribe(res => {
+        this.receiveGoodsDetailList = res || [];
+        this.applyFilters();
+        this.updateStats();
+        this.updateAllSelectedState();
+      }, () => {
+        this.presentToast('清单加载失败，请稍后重试', 'warning', 2200);
+      });
   }
 
   onRefresh(event: CustomEvent) {
@@ -217,16 +221,16 @@ export class ConfirmationPage implements OnInit, OnDestroy {
 
     this.isSubmitting = true;
 
-    this.loadingCtrl.create({
-      message: '正在提交确认，请稍候...',
-    }).then(loading => {
-      loading.present();
+    this.uiFeedback.presentLoading('正在提交确认，请稍候...').then(loading => {
 
       this.service.confirm(selectedIds.toString())
-      .pipe(finalize(() => {
-        loading.dismiss();
-        this.isSubmitting = false;
-      }))
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.uiFeedback.dismissLoading(loading);
+          this.isSubmitting = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           this.receiveGoodsDetailList = res || [];
@@ -288,13 +292,7 @@ export class ConfirmationPage implements OnInit, OnDestroy {
   }
 
   private presentToast(message: string, color: 'success' | 'warning' | 'danger' = 'success', duration: number = 1500) {
-    this.toastCtrl.create({
-      message,
-      position: 'middle',
-      duration,
-      color,
-      cssClass: 'member-theme-toast'
-    }).then(p => p.present());
+    this.uiFeedback.presentToast(message, duration, 'middle', 'member-theme-toast', color);
   }
 
   detail(item: { Id: number | Number }) {

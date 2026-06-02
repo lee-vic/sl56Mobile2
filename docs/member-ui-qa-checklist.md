@@ -160,13 +160,56 @@
 - 外币场景（cid != 1）默认不勾选运单，金额输入保持可编辑。
 - 全选/单选改变后金额、手续费、总额联动正确。
 - 金额小于 0.01 时继续支付会给出明确提示。
+- 支付按钮提交中显示“正在发起支付...”，且按钮禁用避免重复触发。
+- 点击“支付说明”可正确跳转说明页，返回后主页面选择状态不丢失。
+- 支付说明页两种模式卡片与操作建议卡在 360/390/430 宽度下无裁切。
+- 支付记录页首次加载显示骨架屏，失败时进入错误态并可重试。
+- 支付记录页下拉刷新可恢复列表，滚动分页到末页后无限加载自动停止。
+- 支付记录页空态、错误态、列表态互斥展示，不应同时出现。
 
 ### Calculation Checks
 
 - 精简/完整模式切换后必填约束与默认运输方式（不限）正确。
 - 规格件规则勾选后 `SeletedTemplateRules` 同步更新。
 
+## Remote Query QA (member/remote)
+
+### Remote Query Visual Checks
+
+- 顶部 Hero 卡片文案与层级清晰，背景渐变无裁切和锯齿。
+- 查询条件卡片中的表单行间距一致，字段标题和输入区不重叠。
+- 国家下拉结果列表在 360/390/430 宽度下可完整滚动且无遮挡。
+- 查询结果卡片在偏远/不偏远/失败三种状态下颜色和文案区分明显。
+
+### Remote Query Interaction Checks
+
+- 进入页面后可成功加载运输方式和国家列表，默认运输方式自动选中。
+- 国家输入仅手动输入但未选择有效项时，提交按钮不可触发查询。
+- 国家输入支持回车快速确认，单条匹配时可自动选中。
+- 查询提交中按钮显示“查询中...”，并禁用避免重复点击。
+- 查询失败时出现页面内错误卡片，点击“再次尝试”可重新提交。
+- 点击“清除查询结果”后，结果区域和错误提示均被清空。
+
+### Remote Query Accessibility Checks
+
+- 运输方式、国家、邮编、城市输入均具备可读 aria 标签。
+- 查询表单在提交期间带有 `aria-busy` 状态，读屏可感知。
+- 错误态和校验提示文案在键盘 Tab 导航时可读。
+
+### Remote Query Responsive Checks
+
+- 360 宽度下 Hero 主标题自动换行，查询按钮始终完整可见。
+- 390 宽度下国家结果列表最大高度生效，底部按钮区不被键盘遮挡。
+- 430 宽度下卡片圆角、阴影和间距节奏保持一致。
+- 768+ 宽度下主体容器居中且最大宽度限制生效。
+
+### Remote Query Regression Checks
+
+- 会员中心“偏远查询”菜单入口仍指向 `/member/remote`。
+- 查询请求参数中的 `countryId` 继续使用国家 Id，不回退为国家名称。
+- Build command npm run build succeeds after remote page UX refresh.
+
 ## Automated Test Artifacts
 
 - Unit specs: calculation / wechat-pay / delivery-record-detail / return-apply / problem-list / problem-detail / confirmation / return-waiting / delivery-record.
-- Playwright e2e: tests/e2e/delivery-return-flow.spec.ts, tests/e2e/confirmation-flow.spec.ts, tests/e2e/problem-flow.spec.ts, tests/e2e/member-detail-flow.spec.ts.
+- Playwright e2e: tests/e2e/delivery-return-flow.spec.ts, tests/e2e/confirmation-flow.spec.ts, tests/e2e/problem-flow.spec.ts, tests/e2e/member-detail-flow.spec.ts, tests/e2e/wechat-pay-flow.spec.ts.

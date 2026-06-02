@@ -3,13 +3,14 @@ import { async, ComponentFixture, TestBed, fakeAsync, flushMicrotasks, tick } fr
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AlertController, IonicModule, LoadingController, ToastController } from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ConfirmationPage } from './confirmation.page';
 import { ConfirmationService } from 'src/app/providers/confirmation.service';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 describe('ConfirmationPage', () => {
   let component: ConfirmationPage;
@@ -21,21 +22,18 @@ describe('ConfirmationPage', () => {
     .createSpy('getReceiveGoodsDetailList')
     .and.returnValue(of([]));
 
-  const toastCreateSpy = jasmine
-    .createSpy('toastCreate')
-    .and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const alertCreateSpy = jasmine
     .createSpy('alertCreate')
     .and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
-  const loadingPresentSpy = jasmine
-    .createSpy('loadingPresent')
+  const presentToastSpy = jasmine
+    .createSpy('presentToast')
     .and.returnValue(Promise.resolve());
+  const presentLoadingSpy = jasmine
+    .createSpy('presentLoading')
+    .and.returnValue(Promise.resolve({ dismiss: () => Promise.resolve() } as any));
   const loadingElementDismissSpy = jasmine
     .createSpy('loadingDismiss')
     .and.returnValue(Promise.resolve());
-  const loadingCreateSpy = jasmine
-    .createSpy('loadingCreate')
-    .and.returnValue(Promise.resolve({ present: loadingPresentSpy, dismiss: loadingElementDismissSpy }));
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -49,14 +47,15 @@ describe('ConfirmationPage', () => {
             confirm: confirmSpy,
           },
         },
-        { provide: ToastController, useValue: { create: toastCreateSpy } },
-        { provide: AlertController, useValue: { create: alertCreateSpy } },
         {
-          provide: LoadingController,
+          provide: UiFeedbackService,
           useValue: {
-            create: loadingCreateSpy,
+            presentToast: presentToastSpy,
+            presentLoading: presentLoadingSpy,
+            dismissLoading: loadingElementDismissSpy,
           },
         },
+        { provide: AlertController, useValue: { create: alertCreateSpy } },
       ],
       declarations: [ ConfirmationPage ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -71,10 +70,9 @@ describe('ConfirmationPage', () => {
     spyOn(router, 'navigate');
     confirmSpy.calls.reset();
     getReceiveGoodsDetailListSpy.calls.reset();
-    toastCreateSpy.calls.reset();
     alertCreateSpy.calls.reset();
-    loadingCreateSpy.calls.reset();
-    loadingPresentSpy.calls.reset();
+    presentToastSpy.calls.reset();
+    presentLoadingSpy.calls.reset();
     loadingElementDismissSpy.calls.reset();
   });
 
@@ -156,7 +154,7 @@ describe('ConfirmationPage', () => {
     component.onConfirmClick();
     tick();
 
-    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(presentToastSpy).toHaveBeenCalled();
     expect(alertCreateSpy).not.toHaveBeenCalled();
   }));
 
@@ -171,8 +169,7 @@ describe('ConfirmationPage', () => {
     expect(confirmSpy).toHaveBeenCalledWith('1,2');
     expect(component.receiveGoodsDetailList).toEqual(resultList as any);
     expect(component.searchList).toEqual(resultList as any);
-    expect(loadingCreateSpy).toHaveBeenCalled();
-    expect(loadingPresentSpy).toHaveBeenCalled();
+    expect(presentLoadingSpy).toHaveBeenCalled();
     expect(loadingElementDismissSpy).toHaveBeenCalled();
 
     tick(2000);
@@ -186,8 +183,20 @@ describe('ConfirmationPage', () => {
     tick();
 
     expect(confirmSpy).toHaveBeenCalledWith('3');
-    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(presentToastSpy).toHaveBeenCalled();
     expect(loadingElementDismissSpy).toHaveBeenCalled();
+    expect(component.isSubmitting).toBe(false);
+  }));
+
+  it('should show fallback error toast when confirm error has no message', fakeAsync(() => {
+    confirmSpy.and.returnValue(throwError(() => ({})));
+
+    component.doConfirm('3');
+    flushMicrotasks();
+    tick();
+
+    expect(confirmSpy).toHaveBeenCalledWith('3');
+    expect(presentToastSpy).toHaveBeenCalledWith('提交失败，请稍后重试', 2600, 'middle', 'member-theme-toast', 'danger');
     expect(component.isSubmitting).toBe(false);
   }));
 
@@ -199,7 +208,21 @@ describe('ConfirmationPage', () => {
 
     expect(completeSpy).toHaveBeenCalled();
     expect(component.isLoading).toBe(false);
-    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(presentToastSpy).toHaveBeenCalled();
+  });
+
+  it('should stop list loading subscription on destroy', () => {
+    const loadingSubject = new Subject<any[]>();
+    getReceiveGoodsDetailListSpy.and.returnValue(loadingSubject.asObservable());
+
+    component.ngOnInit();
+    expect(component.isLoading).toBe(true);
+
+    component.ngOnDestroy();
+    loadingSubject.next([{ Id: 1, ReferenceNumber: 'A001', Selected: false }] as any);
+
+    expect(component.receiveGoodsDetailList.length).toBe(0);
+    expect(component.isLoading).toBe(false);
   });
 
   it('should navigate to delivery record detail', () => {

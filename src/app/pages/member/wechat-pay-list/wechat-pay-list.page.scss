@@ -1,6 +1,232 @@
-ion-content{
-    --background: #f7f7f7;
+﻿:host {
+  --wx-list-surface: var(--member-surface-0, #ffffff);
+  --wx-list-surface-soft: var(--member-surface-100, #f1f5fb);
+  --wx-list-brand: var(--member-brand-500, #0b61bd);
+  --wx-list-text-main: var(--member-text-900, #12213a);
+  --wx-list-text-sub: var(--member-text-500, #5f759a);
 }
-ion-list {
-    margin: 1rem 0 0 0;
+
+.pay-list-content {
+  --background:
+    radial-gradient(circle at 10% -8%, rgba(129, 189, 255, 0.2), transparent 38%),
+    var(--wx-list-surface-soft);
+}
+
+.summary-card {
+  margin: 12px 12px 2px;
+  border-radius: 14px;
+  border: 1px solid rgba(153, 193, 236, 0.38);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 10px 24px rgba(12, 67, 131, 0.1);
+
+  ion-card-content {
+    padding: 12px 14px;
   }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .summary-label {
+    font-size: 12px;
+    color: var(--wx-list-text-sub);
+  }
+
+  .summary-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--wx-list-text-main);
+    line-height: 1.2;
+  }
+
+  .summary-badge {
+    font-size: 11px;
+    border-radius: 10px;
+  }
+}
+
+.record-card {
+  margin: 10px 12px 0;
+  border-radius: 14px;
+  border: 1px solid rgba(153, 193, 236, 0.34);
+  background: color-mix(in srgb, var(--wx-list-surface) 84%, transparent);
+  box-shadow: 0 10px 24px rgba(12, 67, 131, 0.1);
+
+  ion-card-header {
+    padding: 14px 16px 8px;
+  }
+
+  ion-card-content {
+    padding: 0 16px 14px;
+  }
+
+  .record-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .record-no {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wx-list-text-main);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+}
+
+.amount-grid {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--ion-color-light-shade, #d7d8da);
+}
+
+.amount-cell {
+  flex: 1;
+  text-align: left;
+
+  .amount-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ion-color-dark, #222428);
+    line-height: 1.3;
+  }
+
+  .amount-total {
+    font-weight: 700;
+    color: var(--wx-list-brand);
+  }
+
+  .amount-label {
+    font-size: 11px;
+    color: var(--ion-color-medium, #92949c);
+    margin-top: 3px;
+  }
+}
+
+.amount-cell-center {
+  text-align: center;
+}
+
+.amount-cell-right {
+  text-align: right;
+}
+
+.record-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 10px;
+
+  .footer-icon {
+    font-size: 13px;
+    color: var(--ion-color-medium, #92949c);
+  }
+
+  .record-date {
+    font-size: 12px;
+    color: var(--ion-color-medium, #92949c);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 32px 40px;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 64px;
+    color: var(--ion-color-light-shade, #d7d8da);
+    margin-bottom: 16px;
+  }
+
+  .empty-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark-tint, #383a3e);
+    margin: 0 0 6px;
+  }
+
+  .empty-desc {
+    font-size: 13px;
+    color: var(--ion-color-medium, #92949c);
+    margin: 0;
+  }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 70px 30px 30px;
+
+  .error-icon {
+    font-size: 52px;
+    color: var(--ion-color-danger, #eb445a);
+    margin-bottom: 12px;
+  }
+
+  .error-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--wx-list-text-main);
+  }
+
+  .error-desc {
+    margin: 8px 0 14px;
+    font-size: 13px;
+    color: var(--wx-list-text-sub);
+  }
+}
+
+.skeleton-card {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+
+  ion-skeleton-text {
+    display: block;
+  }
+}
+
+.record-card:last-of-type {
+  margin-bottom: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pay-list-content {
+    --background: linear-gradient(180deg, #0f1725 0%, #14233a 100%);
+  }
+
+  .summary-card,
+  .record-card {
+    border-color: rgba(91, 124, 170, 0.35);
+    background: rgba(22, 32, 47, 0.86);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+  }
+
+  .summary-card .summary-value,
+  .error-state .error-title {
+    color: #d7e3f6;
+  }
+}

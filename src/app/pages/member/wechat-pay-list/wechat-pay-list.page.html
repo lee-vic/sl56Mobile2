@@ -1,40 +1,97 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
-      <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
-        </ion-buttons>
+    <ion-buttons slot="start"><ion-back-button></ion-back-button></ion-buttons>
     <ion-title>支付记录</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-    <ion-list *ngFor="let item of items" lines="full">
-      <ion-item>
-        <ion-label>交易单号</ion-label>
-        <ion-note slot="end">{{item.ObjectNo}}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>当前状态</ion-label>
-        <ion-note slot="end">{{item.Status}}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>运费</ion-label>
-        <ion-note slot="end">{{item.FreightAmount|currency:'CNY'}}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>手续费</ion-label>
-        <ion-note slot="end">{{item.CommissionAmount|currency:'CNY'}}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>付款金额</ion-label>
-        <ion-note slot="end">{{item.TotalAmount|currency:'CNY'}}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>支付时间</ion-label>
-        <ion-note slot="end">{{item.Date}}</ion-note>
-      </ion-item>
-    </ion-list>
-    <ion-infinite-scroll (ionInfinite)="getItems()">
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-  </ion-content>
+<ion-content class="pay-list-content">
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-card class="summary-card" *ngIf="!isLoading">
+    <ion-card-content>
+      <div class="summary-row">
+        <div>
+          <div class="summary-label">已加载记录</div>
+          <div class="summary-value">{{items.length}}</div>
+        </div>
+        <ion-badge color="primary" class="summary-badge">微信支付</ion-badge>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- 骨架屏 -->
+  <ng-container *ngIf="isLoading">
+    <ion-card class="record-card skeleton-card" *ngFor="let s of [1,2,3]">
+      <ion-card-header>
+        <div class="record-header">
+          <ion-skeleton-text animated style="width: 60%; height: 16px; border-radius: 6px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 20%; height: 20px; border-radius: 10px;"></ion-skeleton-text>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="amount-grid">
+          <div class="amount-cell" *ngFor="let c of [1,2,3]">
+            <ion-skeleton-text animated style="width: 70%; height: 14px; margin-bottom: 4px; border-radius: 4px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 50%; height: 11px; border-radius: 4px;"></ion-skeleton-text>
+          </div>
+        </div>
+        <ion-skeleton-text animated style="width: 40%; height: 11px; margin-top: 12px; border-radius: 4px; margin-left: auto;"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <!-- 空状态 -->
+  <div class="empty-state" *ngIf="!isLoading && !hasError && items.length === 0">
+    <ion-icon name="receipt-outline" class="empty-icon"></ion-icon>
+    <p class="empty-title">暂无支付记录</p>
+    <p class="empty-desc">您还没有任何微信支付记录</p>
+  </div>
+
+  <div class="error-state" *ngIf="!isLoading && hasError">
+    <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+    <p class="error-title">记录加载失败</p>
+    <p class="error-desc">{{errorMessage || '网络异常，请稍后重试。'}}</p>
+    <ion-button fill="outline" size="small" (click)="retry()">重新加载</ion-button>
+  </div>
+
+  <!-- 记录卡片列表 -->
+  <ng-container *ngIf="!isLoading && !hasError">
+    <ion-card class="record-card" *ngFor="let item of items">
+      <ion-card-header>
+        <div class="record-header">
+          <div class="record-no">{{item.ObjectNo}}</div>
+          <ion-badge [color]="getStatusColor(item.Status)" class="status-badge">{{item.Status}}</ion-badge>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="amount-grid">
+          <div class="amount-cell">
+            <div class="amount-value">{{item.FreightAmount | currency:'CNY'}}</div>
+            <div class="amount-label">运费</div>
+          </div>
+          <div class="amount-cell amount-cell-center">
+            <div class="amount-value">{{item.CommissionAmount | currency:'CNY'}}</div>
+            <div class="amount-label">手续费</div>
+          </div>
+          <div class="amount-cell amount-cell-right">
+            <div class="amount-value amount-total">{{item.TotalAmount | currency:'CNY'}}</div>
+            <div class="amount-label">付款合计</div>
+          </div>
+        </div>
+        <div class="record-footer">
+          <ion-icon name="time-outline" class="footer-icon"></ion-icon>
+          <span class="record-date">{{item.Date}}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ion-infinite-scroll (ionInfinite)="getItems($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+</ion-content>

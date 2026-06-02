@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ProblemDetailPage } from './problem-detail.page';
 import { ProblemService } from 'src/app/providers/problem.service';
@@ -16,6 +16,7 @@ import { CommonService } from 'src/app/providers/common.service';
 describe('ProblemDetailPage', () => {
   let component: ProblemDetailPage;
   let fixture: ComponentFixture<ProblemDetailPage>;
+  let queryParams$: Subject<any>;
   const mockProblemService = {
     getProblemDetail: jasmine.createSpy('getProblemDetail').and.returnValue(of({
       Problem: { ProcessTypeList: [], ProcessSetting4: [], Pages: [], Status: 0 },
@@ -29,6 +30,7 @@ describe('ProblemDetailPage', () => {
   };
 
   beforeEach(async(() => {
+    queryParams$ = new Subject<any>();
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule, FormsModule, ReactiveFormsModule, IonicModule.forRoot()],
       providers: [
@@ -45,7 +47,7 @@ describe('ProblemDetailPage', () => {
               queryParams: { problemid: 10 },
               paramMap: convertToParamMap({ id: '20' })
             },
-            queryParams: of({})
+            queryParams: queryParams$.asObservable()
           }
         },
         { provide: Router, useValue: { getCurrentNavigation: () => null, url: '/member/problem-detail/20', navigate: jasmine.createSpy('navigate') } },
@@ -107,5 +109,20 @@ describe('ProblemDetailPage', () => {
     expect(component.submitFailMessage).toBeNull();
     expect(component.confirmFailMessage).toBeNull();
     expect((component as any).renderWeAppButtonIfNeeded).toHaveBeenCalled();
+  });
+
+  it('should mark init error when loading problem detail fails', () => {
+    mockProblemService.getProblemDetail.and.returnValue(throwError(() => ({ status: 500 })));
+
+    component.ngOnInit();
+
+    expect(component.isLoading).toBe(false);
+    expect(component.hasInitError).toBe(true);
+  });
+
+  it('should stop listening query params after destroy', () => {
+    component.ngOnDestroy();
+
+    expect(queryParams$.observers.length).toBe(0);
   });
 });

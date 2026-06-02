@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { of, Subject } from 'rxjs';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 import { DeliveryRecordPage } from './delivery-record.page';
 import { DeliveryRecordService } from 'src/app/providers/delivery-record.service';
@@ -22,6 +23,7 @@ describe('DeliveryRecordPage', () => {
   const getWaitReturnListSpy = jasmine.createSpy('getWaitReturnList').and.returnValue(of([]));
   const addToWaitReturnListSpy = jasmine.createSpy('addToWaitReturnList').and.returnValue(of({}));
   const reload$ = new Subject<void>();
+  const presentToastSpy = jasmine.createSpy('presentToast');
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -43,6 +45,7 @@ describe('DeliveryRecordPage', () => {
             notifyReloadWaitingReturn: jasmine.createSpy('notifyReloadWaitingReturn'),
           },
         },
+        { provide: UiFeedbackService, useValue: { presentToast: presentToastSpy } },
       ],
       declarations: [ DeliveryRecordPage ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -60,6 +63,7 @@ describe('DeliveryRecordPage', () => {
     loadListSpy.calls.reset();
     getWaitReturnListSpy.calls.reset();
     addToWaitReturnListSpy.calls.reset();
+    presentToastSpy.calls.reset();
   });
 
   it('should create', () => {
@@ -198,5 +202,26 @@ describe('DeliveryRecordPage', () => {
 
     expect(component.items[0].Selected).toBe(false);
     expect(component.items[1].Selected).toBe(true);
+  });
+
+  it('should stop reacting to waiting-return reload after destroy', () => {
+    component.ngOnInit();
+    getWaitReturnListSpy.calls.reset();
+
+    component.ngOnDestroy();
+    reload$.next();
+
+    expect(getWaitReturnListSpy).not.toHaveBeenCalled();
+  });
+
+  it('should complete refresher via detail.complete when provided', () => {
+    const completeSpy = jasmine.createSpy('detailComplete');
+    const refresherEvent = { detail: { complete: completeSpy }, target: { complete: jasmine.createSpy('targetComplete') } } as any;
+
+    loadListSpy.and.returnValue(of([{ Id: 1 }] as any));
+    component.getItems('', false, refresherEvent);
+
+    expect(completeSpy).toHaveBeenCalled();
+    expect(refresherEvent.target.complete).not.toHaveBeenCalled();
   });
 });

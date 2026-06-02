@@ -5,7 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, NavController, ToastController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { of, Subject } from 'rxjs';
 
 import { ChatPage } from './chat.page';
@@ -52,10 +52,6 @@ describe('ChatPage', () => {
     getMessages2: () => of({ Data: [], ChatGroupId: 0 }),
     getMessages3: () => of({ Data: [], ChatGroupId: 0 })
   };
-  const mockToastController = {
-    create: () => Promise.resolve({ present: () => Promise.resolve() })
-  };
-
   beforeEach(async(() => {
     messageReceived$ = new Subject<any>();
     queryParams$ = new Subject<any>();
@@ -69,7 +65,6 @@ describe('ChatPage', () => {
         { provide: Router, useValue: mockRouter },
         { provide: ProblemService, useValue: mockProblemService },
         { provide: InstantMessageService, useValue: mockImService },
-        { provide: ToastController, useValue: mockToastController },
         { provide: NavController, useValue: {} },
         { provide: AlertController, useValue: {} }
       ],
@@ -175,4 +170,18 @@ describe('ChatPage', () => {
     expect(textarea).toBeTruthy();
     expect(actionButtons?.length).toBe(2);
   });
+
+  it('should cleanup route and signalR subscriptions on destroy', fakeAsync(() => {
+    component.ngOnInit();
+    tick();
+
+    expect(queryParams$.observers.length).toBeGreaterThan(0);
+    expect((mockSignalRConnection.status as Subject<any>).observers.length).toBeGreaterThan(0);
+
+    component.ngOnDestroy();
+
+    expect(mockSignalRConnection.stop).toHaveBeenCalled();
+    expect(queryParams$.observers.length).toBe(0);
+    expect((mockSignalRConnection.status as Subject<any>).observers.length).toBe(0);
+  }));
 });
