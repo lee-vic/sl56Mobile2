@@ -1,0 +1,207 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/member"></ion-back-button>
+    </ion-buttons>
+    <ion-title>快速预报</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleSelectionMode()">
+        <ion-icon
+          [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'"
+        ></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="import-manifest-content">
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="refreshItems($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Toolbar Card: Search + Date Filter -->
+  <div class="toolbar-card">
+    <!-- Search Bar -->
+    <ion-searchbar
+      #searchbar
+      placeholder="搜索单号..."
+      (ionInput)="onSearchInput($event)"
+      (ionCancel)="onSearchCancel()"
+      [debounce]="280"
+      showCancelButton="focus"
+      animated
+      class="custom-searchbar"
+    ></ion-searchbar>
+
+    <!-- Date Filter -->
+    <ion-segment
+      [value]="activeDateFilter"
+      (ionChange)="setDateFilter($event.detail.value)"
+      class="date-filter-segment"
+    >
+      <ion-segment-button value="today">
+        <ion-label>今天</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="7days">
+        <ion-label>7天</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="30days">
+        <ion-label>30天</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="">
+        <ion-label>全部</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Loading Skeleton -->
+  <ng-container *ngIf="isLoading && items.length === 0">
+    <div class="skeleton-list">
+      <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5]">
+        <div class="skeleton-card-top">
+          <ion-skeleton-text animated style="width: 55%; height: 18px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 50px; height: 20px; border-radius: 10px;"></ion-skeleton-text>
+        </div>
+        <div class="skeleton-card-meta">
+          <ion-skeleton-text animated style="width: 30%; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 25%; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 20%; height: 14px;"></ion-skeleton-text>
+        </div>
+        <div class="skeleton-card-footer">
+          <ion-skeleton-text animated style="width: 60%; height: 12px;"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Error State -->
+  <ng-container *ngIf="hasLoadError && !isLoading">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <ion-icon name="cloud-offline-outline"></ion-icon>
+      </div>
+      <p class="empty-state-title">加载失败</p>
+      <p class="empty-state-desc">{{ loadErrorMessage }}</p>
+      <ion-button fill="outline" size="small" (click)="loadFirstPage(searchKeyword)" class="empty-state-btn">
+        重新加载
+      </ion-button>
+    </div>
+  </ng-container>
+
+  <!-- Empty State -->
+  <ng-container *ngIf="isLoaded && items.length === 0 && !hasLoadError">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </div>
+      <p class="empty-state-title">暂无快速预报数据</p>
+      <p class="empty-state-desc">点击右下角 + 号创建新预报或批量导入</p>
+    </div>
+  </ng-container>
+
+  <!-- Card List -->
+  <div class="card-list" *ngIf="items.length > 0">
+    <div
+      class="forecast-card"
+      *ngFor="let item of items; trackBy: trackById"
+      [class.selection-mode]="isSelectionMode"
+      (click)="viewDetail(item)"
+    >
+      <!-- Selection Checkbox -->
+      <div class="card-checkbox" *ngIf="isSelectionMode" (click)="$event.stopPropagation()">
+        <ion-checkbox
+          [checked]="item.Selected"
+          (ionChange)="toggleItemSelection(item)"
+        ></ion-checkbox>
+      </div>
+
+      <div class="card-body">
+        <!-- Top Row: ObjectNo + Status Badge -->
+        <div class="card-top">
+          <h3 class="card-object-no">{{ item.ObjectNo }}</h3>
+          <span class="status-badge" [class]="'status-' + getStatusColor(item.StatusCode)">
+            {{ item.StatusName }}
+          </span>
+        </div>
+
+        <!-- Meta Row: Country, Price, Piece -->
+        <div class="card-meta">
+          <span class="meta-tag">
+            <ion-icon name="globe-outline"></ion-icon>
+            {{ item.CountryName }}
+          </span>
+          <span class="meta-tag">
+            <ion-icon name="pricetag-outline"></ion-icon>
+            {{ item.CustomerPriceName }}
+          </span>
+          <span class="meta-tag">
+            <ion-icon name="cube-outline"></ion-icon>
+            {{ item.Piece }} 件
+          </span>
+        </div>
+
+        <!-- Footer Row: ContentType, extras -->
+        <div class="card-footer">
+          <span>{{ item.ContentTypeName }}</span>
+          <span *ngIf="item.PostalCode" class="footer-dot">·</span>
+          <span *ngIf="item.PostalCode">{{ item.PostalCode }}</span>
+          <span *ngIf="item.DeclaredValue" class="footer-dot">·</span>
+          <span *ngIf="item.DeclaredValue" class="footer-value">${{ item.DeclaredValue }}</span>
+          <ng-container *ngIf="item.ForwardingDocumentCount > 0">
+            <span class="footer-dot">·</span>
+            <span class="footer-doc">
+              <ion-icon name="attach-outline"></ion-icon>
+              {{ item.ForwardingDocumentCount }}
+            </span>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Right: Date + Arrow -->
+      <div class="card-end" *ngIf="!isSelectionMode">
+        <span class="card-date">{{ item.CreateAt }}</span>
+        <ion-icon name="chevron-forward-outline" class="card-arrow"></ion-icon>
+      </div>
+    </div>
+  </div>
+
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll #infiniteScroll (ionInfinite)="loadNextPage($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <!-- FAB -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="custom-fab">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button (click)="createNew()" class="fab-sub">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button (click)="goToImport()" class="fab-sub">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+
+  <!-- Selection Mode Toolbar -->
+  <ion-footer *ngIf="isSelectionMode">
+    <ion-toolbar>
+      <ion-title size="small">
+        已选 {{ getSelectedCount() }} 项
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button
+          color="danger"
+          (click)="confirmBulkDelete()"
+          [disabled]="getSelectedCount() === 0 || isBatchDeleting"
+        >
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          删除
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+</ion-content>

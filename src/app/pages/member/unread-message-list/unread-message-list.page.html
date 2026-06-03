@@ -35,8 +35,32 @@
   </section>
 
   <section class="message-status" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <span>正在加载消息中心...</span>
+    <div class="skeleton-page">
+      <!-- Summary skeleton -->
+      <div class="skeleton-card">
+        <div class="skeleton-block" style="align-items: center;">
+          <ion-skeleton-text animated style="width: 64px; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 48px; height: 36px; margin-top: 6px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 72px; height: 12px; margin-top: 4px;"></ion-skeleton-text>
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 12px; justify-content: center;">
+          <div class="skeleton-block" style="align-items: center; flex: 1;" *ngFor="let sk of [1,2,3]">
+            <ion-skeleton-text animated style="width: 40px; height: 20px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 48px; height: 12px; margin-top: 4px;"></ion-skeleton-text>
+          </div>
+        </div>
+      </div>
+      <!-- Message list skeleton -->
+      <div class="skeleton-card" *ngFor="let sk of [1,2,3]">
+        <div class="skeleton-list-item">
+          <ion-skeleton-text animated style="width: 44px; height: 44px; border-radius: 8px;"></ion-skeleton-text>
+          <div class="skeleton-lines">
+            <ion-skeleton-text animated style="width: 52%; height: 16px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 80%; height: 13px; margin-top: 4px;"></ion-skeleton-text>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="message-status error-status" *ngIf="loadError && !isLoading">

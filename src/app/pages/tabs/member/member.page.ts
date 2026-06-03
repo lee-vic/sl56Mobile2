@@ -35,6 +35,7 @@ export class MemberPage implements OnInit, OnDestroy {
     { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
     { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0, 1], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
+    { title: "快速预报", image: "assets/imgs/member-4.png", type: [0, 1], url: "/member/import-manifest/list" },
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
@@ -61,6 +62,7 @@ export class MemberPage implements OnInit, OnDestroy {
   visibleMenuOptions: Array<Menu> = [];
   menuColumns: number = 3;
   isLogin: boolean = false;
+  isDashboardLoading: boolean = false;
   public authForm: FormGroup;
   public loading: any;
   userInfo: User;
@@ -93,26 +95,19 @@ export class MemberPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.menus = new Menus();
     this.menus.rows = [];
-    this.uiFeedbackService.presentLoading('请稍后...').then(loading => {
-      this.loading = loading;
-      this.userService.isAuthenticated()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.uiFeedbackService.dismissLoading(this.loading);
-            this.loading = null;
-            this.isLogin = true;
-            this.loginSuccess();
-          },
-          error: (err) => {
-            this.uiFeedbackService.dismissLoading(this.loading);
-            this.loading = null;
-            if (err.status == 401) {
-              this.isLogin = false;
-            }
+    this.userService.isAuthenticated()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isLogin = true;
+          this.loginSuccess();
+        },
+        error: (err) => {
+          if (err.status == 401) {
+            this.isLogin = false;
           }
-        });
-    });
+        }
+      });
 
     this.routerSub = this.router.events
       .pipe(
@@ -144,7 +139,6 @@ export class MemberPage implements OnInit, OnDestroy {
 
   doLogin(formValue) {
     this.releaseFocus();
-    this.showLoading("请稍后...");
     // Web application - always set clientType to web
     formValue.clientType = 1;
     formValue.openId = this.cookieService.get('OpenId');
@@ -155,8 +149,6 @@ export class MemberPage implements OnInit, OnDestroy {
         if (this.isLogin == true) {
           this.loginSuccess();
         }
-
-        this.loading.dismiss();
         if (!this.isLogin) {
           this.showToast(res.ErrMsg);
         }
@@ -174,31 +166,31 @@ export class MemberPage implements OnInit, OnDestroy {
   async showToast(msg: string) {
     await this.uiFeedbackService.presentToast(msg, 2000, 'middle', 'member-theme-toast');
   }
-  async showLoading(msg: string) {
-    this.loading = await this.uiFeedbackService.presentLoading(msg, 5000);
-  }
-
   loginSuccess() {
+    this.isDashboardLoading = true;
     this.userService.getHomeInfo()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(res => {
-      console.log(res);
-      this.userInfo = res;
-      this.username = res.CustomerNo;
-      this.customerType = res.Classify;
-      this.currencyAmount = res.CurrencyAmount;
-      this.waitToSignTaskCount = res.WaitToSignTaskCount;
-      let tempMenus = this.allMenus.filter(p => {
-        return p.type.indexOf(this.customerType) > -1;
+      .subscribe({
+        next: (res) => {
+          console.log(res);
+          this.isDashboardLoading = false;
+          this.userInfo = res;
+          this.username = res.CustomerNo;
+          this.customerType = res.Classify;
+          this.currencyAmount = res.CurrencyAmount;
+          this.waitToSignTaskCount = res.WaitToSignTaskCount;
+          let tempMenus = this.allMenus.filter(p => {
+            return p.type.indexOf(this.customerType) > -1;
+          });
+          this.visibleMenuCount = tempMenus.length;
+          this.visibleMenuOptions = tempMenus;
+          this.applyQuickMenuCustomization(tempMenus, this.getStoredQuickMenuTitles(tempMenus));
+          this.refreshUnreadCount();
+        },
+        error: () => {
+          this.isDashboardLoading = false;
+        },
       });
-      this.visibleMenuCount = tempMenus.length;
-      this.visibleMenuOptions = tempMenus;
-      this.applyQuickMenuCustomization(tempMenus, this.getStoredQuickMenuTitles(tempMenus));
-      this.refreshUnreadCount();
-      // if(this.customerType==3){
-      //   this.navCtrl.navigateForward("/member/distribute-manager",{replaceUrl:true});
-      // }
-    });
 
 
 

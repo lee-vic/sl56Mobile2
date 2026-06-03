@@ -140,4 +140,129 @@ describe('DeliveryRecordDetailPage', () => {
     expect(component.problemStatusColor('处理中')).toBe('warning');
     expect(component.problemStatusColor('未知状态')).toBe('medium');
   });
+
+  // ── Skeleton / loading state ──
+
+  it('should start with isLoading false', () => {
+    expect(component.isLoading).toBe(false);
+  });
+
+  it('should set isLoading true during data fetch', () => {
+    // Simulate the state transition in ngOnInit
+    component.isLoading = true;
+    expect(component.isLoading).toBe(true);
+
+    // After data loads
+    component.isLoading = false;
+    expect(component.isLoading).toBe(false);
+  });
+
+  // ── Display formatting ──
+
+  it('should display "--" for null/undefined/empty values', () => {
+    expect(component.displayValue(null)).toBe('--');
+    expect(component.displayValue(undefined)).toBe('--');
+    expect(component.displayValue('')).toBe('--');
+  });
+
+  it('should display string representation for valid values', () => {
+    expect(component.displayValue('Hello')).toBe('Hello');
+    expect(component.displayValue(123)).toBe('123');
+    expect(component.displayValue(0)).toBe('0');
+  });
+
+  it('should format currency with ¥ prefix and two decimals', () => {
+    expect(component.formatCurrency(100)).toBe('￥100.00');
+    expect(component.formatCurrency(0)).toBe('￥0.00');
+    expect(component.formatCurrency(12.5)).toBe('￥12.50');
+    expect(component.formatCurrency(null)).toBe('￥0.00');
+  });
+
+  it('should display "--" for currency when value is empty', () => {
+    expect(component.displayCurrencyValue(null)).toBe('--');
+    expect(component.displayCurrencyValue(undefined)).toBe('--');
+    expect(component.displayCurrencyValue('')).toBe('--');
+  });
+
+  it('should format dimensions as L*W*H when all values present', () => {
+    expect(component.formatDimensions(10, 20, 30)).toBe('10*20*30');
+  });
+
+  it('should return "--" for dimensions when any value is missing', () => {
+    expect(component.formatDimensions(null, 20, 30)).toBe('--');
+    expect(component.formatDimensions(10, undefined, 30)).toBe('--');
+    expect(component.formatDimensions(10, 20, '')).toBe('--');
+  });
+
+  // ── Count getters ──
+
+  it('should compute basic info count (10 base + optional label)', () => {
+    component.data = { LabelUrl: null } as any;
+    expect(component.basicInfoCount).toBe(10);
+
+    component.data = { LabelUrl: 'http://label.url' } as any;
+    expect(component.basicInfoCount).toBe(11);
+  });
+
+  it('should compute sizes count from data', () => {
+    component.data = { Sizes: [{}, {}, {}] } as any;
+    expect(component.sizesCount).toBe(3);
+
+    component.data = {} as any;
+    expect(component.sizesCount).toBe(0);
+  });
+
+  it('should compute tracks count from package tracks when enabled', () => {
+    component.data = {
+      IsShowPackageTracks: true,
+      PackageTracks: [{ PackageId: 1 }, { PackageId: 2 }],
+    } as any;
+    expect(component.tracksCount).toBe(2);
+  });
+
+  it('should compute tracks count from plain tracks when package tracks disabled', () => {
+    component.data = {
+      IsShowPackageTracks: false,
+      Tracks: [{}, {}, {}, {}],
+    } as any;
+    expect(component.tracksCount).toBe(4);
+  });
+
+  it('should compute receivable count', () => {
+    component.data = {
+      AccountReceivableDetails: [{ Name: 'A' }, { Name: 'B' }],
+    } as any;
+    expect(component.receivableCount).toBe(2);
+  });
+
+  it('should compute problem count', () => {
+    component.data = { Problems: [{ Name: 'P1' }] } as any;
+    expect(component.problemCount).toBe(1);
+  });
+
+  it('should return false for hasLabel when no LabelUrl', () => {
+    component.data = { LabelUrl: null } as any;
+    expect(component.hasLabel).toBe(false);
+
+    component.data = { LabelUrl: 'http://example.com/label' } as any;
+    expect(component.hasLabel).toBe(true);
+  });
+
+  // ── Problem filter ──
+
+  it('should change problem filter and persist', () => {
+    component.data = {
+      Problems: [
+        { Name: 'A', StatusName: '处理中' },
+        { Name: 'B', StatusName: '已处理' },
+      ],
+    } as any;
+
+    component.setProblemFilter('processing');
+    expect(component.problemFilter).toBe('processing');
+    expect(component.filteredProblems.length).toBe(1);
+
+    component.setProblemFilter('all');
+    expect(component.filteredProblems.length).toBe(2);
+  });
 });

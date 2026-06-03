@@ -47,6 +47,10 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/signalr/jquery.signalR.min.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "pdfjs-dist/build/pdf",
+              "pdfjs-dist/web/pdf_viewer"
             ]
           },
           "configurations": {

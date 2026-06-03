@@ -28,12 +28,6 @@ describe('ConfirmationPage', () => {
   const presentToastSpy = jasmine
     .createSpy('presentToast')
     .and.returnValue(Promise.resolve());
-  const presentLoadingSpy = jasmine
-    .createSpy('presentLoading')
-    .and.returnValue(Promise.resolve({ dismiss: () => Promise.resolve() } as any));
-  const loadingElementDismissSpy = jasmine
-    .createSpy('loadingDismiss')
-    .and.returnValue(Promise.resolve());
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -51,8 +45,6 @@ describe('ConfirmationPage', () => {
           provide: UiFeedbackService,
           useValue: {
             presentToast: presentToastSpy,
-            presentLoading: presentLoadingSpy,
-            dismissLoading: loadingElementDismissSpy,
           },
         },
         { provide: AlertController, useValue: { create: alertCreateSpy } },
@@ -72,8 +64,6 @@ describe('ConfirmationPage', () => {
     getReceiveGoodsDetailListSpy.calls.reset();
     alertCreateSpy.calls.reset();
     presentToastSpy.calls.reset();
-    presentLoadingSpy.calls.reset();
-    loadingElementDismissSpy.calls.reset();
   });
 
   it('should create', () => {
@@ -169,8 +159,6 @@ describe('ConfirmationPage', () => {
     expect(confirmSpy).toHaveBeenCalledWith('1,2');
     expect(component.receiveGoodsDetailList).toEqual(resultList as any);
     expect(component.searchList).toEqual(resultList as any);
-    expect(presentLoadingSpy).toHaveBeenCalled();
-    expect(loadingElementDismissSpy).toHaveBeenCalled();
 
     tick(2000);
   }));
@@ -184,7 +172,6 @@ describe('ConfirmationPage', () => {
 
     expect(confirmSpy).toHaveBeenCalledWith('3');
     expect(presentToastSpy).toHaveBeenCalled();
-    expect(loadingElementDismissSpy).toHaveBeenCalled();
     expect(component.isSubmitting).toBe(false);
   }));
 

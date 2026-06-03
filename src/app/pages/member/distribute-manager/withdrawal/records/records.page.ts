@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { DistributeService } from 'src/app/providers/distribute.service';
-import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-records',
@@ -9,18 +8,16 @@ import { LoadingController } from '@ionic/angular';
 })
 export class RecordsPage implements OnInit {
 
-  constructor(private loadCtrl:LoadingController,private distributeService:DistributeService) { }
+  constructor(private distributeService:DistributeService) { }
 
   records:any;
+  isLoading = true;
+
   ngOnInit(): void {
-    this.loadCtrl.create({
-      message:"数据加载中..."
-    }).then(p=>{
-      p.present();
-      this.distributeService.getWithdrawalRecords().subscribe(res=>{
-        this.records=res;
-        this.loadCtrl.dismiss();
-      });
+    this.isLoading = true;
+    this.distributeService.getWithdrawalRecords().subscribe(res=>{
+      this.records=res;
+      this.isLoading = false;
     });
   }
 

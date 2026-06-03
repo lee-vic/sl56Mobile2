@@ -9,6 +9,32 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
+  <!-- Skeleton loading -->
+  <ng-container *ngIf="isLoading">
+    <ion-grid id="info">
+      <ion-row class="ion-align-items-center">
+        <ion-col size="4" class="ion-text-center" *ngFor="let sk of [1,2,3]">
+          <ion-skeleton-text animated style="width: 48px; height: 14px; margin: 0 auto;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 36px; height: 28px; margin: 6px auto 0;"></ion-skeleton-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <div class="skeleton-page">
+      <ion-skeleton-text animated style="width: 100%; height: 36px; border-radius: 8px;"></ion-skeleton-text>
+      <div class="skeleton-card" *ngFor="let sk of [1,2,3,4,5]">
+        <div style="display: flex; gap: 12px;">
+          <ion-skeleton-text animated style="width: 32px; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 60%; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="flex: 1; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 80px; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 80px; height: 14px;"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
   <ion-grid id="info">
     <ion-row class="ion-align-items-center">
       <ion-col size="4">
@@ -75,5 +101,6 @@
   <ion-item *ngIf="partners?.Rows?.length==0">
     -暂无伙伴-
   </ion-item>
+  </ng-container>
 
 </ion-content>

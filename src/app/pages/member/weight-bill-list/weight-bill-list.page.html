@@ -8,11 +8,39 @@
 </ion-header>
 
 <ion-content>
-  <ion-text color="danger" *ngIf="weights.length==0;else showList">
-    <h1>{{showMsg}}</h1>
+  <!-- Skeleton loading -->
+  <ng-container *ngIf="isLoading">
+    <div class="skeleton-page">
+      <ion-card class="skeleton-card" *ngFor="let sk of [1,2,3]">
+        <div class="skeleton-list-item">
+          <div class="skeleton-lines">
+            <ion-skeleton-text animated style="width: 48%; height: 16px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 36%; height: 13px; margin-top: 6px;"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated style="width: 72px; height: 32px; border-radius: 16px;"></ion-skeleton-text>
+        </div>
+        <div style="padding: 0 16px 12px;">
+          <ion-skeleton-text animated style="width: 40%; height: 12px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 32%; height: 12px; margin-top: 4px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 56%; height: 12px; margin-top: 4px;"></ion-skeleton-text>
+        </div>
+      </ion-card>
+    </div>
+  </ng-container>
 
+  <!-- Error state -->
+  <section class="ion-padding ion-text-center" *ngIf="hasLoadError && !isLoading">
+    <ion-text color="danger"><h2>{{showMsg}}</h2></ion-text>
+    <ion-button fill="outline" size="small" (click)="loadList()">重试</ion-button>
+  </section>
+
+  <!-- Empty state -->
+  <ion-text color="medium" *ngIf="!isLoading && !hasLoadError && weights.length===0">
+    <h1 class="ion-text-center">{{showMsg}}</h1>
   </ion-text>
-  <ng-template #showList>
+
+  <!-- Data list -->
+  <ng-container *ngIf="!isLoading && !hasLoadError && weights.length > 0">
     <ion-list *ngFor="let item of weights">
       <ion-item>
         <ion-label>
@@ -29,5 +57,5 @@
         </ion-label>
       </ion-item>
     </ion-list>
-  </ng-template>
+  </ng-container>
 </ion-content>

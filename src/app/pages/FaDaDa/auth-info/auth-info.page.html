@@ -9,6 +9,20 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <ion-label *ngIf="isAuth===false">未认证</ion-label>
-  <ion-label *ngIf="isAuth===true">已认证</ion-label>
+  <!-- Skeleton loading -->
+  <div class="skeleton-page" *ngIf="isLoading">
+    <ion-card class="skeleton-card">
+      <div class="skeleton-block">
+        <ion-skeleton-text animated style="width: 56%; height: 20px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 80%; height: 14px; margin-top: 8px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 64%; height: 14px; margin-top: 6px;"></ion-skeleton-text>
+      </div>
+    </ion-card>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
+    <ion-label *ngIf="isAuth===false">未认证</ion-label>
+    <ion-label *ngIf="isAuth===true">已认证</ion-label>
+  </ng-container>
 </ion-content>

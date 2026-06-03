@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController, LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { NavController, ToastController, AlertController } from '@ionic/angular';
 import { WarehouseApplicationService } from '../../../providers/warehouse-application.service';
 import { WarehouseApplication } from '../../../interfaces/warehouse-application';
 declare var WeixinJSBridge: any;
@@ -17,7 +17,6 @@ export class WarehouseApplicationPage implements OnInit {
   constructor(
     private navCtrl: NavController,
     private warehouseService: WarehouseApplicationService,
-    private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController
   ) { }
@@ -26,16 +25,15 @@ export class WarehouseApplicationPage implements OnInit {
     this.loadApplications();
   }
 
+  isLoading = true;
+
   async loadApplications() {
     if(!this.hasMore && this.currentPage > 1) return;
-    const loading = await this.loadingCtrl.create({
-      message: '正在加载...'
-    });
-    await loading.present();
+    this.isLoading = true;
 
     this.warehouseService.getList(this.currentPage).subscribe({
       next: (res) => {
-        loading.dismiss();
+        this.isLoading = false;
         if (res.Success) {
           this.hasMore = res.Data && res.Data.length === 20;
           if (this.currentPage === 1 && res.Data) {
@@ -52,7 +50,7 @@ export class WarehouseApplicationPage implements OnInit {
         }
       },
       error: (_err) => {
-        loading.dismiss();
+        this.isLoading = false;
         this.toastCtrl.create({
           message: '加载失败，请重试',
           duration: 3000,
@@ -98,17 +96,12 @@ export class WarehouseApplicationPage implements OnInit {
       }).then(p => p.present());
       return;
     }
-    const loading = await this.loadingCtrl.create({
-      message: '正在处理...'
-    });
-    await loading.present();
     let postData = {
       Id: app.Id,
       TradeType: this.tradeType
     }
     this.warehouseService.pay(postData).subscribe(
       res => {
-        loading.dismiss();
         if (res.Success) {
           let jsApiParam = JSON.parse(res.Data);
           this.callpay(jsApiParam);
@@ -121,7 +114,6 @@ export class WarehouseApplicationPage implements OnInit {
         }
       },
       err => {
-        loading.dismiss();
         this.toastCtrl.create({
           message: '支付失败，请重试',
           duration: 3000,

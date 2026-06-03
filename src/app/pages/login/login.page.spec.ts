@@ -3,10 +3,10 @@ import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule, LoadingController, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { LoginPage } from './login.page';
 import { UserService } from 'src/app/providers/user.service';
@@ -16,8 +16,6 @@ describe('LoginPage', () => {
   let fixture: ComponentFixture<LoginPage>;
   let router: Router;
 
-  const loadingPresentSpy = jasmine.createSpy('loadingPresent').and.returnValue(Promise.resolve());
-  const loadingDismissSpy = jasmine.createSpy('loadingDismiss').and.returnValue(Promise.resolve());
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
 
   const authSpy = jasmine.createSpy('auth').and.returnValue(of({ Success: true }));
@@ -34,13 +32,6 @@ describe('LoginPage', () => {
       providers: [
         { provide: CookieService, useValue: { get: cookieGetSpy } },
         { provide: UserService, useValue: { auth: authSpy } },
-        {
-          provide: LoadingController,
-          useValue: {
-            create: () => Promise.resolve({ present: loadingPresentSpy }),
-            dismiss: loadingDismissSpy
-          }
-        },
         { provide: ToastController, useValue: { create: toastCreateSpy } }
       ],
       declarations: [ LoginPage ],
@@ -56,7 +47,6 @@ describe('LoginPage', () => {
     spyOn(router, 'navigateByUrl');
     authSpy.calls.reset();
     toastCreateSpy.calls.reset();
-    loadingDismissSpy.calls.reset();
     cookieGetSpy.calls.reset();
     fixture.detectChanges();
   });
@@ -86,7 +76,6 @@ describe('LoginPage', () => {
     expect(payload.openId).toBe('open-id-1');
     expect(payload.unionId).toBe('union-id-1');
     expect(router.navigateByUrl).toHaveBeenCalledWith('/app/tabs/home');
-    expect(loadingDismissSpy).toHaveBeenCalled();
   }));
 
   it('should show toast when login response is unsuccessful', fakeAsync(() => {
@@ -107,7 +96,38 @@ describe('LoginPage', () => {
     component.doLogin(formValue);
     tick();
 
-    expect(loadingDismissSpy).toHaveBeenCalled();
-    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(toastCreateSpy).toHaveBeenCalled();    expect(component.isLoggingIn).toBe(false);
+  }));
+
+  // ── isLoggingIn state management ──
+
+  it('should initialize isLoggingIn as false', () => {
+    expect(component.isLoggingIn).toBe(false);
+  });
+
+  it('should set isLoggingIn true when doLogin is called', () => {
+    authSpy.and.returnValue(new Subject());
+
+    component.doLogin({ username: 'u1', password: 'p1' });
+
+    expect(component.isLoggingIn).toBe(true);
+  });
+
+  it('should reset isLoggingIn to false after login completes', fakeAsync(() => {
+    authSpy.and.returnValue(of({ Success: true }));
+
+    component.doLogin({ username: 'u1', password: 'p1' });
+    tick();
+
+    expect(component.isLoggingIn).toBe(false);
+  }));
+
+  it('should reset isLoggingIn to false after login fails', fakeAsync(() => {
+    authSpy.and.returnValue(of({ Success: false, ErrMsg: '错误' }));
+
+    component.doLogin({ username: 'u1', password: 'wrong' });
+    tick();
+
+    expect(component.isLoggingIn).toBe(false);
   }));
 });

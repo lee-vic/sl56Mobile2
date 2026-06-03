@@ -586,3 +586,55 @@
         transition: none !important;
     }
 }
+
+/* ── Dashboard Loading Skeleton ── */
+.skeleton-hero {
+    pointer-events: none;
+
+    .hero-top-row {
+        opacity: 1;
+    }
+
+    ion-skeleton-text {
+        --background: rgba(255, 255, 255, 0.3);
+        --background-rgb: 255, 255, 255;
+    }
+}
+
+.skeleton-kpi-panel {
+    pointer-events: none;
+}
+
+.skeleton-kpi-item {
+    pointer-events: none;
+
+    ion-skeleton-text {
+        --background: rgba(255, 255, 255, 0.3);
+        --background-rgb: 255, 255, 255;
+    }
+}
+
+.skeleton-menu-section {
+    pointer-events: none;
+    padding-bottom: 8px;
+}
+
+.skeleton-menu-grid {
+    padding: 8px 8px 12px;
+}
+
+.skeleton-menu-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.skeleton-menu-cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 104px;
+    padding: 8px 6px;
+}

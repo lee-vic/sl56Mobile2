@@ -1,4 +1,4 @@
-import { AlertController, NavController, LoadingController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { WarehouseApplicationService } from './../../../providers/warehouse-application.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -26,7 +26,7 @@ export class WarehouseApplicationDetailPage implements OnInit {
     private service: WarehouseApplicationService,
     private alertCtrl: AlertController,
     private navCtrl: NavController,
-    private loadingCtrl: LoadingController) {
+    ) {
     this.form = this.fb.group({
       ReferenceNumber: ['', [Validators.required, Validators.pattern('^[A-Z0-9]{8,32}$')]],
       Piece: [null, [Validators.required, Validators.min(1)]],
@@ -97,14 +97,12 @@ export class WarehouseApplicationDetailPage implements OnInit {
         buttons: ['确定']
       }).then(alert => alert.present());
     } else {
-      this.loadingCtrl.create({ message: '请稍候...' }).then(loading => loading.present());
       let submitObj: WarehouseApplication = {
         ...this.form.value,
         Amount: this.form.get('Amount').value,
         Status: this.status
       };
       this.service.save(submitObj).subscribe(res => {
-        this.loadingCtrl.dismiss();
         if (!res.Success) {
           this.alertCtrl.create({
             header: '操作失败',
@@ -124,10 +122,8 @@ export class WarehouseApplicationDetailPage implements OnInit {
       header: '提示',
       buttons: [{
         text: "确认", handler: () => {
-          this.loadingCtrl.create({ message: '正在取消...' }).then(loading => loading.present()).then(() => {
             this.service.cancel(this.id).subscribe({
               next: (res) => {
-                this.loadingCtrl.dismiss();
                 if (res.Success) {
                   this.navCtrl.back();
                 } else {
@@ -139,16 +135,16 @@ export class WarehouseApplicationDetailPage implements OnInit {
                 }
               },
               error: (err) => {
-                this.loadingCtrl.dismiss();
                 this.alertCtrl.create({
                   header: '操作失败',
                   message: err.message,
                 }).then(alert => alert.present());
               }
             });
-          });
         }
-      }, "取消"],
+      }, {
+        text: "取消",
+      }],
       cssClass: 'alert-confirm'
     }).then(alert => alert.present());
   }

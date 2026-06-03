@@ -221,16 +221,13 @@ export class ConfirmationPage implements OnInit, OnDestroy {
 
     this.isSubmitting = true;
 
-    this.uiFeedback.presentLoading('正在提交确认，请稍候...').then(loading => {
-
-      this.service.confirm(selectedIds.toString())
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.uiFeedback.dismissLoading(loading);
-          this.isSubmitting = false;
-        })
-      )
+    this.service.confirm(selectedIds.toString())
+    .pipe(
+      takeUntil(this.destroy$),
+      finalize(() => {
+        this.isSubmitting = false;
+      })
+    )
       .subscribe({
         next: (res) => {
           this.receiveGoodsDetailList = res || [];
@@ -245,7 +242,6 @@ export class ConfirmationPage implements OnInit, OnDestroy {
           this.presentToast(this.getErrorMessage(err), 'danger', 2600);
         }
       });
-    });
   }
 
   private parseAmount(amount: unknown): number {

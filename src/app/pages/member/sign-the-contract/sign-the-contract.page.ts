@@ -1,4 +1,4 @@
-import { LoadingController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { FadadaService } from '../../../providers/fadada.service';
 import { Component, OnInit } from '@angular/core';
 import { FadadaSignTask } from 'src/app/interfaces/fadada-sign-task';
@@ -11,26 +11,24 @@ import { MemberPage } from '../../tabs/member/member.page';
 })
 export class SignTheContractComponent implements OnInit {
 
-  constructor(public faDaDaService: FadadaService, public loadingCtrl: LoadingController, public navCtrl: NavController) {
+  constructor(public faDaDaService: FadadaService, public navCtrl: NavController) {
   }
 
   list1: Array<FadadaSignTask> = []; // 待签署合同列表
   list2: Array<FadadaSignTask> = []; // 已签署合同列表
   list3: Array<FadadaSignTask> = []; // 其他合同列表
   showType = '0'; // 0:待签署 1:已签署 2:其他
+  isLoading = true;
+
   ngOnInit(): void {
     console.log(this.navCtrl);
-    this.loadingCtrl.create({
-      message: '加载中...'
-    }).then(p => {
-      p.present();
-      this.faDaDaService.getSignTasks().subscribe(res => {
-        p.dismiss();
-        console.log(res);
-        this.list1 = res.filter(item => item.StatusIndex < 6);
-        this.list2 = res.filter(item => item.StatusIndex == 6);
-        this.list3 = res.filter(item => item.StatusIndex > 6);
-      });
+    this.isLoading = true;
+    this.faDaDaService.getSignTasks().subscribe(res => {
+      this.isLoading = false;
+      console.log(res);
+      this.list1 = res.filter(item => item.StatusIndex < 6);
+      this.list2 = res.filter(item => item.StatusIndex == 6);
+      this.list3 = res.filter(item => item.StatusIndex > 6);
     });
   }
   segmentChanged(event) {
@@ -74,26 +72,14 @@ export class SignTheContractComponent implements OnInit {
   }
 
   goToSignTask(item: FadadaSignTask) {
-    this.loadingCtrl.create({
-      message: '加载中...'
-    }).then(p => {
-      p.present();
-      this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe(res => {
-        p.dismiss();
-        window.location.href = res;
-      });
+    this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe(res => {
+      window.location.href = res;
     });
   }
 
   goToPreview(item: FadadaSignTask) {
-    this.loadingCtrl.create({
-      message: '加载中...'
-    }).then(p => {
-      p.present();
-      this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe(res => {
-        p.dismiss();
-        window.open(res, '_blank');
-      });
+    this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe(res => {
+      window.open(res, '_blank');
     });
   }
   

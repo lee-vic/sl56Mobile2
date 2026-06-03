@@ -1,5 +1,5 @@
 import { WeightBillService } from './../../../providers/weight-bill.service';
-import { LoadingController, ToastController, NavController, AlertController } from '@ionic/angular';
+import { ToastController, NavController, AlertController } from '@ionic/angular';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -20,10 +20,11 @@ export class PayWeighingFeeDetailPage implements OnInit {
   objectId;
   subscriber: Subscription;
   signalRConnected: boolean = false;
-  isMiniProgram: boolean = false;//是否在小程序内运行
+  isMiniProgram: boolean = false;
+  isLoading = true;
+
   constructor(
     private route: ActivatedRoute,
-    private loadingCtrl: LoadingController,
     private weightBillService: WeightBillService,
     private toastCtrl: ToastController,
     private navCtrl: NavController,
@@ -56,7 +57,6 @@ export class PayWeighingFeeDetailPage implements OnInit {
         const obj = this.parseSignalRMessage(msg);
         if (!obj) return;
         if (obj.MsgContent == "True") {
-          this.loadingCtrl.dismiss();
           this.alertController.create({
             header: '称重已完成',
             subHeader: "点击确定后,系统将显示电子磅单",
@@ -100,27 +100,22 @@ export class PayWeighingFeeDetailPage implements OnInit {
   }
 
   loadData() {
-    this.loadingCtrl.create({
-      message: "请稍后",
-    })
-      .then((p) => {
-        p.present();
-        this.weightBillService.getWeightBill(this.objectId).subscribe({
-          next: (res) => {
-            this.weightBill = res;
-            p.dismiss();
-          },
-          error: (_err) => {
-            this.loadingCtrl.dismiss();
-            this.toastCtrl.create({
-              message: "获取数据出现错误",
-              position: "middle",
-              duration: 2000,
-            }).then((p) => p.present());
-            this.navCtrl.back();
-          }
-        });
-      });
+    this.isLoading = true;
+    this.weightBillService.getWeightBill(this.objectId).subscribe({
+      next: (res) => {
+        this.weightBill = res;
+        this.isLoading = false;
+      },
+      error: (_err) => {
+        this.isLoading = false;
+        this.toastCtrl.create({
+          message: "获取数据出现错误",
+          position: "middle",
+          duration: 2000,
+        }).then((p) => p.present());
+        this.navCtrl.back();
+      }
+    });
   }
 
   callpay(jsApiParam) {
@@ -158,40 +153,31 @@ export class PayWeighingFeeDetailPage implements OnInit {
       return;
     }
     this.weightBill.TradeType = "JSAPI";
-    this.loadingCtrl
-      .create({
-        message: "请稍后...",
-      })
-      .then((p) => {
-        p.present();
-        this.weightBillService.payWeighingFee(this.weightBill).subscribe({
-          next: (res) => {
-            this.loadingCtrl.dismiss();
-            if (res.Success) {
-              let jsApiParam = JSON.parse(res.Data);
-              this.callpay(jsApiParam);
-            } else {
-              this.toastCtrl
-                .create({
-                  message: res.ErrMsg,
-                  position: "middle",
-                  duration: 3000,
-                })
-                .then((p) => p.present());
-            }
-          },
-          error: (err) => {
-            this.loadingCtrl.dismiss();
-            this.toastCtrl
-              .create({
-                message: err.message,
-                position: "middle",
-                duration: 3000,
-              })
-              .then((p) => p.present());
-          }
-        });
-      });
+    this.weightBillService.payWeighingFee(this.weightBill).subscribe({
+      next: (res) => {
+        if (res.Success) {
+          let jsApiParam = JSON.parse(res.Data);
+          this.callpay(jsApiParam);
+        } else {
+          this.toastCtrl
+            .create({
+              message: res.ErrMsg,
+              position: "middle",
+              duration: 3000,
+            })
+            .then((p) => p.present());
+        }
+      },
+      error: (err) => {
+        this.toastCtrl
+          .create({
+            message: err.message,
+            position: "middle",
+            duration: 3000,
+          })
+          .then((p) => p.present());
+      }
+    });
   }
 
   ngOnDestroy(): void {

@@ -1,0 +1,176 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button
+        *ngIf="currentStep === 1"
+        defaultHref="/member/import-manifest/list"
+      ></ion-back-button>
+      <ion-button
+        *ngIf="currentStep > 1"
+        (click)="resetImport()"
+      >
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ currentStep === 1 ? '批量导入' : currentStep === 2 ? '预览校验' : '导入结果' }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="import-content">
+  <!-- ========== Step 1: File Selection ========== -->
+  <ng-container *ngIf="currentStep === 1">
+    <div class="step-card step-upload">
+      <div class="upload-icon-wrap">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </div>
+      <h2>导入 Excel/CSV 文件</h2>
+      <p class="upload-desc">
+        支持 .csv、.xls、.xlsx 格式，单次最多 500 行，文件不超过 5 MB
+      </p>
+
+      <!-- Download Template -->
+      <button type="button" class="template-btn" (click)="downloadTemplate()">
+        <ion-icon name="download-outline"></ion-icon>
+        下载标准模板
+      </button>
+
+      <!-- File Input -->
+      <div class="file-input-wrap">
+        <input
+          type="file"
+          accept=".csv,.xls,.xlsx"
+          (change)="onFileSelected($event)"
+          style="display: none"
+          #fileInput
+        />
+        <button
+          type="button"
+          class="file-btn"
+          (click)="fileInput.click()"
+          [disabled]="isParsing"
+        >
+          <ion-icon name="folder-open-outline"></ion-icon>
+          选择文件
+        </button>
+      </div>
+
+      <p *ngIf="selectedFileName" class="selected-file">
+        已选择：{{ selectedFileName }}
+      </p>
+
+      <!-- Parsing spinner -->
+      <div class="parsing-state" *ngIf="isParsing">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <p>正在解析文件...</p>
+      </div>
+
+      <!-- Parse Error -->
+      <div class="parse-error" *ngIf="parseError">
+        <ion-icon name="alert-circle"></ion-icon>
+        <span>{{ parseError }}</span>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ========== Step 2: Preview ========== -->
+  <ng-container *ngIf="currentStep === 2">
+    <!-- Summary Card -->
+    <div class="summary-card">
+      <div class="summary-item">
+        <span class="summary-num">{{ summary.totalRows }}</span>
+        <span class="summary-label">总行数</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item success">
+        <span class="summary-num">{{ getValidCount() }}</span>
+        <span class="summary-label">有效</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item danger">
+        <span class="summary-num">{{ getErrorCount() }}</span>
+        <span class="summary-label">错误</span>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <ion-segment
+      [value]="activeFilter"
+      (ionChange)="applyFilter($event.detail.value)"
+      class="filter-segment"
+    >
+      <ion-segment-button value="all">
+        <ion-label>全部</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="errors">
+        <ion-label>错误 ({{ getErrorCount() }})</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="modified">
+        <ion-label>有效 ({{ getValidCount() }})</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Preview Rows -->
+    <div class="preview-list">
+      <div class="preview-card" *ngFor="let row of filteredRows; let i = index" [class.has-error]="row.HasError">
+        <div class="preview-left">
+          <ion-icon
+            [name]="getRowStatusIcon(row)"
+            [color]="getRowStatusColor(row)"
+            class="preview-icon"
+          ></ion-icon>
+        </div>
+        <div class="preview-body">
+          <div class="preview-top">
+            <span class="preview-index">#{{ i + 1 }}</span>
+            <strong class="preview-object-no">{{ row.ObjectNo }}</strong>
+            <span class="preview-badge" [class.error]="row.HasError">
+              {{ row.HasError ? '错误' : '通过' }}
+            </span>
+          </div>
+          <p class="preview-meta">
+            {{ row.CountryName || '-' }} · {{ row.CustomerPriceName || '-' }} · {{ row.Piece || 0 }} 件 · {{ row.ContentTypeName || '-' }}
+          </p>
+          <p *ngIf="row.HasError && row.Errors" class="preview-errors">
+            <span *ngFor="let err of row.Errors" class="error-chip">{{ err.Message }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="filteredRows.length === 0" class="empty-state">
+      <p class="empty-state-title">无匹配记录</p>
+    </div>
+
+    <!-- Confirm Footer -->
+    <div class="confirm-footer" *ngIf="canProceed()">
+      <button
+        type="button"
+        class="confirm-btn"
+        (click)="confirmImport()"
+        [disabled]="isSaving"
+      >
+        <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
+        确认导入 {{ getValidCount() }} 条
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- ========== Step 3: Result ========== -->
+  <ng-container *ngIf="currentStep === 3 && saveResult">
+    <div class="step-card step-result">
+      <div class="result-icon-wrap" [class.success]="saveResult.success" [class.fail]="!saveResult.success">
+        <ion-icon
+          [name]="saveResult.success ? 'checkmark-circle' : 'close-circle'"
+        ></ion-icon>
+      </div>
+      <h2>{{ saveResult.success ? '导入成功' : '导入失败' }}</h2>
+      <p>{{ saveResult.message }}</p>
+      <button type="button" class="back-btn" (click)="backToList()">
+        返回列表
+      </button>
+    </div>
+  </ng-container>
+</ion-content>

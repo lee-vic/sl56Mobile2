@@ -32,6 +32,14 @@ describe('MemberPage', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should include 快速预报 in allMenus', () => {
+    const menu = component.allMenus.find(m => m.title === '快速预报');
+    expect(menu).toBeDefined();
+    expect(menu!.url).toBe('/member/import-manifest/list');
+    expect(menu!.image).toBe('assets/imgs/member-4.png');
+    expect(menu!.type).toEqual([0, 1]);
+  });
+
   it('should apply custom quick menu order', () => {
     const visibleMenus = [
       component.allMenus[0],
@@ -98,5 +106,25 @@ describe('MemberPage', () => {
     expect(component.formatBadgeCount(18)).toBe('18');
     expect(component.formatBadgeCount(99)).toBe('99');
     expect(component.formatBadgeCount(100)).toBe('99+');
+  });
+
+  // ── Dashboard loading state ──
+
+  it('should initialize isDashboardLoading as false', () => {
+    expect(component.isDashboardLoading).toBe(false);
+  });
+
+  it('should set isDashboardLoading true when loginSuccess is called', () => {
+    component.isDashboardLoading = false;
+
+    component.loginSuccess();
+
+    expect(component.isDashboardLoading).toBe(true);
+  });
+
+  it('should include 快速预报 in allMenus at the correct position', () => {
+    const menus = component.allMenus;
+    const index = menus.findIndex(m => m.title === '快速预报');
+    expect(index).toBeGreaterThan(-1);
   });
 });

@@ -1,0 +1,159 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/member/import-manifest/list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>预报详情</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        *ngIf="data && data.Status === 0"
+        (click)="edit()"
+      >
+        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button
+        *ngIf="data && data.Status === 0"
+        (click)="confirmDelete()"
+      >
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="detail-content">
+  <!-- Loading -->
+  <ng-container *ngIf="isLoading">
+    <div class="skeleton-list">
+      <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5]">
+        <ion-skeleton-text animated style="width: 55%; height: 20px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 80%; height: 14px; margin-top: 8px;"></ion-skeleton-text>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Error -->
+  <ng-container *ngIf="hasError && !isLoading">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+      </div>
+      <p class="empty-state-title">加载失败</p>
+      <p class="empty-state-desc">请检查网络后重试</p>
+      <ion-button fill="outline" size="small" (click)="loadDetail()" class="empty-state-btn">重新加载</ion-button>
+    </div>
+  </ng-container>
+
+  <!-- Data -->
+  <ng-container *ngIf="data && !isLoading">
+    <!-- Hero Card -->
+    <div class="detail-hero-card">
+      <div class="hero-top">
+        <h1 class="hero-object-no">{{ data.ObjectNo }}</h1>
+        <span class="status-badge" [class]="'status-' + getStatusColor(data.Status)">
+          {{ data.StatusName }}
+        </span>
+      </div>
+      <p class="hero-date">创建时间：{{ data.CreateAt }}</p>
+    </div>
+
+    <!-- Info Card: Basic -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <h3>基本信息</h3>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-label">目的国</span>
+          <span class="detail-value">{{ data.CountryName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">运输方式</span>
+          <span class="detail-value">{{ data.ModeOfTransportName || '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">报价代码</span>
+          <span class="detail-value">{{ data.CustomerPriceName }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">件数</span>
+          <span class="detail-value">{{ data.Piece }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">货物类型</span>
+          <span class="detail-value">{{ data.ContentTypeName }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Card: Additional -->
+    <div class="detail-card" *ngIf="data.PostalCode || data.DeclaredValue || data.CustomerExpressNo || data.TrackNumber">
+      <div class="detail-card-header">
+        <h3>附加信息</h3>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="data.PostalCode">
+          <span class="detail-label">邮编</span>
+          <span class="detail-value">{{ data.PostalCode }}</span>
+        </div>
+        <div class="detail-row" *ngIf="data.DeclaredValue">
+          <span class="detail-label">申报价值</span>
+          <span class="detail-value value-amount">${{ data.DeclaredValue }}</span>
+        </div>
+        <div class="detail-row" *ngIf="data.CustomerExpressNo">
+          <span class="detail-label">快递单号</span>
+          <span class="detail-value">{{ data.CustomerExpressNo }}</span>
+        </div>
+        <div class="detail-row" *ngIf="data.TrackNumber">
+          <span class="detail-label">转单号</span>
+          <span class="detail-value">{{ data.TrackNumber }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Card: Options -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <h3>选项设置</h3>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="detail-label">单独报关</span>
+          <span class="detail-value">
+            <span class="option-badge" [class.on]="data.RequiresSeparateCustomsDeclaration">
+              {{ data.RequiresSeparateCustomsDeclaration ? '是' : '否' }}
+            </span>
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="data.RequiresSeparateCustomsDeclaration">
+          <span class="detail-label">发票类型</span>
+          <span class="detail-value">{{ data.RequiresSpecialVatInvoice ? '专用发票' : '普通发票' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">关税预付</span>
+          <span class="detail-value">
+            <span class="option-badge" [class.on]="data.RequiresDutiesAndTaxesPrepayment">
+              {{ data.RequiresDutiesAndTaxesPrepayment ? '是' : '否' }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Card: Documents -->
+    <div class="detail-card" *ngIf="data.ForwardingDocumentCount > 0 || data.LabelPath">
+      <div class="detail-card-header">
+        <h3>运单文件</h3>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row" *ngIf="data.ForwardingDocumentCount > 0">
+          <span class="detail-label">附件数量</span>
+          <span class="detail-value">
+            <ion-icon name="attach-outline" class="value-icon"></ion-icon>
+            {{ data.ForwardingDocumentCount }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</ion-content>

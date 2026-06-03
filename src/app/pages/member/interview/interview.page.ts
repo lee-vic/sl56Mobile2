@@ -2,7 +2,7 @@ import { Component, NgZone, OnInit } from "@angular/core";
 import { InterviewService } from "src/app/providers/interview.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Interview } from "src/app/interfaces/interview";
-import { LoadingController, ToastController } from "@ionic/angular";
+import { ToastController } from "@ionic/angular";
 declare var wx: any;
 @Component({
   selector: "app-interview",
@@ -14,7 +14,6 @@ export class InterviewPage implements OnInit {
     private interViewService: InterviewService,
     private activateRoute: ActivatedRoute,
     private toastCtrl: ToastController,
-    private loadingCtrl: LoadingController,
     private router: Router,
     private nz:NgZone
   ) {}
@@ -211,11 +210,6 @@ export class InterviewPage implements OnInit {
       this.showToast("验证码不正确");
       return;
     }
-    this.loadingCtrl
-      .create({
-        message: "请稍后...",
-      })
-      .then((p) => p.present());
     this.isSubmiting = true;
     this.interViewService.saveInterview(this.interviewData).subscribe(
       (res) => {
@@ -223,15 +217,13 @@ export class InterviewPage implements OnInit {
         if (res.Success) {
           this.showToast("感谢您对本次面访进行评价");
           this.pageStatus = 2;
-          this.loadingCtrl.dismiss();
+          this.isSubmiting = false;
         } else {
-          this.loadingCtrl.dismiss();
           this.showToast(res.Message);
           this.isSubmiting = false;
         }
       },
       (res) => {
-        this.loadingCtrl.dismiss();
         this.showToast(res.error.Message + "：" + res.error.ExceptionMessage);
         this.isSubmiting = false;
       }

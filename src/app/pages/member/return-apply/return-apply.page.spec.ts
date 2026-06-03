@@ -3,10 +3,10 @@ import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AlertController, IonicModule, LoadingController, ModalController, NavController, ToastController } from '@ionic/angular';
+import { AlertController, IonicModule, ModalController, NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { ReturnApplyPage } from './return-apply.page';
 import { ReturnService } from 'src/app/providers/return.service';
@@ -18,8 +18,6 @@ describe('ReturnApplyPage', () => {
   const navBackSpy = jasmine.createSpy('navBack');
   const alertCreateSpy = jasmine.createSpy('alertCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
-  const loadingPresentSpy = jasmine.createSpy('loadingPresent').and.returnValue(Promise.resolve());
-  const loadingDismissSpy = jasmine.createSpy('loadingDismiss').and.returnValue(Promise.resolve());
 
   const applySpy = jasmine.createSpy('apply').and.returnValue(of({
     AllowApply: true,
@@ -63,13 +61,6 @@ describe('ReturnApplyPage', () => {
         { provide: AlertController, useValue: { create: alertCreateSpy } },
         { provide: ToastController, useValue: { create: toastCreateSpy } },
         { provide: ModalController, useValue: { create: jasmine.createSpy('modalCreate').and.returnValue(Promise.resolve(mockModal)) } },
-        {
-          provide: LoadingController,
-          useValue: {
-            create: () => Promise.resolve({ present: loadingPresentSpy, dismiss: loadingDismissSpy }),
-            dismiss: loadingDismissSpy,
-          },
-        },
       ],
       declarations: [ ReturnApplyPage ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -97,7 +88,6 @@ describe('ReturnApplyPage', () => {
     fill1Spy.calls.reset();
     alertCreateSpy.calls.reset();
     toastCreateSpy.calls.reset();
-    loadingDismissSpy.calls.reset();
   });
 
   it('should create', () => {
@@ -124,7 +114,6 @@ describe('ReturnApplyPage', () => {
     expect(component.isSubmitting).toBe(false);
     expect(apply1Spy).toHaveBeenCalled();
     expect(component.submitSuccess).toBe(true);
-    expect(loadingDismissSpy).toHaveBeenCalled();
   }));
 
   it('should re-enable submit and show alert when apply submit fails', fakeAsync(() => {
@@ -209,4 +198,47 @@ describe('ReturnApplyPage', () => {
     expect(component.blockedMessage).toBe('当前不可申请');
     expect(component.canShowForm).toBe(false);
   });
+
+  // ── doFill flow ──
+
+  it('should mark success state after successful doFill submit', fakeAsync(() => {
+    fill1Spy.and.returnValue(of({ IsSuccess: true }));
+
+    component.doFill(component.applyForm.value);
+    tick();
+
+    expect(component.isSubmitting).toBe(false);
+    expect(component.submitSuccess).toBe(true);
+    expect(component.submitSuccessMessage).toBe('提货信息已提交');
+  }));
+
+  it('should show alert when fill submit fails', fakeAsync(() => {
+    fill1Spy.and.returnValue(of({ IsSuccess: false, Message: '提交失败' }));
+
+    component.doFill(component.applyForm.value);
+    tick();
+
+    expect(component.isSubmitting).toBe(false);
+    expect(component.submitSuccess).toBe(false);
+    expect(alertCreateSpy).toHaveBeenCalled();
+  }));
+
+  it('should set isSubmitting false on doFill error', fakeAsync(() => {
+    fill1Spy.and.returnValue(throwError(() => new Error('network')));
+
+    component.doFill(component.applyForm.value);
+    tick();
+
+    expect(component.isSubmitting).toBe(false);
+    expect(alertCreateSpy).toHaveBeenCalled();
+  }));
+
+  it('should set isSubmitting false on doApply error', fakeAsync(() => {
+    apply1Spy.and.returnValue(throwError(() => new Error('network')));
+
+    component.doApply(component.applyForm.value);
+    tick();
+
+    expect(component.isSubmitting).toBe(false);
+  }));
 });

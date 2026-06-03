@@ -374,7 +374,47 @@ const routes: Routes = [
     loadChildren: () => import("./warehouse-application-detail/warehouse-application-detail.module").then(
       (m) => m.WarehouseApplicationDetailPageModule
     )
-}
+},
+{
+  path: "import-manifest",
+  children: [
+    {
+      path: "list",
+      loadChildren: () =>
+        import("./import-manifest/import-manifest-list/import-manifest-list.module").then(
+          (m) => m.ImportManifestListPageModule
+        ),
+    },
+    {
+      path: "detail/:id",
+      loadChildren: () =>
+        import("./import-manifest/import-manifest-detail/import-manifest-detail.module").then(
+          (m) => m.ImportManifestDetailPageModule
+        ),
+    },
+    {
+      path: "form",
+      loadChildren: () =>
+        import("./import-manifest/import-manifest-form/import-manifest-form.module").then(
+          (m) => m.ImportManifestFormPageModule
+        ),
+    },
+    {
+      path: "form/:id",
+      loadChildren: () =>
+        import("./import-manifest/import-manifest-form/import-manifest-form.module").then(
+          (m) => m.ImportManifestFormPageModule
+        ),
+    },
+    {
+      path: "import",
+      loadChildren: () =>
+        import("./import-manifest/import-manifest-import/import-manifest-import.module").then(
+          (m) => m.ImportManifestImportPageModule
+        ),
+    },
+  ],
+},
 
 ];
 

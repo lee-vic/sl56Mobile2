@@ -2,7 +2,7 @@ import { WeightBillService } from 'src/app/providers/weight-bill.service';
 import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { apiUrl } from 'src/app/global';
-import { AlertController, LoadingController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: "app-pay-weighing-fee-result",
@@ -16,7 +16,6 @@ export class PayWeighingFeeResultPage implements OnInit {
   timerHandle: any;
   constructor(private route: ActivatedRoute,
     private alertController: AlertController,
-    private loadingCtrl: LoadingController,
     private service: WeightBillService) {
     this.id = this.route.snapshot.paramMap.get("id");
     this.route.queryParams.subscribe(p => {
@@ -62,42 +61,35 @@ export class PayWeighingFeeResultPage implements OnInit {
   }
 
   print() {
-    this.loadingCtrl.create({
-      message: "正在打印纸质磅单",
-    })
-      .then((lc) => {
-        lc.present();
-        this.service.printWeightBill(this.id).subscribe((p) => {
-          lc.dismiss();
-          if (p.Success == true) {
-            this.alertController.create({
-              header: '打印成功',
-              message: "请到门卫室领取磅单",
-              backdropDismiss: false,
-              keyboardClose: false,
-              buttons: [
-                {
-                  text: '确定',
-                  role: 'cancel'
-                }
-              ]
-            }).then(p => p.present());
-          }
-          else {
-            this.alertController.create({
-              header: '打印失败',
-              message: p.ErrorMessage,
-              backdropDismiss: false,
-              keyboardClose: false,
-              buttons: [
-                {
-                  text: '确定',
-                  role: 'cancel'
-                }
-              ]
-            }).then(p => p.present());
-          }
-        });
-      });
+    this.service.printWeightBill(this.id).subscribe((p) => {
+      if (p.Success == true) {
+        this.alertController.create({
+          header: '打印成功',
+          message: "请到门卫室领取磅单",
+          backdropDismiss: false,
+          keyboardClose: false,
+          buttons: [
+            {
+              text: '确定',
+              role: 'cancel'
+            }
+          ]
+        }).then(p => p.present());
+      }
+      else {
+        this.alertController.create({
+          header: '打印失败',
+          message: p.ErrorMessage,
+          backdropDismiss: false,
+          keyboardClose: false,
+          buttons: [
+            {
+              text: '确定',
+              role: 'cancel'
+            }
+          ]
+        }).then(p => p.present());
+      }
+    });
   }
 }

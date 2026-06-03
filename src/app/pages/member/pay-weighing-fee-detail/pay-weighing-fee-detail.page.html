@@ -7,6 +7,23 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
+  <!-- Skeleton loading -->
+  <ng-container *ngIf="isLoading">
+    <div class="skeleton-page">
+      <ion-skeleton-text animated style="width: 50%; height: 24px; margin-bottom: 12px;"></ion-skeleton-text>
+      <ion-card class="skeleton-card">
+        <div class="skeleton-list-item" *ngFor="let sk of [1,2,3,4,5]">
+          <div class="skeleton-lines">
+            <ion-skeleton-text animated style="width: 32%; height: 14px;"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated style="width: 40%; height: 14px;"></ion-skeleton-text>
+        </div>
+      </ion-card>
+    </div>
+  </ng-container>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
   <div>
     <ion-row>
       <ion-label class="feeLabel">
@@ -37,6 +54,7 @@
       <ion-note slot="end">{{weightBill?.CorporateAccount}}</ion-note>
     </ion-item>
   </ion-list>
+  </ng-container>
 
 </ion-content>
 <ion-footer>

@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UiFeedbackService {
   constructor(
-    private readonly toastController: ToastController,
-    private readonly loadingController: LoadingController
+    private readonly toastController: ToastController
   ) {}
 
   async presentToast(
@@ -25,25 +24,5 @@ export class UiFeedbackService {
       color
     });
     await toast.present();
-  }
-
-  async presentLoading(message: string, duration?: number): Promise<HTMLIonLoadingElement> {
-    const loading = await this.loadingController.create({
-      message,
-      duration
-    });
-    await loading.present();
-    return loading;
-  }
-
-  async dismissLoading(loading?: HTMLIonLoadingElement | null): Promise<void> {
-    if (!loading) {
-      return;
-    }
-    try {
-      await loading.dismiss();
-    } catch {
-      // Ignore dismiss race if overlay is already closed.
-    }
   }
 }

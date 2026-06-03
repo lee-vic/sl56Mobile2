@@ -1,4 +1,4 @@
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { FaDaDaAuthInfoService } from './../../../providers/fadada-auth-info.service';
 import { Component, OnInit } from '@angular/core';
 
@@ -9,30 +9,25 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AuthInfoPage implements OnInit {
 
-  constructor(public service: FaDaDaAuthInfoService, public loadingCtrl: LoadingController, public alertCtrl: AlertController, public navCtrl: NavController) { }
+  constructor(public service: FaDaDaAuthInfoService, public alertCtrl: AlertController, public navCtrl: NavController) { }
   isAuth: boolean = false;
+  isLoading = true;
+
   ngOnInit(): void {
-    this.loadingCtrl.create({
-      message: '加载中...'
-    }).then(p => p.present());
+    this.isLoading = true;
     this.service.getIsAuth().subscribe(res => {
-      this.loadingCtrl.dismiss();
+      this.isLoading = false;
       if (!res) {
         this.alertCtrl.create({
           message: '信息未认证，是否进行认证？',
           buttons: [{
             text: '认证',
             handler: () => {
-              this.loadingCtrl.create({
-                message: '加载中...'
-              }).then(p => p.present());
               this.service.getAuthUrl().subscribe({
                 next: (res) => {
-                  this.loadingCtrl.dismiss();
                   window.location.href = res;
                 },
                 error: (_err) => {
-                  this.loadingCtrl.dismiss();
                   this.alertCtrl.create({
                     message: '操作异常，请重试，多次失败请联系业务员',
                     buttons: [{

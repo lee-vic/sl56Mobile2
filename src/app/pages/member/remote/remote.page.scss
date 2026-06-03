@@ -15,16 +15,16 @@
 .remote-shell {
 	max-width: 900px;
 	margin: 0 auto;
-	padding: 6px clamp(6px, 2.2vw, 10px) 10px;
+	padding: 10px 16px 20px;
 	display: grid;
-	gap: 7px;
+	gap: 10px;
 }
 
 .query-card,
 .result-card,
 .error-card,
 .skeleton-card {
-	margin: 0 2px;
+	margin: 0;
 	border-radius: 18px;
 	border: 1px solid rgba(132, 174, 221, 0.26);
 	box-shadow: 0 10px 24px rgba(11, 62, 125, 0.08);
@@ -155,11 +155,3 @@
 	border-color: rgba(220, 146, 72, 0.4);
 	background: linear-gradient(180deg, rgba(255, 249, 238, 0.95), rgba(255, 252, 246, 0.95));
 }
-
-@media (max-width: 430px) {
-	.remote-shell {
-		padding: 4px 6px 10px;
-		gap: 7px;
-	}
-}
-

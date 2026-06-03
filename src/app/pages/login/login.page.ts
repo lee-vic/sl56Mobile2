@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { UserService } from 'src/app/providers/user.service';
 import { Router } from '@angular/router';
@@ -14,12 +14,13 @@ export class LoginPage implements OnInit {
   public authForm: FormGroup;
 
   public isLogin: boolean;
+  public isLoggingIn = false;
+
   constructor(public formBuilder: FormBuilder,
     public toastCtrl: ToastController,
     private router: Router,
     private userService: UserService,
-    private cookieService: CookieService,
-    public loadingCtrl: LoadingController,) {
+    private cookieService: CookieService) {
     this.authForm = this.formBuilder.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
@@ -36,19 +37,16 @@ export class LoginPage implements OnInit {
   }
 
   doLogin(formValue) {
-
-    this.loadingCtrl.create({
-      message: '请稍后...',
-    }).then(p => p.present());
+    this.isLoggingIn = true;
     // Web application - always set clientType to web
     formValue.clientType = 1;
     formValue.openId = this.cookieService.get('OpenId');
     formValue.unionId = this.cookieService.get('UnionId');
     this.userService.auth(formValue).subscribe({
       next: (res: any) => {
+        this.isLoggingIn = false;
         this.isLogin =  res.Success;
         console.log("aa" + this.cookieService.get('sl56Auth'));
-        this.loadingCtrl.dismiss();
 
         if (this.isLogin) {
           this.router.navigateByUrl(this.cookieService.get('State'));
@@ -63,7 +61,7 @@ export class LoginPage implements OnInit {
         }
       },
       error: (err) => {
-        this.loadingCtrl.dismiss();
+        this.isLoggingIn = false;
         this.toastCtrl.create({
           message: err.message,
           position: 'middle',

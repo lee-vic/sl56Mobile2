@@ -6,9 +6,13 @@
 .confirm-shell {
     max-width: 860px;
     margin: 0 auto;
-    padding: 12px 14px 22px;
+    padding: 10px 16px 20px;
     display: grid;
-    gap: 12px;
+    gap: 10px;
+}
+
+.confirm-shell ion-card {
+    margin: 0;
 }
 
 .confirm-header ion-toolbar {
@@ -99,6 +103,7 @@
 .control-card ion-card-content {
     display: grid;
     gap: 12px;
+    padding: 12px;
 }
 
 .control-card ion-searchbar {

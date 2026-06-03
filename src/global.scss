@@ -22,7 +22,6 @@
 @import '~@ionic/angular/css/display.css';
 
 /* Optional CSS utils that can be commented out */
-@import "~@ionic/angular/css/padding.css";
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
@@ -65,4 +64,116 @@ ion-toast.member-theme-toast::part(message) {
     line-height: 1.4;
     letter-spacing: 0.01em;
     text-align: center;
+}
+
+/* ========================================
+   Skeleton Screen Global Utility Classes
+   ======================================== */
+
+/* --- Skeleton color tokens --- */
+:root {
+  --skeleton-base: rgba(180, 200, 225, 0.32);
+  --skeleton-shine: rgba(220, 235, 250, 0.55);
+}
+
+/* --- Base skeleton line --- */
+.skeleton-line {
+  display: block;
+  width: 100%;
+  height: 14px;
+  border-radius: 6px;
+}
+
+/* --- Skeleton card wrapper --- */
+.skeleton-card {
+  padding: var(--member-spacing-lg, 16px);
+  background: var(--member-surface-0, #fff);
+  border-radius: var(--member-radius-sm, 12px);
+  box-shadow: var(--member-shadow-card, 0 10px 26px rgba(8, 63, 122, 0.11));
+}
+
+.skeleton-card + .skeleton-card {
+  margin-top: var(--member-spacing-md, 12px);
+}
+
+/* --- Skeleton list item (horizontal layout) --- */
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--member-spacing-md, 12px);
+  padding: var(--member-spacing-md, 12px) var(--member-spacing-lg, 16px);
+}
+
+.skeleton-list-item .skeleton-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.skeleton-list-item .skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--member-spacing-xs, 6px);
+}
+
+/* --- Skeleton form field --- */
+.skeleton-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--member-spacing-xs, 6px);
+  padding: var(--member-spacing-sm, 8px) 0;
+}
+
+.skeleton-form-field .skeleton-label {
+  width: 28%;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-form-field .skeleton-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+}
+
+/* --- Skeleton button --- */
+.skeleton-btn {
+  display: block;
+  width: 100%;
+  height: 42px;
+  border-radius: 22px;
+}
+
+/* --- Skeleton title + paragraph block --- */
+.skeleton-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--member-spacing-sm, 8px);
+}
+
+/* --- Skeleton page shell (full page padding wrapper) --- */
+.skeleton-page {
+  padding: var(--member-spacing-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--member-spacing-md, 12px);
+}
+
+/* --- Keyframe shimmer for skeleton placeholder elements --- */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-shine) 50%,
+    var(--skeleton-base) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
 }

@@ -8,17 +8,108 @@
 </ion-header>
 
 <ion-content #detailContent class="detail-content" [scrollEvents]="true" (ionScroll)="onContentScroll($event)">
-  <div class="detail-loading ion-padding" *ngIf="isLoading" aria-label="详情加载中">
-    <ion-card class="loading-card" *ngFor="let sk of [1,2,3]">
-      <ion-card-content>
-        <ion-skeleton-text animated style="width: 52%; height: 16px; border-radius: 6px;"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width: 88%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width: 74%; height: 14px; margin-top: 8px; border-radius: 6px;"></ion-skeleton-text>
-      </ion-card-content>
-    </ion-card>
+  <!-- Skeleton Screen -->
+  <div class="detail-loading" *ngIf="isLoading" aria-label="详情加载中">
+    <!-- Segment tabs skeleton -->
+    <div class="skeleton-segment">
+      <ion-skeleton-text animated *ngFor="let _ of [1,2,3,4,5]" style="width: 64px; height: 30px; border-radius: 8px;"></ion-skeleton-text>
+    </div>
+
+    <!-- Section 1: 基本信息 -->
+    <div class="skeleton-section">
+      <div class="skeleton-section-head">
+        <ion-skeleton-text animated style="width: 64px; height: 14px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 40px; height: 11px; border-radius: 5px;"></ion-skeleton-text>
+      </div>
+      <ion-card class="loading-card">
+        <ion-card-content class="skeleton-kv-list">
+          <div class="skeleton-kv-row" *ngFor="let _ of [1,2,3,4,5,6]">
+            <ion-skeleton-text animated style="width: 56px; height: 14px; border-radius: 5px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 80px; height: 14px; border-radius: 5px;"></ion-skeleton-text>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Section 2: 规格 -->
+    <div class="skeleton-section">
+      <div class="skeleton-section-head">
+        <ion-skeleton-text animated style="width: 40px; height: 14px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 30px; height: 11px; border-radius: 5px;"></ion-skeleton-text>
+      </div>
+      <ion-card class="loading-card">
+        <ion-card-content>
+          <div class="skeleton-accordion-row" *ngFor="let _ of [1,2,3]">
+            <ion-skeleton-text animated style="width: 30%; height: 14px; border-radius: 5px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 38%; height: 11px; margin-top: 6px; border-radius: 5px;"></ion-skeleton-text>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Section 3: 轨迹 -->
+    <div class="skeleton-section">
+      <div class="skeleton-section-head">
+        <ion-skeleton-text animated style="width: 40px; height: 14px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 30px; height: 11px; border-radius: 5px;"></ion-skeleton-text>
+      </div>
+      <ion-card class="loading-card">
+        <ion-card-content class="skeleton-timeline">
+          <div class="skeleton-timeline-item" *ngFor="let _ of [1,2,3]">
+            <span class="skeleton-dot"></span>
+            <div class="skeleton-timeline-content">
+              <ion-skeleton-text animated style="width: 42%; height: 13px; border-radius: 5px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 30%; height: 11px; margin-top: 6px; border-radius: 5px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 55%; height: 11px; margin-top: 5px; border-radius: 5px;"></ion-skeleton-text>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Section 4: 费用明细 -->
+    <div class="skeleton-section">
+      <div class="skeleton-section-head">
+        <ion-skeleton-text animated style="width: 56px; height: 14px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 30px; height: 11px; border-radius: 5px;"></ion-skeleton-text>
+      </div>
+      <ion-card class="loading-card">
+        <ion-card-content class="skeleton-kv-list">
+          <div class="skeleton-kv-row" *ngFor="let _ of [1,2,3]">
+            <div class="skeleton-fee-left">
+              <ion-skeleton-text animated style="width: 72px; height: 14px; border-radius: 5px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 96px; height: 11px; margin-top: 5px; border-radius: 5px;"></ion-skeleton-text>
+            </div>
+            <ion-skeleton-text animated style="width: 56px; height: 14px; border-radius: 5px;"></ion-skeleton-text>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Section 5: 待跟进问题 -->
+    <div class="skeleton-section">
+      <div class="skeleton-section-head">
+        <ion-skeleton-text animated style="width: 72px; height: 14px; border-radius: 6px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 30px; height: 11px; border-radius: 5px;"></ion-skeleton-text>
+      </div>
+      <div class="skeleton-chips">
+        <ion-skeleton-text animated *ngFor="let _ of [1,2,3]" style="width: 56px; height: 26px; border-radius: 14px;"></ion-skeleton-text>
+      </div>
+      <ion-card class="loading-card">
+        <ion-card-content class="skeleton-kv-list">
+          <div class="skeleton-kv-row" *ngFor="let _ of [1,2]">
+            <div class="skeleton-fee-left">
+              <ion-skeleton-text animated style="width: 80px; height: 14px; border-radius: 5px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 120px; height: 11px; margin-top: 5px; border-radius: 5px;"></ion-skeleton-text>
+            </div>
+            <ion-skeleton-text animated style="width: 44px; height: 22px; border-radius: 11px;"></ion-skeleton-text>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
   </div>
 
-  <div class="detail-shell ion-padding" *ngIf="!isLoading">
+  <div class="detail-shell" *ngIf="!isLoading">
     <ion-segment [(ngModel)]="tab" (ionChange)="onSegmentChanged($event)" scrollable class="section-segment">
       <ion-segment-button value="1">
         <ion-label class="segment-label">

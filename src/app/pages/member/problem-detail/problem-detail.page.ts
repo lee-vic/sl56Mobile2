@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
 import {
   AlertController,
-  LoadingController,
   NavController,
 } from "@ionic/angular";
 import { ActivatedRoute, Router, NavigationExtras } from "@angular/router";
@@ -218,7 +217,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     private router: Router,
     private commonService: CommonService,
     private alertCtrl: AlertController,
-    private loadingCtrl: LoadingController
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(
@@ -392,33 +390,19 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   getWeAppFileStatus(isInitPage) {
-    this.loadingCtrl
-      .create({
-        message: "获取附件状态...",
-      })
-      .then((p) => {
-        p.present();
-        this.service.isWeAppUploadFile(this.problemId).pipe(takeUntil(this.destroy$)).subscribe((res) => {
-          this.isWeAppUploadFile = res;
-          this.loadingCtrl.dismiss();
-          if (isInitPage) return;
-          if (res) {
-            if (this.processModel.Type3Result.AttachmentTypeId === "1") {
-              this.isFileProcessing = true;
-              this.loadingCtrl
-                .create({
-                  message: "获取附件预览...",
-                })
-                .then((p) => p.present());
-              this.service
-                .invoicePretreatment(this.processModel)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((res) => {
-                  this.isFileProcessing = false;
-                  this.loadingCtrl.dismiss();
-                  if (res.Result === true) {
-                    this.fileFailMessage = null;
-                    this.navCtrl.navigateForward("/member/invoice-preview", {
+    this.service.isWeAppUploadFile(this.problemId).pipe(takeUntil(this.destroy$)).subscribe((res) => {
+      this.isWeAppUploadFile = res;
+      if (isInitPage) return;
+      if (res) {
+        if (this.processModel.Type3Result.AttachmentTypeId === "1") {
+          this.isFileProcessing = true;
+          this.service
+            .invoicePretreatment(this.processModel)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((res) => {
+              this.isFileProcessing = false;
+              if (res.Result === true) {
+                this.navCtrl.navigateForward("/member/invoice-preview", {
                       queryParams: {
                         filePath: res.Path,
                         rgdId: this.receiveGoodsDetailId,
@@ -432,7 +416,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
                   }
                 }, _ => {
                   this.isFileProcessing = false;
-                  this.loadingCtrl.dismiss();
                   this.fileFailMessage = '获取附件预览失败，请稍后重试';
                 });
             }
@@ -446,7 +429,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
               .then((x) => x.present());
           }
         }, _ => {
-          this.loadingCtrl.dismiss();
           this.alertCtrl
             .create({
               header: '获取失败',
@@ -455,6 +437,5 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
             })
             .then((x) => x.present());
         });
-      });
   }
 }

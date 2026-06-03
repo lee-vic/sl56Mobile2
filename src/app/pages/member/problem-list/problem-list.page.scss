@@ -209,7 +209,7 @@
 }
 
 .skeleton-items {
-  padding: 10px 14px;
+  padding: 0;
   display: grid;
   gap: 10px;
 }
@@ -296,7 +296,7 @@
 }
 
 @media (max-width: 360px) {
-  .list-shell { padding: 4px 10px 16px; }
+  .list-shell { padding: 10px 16px 20px; }
   .shipment-no { font-size: 13.5px; }
 }
 

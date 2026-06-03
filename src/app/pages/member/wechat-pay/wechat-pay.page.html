@@ -15,6 +15,40 @@
 
 <ion-content class="wx-pay-content" [fullscreen]="true">
 
+  <!-- Skeleton loading -->
+  <ng-container *ngIf="isLoading">
+    <div class="skeleton-page">
+      <!-- Hero amount skeleton -->
+      <ion-card class="skeleton-card">
+        <div class="skeleton-block" style="align-items: center;">
+          <ion-skeleton-text animated style="width: 72px; height: 14px; border-radius: 12px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 140px; height: 36px; margin-top: 8px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 56px; height: 12px; margin-top: 4px;"></ion-skeleton-text>
+          <div style="display: flex; gap: 20px; margin-top: 12px;">
+            <ion-skeleton-text animated style="width: 64px; height: 14px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 48px; height: 14px;"></ion-skeleton-text>
+          </div>
+        </div>
+      </ion-card>
+      <!-- List skeleton -->
+      <div class="skeleton-card" *ngFor="let sk of [1,2,3]">
+        <div class="skeleton-list-item">
+          <ion-skeleton-text animated style="width: 20px; height: 20px; border-radius: 4px;"></ion-skeleton-text>
+          <div class="skeleton-lines">
+            <ion-skeleton-text animated style="width: 60%; height: 16px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 40%; height: 13px; margin-top: 4px;"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated style="width: 56px; height: 16px;"></ion-skeleton-text>
+        </div>
+      </div>
+      <!-- Button skeleton -->
+      <ion-skeleton-text animated style="width: 100%; height: 44px; border-radius: 22px; margin-top: 12px;"></ion-skeleton-text>
+    </div>
+  </ng-container>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
+
   <!-- 外币警告横幅 -->
   <ion-card class="warning-banner" *ngIf="cid !== 1">
     <ion-card-content>
@@ -187,6 +221,8 @@
       </ion-list>
     </ion-card-content>
   </ion-card>
+
+  </ng-container>
 
 </ion-content>
 

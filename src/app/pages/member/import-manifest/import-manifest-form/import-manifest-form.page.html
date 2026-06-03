@@ -1,0 +1,210 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/member/import-manifest/list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? '编辑预报' : '新增预报' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="isSubmitting || isReadonly">
+        <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="form-content">
+  <form [formGroup]="form">
+    <!-- Basic Info Card -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>基本信息</h3>
+      </div>
+
+      <!-- ObjectNo -->
+      <div class="form-field">
+        <label class="field-label">
+          快件单号 <span class="required">*</span>
+        </label>
+        <ion-input
+          class="field-input"
+          formControlName="ObjectNo"
+          placeholder="请输入快件单号（字母/数字/横线）"
+          maxlength="32"
+          (ionBlur)="validateObjectNo()"
+          [clearInput]="true"
+        ></ion-input>
+        <div class="field-error" *ngIf="form.get('ObjectNo')?.touched && form.get('ObjectNo')?.invalid">
+          <span *ngIf="form.get('ObjectNo')?.errors?.required">请填写快件单号</span>
+          <span *ngIf="form.get('ObjectNo')?.errors?.pattern">只能包含大写字母、数字和英文横线</span>
+          <span *ngIf="form.get('ObjectNo')?.errors?.maxlength">最多32个字符</span>
+          <span *ngIf="form.get('ObjectNo')?.errors?.duplicate">单号已存在</span>
+        </div>
+      </div>
+
+      <!-- Country (Autocomplete) -->
+      <div class="form-field" [class.field-error-state]="isCountryErrorVisible">
+        <label class="field-label">
+          目的国 <span class="required">*</span>
+        </label>
+        <ion-searchbar
+          class="field-searchbar"
+          [value]="countryInput"
+          placeholder="输入国家名称搜索，如 美国"
+          [debounce]="120"
+          searchIcon=""
+          (ionFocus)="onCountryFocus()"
+          (ionBlur)="onCountryBlur()"
+          (keyup)="onCountryKeyup($event)"
+          (ionInput)="filterCountryItems($event)"
+          (ionClear)="onCountryClear()"
+          showClearButton="focus"
+        ></ion-searchbar>
+        <div class="field-error" *ngIf="isCountryErrorVisible">
+          请选择有效国家，支持输入后回车快速确认
+        </div>
+      </div>
+
+      <!-- Hidden CountryId form value -->
+      <input type="hidden" formControlName="CountryId" />
+
+      <!-- Country Dropdown -->
+      <ion-list *ngIf="showCountryList" class="country-result-list" lines="none">
+        <ion-item button detail="false" *ngFor="let item of countrySearch" (click)="countryItemClick(item)">
+          <ion-label>{{ item.Code }} {{ item.Name }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="countrySearch.length === 0">
+          <ion-label color="medium">没有匹配国家，请继续输入</ion-label>
+        </ion-item>
+      </ion-list>
+
+      <!-- CustomerPriceName -->
+      <div class="form-field">
+        <label class="field-label">
+          报价代码 <span class="required">*</span>
+        </label>
+        <ion-input
+          class="field-input"
+          formControlName="CustomerPriceName"
+          placeholder="请输入报价代码"
+          (ionBlur)="validateCustomerPriceName()"
+          [clearInput]="true"
+        ></ion-input>
+        <div class="field-error" *ngIf="form.get('CustomerPriceName')?.touched && form.get('CustomerPriceName')?.invalid">
+          <span *ngIf="form.get('CustomerPriceName')?.errors?.required">请选择报价</span>
+          <span *ngIf="form.get('CustomerPriceName')?.errors?.invalid">所选报价不可用</span>
+        </div>
+      </div>
+
+      <!-- Piece -->
+      <div class="form-field">
+        <label class="field-label">
+          件数 <span class="required">*</span>
+        </label>
+        <ion-input
+          class="field-input"
+          formControlName="Piece"
+          type="number"
+          placeholder="请输入件数（1-9999）"
+          min="1"
+          max="9999"
+        ></ion-input>
+        <div class="field-error" *ngIf="form.get('Piece')?.touched && form.get('Piece')?.invalid">
+          <span *ngIf="form.get('Piece')?.errors?.required">请填写件数</span>
+          <span *ngIf="form.get('Piece')?.errors?.min || form.get('Piece')?.errors?.max">件数范围为 1-9999</span>
+        </div>
+      </div>
+
+      <!-- ContentType -->
+      <div class="form-field">
+        <label class="field-label">
+          货物类型 <span class="required">*</span>
+        </label>
+        <ion-segment formControlName="ContentType" class="field-segment">
+          <ion-segment-button [value]="0">
+            <ion-label>文件</ion-label>
+          </ion-segment-button>
+          <ion-segment-button [value]="1">
+            <ion-label>包裹</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+    </div>
+
+    <!-- Additional Info Card -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>补充信息 <span class="optional">(选填)</span></h3>
+      </div>
+
+      <!-- PostalCode -->
+      <div class="form-field">
+        <label class="field-label">邮编</label>
+        <ion-input
+          class="field-input"
+          formControlName="PostalCode"
+          placeholder="请输入邮编"
+          maxlength="16"
+        ></ion-input>
+      </div>
+
+      <!-- DeclaredValue -->
+      <div class="form-field">
+        <label class="field-label">申报价值 (USD)</label>
+        <ion-input
+          class="field-input"
+          formControlName="DeclaredValue"
+          type="number"
+          placeholder="请输入申报价值"
+          step="0.01"
+        ></ion-input>
+      </div>
+
+      <!-- CustomerExpressNo -->
+      <div class="form-field">
+        <label class="field-label">快递单号</label>
+        <ion-textarea
+          class="field-textarea"
+          formControlName="CustomerExpressNo"
+          placeholder="请输入国内快递单号，多个以逗号/分号分隔"
+          maxlength="512"
+          [rows]="2"
+        ></ion-textarea>
+        <div class="field-hint">多个单号请用逗号或分号分隔，每个单号不超过32个字符</div>
+      </div>
+    </div>
+
+    <!-- Options Card -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>附加选项</h3>
+      </div>
+
+      <div class="form-field form-toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">是否单独报关</span>
+        </div>
+        <ion-toggle formControlName="RequiresSeparateCustomsDeclaration"></ion-toggle>
+      </div>
+
+      <div class="form-field form-toggle-row" *ngIf="showSpecialVat">
+        <div class="toggle-info">
+          <span class="toggle-label">是否开专用发票</span>
+        </div>
+        <ion-toggle formControlName="RequiresSpecialVatInvoice"></ion-toggle>
+      </div>
+
+      <div class="form-field form-toggle-row">
+        <div class="toggle-info">
+          <span class="toggle-label">是否关税预付</span>
+        </div>
+        <ion-toggle formControlName="RequiresDutiesAndTaxesPrepayment"></ion-toggle>
+      </div>
+    </div>
+
+    <!-- Readonly Notice -->
+    <div class="readonly-notice" *ngIf="isReadonly">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <span>该预报已收货，禁止编辑</span>
+    </div>
+  </form>
+</ion-content>

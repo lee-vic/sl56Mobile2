@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { NavController, AlertController, ToastController, ModalController, LoadingController } from '@ionic/angular';
+import { NavController, AlertController, ToastController, ModalController } from '@ionic/angular';
 import { ReturnService } from 'src/app/providers/return.service';
 import { ActivatedRoute } from '@angular/router';
 import { ReturnApplyHistoryPage } from '../return-apply-history/return-apply-history.page';
@@ -64,7 +64,6 @@ export class ReturnApplyPage implements OnInit {
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
     public modalCtrl: ModalController,
-    public loadingController: LoadingController,
     private route: ActivatedRoute
   ) {
     const queryParams = this.route.snapshot.queryParams || {};
@@ -132,45 +131,41 @@ export class ReturnApplyPage implements OnInit {
   }
   doApply(form: any) {
     this.isSubmitting = true;
-    this.presentLoading('请稍后...').then(loader => {
-      this.service.apply1(form).subscribe({
-        next: (res) => {
-          this.finishSubmitting(loader);
-          if (res.IsSuccess === false) {
-            this.presentAlert('提交未成功', res.ErrorMessage);
-          }
-          else {
-            this.submitSuccess = true;
-            this.submitSuccessMessage = '退货申请已提交，客服将尽快处理';
-          }
-        },
-        error: (_error) => {
-          this.finishSubmitting(loader);
-          this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
+    this.service.apply1(form).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        if (res.IsSuccess === false) {
+          this.presentAlert('提交未成功', res.ErrorMessage);
         }
-      });
+        else {
+          this.submitSuccess = true;
+          this.submitSuccessMessage = '退货申请已提交，客服将尽快处理';
+        }
+      },
+      error: (_error) => {
+        this.isSubmitting = false;
+        this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
+      }
     });
   }
 
   doFill(form: any) {
     this.isSubmitting = true;
-    this.presentLoading('请稍后...').then(loader => {
-      this.service.fill1(form).subscribe({
-        next: (res) => {
-          this.finishSubmitting(loader);
-          if (res.IsSuccess === false) {
-            this.presentAlert('提交未成功', res.Message);
-            return;
-          }
-
-          this.submitSuccess = true;
-          this.submitSuccessMessage = '提货信息已提交';
-        },
-        error: () => {
-          this.finishSubmitting(loader);
-          this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
+    this.service.fill1(form).subscribe({
+      next: (res) => {
+        this.isSubmitting = false;
+        if (res.IsSuccess === false) {
+          this.presentAlert('提交未成功', res.Message);
+          return;
         }
-      });
+
+        this.submitSuccess = true;
+        this.submitSuccessMessage = '提货信息已提交';
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
+      }
     });
   }
 
@@ -277,14 +272,4 @@ export class ReturnApplyPage implements OnInit {
     }).then(alert => alert.present());
   }
 
-  private async presentLoading(message: string) {
-    const loader = await this.loadingController.create({ message });
-    await loader.present();
-    return loader;
-  }
-
-  private finishSubmitting(loader: { dismiss: () => Promise<boolean> }): void {
-    this.isSubmitting = false;
-    loader.dismiss();
-  }
 }

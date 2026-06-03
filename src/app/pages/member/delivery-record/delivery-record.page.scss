@@ -65,9 +65,13 @@
 
 
 .list-wrap {
-    padding: 10px 14px 16px;
+    padding: 10px 16px 20px;
     display: grid;
-    gap: 8px;
+    gap: 10px;
+}
+
+.list-wrap ion-card {
+    margin: 0;
 }
 
 .record-card {
@@ -413,8 +417,7 @@
 
 @media (max-width: 420px) {
     .quick-actions,
-    .batch-bar,
-    .list-wrap {
+    .batch-bar {
         padding-left: 10px;
         padding-right: 10px;
     }

@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AlertController, ActionSheetController } from '@ionic/angular';
+import { AlertController, ActionSheetController, ToastController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
 import { UserService } from 'src/app/providers/user.service';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 declare const WeixinJSBridge: {
   invoke: (method: string, params: Record<string, unknown>, callback: (res: { err_msg?: string }) => void) => void;
@@ -65,6 +64,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
   allSelected: boolean = true;
   amountInputDisable: boolean = false;
   isPaying: boolean = false;
+  isLoading: boolean = true;
 
   get canPay(): boolean {
     const total = Number(this.data?.TotalAmount);
@@ -94,7 +94,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private userService:UserService,
     private actionSheetCtrl:ActionSheetController,
-    private uiFeedbackService: UiFeedbackService) {
+    private toastCtrl: ToastController) {
       this.openId = this.route.snapshot.paramMap.get('id') || '';
       if(this.route.snapshot.queryParams['cid']==null){
         this.cid=1;
@@ -104,25 +104,25 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.uiFeedbackService.presentLoading('请稍后...').then(loader => {
-      this.service.getList(this.openId,this.cid).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (res) => {
-        //支付外币时，不选择单号（若勾选单号，则支付金额会变成选择单号的总金额）
-        if(this.cid !== 1){
-          res.ReceiveGoodsDetailList.forEach((p: WechatPayReceiveGoodsItem) => {
-            p.Selected=false;
-          });
-          this.allSelected=false;
-        }
-        this.data = res;
-        this.data.ProductType=this.selectedProductType;
-        if (this.data.ReceiveGoodsDetailList.length > 0 && this.cid === 1) {
-          this.amountInputDisable = true;
-        }
-        else {
-          this.amountInputDisable = false;
-        }
-        this.uiFeedbackService.dismissLoading(loader);
+    this.isLoading = true;
+    this.service.getList(this.openId,this.cid).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+      //支付外币时，不选择单号（若勾选单号，则支付金额会变成选择单号的总金额）
+      if(this.cid !== 1){
+        res.ReceiveGoodsDetailList.forEach((p: WechatPayReceiveGoodsItem) => {
+          p.Selected=false;
+        });
+        this.allSelected=false;
+      }
+      this.data = res;
+      this.data.ProductType=this.selectedProductType;
+      if (this.data.ReceiveGoodsDetailList.length > 0 && this.cid === 1) {
+        this.amountInputDisable = true;
+      }
+      else {
+        this.amountInputDisable = false;
+      }
+      this.isLoading = false;
         this.signalRConnection = this.signalR.createConnection();
         this.signalStatusSub = this.signalRConnection.status.subscribe();
         this.signalRConnection.start().then((c) => {
@@ -153,12 +153,10 @@ export class WechatPayPage implements OnInit, OnDestroy {
 
         },
         error: (error) => {
-          this.uiFeedbackService.dismissLoading(loader);
+          this.isLoading = false;
           this.presentToast(error.statusText, 1500);
         }
       });
-
-    });
 
   this.service.getProductTypes().pipe(takeUntil(this.destroy$)).subscribe(res=>{
     this.productTypes = Array.isArray(res) ? res : [];
@@ -275,11 +273,8 @@ export class WechatPayPage implements OnInit, OnDestroy {
   payByJsApi() {
     this.data.TradeType = "JSAPI";
     this.isPaying = true;
-    this.uiFeedbackService.presentLoading('请稍后...').then(loader => {
-      this.service.pay(this.data).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (res) => {
-
-        this.uiFeedbackService.dismissLoading(loader);
+    this.service.pay(this.data).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
         if (res.Success) {
           let jsApiParam: Record<string, unknown> | null = null;
           try {
@@ -300,23 +295,17 @@ export class WechatPayPage implements OnInit, OnDestroy {
           this.isPaying = false;
           this.presentToast(res.ErrMsg, 3000);
         }
-
-        },
-        error: (err) => {
-          this.uiFeedbackService.dismissLoading(loader);
-          this.isPaying = false;
-          this.presentToast(err.message, 3000);
-        }
-      });
+      },
+      error: (err) => {
+        this.isPaying = false;
+        this.presentToast(err.message, 3000);
+      }
     });
-
-
   }
   payByH5() {
     this.data.TradeType = "MWEB";
-    this.uiFeedbackService.presentLoading('请稍后...').then(loader => this.service.pay(this.data).pipe(takeUntil(this.destroy$)).subscribe({
+    this.service.pay(this.data).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
-        this.uiFeedbackService.dismissLoading(loader);
         if (res.Success)
           location.href = res.PayUrl;
         else {
@@ -324,12 +313,9 @@ export class WechatPayPage implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        this.uiFeedbackService.dismissLoading(loader);
         this.presentToast(err.message, 3000);
-
-
       }
-    }));
+    });
   }
 
 
@@ -410,7 +396,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
 
   private presentToast(message: string, duration = 1500): void {
-    this.uiFeedbackService.presentToast(message, duration, 'middle');
+    this.toastCtrl.create({ message, duration, position: 'middle' }).then(p => p.present());
   }
 
   private presentAlert(subHeader: string, message: string): void {

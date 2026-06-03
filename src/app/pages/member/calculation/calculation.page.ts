@@ -408,15 +408,12 @@ export class CalculationPage implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
-    const loading = await this.uiFeedback.presentLoading('正在计算报价，请稍候...');
-
     this.service
       .calculate(this.buildPayload())
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
           this.isSubmitting = false;
-          this.uiFeedback.dismissLoading(loading);
         })
       )
       .subscribe({

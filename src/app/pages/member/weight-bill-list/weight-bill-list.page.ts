@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
@@ -13,15 +13,15 @@ export class WeightBillListPage implements OnInit {
   openId: string;
   weights: Array<WeightBill> = [];
   showMsg = "";
-
+  isLoading = true;
+  hasLoadError = false;
 
 
 
   constructor(private weightBillService: WeightBillService,
     private cookieService: CookieService,
     private navController: NavController,
-    private alertController: AlertController,
-    private loadingCtrl: LoadingController) { 
+    private alertController: AlertController) { 
       this.openId= this.cookieService.get("OpenId");
     }
 
@@ -29,19 +29,22 @@ export class WeightBillListPage implements OnInit {
     this.loadList();
   }
   loadList() {
-    this.loadingCtrl.create({
-      message: "请稍后",
-    })
-      .then((lc) => {
-        lc.present();
-        this.weightBillService.getList(this.openId).subscribe((p) => {
-          this.weights = p;
-          lc.dismiss();
-          if (this.weights.length == 0) {
-            this.showMsg = "暂无称重记录";
-          }
-        });
-      });
+    this.isLoading = true;
+    this.hasLoadError = false;
+    this.weightBillService.getList(this.openId).subscribe({
+      next: (p) => {
+        this.weights = p;
+        this.isLoading = false;
+        if (this.weights.length == 0) {
+          this.showMsg = "暂无称重记录";
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.hasLoadError = true;
+        this.showMsg = "加载失败，请重试";
+      }
+    });
   }
   detail(objectId) {
     this.navController.navigateForward(
@@ -49,13 +52,7 @@ export class WeightBillListPage implements OnInit {
     );
   }
   print(objectId) {
-    this.loadingCtrl.create({
-      message: "请稍后",
-    })
-      .then((lc) => {
-        lc.present();
-        this.weightBillService.printWeightBill(objectId).subscribe((p) => {
-          lc.dismiss();
+    this.weightBillService.printWeightBill(objectId).subscribe((p) => {
           if (p.Success==true) {
             this.alertController.create({
               header: '打印成功',
@@ -85,6 +82,5 @@ export class WeightBillListPage implements OnInit {
             }).then(p => p.present());
           }
         });
-      });
   }
 }

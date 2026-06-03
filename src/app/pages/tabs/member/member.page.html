@@ -64,6 +64,7 @@
     </ion-grid>
   </div>
   <div *ngIf="isLogin" class="member-dashboard">
+    <ng-container *ngIf="!isDashboardLoading; else dashboardSkeleton">
     <section class="dashboard-hero">
       <div class="hero-top-row">
         <div class="member-identity">
@@ -101,6 +102,55 @@
       </section>
 
     </section>
+
+    </ng-container>
+
+    <ng-template #dashboardSkeleton>
+    <!-- Dashboard Loading Skeleton -->
+    <ng-container *ngIf="isDashboardLoading">
+      <!-- Hero skeleton -->
+      <section class="dashboard-hero skeleton-hero">
+        <div class="hero-top-row">
+          <div class="member-identity">
+            <ion-skeleton-text animated style="width: 40px; height: 40px; border-radius: 50%;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 80px; height: 16px; margin-left: 10px;"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated style="width: 40px; height: 40px; border-radius: 12px;"></ion-skeleton-text>
+        </div>
+
+        <ion-skeleton-text animated style="width: 120px; height: 14px; margin-top: 12px;"></ion-skeleton-text>
+
+        <section class="kpi-panel skeleton-kpi-panel">
+          <div class="kpi-grid">
+            <div class="kpi-item skeleton-kpi-item">
+              <ion-skeleton-text animated style="width: 40%; height: 24px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 60%; height: 14px; margin-top: 6px;"></ion-skeleton-text>
+            </div>
+            <div class="kpi-item skeleton-kpi-item">
+              <ion-skeleton-text animated style="width: 40%; height: 24px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 60%; height: 14px; margin-top: 6px;"></ion-skeleton-text>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Menu skeleton -->
+      <section class="menu-section skeleton-menu-section">
+        <div class="menu-section-header">
+          <ion-skeleton-text animated style="width: 80px; height: 18px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 60px; height: 14px;"></ion-skeleton-text>
+        </div>
+        <div class="skeleton-menu-grid">
+          <div class="skeleton-menu-row" *ngFor="let _ of [1,2,3]">
+            <div class="skeleton-menu-cell" *ngFor="let _ of [1,2,3]">
+              <ion-skeleton-text animated style="width: 44px; height: 44px; border-radius: 12px;"></ion-skeleton-text>
+              <ion-skeleton-text animated style="width: 70%; height: 13px; margin-top: 8px;"></ion-skeleton-text>
+            </div>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+    </ng-template>
 
     <section class="menu-section" *ngIf="quickMenuRows.length > 0">
       <div class="menu-section-header">
