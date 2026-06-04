@@ -12,6 +12,9 @@ import {
   ImportManifestActionResult,
   BulkDeleteResult,
   DropdownOption,
+  AttachmentTypeOption,
+  UploadTempDocumentResult,
+  ForwardingDocumentListResult,
 } from '../interfaces/import-manifest';
 
 describe('ImportManifestService', () => {
@@ -335,5 +338,123 @@ describe('ImportManifestService', () => {
     expect(req.request.method).toBe('GET');
     expect(req.request.responseType).toBe('blob');
     req.flush(new Blob(['template data']));
+  });
+
+  // ════════════════════════════════════════════════════════
+  //  Attachment Endpoints
+  // ════════════════════════════════════════════════════════
+
+  // ── getAttachmentTypes ──
+  it('getAttachmentTypes should GET type list', () => {
+    const mockTypes: AttachmentTypeOption[] = [
+      { id: 58, name: '报关资料' },
+      { id: 2, name: '运单' },
+    ];
+
+    service.getAttachmentTypes().subscribe((res) => {
+      expect(res.length).toBe(2);
+      expect(res[0].id).toBe(58);
+      expect(res[0].name).toBe('报关资料');
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/GetAttachmentTypes');
+    expect(req.request.method).toBe('GET');
+    req.flush(mockTypes);
+  });
+
+  // ── uploadTempDocument ──
+  it('uploadTempDocument should POST FormData with file and attachmentTypeId', () => {
+    const file = new File(['test content'], 'invoice.pdf', { type: 'application/pdf' });
+    const typeId = 58;
+
+    service.uploadTempDocument(file, typeId).subscribe((res) => {
+      expect(res.success).toBe(true);
+      expect(res.token).toBe('abc123');
+      expect(res.fileName).toBe('invoice.pdf');
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/UploadTempDocument');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body instanceof FormData).toBe(true);
+    const mockResult: UploadTempDocumentResult = {
+      success: true,
+      token: 'abc123',
+      fileName: 'invoice.pdf',
+      attachmentTypeId: 58,
+      size: 1024,
+    };
+    req.flush(mockResult);
+  });
+
+  // ── uploadTempDocument failure ──
+  it('uploadTempDocument should handle upload failure', () => {
+    const file = new File(['bad'], 'huge.pdf', { type: 'application/pdf' });
+
+    service.uploadTempDocument(file, 2).subscribe((res) => {
+      expect(res.success).toBe(false);
+      expect(res.message).toBe('文件太大');
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/UploadTempDocument');
+    const failResult: UploadTempDocumentResult = {
+      success: false,
+      message: '文件太大',
+    };
+    req.flush(failResult);
+  });
+
+  // ── getForwardingDocuments ──
+  it('getForwardingDocuments should GET by detailId', () => {
+    const detailId = 100;
+    const mockDocs: ForwardingDocumentListResult = {
+      success: true,
+      rows: [
+        {
+          id: 1,
+          fileName: 'customs.pdf',
+          attachmentTypeId: 58,
+          attachmentTypeName: '报关资料',
+          size: 50000,
+          uploadDate: '2025-06-01',
+          isPending: false,
+        },
+      ],
+    };
+
+    service.getForwardingDocuments(detailId).subscribe((res) => {
+      expect(res.success).toBe(true);
+      expect(res.rows.length).toBe(1);
+      expect(res.rows[0].fileName).toBe('customs.pdf');
+    });
+
+    const req = httpMock.expectOne(
+      (r) => r.url === baseUrl + '/GetForwardingDocuments?detailId=100'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(mockDocs);
+  });
+
+  // ── deleteTempDocument ──
+  it('deleteTempDocument should POST with token', () => {
+    const token = 'tmp-abc-123';
+
+    service.deleteTempDocument(token).subscribe((res) => {
+      expect(res.Success).toBe(true);
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/DeleteTempDocument');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.token).toBe('tmp-abc-123');
+    req.flush({ Success: true, ErrMsg: '' });
+  });
+
+  // ── deleteTempDocument failure ──
+  it('deleteTempDocument should handle not-found token', () => {
+    service.deleteTempDocument('invalid-token').subscribe((res) => {
+      expect(res.Success).toBe(false);
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/DeleteTempDocument');
+    req.flush({ Success: false, ErrMsg: '临时文件不存在' });
   });
 });

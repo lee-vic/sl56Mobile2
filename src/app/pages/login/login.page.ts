@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ToastController } from '@ionic/angular';
+import { ToastController, LoadingController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { UserService } from 'src/app/providers/user.service';
 import { Router } from '@angular/router';
@@ -18,6 +18,7 @@ export class LoginPage implements OnInit {
 
   constructor(public formBuilder: FormBuilder,
     public toastCtrl: ToastController,
+    public loadingCtrl: LoadingController,
     private router: Router,
     private userService: UserService,
     private cookieService: CookieService) {
@@ -36,8 +37,10 @@ export class LoginPage implements OnInit {
   ngOnInit() {
   }
 
-  doLogin(formValue) {
+  async doLogin(formValue) {
     this.isLoggingIn = true;
+    const loading = await this.loadingCtrl.create({ message: '登录中...' });
+    await loading.present();
     // Web application - always set clientType to web
     formValue.clientType = 1;
     formValue.openId = this.cookieService.get('OpenId');
@@ -45,6 +48,7 @@ export class LoginPage implements OnInit {
     this.userService.auth(formValue).subscribe({
       next: (res: any) => {
         this.isLoggingIn = false;
+        loading.dismiss();
         this.isLogin =  res.Success;
         console.log("aa" + this.cookieService.get('sl56Auth'));
 
@@ -62,6 +66,7 @@ export class LoginPage implements OnInit {
       },
       error: (err) => {
         this.isLoggingIn = false;
+        loading.dismiss();
         this.toastCtrl.create({
           message: err.message,
           position: 'middle',

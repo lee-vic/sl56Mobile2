@@ -68,7 +68,7 @@
       <input type="hidden" formControlName="CountryId" />
 
       <!-- Country Dropdown -->
-      <ion-list *ngIf="showCountryList" class="country-result-list" lines="none">
+      <ion-list *ngIf="showCountryList" class="autocomplete-result-list" lines="none">
         <ion-item button detail="false" *ngFor="let item of countrySearch" (click)="countryItemClick(item)">
           <ion-label>{{ item.Code }} {{ item.Name }}</ion-label>
         </ion-item>
@@ -77,23 +77,41 @@
         </ion-item>
       </ion-list>
 
-      <!-- CustomerPriceName -->
-      <div class="form-field">
+      <!-- CustomerPriceName (Autocomplete) -->
+      <div class="form-field" [class.field-error-state]="isPriceErrorVisible">
         <label class="field-label">
           报价代码 <span class="required">*</span>
         </label>
-        <ion-input
-          class="field-input"
-          formControlName="CustomerPriceName"
-          placeholder="请输入报价代码"
-          (ionBlur)="validateCustomerPriceName()"
-          [clearInput]="true"
-        ></ion-input>
-        <div class="field-error" *ngIf="form.get('CustomerPriceName')?.touched && form.get('CustomerPriceName')?.invalid">
-          <span *ngIf="form.get('CustomerPriceName')?.errors?.required">请选择报价</span>
-          <span *ngIf="form.get('CustomerPriceName')?.errors?.invalid">所选报价不可用</span>
+        <ion-searchbar
+          class="field-searchbar"
+          [value]="priceInput"
+          placeholder="输入报价代码搜索，如 UPS Expedited"
+          [debounce]="120"
+          searchIcon=""
+          (ionFocus)="onPriceFocus()"
+          (ionBlur)="onPriceBlur()"
+          (keyup)="onPriceKeyup($event)"
+          (ionInput)="filterPriceItems($event)"
+          (ionClear)="onPriceClear()"
+          showClearButton="focus"
+        ></ion-searchbar>
+        <div class="field-error" *ngIf="isPriceErrorVisible">
+          请选择有效报价，支持输入后回车快速确认
         </div>
       </div>
+
+      <!-- Hidden CustomerPriceName form value -->
+      <input type="hidden" formControlName="CustomerPriceName" />
+
+      <!-- Price Dropdown -->
+      <ion-list *ngIf="showPriceList" class="autocomplete-result-list" lines="none">
+        <ion-item button detail="false" *ngFor="let item of priceSearch" (click)="priceItemClick(item)">
+          <ion-label>{{ item.Code }} - {{ item.Name }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="priceSearch.length === 0">
+          <ion-label color="medium">没有匹配报价，请继续输入</ion-label>
+        </ion-item>
+      </ion-list>
 
       <!-- Piece -->
       <div class="form-field">
@@ -119,14 +137,18 @@
         <label class="field-label">
           货物类型 <span class="required">*</span>
         </label>
-        <ion-segment formControlName="ContentType" class="field-segment">
-          <ion-segment-button [value]="0">
-            <ion-label>文件</ion-label>
-          </ion-segment-button>
-          <ion-segment-button [value]="1">
-            <ion-label>包裹</ion-label>
-          </ion-segment-button>
-        </ion-segment>
+        <div class="content-type-toggle">
+          <button type="button" class="ct-card" [class.ct-active]="form.get('ContentType')?.value === 0" (click)="setContentType(0)">
+            <ion-icon name="document-text-outline" class="ct-icon"></ion-icon>
+            <span class="ct-label">文件</span>
+            <span class="ct-code">DOC</span>
+          </button>
+          <button type="button" class="ct-card" [class.ct-active]="form.get('ContentType')?.value === 1" (click)="setContentType(1)">
+            <ion-icon name="cube-outline" class="ct-icon"></ion-icon>
+            <span class="ct-label">包裹</span>
+            <span class="ct-code">WPX</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -149,7 +171,9 @@
 
       <!-- DeclaredValue -->
       <div class="form-field">
-        <label class="field-label">申报价值 (USD)</label>
+        <label class="field-label">
+          申报价值 (USD)
+        </label>
         <ion-input
           class="field-input"
           formControlName="DeclaredValue"
@@ -198,6 +222,81 @@
           <span class="toggle-label">是否关税预付</span>
         </div>
         <ion-toggle formControlName="RequiresDutiesAndTaxesPrepayment"></ion-toggle>
+      </div>
+    </div>
+
+    <!-- Attachments Card -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <h3>随货资料 <span class="optional">(选填)</span></h3>
+      </div>
+
+      <!-- Attachment Type + File Picker -->
+      <div class="form-field">
+        <div class="attachment-upload-row">
+          <ion-select
+            class="attachment-type-select"
+            [value]="selectedAttachmentTypeId"
+            (ionChange)="selectedAttachmentTypeId = $event.detail.value"
+            placeholder="选择附件类型"
+            interface="action-sheet"
+            [disabled]="isUploading"
+          >
+            <ion-select-option *ngFor="let t of attachmentTypes" [value]="t.id">
+              {{ t.name }}
+            </ion-select-option>
+          </ion-select>
+          <input
+            type="file"
+            #fileInput
+            style="display:none"
+            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+            (change)="onAttachmentFileChange($event)"
+          />
+          <ion-button
+            class="attachment-add-btn"
+            size="small"
+            fill="outline"
+            [disabled]="!selectedAttachmentTypeId || isReadonly || isUploading"
+            (click)="fileInput.click()"
+          >
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            {{ isUploading ? '上传中...' : '添加附件' }}
+          </ion-button>
+        </div>
+        <div class="field-hint">支持 PDF / 图片 / Office 文档，单文件最大 2MB</div>
+      </div>
+
+      <!-- Existing + Pending Files -->
+      <div class="attachment-list" *ngIf="attachments.length > 0">
+        <div class="attachment-item" *ngFor="let doc of attachments; let i = index">
+          <div class="attach-icon">
+            <ion-icon [name]="getFileIcon(doc.fileName)"></ion-icon>
+          </div>
+          <div class="attach-info">
+            <span class="attach-name">{{ doc.fileName }}</span>
+            <span class="attach-meta">
+              {{ doc.attachmentTypeName }}
+              <ng-container *ngIf="doc.size"> · {{ formatFileSize(doc.size) }}</ng-container>
+              <ng-container *ngIf="doc.uploadDate"> · {{ doc.uploadDate | date:'yyyy-MM-dd' }}</ng-container>
+            </span>
+          </div>
+          <ion-button
+            class="attach-delete"
+            fill="clear"
+            color="danger"
+            size="small"
+            [disabled]="isReadonly"
+            (click)="removeAttachment(i)"
+          >
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="form-field attachment-empty" *ngIf="attachments.length === 0">
+        <ion-icon name="cloud-upload-outline" class="empty-icon"></ion-icon>
+        <span class="empty-text">暂无随货资料，点击上方按钮添加</span>
       </div>
     </div>
 

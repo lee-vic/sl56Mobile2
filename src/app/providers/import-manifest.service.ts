@@ -12,6 +12,10 @@ import {
   BulkDeleteRequest,
   BulkDeleteResult,
   DropdownOption,
+  AttachmentTypeOption,
+  UploadTempDocumentResult,
+  ForwardingDocumentItem,
+  ForwardingDocumentListResult,
 } from '../interfaces/import-manifest';
 
 @Injectable({
@@ -174,5 +178,50 @@ export class ImportManifestService {
       withCredentials: true,
       responseType: 'blob',
     });
+  }
+
+  /**
+   * 获取附件类型下拉选项
+   */
+  getAttachmentTypes() {
+    return this.http.get<AttachmentTypeOption[]>(
+      this.baseUrl + '/GetAttachmentTypes',
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * 上传临时附件
+   */
+  uploadTempDocument(file: File, attachmentTypeId: number) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('attachmentTypeId', attachmentTypeId.toString());
+    return this.http.post<UploadTempDocumentResult>(
+      this.baseUrl + '/UploadTempDocument',
+      formData,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * 获取预报的随货资料列表
+   */
+  getForwardingDocuments(detailId: number) {
+    return this.http.get<ForwardingDocumentListResult>(
+      this.baseUrl + '/GetForwardingDocuments?detailId=' + detailId,
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * 删除临时附件
+   */
+  deleteTempDocument(token: string) {
+    return this.http.post<ImportManifestActionResult>(
+      this.baseUrl + '/DeleteTempDocument',
+      { token },
+      { withCredentials: true }
+    );
   }
 }

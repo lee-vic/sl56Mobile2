@@ -72,6 +72,7 @@ export interface ImportManifestSaveRequest {
     RequiresSeparateCustomsDeclaration: boolean;
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
+    PendingDocumentsJson?: string | null;
     LastChanged?: any;
 }
 
@@ -153,4 +154,39 @@ export interface DropdownOption {
     Id: number;
     Code: string;
     Name: string;
+}
+
+/** 附件类型下拉选项 */
+export interface AttachmentTypeOption {
+    id: number;
+    name: string;
+}
+
+/** 随货资料展示项 */
+export interface ForwardingDocumentItem {
+    id?: number;
+    token?: string;
+    fileName: string;
+    attachmentTypeId: number;
+    attachmentTypeName: string;
+    size?: number;
+    uploadDate?: string;
+    isPending?: boolean;
+}
+
+/** 临时上传结果 */
+export interface UploadTempDocumentResult {
+    success: boolean;
+    token?: string;
+    fileName?: string;
+    attachmentTypeId?: number;
+    attachmentTypeName?: string;
+    size?: number;
+    message?: string;
+}
+
+/** 附件列表响应 */
+export interface ForwardingDocumentListResult {
+    success: boolean;
+    rows: ForwardingDocumentItem[];
 }

@@ -145,6 +145,45 @@ async function setupImportManifestRoutes(page: any) {
       return;
     }
 
+    // Attachment types
+    if (url.includes(`${importManifestBase}/GetAttachmentTypes`)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          { id: 58, name: '报关资料' },
+          { id: 2, name: '运单' },
+        ]),
+      });
+      return;
+    }
+
+    // Upload temp document
+    if (url.includes(`${importManifestBase}/UploadTempDocument`)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          token: 'tmp-abc-123',
+          fileName: 'test.pdf',
+          attachmentTypeId: 58,
+          size: 50000,
+        }),
+      });
+      return;
+    }
+
+    // Get forwarding documents
+    if (url.includes(`${importManifestBase}/GetForwardingDocuments`)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rows: [] }),
+      });
+      return;
+    }
+
     // Validate ObjectNo
     if (url.includes(`${importManifestBase}/ValidateObjectNo`)) {
       const body = route.request().postDataJSON();
@@ -322,38 +361,68 @@ test.describe('import manifest form page', () => {
     page.setDefaultTimeout(15_000);
   });
 
-  test('displays create form shell', async ({ page }) => {
+  test('displays create form shell with searchbar and card toggle', async ({ page }) => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/form');
 
     // Required fields should be present
     await expect(page.locator('ion-input[formControlName="ObjectNo"]')).toBeVisible();
-    await expect(page.locator('ion-select[formControlName="CountryId"]')).toBeVisible();
-    await expect(page.locator('ion-input[formControlName="CustomerPriceName"]')).toBeVisible();
     await expect(page.locator('ion-input[formControlName="Piece"]')).toBeVisible();
+
+    // Country and price should use searchbar (autocomplete)
+    await expect(page.locator('ion-searchbar').first()).toBeVisible();
+
+    // ContentType should use card toggle
+    await expect(page.locator('.ct-card').first()).toBeVisible();
+    await expect(page.locator('.ct-card')).toHaveCount(2);
+
+    // Attachment section should be visible
+    await expect(page.locator('.attachment-empty')).toBeVisible();
 
     // Save button
     await expect(page.locator('ion-buttons[slot="end"] ion-button')).toBeVisible();
   });
 
-  test('can fill form and submit', async ({ page }) => {
+  test('content type card toggle works', async ({ page }) => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/form');
 
-    // Fill required fields
+    // First card (DOC) should be active by default
+    await expect(page.locator('.ct-card').first()).toHaveClass(/ct-active/);
+    await expect(page.locator('.ct-card').last()).not.toHaveClass(/ct-active/);
+
+    // Click second card (WPX)
+    await page.locator('.ct-card').last().click();
+
+    // Second card should become active
+    await expect(page.locator('.ct-card').last()).toHaveClass(/ct-active/);
+    await expect(page.locator('.ct-card').first()).not.toHaveClass(/ct-active/);
+  });
+
+  test('can fill form and submit with new UI', async ({ page }) => {
+    await setupImportManifestRoutes(page);
+    await page.goto('/member/import-manifest/form');
+
+    // Fill ObjectNo
     await page.locator('ion-input[formControlName="ObjectNo"] input').fill('NEWTEST001');
 
-    // Select country via action-sheet
-    await page.locator('ion-select[formControlName="CountryId"]').click();
-    const actionSheet = page.locator('ion-action-sheet');
-    await actionSheet.locator('button').first().click();
+    // Type country in searchbar and select from dropdown
+    const countrySearchbar = page.locator('ion-searchbar').first();
+    await countrySearchbar.locator('input').fill('USA');
+    // Click the first dropdown item
+    const countryItem = page.locator('.autocomplete-result-list ion-item').first();
+    await countryItem.click();
 
-    // Fill remaining fields
-    await page.locator('ion-input[formControlName="CustomerPriceName"] input').fill('PRICE01');
+    // Type price code in second searchbar and press Enter
+    const priceSearchbar = page.locator('ion-searchbar').last();
+    await priceSearchbar.locator('input').fill('PRICE01');
+    await priceSearchbar.locator('input').press('Enter');
+
+    // Fill piece count
     await page.locator('ion-input[formControlName="Piece"] input').fill('5');
 
-    // Select content type (parcel)
-    await page.locator('ion-segment-button[value="1"]').click();
+    // Select content type (WPX)
+    await page.locator('.ct-card').last().click();
 
     // Click save
     await page.locator('ion-buttons[slot="end"] ion-button').click();

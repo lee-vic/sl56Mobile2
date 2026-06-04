@@ -9,7 +9,7 @@ import { of, throwError } from 'rxjs';
 
 import { ImportManifestFormPage } from './import-manifest-form.page';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail, DropdownOption } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
 
 describe('ImportManifestFormPage', () => {
   let component: ImportManifestFormPage;
@@ -27,6 +27,23 @@ describe('ImportManifestFormPage', () => {
 
   const mockPriceOptions: DropdownOption[] = [
     { Id: 1, Code: 'PRICE01', Name: '报价一' },
+  ];
+
+  const mockAttachmentTypes: AttachmentTypeOption[] = [
+    { id: 58, name: '报关资料' },
+    { id: 2, name: '运单' },
+  ];
+
+  const mockForwardingDocuments: ForwardingDocumentItem[] = [
+    {
+      id: 101,
+      fileName: 'invoice.pdf',
+      attachmentTypeId: 58,
+      attachmentTypeName: '报关资料',
+      size: 102400,
+      uploadDate: '2025-06-01',
+      isPending: false,
+    },
   ];
 
   const mockDetail: ImportManifestDetail = {
@@ -72,11 +89,15 @@ describe('ImportManifestFormPage', () => {
     const sSpy = jasmine.createSpyObj('ImportManifestService', [
       'getCountryOptions',
       'getCustomerPriceOptions',
+      'getAttachmentTypes',
       'getDetail',
       'create',
       'edit',
       'validateObjectNo',
       'validateCustomerPriceName',
+      'uploadTempDocument',
+      'getForwardingDocuments',
+      'deleteTempDocument',
     ]);
 
     const lSpy = jasmine.createSpyObj('LoadingController', ['create']);
@@ -115,6 +136,7 @@ describe('ImportManifestFormPage', () => {
 
     serviceSpy.getCountryOptions.and.returnValue(of(mockCountryOptions));
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(mockPriceOptions));
+    serviceSpy.getAttachmentTypes.and.returnValue(of(mockAttachmentTypes));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
     toastCtrlSpy.create.and.returnValue(Promise.resolve(mockToast as any));
 
@@ -466,5 +488,306 @@ describe('ImportManifestFormPage', () => {
     ];
     component.fillForm(mockDetail);
     expect(component.selectedCountry?.Id).toBe(1);
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  Price Autocomplete
+  // ════════════════════════════════════════════════════════════
+
+  // ── 29. Price autocomplete: filter by code and name ──
+  it('filterPriceItems should filter by code and name', () => {
+    fixture.detectChanges();
+    component.priceOptions = [
+      { Id: 1, Code: 'PRICE01', Name: '报价方案A' },
+      { Id: 2, Code: 'PRICE02', Name: '报价方案B' },
+      { Id: 3, Code: 'EXP03', Name: 'Express' },
+    ];
+
+    component.filterPriceItems({ detail: { value: 'PRICE01' } });
+    expect(component.priceSearch.length).toBe(1);
+    expect(component.priceSearch[0].Code).toBe('PRICE01');
+
+    component.filterPriceItems({ detail: { value: 'express' } });
+    expect(component.priceSearch.length).toBe(1);
+    expect(component.priceSearch[0].Name).toBe('Express');
+
+    component.filterPriceItems({ detail: { value: '' } });
+    expect(component.priceSearch.length).toBe(3);
+  });
+
+  // ── 30. Price autocomplete: guard skips unchanged value ──
+  it('filterPriceItems should skip when value unchanged and price selected', () => {
+    fixture.detectChanges();
+    component.selectedPrice = { Id: 1, Code: 'PRICE01', Name: '报价一' };
+    component.priceInput = 'PRICE01';
+    component.form.get('CustomerPriceName')?.setValue('PRICE01');
+
+    component.filterPriceItems({ detail: { value: 'PRICE01' } });
+    // selectedPrice should remain unchanged (guard hit)
+    expect(component.selectedPrice).toBeTruthy();
+    expect(component.form.get('CustomerPriceName')?.value).toBe('PRICE01');
+  });
+
+  // ── 31. Price autocomplete: select via click ──
+  it('priceItemClick should set selected price and form value', () => {
+    fixture.detectChanges();
+    const price: DropdownOption = { Id: 10, Code: 'PRICE10', Name: '报价十' };
+    component.priceItemClick(price);
+    expect(component.selectedPrice).toEqual(price);
+    expect(component.form.get('CustomerPriceName')?.value).toBe('PRICE10');
+    expect(component.showPriceList).toBe(false);
+    expect(component.priceInput).toBe('PRICE10');
+  });
+
+  // ── 32. Price autocomplete: clear ──
+  it('onPriceClear should reset price state', () => {
+    fixture.detectChanges();
+    component.selectedPrice = { Id: 1, Code: 'PRICE01', Name: '报价一' };
+    component.showPriceList = true;
+    component.hasPriceValidationError = true;
+    component.onPriceClear();
+    expect(component.selectedPrice).toBeNull();
+    expect(component.showPriceList).toBe(false);
+    expect(component.hasPriceValidationError).toBe(false);
+    expect(component.form.get('CustomerPriceName')?.value).toBeNull();
+  });
+
+  // ── 33. Price autocomplete: selectPrice exact match ──
+  it('selectPrice should match by exact code', () => {
+    fixture.detectChanges();
+    component.priceOptions = [
+      { Id: 20, Code: 'PRICE20', Name: '方案二十' },
+      { Id: 21, Code: 'PRICE21', Name: '方案二十一' },
+    ];
+    component.priceInput = 'PRICE20';
+    component.selectPrice();
+    expect(component.selectedPrice?.Id).toBe(20);
+    expect(component.showPriceList).toBe(false);
+  });
+
+  // ── 34. Price autocomplete: single result auto-select ──
+  it('selectPrice should pick single match result', () => {
+    fixture.detectChanges();
+    component.priceOptions = [{ Id: 30, Code: 'ONLY01', Name: '唯一报价' }];
+    component.priceSearch = [{ Id: 30, Code: 'ONLY01', Name: '唯一报价' }];
+    component.priceInput = 'ONLY';
+    component.selectPrice();
+    expect(component.selectedPrice?.Id).toBe(30);
+  });
+
+  // ── 35. priceInput display after selection ──
+  it('priceInput should show Code after selection', () => {
+    fixture.detectChanges();
+    (component as any).setSelectedPrice({ Id: 1, Code: 'P01', Name: '报价A' });
+    expect(component.priceInput).toBe('P01');
+  });
+
+  // ── 36. fillForm sets selectedPrice ──
+  it('fillForm should set selectedPrice from options', () => {
+    fixture.detectChanges();
+    component.priceOptions = [
+      { Id: 1, Code: 'PRICE01', Name: '报价一' },
+      { Id: 2, Code: 'PRICE02', Name: '报价二' },
+    ];
+    component.fillForm(mockDetail);
+    expect(component.selectedPrice?.Code).toBe('PRICE01');
+  });
+
+  // ── 37. fillForm sets priceInput when no match ──
+  it('fillForm should fallback to raw CustomerPriceName when no match', () => {
+    fixture.detectChanges();
+    component.priceOptions = [{ Id: 1, Code: 'OTHER', Name: '其他' }];
+    component.fillForm(mockDetail);
+    expect(component.selectedPrice).toBeNull();
+    expect(component.priceInput).toBe('PRICE01');
+  });
+
+  // ── 38. isPriceErrorVisible when no selection ──
+  it('isPriceErrorVisible should be true when touched and no selection', () => {
+    fixture.detectChanges();
+    component.form.get('CustomerPriceName')?.markAsTouched();
+    component.selectedPrice = null;
+    expect(component.isPriceErrorVisible).toBe(true);
+  });
+
+  // ── 39. isPriceErrorVisible when has validation error ──
+  it('isPriceErrorVisible should be true when hasPriceValidationError', () => {
+    fixture.detectChanges();
+    component.hasPriceValidationError = true;
+    expect(component.isPriceErrorVisible).toBe(true);
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  ContentType Toggle
+  // ════════════════════════════════════════════════════════════
+
+  // ── 40. setContentType should update form value ──
+  it('setContentType should set ContentType value and mark touched', () => {
+    fixture.detectChanges();
+    component.setContentType(1);
+    expect(component.form.get('ContentType')?.value).toBe(1);
+    expect(component.form.get('ContentType')?.touched).toBe(true);
+  });
+
+  // ── 41. setContentType should switch between 0 and 1 ──
+  it('setContentType should toggle between DOC(0) and WPX(1)', () => {
+    fixture.detectChanges();
+    expect(component.form.get('ContentType')?.value).toBe(0);
+
+    component.setContentType(1);
+    expect(component.form.get('ContentType')?.value).toBe(1);
+
+    component.setContentType(0);
+    expect(component.form.get('ContentType')?.value).toBe(0);
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  Attachments
+  // ════════════════════════════════════════════════════════════
+
+  // ── 42. fillForm loads forwarding documents in edit mode ──
+  it('fillForm should load existing forwarding documents', () => {
+    fixture.detectChanges();
+    serviceSpy.getForwardingDocuments.and.returnValue(
+      of({ success: true, rows: mockForwardingDocuments })
+    );
+    component.fillForm(mockDetail);
+    expect(serviceSpy.getForwardingDocuments).toHaveBeenCalledWith(1);
+  });
+
+  // ── 43. removeAttachment removes from list ──
+  it('removeAttachment should splice item and call deleteTempDocument for pending', () => {
+    fixture.detectChanges();
+    component.attachments = [
+      { token: 'abc', fileName: 'test.pdf', attachmentTypeId: 2, attachmentTypeName: '运单', size: 100, isPending: true },
+      { id: 1, fileName: 'exist.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料', isPending: false },
+    ];
+
+    component.removeAttachment(0);
+    expect(component.attachments.length).toBe(1);
+    expect(serviceSpy.deleteTempDocument).toHaveBeenCalledWith('abc');
+  });
+
+  // ── 44. removeAttachment does nothing for invalid index ──
+  it('removeAttachment should handle invalid index gracefully', () => {
+    fixture.detectChanges();
+    component.attachments = [{ token: 'x', fileName: 'f.pdf', attachmentTypeId: 2, attachmentTypeName: '运单', isPending: true }];
+    component.removeAttachment(999);
+    expect(component.attachments.length).toBe(1);
+  });
+
+  // ── 45. syncCustomsDeclarationFlag auto-checks customs ──
+  it('syncCustomsDeclarationFlag should auto-check RequiresSeparateCustomsDeclaration when customs doc present', () => {
+    fixture.detectChanges();
+    component.attachments = [
+      { fileName: 'customs.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料', isPending: true },
+    ];
+    (component as any).syncCustomsDeclarationFlag();
+    expect(component.form.get('RequiresSeparateCustomsDeclaration')?.value).toBe(true);
+  });
+
+  // ── 46. getFileIcon returns correct icon per extension ──
+  it('getFileIcon should return correct icon name', () => {
+    fixture.detectChanges();
+    expect(component.getFileIcon('file.pdf')).toBe('document-outline');
+    expect(component.getFileIcon('photo.jpg')).toBe('image-outline');
+    expect(component.getFileIcon('photo.png')).toBe('image-outline');
+    expect(component.getFileIcon('doc.docx')).toBe('document-text-outline');
+    expect(component.getFileIcon('sheet.xlsx')).toBe('grid-outline');
+    expect(component.getFileIcon('unknown.xyz')).toBe('attach-outline');
+  });
+
+  // ── 47. formatFileSize formats correctly ──
+  it('formatFileSize should format bytes correctly', () => {
+    fixture.detectChanges();
+    expect(component.formatFileSize(0)).toBe('0 B');
+    expect(component.formatFileSize(500)).toBe('500 B');
+    expect(component.formatFileSize(1024)).toBe('1.0 KB');
+    expect(component.formatFileSize(1536)).toBe('1.5 KB');
+    expect(component.formatFileSize(1048576)).toBe('1.0 MB');
+    expect(component.formatFileSize(2097152)).toBe('2.0 MB');
+  });
+
+  // ── 48. save includes PendingDocumentsJson ──
+  it('save should include PendingDocumentsJson when pending uploads exist', async () => {
+    fixture.detectChanges();
+    component.form.patchValue({
+      ObjectNo: 'PEND001',
+      CountryId: 1,
+      CustomerPriceName: 'PRICE01',
+      Piece: 1,
+      ContentType: 0,
+    });
+    component.pendingUploads = [{ token: 'tok1', attachmentTypeId: 58 }];
+    serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
+
+    await component.save();
+
+    expect(serviceSpy.create).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        PendingDocumentsJson: JSON.stringify([{ token: 'tok1', attachmentTypeId: 58 }]),
+      })
+    );
+  });
+
+  // ── 49. save null PendingDocumentsJson when no pending ──
+  it('save should send null PendingDocumentsJson when no pending uploads', async () => {
+    fixture.detectChanges();
+    component.form.patchValue({
+      ObjectNo: 'NOPEN001',
+      CountryId: 1,
+      CustomerPriceName: 'PRICE01',
+      Piece: 1,
+      ContentType: 0,
+    });
+    component.pendingUploads = [];
+    serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
+
+    await component.save();
+
+    expect(serviceSpy.create).toHaveBeenCalledWith(
+      jasmine.objectContaining({ PendingDocumentsJson: null })
+    );
+  });
+
+  // ── 50. onPriceFocus shows list and refreshes options ──
+  it('onPriceFocus should show list and refresh options', () => {
+    fixture.detectChanges();
+    component.priceOptions = [{ Id: 1, Code: 'P1', Name: 'Price1' }];
+    component.priceSearch = [];
+    component.onPriceFocus();
+    expect(component.showPriceList).toBe(true);
+    expect(component.priceSearch.length).toBe(1);
+  });
+
+  // ── 51. onPriceKeyup Enter triggers selectPrice ──
+  it('onPriceKeyup Enter should trigger selectPrice', () => {
+    fixture.detectChanges();
+    component.priceOptions = [{ Id: 1, Code: 'EXACT', Name: 'Exact Match' }];
+    component.priceInput = 'EXACT';
+    component.onPriceKeyup(new KeyboardEvent('keyup', { key: 'Enter' }));
+    expect(component.selectedPrice?.Code).toBe('EXACT');
+  });
+
+  // ── 52. selectPrice shows error for no input ──
+  it('selectPrice should set error when input is empty', () => {
+    fixture.detectChanges();
+    component.priceInput = '   ';
+    component.selectPrice();
+    expect(component.selectedPrice).toBeNull();
+    expect(component.hasPriceValidationError).toBe(true);
+  });
+
+  // ── 53. selectPrice shows error when no match ──
+  it('selectPrice should set error when no match found', () => {
+    fixture.detectChanges();
+    component.priceOptions = [{ Id: 1, Code: 'A', Name: 'AA' }, { Id: 2, Code: 'B', Name: 'BB' }];
+    component.priceSearch = [...component.priceOptions];
+    component.priceInput = 'NO_MATCH';
+    component.selectPrice();
+    expect(component.selectedPrice).toBeNull();
+    expect(component.hasPriceValidationError).toBe(true);
   });
 });

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, LoadingController, ToastController } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail, DropdownOption } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -17,6 +17,7 @@ export class ImportManifestFormPage implements OnInit {
   isEditMode: boolean = false;
   isReadonly: boolean = false;
   isSubmitting: boolean = false;
+  isUploading: boolean = false;
 
   countryOptions: DropdownOption[] = [];
   countrySearch: DropdownOption[] = [];
@@ -25,7 +26,18 @@ export class ImportManifestFormPage implements OnInit {
   showCountryList: boolean = false;
   hasCountryValidationError: boolean = false;
   priceOptions: DropdownOption[] = [];
+  priceSearch: DropdownOption[] = [];
+  selectedPrice: DropdownOption | null = null;
+  priceInput: string = '';
+  showPriceList: boolean = false;
+  hasPriceValidationError: boolean = false;
   showSpecialVat: boolean = false;
+
+  // Attachments
+  attachmentTypes: AttachmentTypeOption[] = [];
+  selectedAttachmentTypeId: number | null = null;
+  attachments: ForwardingDocumentItem[] = [];
+  pendingUploads: { token: string; attachmentTypeId: number }[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -63,11 +75,18 @@ export class ImportManifestFormPage implements OnInit {
     forkJoin([
       this.service.getCountryOptions(),
       this.service.getCustomerPriceOptions(),
+      this.service.getAttachmentTypes(),
     ]).subscribe({
-      next: ([countries, prices]) => {
+      next: ([countries, prices, attachTypes]) => {
         this.countryOptions = countries || [];
         this.countrySearch = this.countryOptions;
         this.priceOptions = prices || [];
+        this.priceSearch = this.priceOptions;
+        this.attachmentTypes = attachTypes || [];
+        // Default to first attachment type
+        if (this.attachmentTypes.length > 0) {
+          this.selectedAttachmentTypeId = this.attachmentTypes[0].id;
+        }
 
         if (this.id) {
           this.loadDetail(this.id);
@@ -87,6 +106,16 @@ export class ImportManifestFormPage implements OnInit {
       this.showSpecialVat = val;
       if (!val) {
         this.form.get('RequiresSpecialVatInvoice')?.setValue(false);
+      }
+
+      // 勾选"单独报关"但无报关资料附件时，自动取消勾选并提示
+      if (val) {
+        const hasCustomsDoc = this.attachments.some((d) => d.attachmentTypeId === 58);
+        if (!hasCustomsDoc) {
+          this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(false, { emitEvent: false });
+          this.showSpecialVat = false;
+          this.showToast('勾选"是否单独报关"前，请先上传报关资料');
+        }
       }
     });
   }
@@ -117,6 +146,10 @@ export class ImportManifestFormPage implements OnInit {
     const matched = this.countryOptions.find((c) => c.Id === detail.CountryId) || null;
     this.selectedCountry = matched;
     this.countryInput = matched ? `${matched.Name} (${matched.Code})` : '';
+    // Set selected price for autocomplete display
+    const matchedPrice = this.priceOptions.find((p) => p.Code === detail.CustomerPriceName) || null;
+    this.selectedPrice = matchedPrice;
+    this.priceInput = matchedPrice ? matchedPrice.Code : (detail.CustomerPriceName || '');
     this.form.patchValue({
       ObjectNo: detail.ObjectNo,
       CountryId: detail.CountryId,
@@ -130,6 +163,17 @@ export class ImportManifestFormPage implements OnInit {
       RequiresDutiesAndTaxesPrepayment: detail.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: detail.RequiresSpecialVatInvoice,
     });
+
+    // Load existing forwarding documents
+    if (detail.ObjectId) {
+      this.service.getForwardingDocuments(detail.ObjectId).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.attachments = (res.rows || []).map((d) => ({ ...d, isPending: false }));
+          }
+        },
+      });
+    }
   }
 
   async validateObjectNo() {
@@ -159,6 +203,135 @@ export class ImportManifestFormPage implements OnInit {
         }
       },
     });
+  }
+
+  // ========== ContentType Toggle ==========
+
+  setContentType(value: number) {
+    this.form.get('ContentType')?.setValue(value);
+    this.form.get('ContentType')?.markAsTouched();
+  }
+
+  // ========== Attachments ==========
+
+  onAttachmentFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file) return;
+
+    const attachTypeId = this.selectedAttachmentTypeId;
+    if (!attachTypeId) {
+      this.showToast('请先选择附件类型');
+      input.value = '';
+      return;
+    }
+
+    // 同一附件类型不允许重复（检查已上传 + 待上传）
+    const typeName = this.attachmentTypes.find((t) => t.id === attachTypeId)?.name || '';
+    const duplicate = this.attachments.some((d) => d.attachmentTypeId === attachTypeId);
+    if (duplicate) {
+      this.showToast(`"${typeName}" 类型已存在，不允许重复`);
+      input.value = '';
+      return;
+    }
+
+    // Validate file type
+    const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx'];
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!allowedExts.includes(ext)) {
+      this.showToast('不支持的文件格式，仅支持 PDF/图片/Office 文档');
+      input.value = '';
+      return;
+    }
+
+    // Validate file size (2MB limit, except customs type 58)
+    const maxSize = attachTypeId === 58 ? Infinity : 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.showToast('文件大小超过限制（最大 2MB）');
+      input.value = '';
+      return;
+    }
+
+    const loadingPromise = this.loadingCtrl.create({ message: '上传中...' });
+    loadingPromise.then((loading) => {
+      loading.present();
+      this.isUploading = true;
+      this.service.uploadTempDocument(file, attachTypeId).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          this.isUploading = false;
+          input.value = '';
+          if (res.success && res.token) {
+            const typeName = this.attachmentTypes.find((t) => t.id === attachTypeId)?.name || '';
+            this.attachments.push({
+              token: res.token,
+              fileName: res.fileName || file.name,
+              attachmentTypeId: attachTypeId,
+              attachmentTypeName: typeName,
+              size: file.size,
+              isPending: true,
+            });
+            this.pendingUploads.push({ token: res.token, attachmentTypeId: attachTypeId });
+            this.syncCustomsDeclarationFlag();
+          } else {
+            this.showToast(res.message || '上传失败，请重试');
+          }
+        },
+        error: () => {
+          loading.dismiss();
+          this.isUploading = false;
+          input.value = '';
+          this.showToast('上传失败，网络错误');
+        },
+      });
+    });
+  }
+
+  removeAttachment(index: number) {
+    const doc = this.attachments[index];
+    if (!doc) return;
+
+    if (doc.isPending && doc.token) {
+      // Remove from pending uploads
+      this.pendingUploads = this.pendingUploads.filter((p) => p.token !== doc.token);
+      // Try to delete temp file on server
+      this.service.deleteTempDocument(doc.token).subscribe();
+    }
+
+    this.attachments.splice(index, 1);
+    this.syncCustomsDeclarationFlag();
+  }
+
+  /** Auto-sync customs declaration flag with attachment type 58 (bidirectional) */
+  private syncCustomsDeclarationFlag() {
+    const hasCustomsDoc = this.attachments.some((d) => d.attachmentTypeId === 58);
+    const isChecked = this.form.get('RequiresSeparateCustomsDeclaration')?.value;
+
+    if (hasCustomsDoc && !isChecked) {
+      // 有报关资料但未勾选→自动勾选
+      this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(true);
+    } else if (!hasCustomsDoc && isChecked) {
+      // 无报关资料但已勾选→自动取消
+      this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(false);
+    }
+  }
+
+  getFileIcon(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'document-outline';
+      case 'jpg': case 'jpeg': case 'png': return 'image-outline';
+      case 'doc': case 'docx': return 'document-text-outline';
+      case 'xls': case 'xlsx': return 'grid-outline';
+      default: return 'attach-outline';
+    }
+  }
+
+  formatFileSize(bytes: number): string {
+    if (!bytes || bytes <= 0) return '0 B';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 
   // ========== Country Autocomplete ==========
@@ -253,9 +426,142 @@ export class ImportManifestFormPage implements OnInit {
       (!!this.form.get('CountryId')?.touched && !this.selectedCountry);
   }
 
+  // ========== Price Autocomplete ==========
+
+  onPriceFocus() {
+    this.showPriceList = true;
+    this.priceSearch = this.priceOptions;
+  }
+
+  onPriceBlur() {
+    this.form.get('CustomerPriceName')?.markAsTouched();
+    setTimeout(() => this.selectPrice(), 120);
+  }
+
+  filterPriceItems(ev: any) {
+    const val = (ev?.detail?.value ?? ev?.target?.value ?? '').toString();
+
+    // 若值未变化且已有选中项，跳过以避免程序化赋值触发重置
+    if (val === this.priceInput && this.selectedPrice) {
+      return;
+    }
+
+    this.priceInput = val;
+    this.showPriceList = true;
+    this.selectedPrice = null;
+    this.hasPriceValidationError = false;
+    this.form.get('CustomerPriceName')?.setValue(null, { emitEvent: false });
+
+    if (val && val.trim() !== '') {
+      const lower = val.toLowerCase();
+      this.priceSearch = this.priceOptions.filter(
+        (item) => item.Name.toLowerCase().includes(lower) || item.Code.toLowerCase().includes(lower)
+      );
+    } else {
+      this.priceSearch = this.priceOptions;
+    }
+  }
+
+  priceItemClick(item: DropdownOption) {
+    this.setSelectedPrice(item);
+  }
+
+  onPriceKeyup(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.selectPrice();
+    }
+  }
+
+  onPriceClear() {
+    this.priceInput = '';
+    this.priceSearch = this.priceOptions;
+    this.selectedPrice = null;
+    this.showPriceList = false;
+    this.hasPriceValidationError = false;
+    this.form.get('CustomerPriceName')?.setValue(null, { emitEvent: false });
+  }
+
+  selectPrice() {
+    const inputValue = this.priceInput.trim();
+    if (!inputValue) {
+      this.selectedPrice = null;
+      this.showPriceList = false;
+      this.hasPriceValidationError = true;
+      return;
+    }
+
+    const exactMatch = this.priceOptions.find(
+      (item) => item.Code.toLowerCase() === inputValue.toLowerCase()
+    );
+
+    if (exactMatch) {
+      this.setSelectedPrice(exactMatch);
+      return;
+    }
+
+    if (this.priceSearch.length === 1) {
+      this.setSelectedPrice(this.priceSearch[0]);
+      return;
+    }
+
+    this.selectedPrice = null;
+    this.hasPriceValidationError = true;
+  }
+
+  private setSelectedPrice(item: DropdownOption) {
+    this.showPriceList = false;
+    this.priceInput = item.Code;
+    this.form.get('CustomerPriceName')?.setValue(item.Code, { emitEvent: false });
+    this.form.get('CustomerPriceName')?.markAsTouched();
+    this.selectedPrice = item;
+    this.hasPriceValidationError = false;
+  }
+
+  get isPriceErrorVisible(): boolean {
+    return this.hasPriceValidationError ||
+      (!!this.form.get('CustomerPriceName')?.touched && !this.selectedPrice);
+  }
+
   // ========== Save ==========
 
   async save() {
+    // 保存前检查是否有文件仍在上传中
+    if (this.isUploading) {
+      const alert = await this.alertCtrl.create({
+        header: '文件上传未完成',
+        message: '文件仍在上传中，请等待上传完成后再保存',
+        buttons: ['确定'],
+      });
+      await alert.present();
+      return;
+    }
+
+    // 快递单号：校验单个长度 + 去重
+    const rawExpressNo = this.form.get('CustomerExpressNo')?.value?.trim() || '';
+    if (rawExpressNo) {
+      const parts = rawExpressNo
+        .split(/[,;，；]/)
+        .map((p: string) => p.trim())
+        .filter((p: string) => p.length > 0);
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i].length > 32) {
+          const alert = await this.alertCtrl.create({
+            header: '快递单号格式错误',
+            message: `第 ${i + 1} 个快递单号长度不能超过 32 个字符`,
+            buttons: ['确定'],
+          });
+          await alert.present();
+          return;
+        }
+      }
+      // 去重后重新写入
+      const uniqueParts = [...new Set(parts.map((p: string) => p.toLowerCase()))];
+      const deduped = uniqueParts.join(',');
+      if (deduped !== rawExpressNo.replace(/[,;，；]/g, ',').replace(/,,+/g, ',').replace(/^,|,$/g, '')) {
+        this.form.get('CustomerExpressNo')?.setValue(deduped);
+      }
+    }
+
     if (this.form.invalid) {
       const alert = await this.alertCtrl.create({
         header: '信息填写不完善',
@@ -270,11 +576,14 @@ export class ImportManifestFormPage implements OnInit {
     this.isSubmitting = true;
 
     const formValue = this.form.getRawValue();
+    const pendingDocsJson = this.pendingUploads.length > 0
+      ? JSON.stringify(this.pendingUploads)
+      : null;
     const request = {
       ObjectId: this.id,
       ObjectNo: formValue.ObjectNo?.trim().toUpperCase(),
       CountryId: formValue.CountryId,
-      CustomerPriceName: formValue.CustomerPriceName?.trim().toUpperCase(),
+      CustomerPriceName: this.selectedPrice?.Code || formValue.CustomerPriceName?.trim().toUpperCase(),
       Piece: formValue.Piece,
       ContentType: formValue.ContentType,
       PostalCode: formValue.PostalCode?.trim() || null,
@@ -283,6 +592,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresSeparateCustomsDeclaration: formValue.RequiresSeparateCustomsDeclaration || false,
       RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
       RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
+      PendingDocumentsJson: pendingDocsJson,
     };
 
     const operation = this.isEditMode
