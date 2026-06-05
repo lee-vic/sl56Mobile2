@@ -9,7 +9,7 @@ import { of, throwError } from 'rxjs';
 
 import { ImportManifestFormPage } from './import-manifest-form.page';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, ForwardingDocumentItem, ImportManifestActionResult } from 'src/app/interfaces/import-manifest';
 
 describe('ImportManifestFormPage', () => {
   let component: ImportManifestFormPage;
@@ -137,6 +137,14 @@ describe('ImportManifestFormPage', () => {
     serviceSpy.getCountryOptions.and.returnValue(of(mockCountryOptions));
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(mockPriceOptions));
     serviceSpy.getAttachmentTypes.and.returnValue(of(mockAttachmentTypes));
+    serviceSpy.getForwardingDocuments.and.returnValue(of({ success: true, rows: [] }));
+    serviceSpy.deleteTempDocument.and.returnValue(of({ Success: true, ErrMsg: '' } as ImportManifestActionResult));
+    serviceSpy.uploadTempDocument.and.returnValue(of({ success: true, token: '', fileName: '' }));
+    serviceSpy.validateObjectNo.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    serviceSpy.validateCustomerPriceName.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    serviceSpy.getDetail.and.returnValue(of(mockDetail));
+    serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    serviceSpy.edit.and.returnValue(of({ Success: true, ErrMsg: '' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
     toastCtrlSpy.create.and.returnValue(Promise.resolve(mockToast as any));
 
@@ -227,6 +235,10 @@ describe('ImportManifestFormPage', () => {
     fixture.detectChanges();
     expect(component.showSpecialVat).toBe(false);
 
+    // Need customs doc in attachments to prevent auto-cancel guard
+    component.attachments = [
+      { fileName: 'customs.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料', isPending: true },
+    ];
     component.form.get('RequiresSeparateCustomsDeclaration')?.setValue(true);
     expect(component.showSpecialVat).toBe(true);
   });
@@ -384,6 +396,10 @@ describe('ImportManifestFormPage', () => {
   // ── 20. fillForm maps detail to form values ──
   it('fillForm should map all detail fields correctly', () => {
     fixture.detectChanges();
+    // Pre-populate attachments with a customs doc so the auto-cancel guard won't reset
+    component.attachments = [
+      { fileName: 'customs.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料', isPending: false },
+    ];
     component.fillForm(mockDetail);
 
     expect(component.form.get('ObjectNo')?.value).toBe('TEST001');

@@ -141,18 +141,27 @@
     </div>
 
     <!-- Info Card: Documents -->
-    <div class="detail-card" *ngIf="data.ForwardingDocumentCount > 0 || data.LabelPath">
+    <div class="detail-card" *ngIf="attachments.length > 0 || data.LabelPath">
       <div class="detail-card-header">
-        <h3>运单文件</h3>
+        <h3>随货资料</h3>
       </div>
-      <div class="detail-rows">
-        <div class="detail-row" *ngIf="data.ForwardingDocumentCount > 0">
-          <span class="detail-label">附件数量</span>
-          <span class="detail-value">
-            <ion-icon name="attach-outline" class="value-icon"></ion-icon>
-            {{ data.ForwardingDocumentCount }}
-          </span>
+      <div class="attachment-list" *ngIf="attachments.length > 0">
+        <div class="attachment-item" *ngFor="let doc of attachments">
+          <div class="attach-icon">
+            <ion-icon [name]="getFileIcon(doc.fileName)"></ion-icon>
+          </div>
+          <div class="attach-info">
+            <span class="attach-name">{{ doc.fileName }}</span>
+            <span class="attach-meta">
+              {{ doc.attachmentTypeName }}
+              <ng-container *ngIf="doc.size"> · {{ formatFileSize(doc.size) }}</ng-container>
+              <ng-container *ngIf="doc.uploadDate"> · {{ doc.uploadDate }}</ng-container>
+            </span>
+          </div>
         </div>
+      </div>
+      <div class="detail-empty" *ngIf="attachments.length === 0 && !data.LabelPath">
+        <span>暂无随货资料</span>
       </div>
     </div>
   </ng-container>

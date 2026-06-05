@@ -18,6 +18,12 @@ ion-content {
   font-family: 'Noto Sans SC', 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
 }
 
+/* 覆盖全局 .skeleton-page 的 padding，本页已由 ion-content 提供内边距 */
+:host .skeleton-page {
+  padding: 0;
+  gap: 8px;
+}
+
 .message-summary {
   position: relative;
   display: grid;

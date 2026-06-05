@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, IonContent } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDetail, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
 
 @Component({
   selector: 'app-import-manifest-detail',
@@ -14,6 +14,7 @@ export class ImportManifestDetailPage implements OnInit {
 
   id: number;
   data: ImportManifestDetail | null = null;
+  attachments: ForwardingDocumentItem[] = [];
   isLoading: boolean = true;
   hasError: boolean = false;
 
@@ -37,8 +38,23 @@ export class ImportManifestDetailPage implements OnInit {
     this.hasError = false;
     this.service.getDetail(this.id).subscribe({
       next: (res) => {
-        this.isLoading = false;
         this.data = res;
+        // Load forwarding documents if available
+        if (res.ObjectId && res.ForwardingDocumentCount > 0) {
+          this.service.getForwardingDocuments(res.ObjectId).subscribe({
+            next: (docRes) => {
+              if (docRes.success) {
+                this.attachments = docRes.rows || [];
+              }
+              this.isLoading = false;
+            },
+            error: () => {
+              this.isLoading = false;
+            },
+          });
+        } else {
+          this.isLoading = false;
+        }
       },
       error: () => {
         this.isLoading = false;
@@ -100,5 +116,23 @@ export class ImportManifestDetailPage implements OnInit {
       case 2: return 'danger';
       default: return 'medium';
     }
+  }
+
+  getFileIcon(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'document-outline';
+      case 'jpg': case 'jpeg': case 'png': return 'image-outline';
+      case 'doc': case 'docx': return 'document-text-outline';
+      case 'xls': case 'xlsx': return 'grid-outline';
+      default: return 'attach-outline';
+    }
+  }
+
+  formatFileSize(bytes: number): string {
+    if (!bytes || bytes <= 0) return '0 B';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 }

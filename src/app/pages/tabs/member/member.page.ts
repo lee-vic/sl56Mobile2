@@ -9,6 +9,7 @@ import { NoticeService } from 'src/app/providers/notice.service';
 import { Subject, Subscription } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-member',
@@ -63,6 +64,7 @@ export class MemberPage implements OnInit, OnDestroy {
   menuColumns: number = 3;
   isLogin: boolean = false;
   isDashboardLoading: boolean = false;
+  isLoggingIn: boolean = false;
   public authForm: FormGroup;
   public loading: any;
   userInfo: User;
@@ -79,7 +81,8 @@ export class MemberPage implements OnInit, OnDestroy {
     private router: Router,
     private cookieService: CookieService,
     private noticeService: NoticeService,
-    private uiFeedbackService: UiFeedbackService) {
+    private uiFeedbackService: UiFeedbackService,
+    private loadingCtrl: LoadingController) {
     this.authForm = new FormGroup({
       username: new FormControl('', Validators.required),
       password: new FormControl('', Validators.required),
@@ -137,14 +140,19 @@ export class MemberPage implements OnInit, OnDestroy {
     this.router.navigateByUrl("/member/reset-password");
   }
 
-  doLogin(formValue) {
+  async doLogin(formValue) {
     this.releaseFocus();
+    this.isLoggingIn = true;
+    const loading = await this.loadingCtrl.create({ message: '登录中...' });
+    await loading.present();
     // Web application - always set clientType to web
     formValue.clientType = 1;
     formValue.openId = this.cookieService.get('OpenId');
     formValue.unionId = this.cookieService.get('UnionId');
     this.userService.auth(formValue).subscribe({
       next: (res: any) => {
+        this.isLoggingIn = false;
+        loading.dismiss();
         this.isLogin = res.Success;
         if (this.isLogin == true) {
           this.loginSuccess();
@@ -158,6 +166,8 @@ export class MemberPage implements OnInit, OnDestroy {
 
       },
       error: (err) => {
+        this.isLoggingIn = false;
+        loading.dismiss();
         this.showToast(err.message);
       }
     });

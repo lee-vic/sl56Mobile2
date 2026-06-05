@@ -73,6 +73,7 @@ export interface ImportManifestSaveRequest {
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
     PendingDocumentsJson?: string | null;
+    DeletedDocumentIds?: number[] | null;
     LastChanged?: any;
 }
 

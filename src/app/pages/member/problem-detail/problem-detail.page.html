@@ -26,15 +26,22 @@
       </div>
     </ng-container>
 
+    <!-- Not-found state -->
+    <div class="done-state" *ngIf="!isLoading && hasNotFound">
+      <ion-icon name="alert-circle-outline" color="warning"></ion-icon>
+      <h2 class="done-title">问题不存在</h2>
+      <p class="done-sub">该问题可能已被删除或链接已过期，请返回问题列表查看。</p>
+    </div>
+
     <!-- Done state -->
-    <div class="done-state" *ngIf="!isLoading && isProblemDone">
+    <div class="done-state" *ngIf="!isLoading && !hasNotFound && isProblemDone">
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
       <h2 class="done-title">问题已完成处理</h2>
       <p class="done-sub">如仍有疑问，可联系在线客服继续沟通。</p>
     </div>
 
     <!-- Main content -->
-    <ng-container *ngIf="!isLoading && !isProblemDone">
+    <ng-container *ngIf="!isLoading && !hasNotFound && !isProblemDone">
 
       <!-- Hero info card -->
       <div class="hero-problem-card">
@@ -207,7 +214,7 @@
 </ion-content>
 
 <!-- Footer action bar -->
-<ion-footer translucent="true" class="problem-detail-footer" *ngIf="!isLoading">
+<ion-footer translucent="true" class="problem-detail-footer" *ngIf="!isLoading && !hasNotFound">
   <ion-toolbar>
     <div class="footer-inner">
 

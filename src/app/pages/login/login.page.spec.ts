@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { of, throwError, Subject } from 'rxjs';
@@ -17,6 +17,8 @@ describe('LoginPage', () => {
   let router: Router;
 
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
+
+  const loadingCreateSpy = jasmine.createSpy('loadingCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve(), dismiss: () => Promise.resolve() }));
 
   const authSpy = jasmine.createSpy('auth').and.returnValue(of({ Success: true }));
   const cookieGetSpy = jasmine.createSpy('get').and.callFake((key: string) => {
@@ -32,7 +34,8 @@ describe('LoginPage', () => {
       providers: [
         { provide: CookieService, useValue: { get: cookieGetSpy } },
         { provide: UserService, useValue: { auth: authSpy } },
-        { provide: ToastController, useValue: { create: toastCreateSpy } }
+        { provide: ToastController, useValue: { create: toastCreateSpy } },
+        { provide: LoadingController, useValue: { create: loadingCreateSpy } }
       ],
       declarations: [ LoginPage ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],

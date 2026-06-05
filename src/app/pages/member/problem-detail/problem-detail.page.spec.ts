@@ -111,6 +111,16 @@ describe('ProblemDetailPage', () => {
     expect((component as any).renderWeAppButtonIfNeeded).toHaveBeenCalled();
   });
 
+  it('should mark not found when problem detail API returns null', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of(null));
+
+    component.ngOnInit();
+
+    expect(component.isLoading).toBe(false);
+    expect(component.hasNotFound).toBe(true);
+    expect(component.hasInitError).toBe(false);
+  });
+
   it('should mark init error when loading problem detail fails', () => {
     mockProblemService.getProblemDetail.and.returnValue(throwError(() => ({ status: 500 })));
 

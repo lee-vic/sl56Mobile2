@@ -38,6 +38,7 @@ export class ImportManifestFormPage implements OnInit {
   selectedAttachmentTypeId: number | null = null;
   attachments: ForwardingDocumentItem[] = [];
   pendingUploads: { token: string; attachmentTypeId: number }[] = [];
+  deletedDocumentIds: number[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -166,6 +167,8 @@ export class ImportManifestFormPage implements OnInit {
 
     // Load existing forwarding documents
     if (detail.ObjectId) {
+      this.pendingUploads = [];
+      this.deletedDocumentIds = [];
       this.service.getForwardingDocuments(detail.ObjectId).subscribe({
         next: (res) => {
           if (res.success) {
@@ -226,13 +229,15 @@ export class ImportManifestFormPage implements OnInit {
       return;
     }
 
-    // 同一附件类型不允许重复（检查已上传 + 待上传）
+    // 同一附件类型不允许重复（报关资料除外），检查已上传 + 待上传
     const typeName = this.attachmentTypes.find((t) => t.id === attachTypeId)?.name || '';
-    const duplicate = this.attachments.some((d) => d.attachmentTypeId === attachTypeId);
-    if (duplicate) {
-      this.showToast(`"${typeName}" 类型已存在，不允许重复`);
-      input.value = '';
-      return;
+    if (attachTypeId !== 58) {
+      const duplicate = this.attachments.some((d) => d.attachmentTypeId === attachTypeId);
+      if (duplicate) {
+        this.showToast(`"${typeName}" 类型已存在，不允许重复`);
+        input.value = '';
+        return;
+      }
     }
 
     // Validate file type
@@ -296,6 +301,9 @@ export class ImportManifestFormPage implements OnInit {
       this.pendingUploads = this.pendingUploads.filter((p) => p.token !== doc.token);
       // Try to delete temp file on server
       this.service.deleteTempDocument(doc.token).subscribe();
+    } else if (doc.id) {
+      // Already saved document - mark for deletion on save
+      this.deletedDocumentIds.push(doc.id);
     }
 
     this.attachments.splice(index, 1);
@@ -593,6 +601,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
       RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
       PendingDocumentsJson: pendingDocsJson,
+      DeletedDocumentIds: this.deletedDocumentIds.length > 0 ? this.deletedDocumentIds : null,
     };
 
     const operation = this.isEditMode

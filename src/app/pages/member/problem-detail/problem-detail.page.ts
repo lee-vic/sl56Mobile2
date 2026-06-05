@@ -36,6 +36,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   isSubmiting: boolean = false;
   isLoading = false;
   hasInitError = false;
+  hasNotFound = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
   @ViewChild('page1Form') formRef: NgForm;
@@ -57,13 +58,18 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   private loadProblemDetail(): void {
     this.isLoading = true;
     this.hasInitError = false;
+    this.hasNotFound = false;
     this.service.getProblemDetail(this.problemId).pipe(
       takeUntil(this.destroy$),
       finalize(() => {
         this.isLoading = false;
       })
     ).subscribe((res) => {
-      this.data = res || { Problem: { ProcessTypeList: [], ProcessSetting4: [], Pages: [] }, ProcessResult: {} };
+      if (!res) {
+        this.hasNotFound = true;
+        return;
+      }
+      this.data = res;
       this.processModel = this.data.ProcessResult;
       this.ensureProcessModel();
 

@@ -34,32 +34,69 @@
     </div>
   </section>
 
-  <section class="message-status" *ngIf="isLoading">
-    <div class="skeleton-page">
-      <!-- Summary skeleton -->
-      <div class="skeleton-card">
-        <div class="skeleton-block" style="align-items: center;">
-          <ion-skeleton-text animated style="width: 64px; height: 14px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 48px; height: 36px; margin-top: 6px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 72px; height: 12px; margin-top: 4px;"></ion-skeleton-text>
-        </div>
-        <div style="display: flex; gap: 12px; margin-top: 12px; justify-content: center;">
-          <div class="skeleton-block" style="align-items: center; flex: 1;" *ngFor="let sk of [1,2,3]">
-            <ion-skeleton-text animated style="width: 40px; height: 20px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 48px; height: 12px; margin-top: 4px;"></ion-skeleton-text>
+  <section class="skeleton-page" *ngIf="isLoading">
+    <!-- 客服消息 section skeleton -->
+    <div class="message-section">
+      <h2><ion-skeleton-text animated style="width: 80px;"></ion-skeleton-text></h2>
+      <ion-list lines="none">
+        <ion-item *ngFor="let sk of [1,2]">
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text animated style="width: 100%; height: 100%; border-radius: 8px;"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3><ion-skeleton-text animated style="width: 55%;"></ion-skeleton-text></h3>
+            <p><ion-skeleton-text animated style="width: 80%;"></ion-skeleton-text></p>
+          </ion-label>
+          <ion-skeleton-text animated slot="end" style="width: 48px; height: 14px;"></ion-skeleton-text>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <!-- 业务通知 section skeleton -->
+    <div class="message-section">
+      <div class="section-header">
+        <h2><ion-skeleton-text animated style="width: 80px;"></ion-skeleton-text></h2>
+        <ion-skeleton-text animated style="width: 90px; height: 14px;"></ion-skeleton-text>
+      </div>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text animated style="width: 100%; height: 100%; border-radius: 8px;"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3><ion-skeleton-text animated style="width: 55%;"></ion-skeleton-text></h3>
+            <p><ion-skeleton-text animated style="width: 80%;"></ion-skeleton-text></p>
+          </ion-label>
+          <ion-skeleton-text animated slot="end" style="width: 48px; height: 14px;"></ion-skeleton-text>
+        </ion-item>
+      </ion-list>
+      <!-- notice-preview skeleton -->
+      <div class="notice-preview">
+        <div class="notice-preview-item" *ngFor="let sk of [1,2]">
+          <div>
+            <ion-skeleton-text animated style="width: 60px; height: 12px;"></ion-skeleton-text>
+            <strong><ion-skeleton-text animated style="width: 80%;"></ion-skeleton-text></strong>
+            <p><ion-skeleton-text animated style="width: 90%;"></ion-skeleton-text></p>
           </div>
+          <ion-skeleton-text animated style="width: 36px; height: 18px; border-radius: 4px; flex-shrink: 0;"></ion-skeleton-text>
         </div>
       </div>
-      <!-- Message list skeleton -->
-      <div class="skeleton-card" *ngFor="let sk of [1,2,3]">
-        <div class="skeleton-list-item">
-          <ion-skeleton-text animated style="width: 44px; height: 44px; border-radius: 8px;"></ion-skeleton-text>
-          <div class="skeleton-lines">
-            <ion-skeleton-text animated style="width: 52%; height: 16px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 80%; height: 13px; margin-top: 4px;"></ion-skeleton-text>
-          </div>
-        </div>
-      </div>
+    </div>
+
+    <!-- 消息设置 section skeleton -->
+    <div class="message-section">
+      <h2><ion-skeleton-text animated style="width: 80px;"></ion-skeleton-text></h2>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text animated style="width: 100%; height: 100%; border-radius: 8px;"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3><ion-skeleton-text animated style="width: 55%;"></ion-skeleton-text></h3>
+            <p><ion-skeleton-text animated style="width: 80%;"></ion-skeleton-text></p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
     </div>
   </section>
 
