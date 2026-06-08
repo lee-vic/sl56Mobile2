@@ -213,15 +213,4 @@ export class ImportManifestService {
       { withCredentials: true }
     );
   }
-
-  /**
-   * 删除临时附件
-   */
-  deleteTempDocument(token: string) {
-    return this.http.post<ImportManifestActionResult>(
-      this.baseUrl + '/DeleteTempDocument',
-      { token },
-      { withCredentials: true }
-    );
-  }
 }

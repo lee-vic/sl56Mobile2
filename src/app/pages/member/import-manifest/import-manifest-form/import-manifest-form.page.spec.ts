@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -30,8 +30,8 @@ describe('ImportManifestFormPage', () => {
   ];
 
   const mockAttachmentTypes: AttachmentTypeOption[] = [
-    { id: 58, name: '报关资料' },
-    { id: 2, name: '运单' },
+    { id: 58, name: '报关资料', isPrint: true },
+    { id: 2, name: '运单', isPrint: true },
   ];
 
   const mockForwardingDocuments: ForwardingDocumentItem[] = [
@@ -97,7 +97,6 @@ describe('ImportManifestFormPage', () => {
       'validateCustomerPriceName',
       'uploadTempDocument',
       'getForwardingDocuments',
-      'deleteTempDocument',
     ]);
 
     const lSpy = jasmine.createSpyObj('LoadingController', ['create']);
@@ -138,8 +137,7 @@ describe('ImportManifestFormPage', () => {
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(mockPriceOptions));
     serviceSpy.getAttachmentTypes.and.returnValue(of(mockAttachmentTypes));
     serviceSpy.getForwardingDocuments.and.returnValue(of({ success: true, rows: [] }));
-    serviceSpy.deleteTempDocument.and.returnValue(of({ Success: true, ErrMsg: '' } as ImportManifestActionResult));
-    serviceSpy.uploadTempDocument.and.returnValue(of({ success: true, token: '', fileName: '' }));
+    serviceSpy.uploadTempDocument.and.returnValue(of({ success: true, filePath: '/test.pdf', fileName: '' }));
     serviceSpy.validateObjectNo.and.returnValue(of({ Success: true, ErrMsg: '' }));
     serviceSpy.validateCustomerPriceName.and.returnValue(of({ Success: true, ErrMsg: '' }));
     serviceSpy.getDetail.and.returnValue(of(mockDetail));
@@ -672,22 +670,21 @@ describe('ImportManifestFormPage', () => {
   });
 
   // ── 43. removeAttachment removes from list ──
-  it('removeAttachment should splice item and call deleteTempDocument for pending', () => {
+  it('removeAttachment should splice pending item', () => {
     fixture.detectChanges();
     component.attachments = [
-      { token: 'abc', fileName: 'test.pdf', attachmentTypeId: 2, attachmentTypeName: '运单', size: 100, isPending: true },
+      { filePath: '/UploadFiles/abc/test.pdf', fileName: 'test.pdf', attachmentTypeId: 2, attachmentTypeName: '运单', size: 100, isPending: true },
       { id: 1, fileName: 'exist.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料', isPending: false },
     ];
 
     component.removeAttachment(0);
     expect(component.attachments.length).toBe(1);
-    expect(serviceSpy.deleteTempDocument).toHaveBeenCalledWith('abc');
   });
 
   // ── 44. removeAttachment does nothing for invalid index ──
   it('removeAttachment should handle invalid index gracefully', () => {
     fixture.detectChanges();
-    component.attachments = [{ token: 'x', fileName: 'f.pdf', attachmentTypeId: 2, attachmentTypeName: '运单', isPending: true }];
+    component.attachments = [{ filePath: '/x', fileName: 'f.pdf', attachmentTypeId: 2, attachmentTypeName: '运单', isPending: true }];
     component.removeAttachment(999);
     expect(component.attachments.length).toBe(1);
   });
@@ -734,7 +731,7 @@ describe('ImportManifestFormPage', () => {
       Piece: 1,
       ContentType: 0,
     });
-    component.pendingUploads = [{ token: 'tok1', attachmentTypeId: 58 }];
+    component.pendingUploads = [{ filePath: '/UploadFiles/tok1/test.pdf', fileName: 'test.pdf', attachmentTypeId: 58, size: 1024 }];
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
 
@@ -742,7 +739,7 @@ describe('ImportManifestFormPage', () => {
 
     expect(serviceSpy.create).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        PendingDocumentsJson: JSON.stringify([{ token: 'tok1', attachmentTypeId: 58 }]),
+        PendingDocumentsJson: JSON.stringify([{ filePath: '/UploadFiles/tok1/test.pdf', fileName: 'test.pdf', attachmentTypeId: 58, size: 1024 }]),
       })
     );
   });

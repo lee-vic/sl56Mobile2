@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { ImportManifestService } from './import-manifest.service';
@@ -347,8 +347,8 @@ describe('ImportManifestService', () => {
   // ── getAttachmentTypes ──
   it('getAttachmentTypes should GET type list', () => {
     const mockTypes: AttachmentTypeOption[] = [
-      { id: 58, name: '报关资料' },
-      { id: 2, name: '运单' },
+      { id: 58, name: '报关资料', isPrint: true },
+      { id: 2, name: '运单', isPrint: true },
     ];
 
     service.getAttachmentTypes().subscribe((res) => {
@@ -369,7 +369,7 @@ describe('ImportManifestService', () => {
 
     service.uploadTempDocument(file, typeId).subscribe((res) => {
       expect(res.success).toBe(true);
-      expect(res.token).toBe('abc123');
+      expect(res.filePath).toBe('/UploadFiles/abc123/invoice.pdf');
       expect(res.fileName).toBe('invoice.pdf');
     });
 
@@ -378,7 +378,7 @@ describe('ImportManifestService', () => {
     expect(req.request.body instanceof FormData).toBe(true);
     const mockResult: UploadTempDocumentResult = {
       success: true,
-      token: 'abc123',
+      filePath: '/UploadFiles/abc123/invoice.pdf',
       fileName: 'invoice.pdf',
       attachmentTypeId: 58,
       size: 1024,
@@ -432,29 +432,5 @@ describe('ImportManifestService', () => {
     );
     expect(req.request.method).toBe('GET');
     req.flush(mockDocs);
-  });
-
-  // ── deleteTempDocument ──
-  it('deleteTempDocument should POST with token', () => {
-    const token = 'tmp-abc-123';
-
-    service.deleteTempDocument(token).subscribe((res) => {
-      expect(res.Success).toBe(true);
-    });
-
-    const req = httpMock.expectOne(baseUrl + '/DeleteTempDocument');
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body.token).toBe('tmp-abc-123');
-    req.flush({ Success: true, ErrMsg: '' });
-  });
-
-  // ── deleteTempDocument failure ──
-  it('deleteTempDocument should handle not-found token', () => {
-    service.deleteTempDocument('invalid-token').subscribe((res) => {
-      expect(res.Success).toBe(false);
-    });
-
-    const req = httpMock.expectOne(baseUrl + '/DeleteTempDocument');
-    req.flush({ Success: false, ErrMsg: '临时文件不存在' });
   });
 });

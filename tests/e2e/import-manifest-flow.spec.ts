@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 const apiBase = 'https://api.sl56.com/api';
 const importManifestBase = `${apiBase}/ImportManifest`;
@@ -151,8 +151,8 @@ async function setupImportManifestRoutes(page: any) {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify([
-          { id: 58, name: '报关资料' },
-          { id: 2, name: '运单' },
+          { id: 58, name: '报关资料', isPrint: true },
+          { id: 2, name: '运单', isPrint: true },
         ]),
       });
       return;
@@ -165,7 +165,7 @@ async function setupImportManifestRoutes(page: any) {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          token: 'tmp-abc-123',
+          filePath: '/UploadFiles/tmp-abc-123/test.pdf',
           fileName: 'test.pdf',
           attachmentTypeId: 58,
           size: 50000,

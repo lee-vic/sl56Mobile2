@@ -1,4 +1,4 @@
-export interface ImportManifestListItem {
+﻿export interface ImportManifestListItem {
     Id: number;
     ObjectNo: string;
     CountryName: string;
@@ -161,12 +161,13 @@ export interface DropdownOption {
 export interface AttachmentTypeOption {
     id: number;
     name: string;
+    isPrint: boolean;
 }
 
 /** 随货资料展示项 */
 export interface ForwardingDocumentItem {
     id?: number;
-    token?: string;
+    filePath?: string;
     fileName: string;
     attachmentTypeId: number;
     attachmentTypeName: string;
@@ -178,7 +179,7 @@ export interface ForwardingDocumentItem {
 /** 临时上传结果 */
 export interface UploadTempDocumentResult {
     success: boolean;
-    token?: string;
+    filePath?: string;
     fileName?: string;
     attachmentTypeId?: number;
     attachmentTypeName?: string;

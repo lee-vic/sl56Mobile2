@@ -141,19 +141,31 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
       this.showConnectionUnavailableToast();
     });
     if (this.messageType == 0) {
-      this.imService.getMessages2().pipe(takeUntil(this.destroy$)).subscribe((res) => {
-        this.messages = res.Data;
-        this.chatGroupId = res.ChatGroupId;
-        this.processMessages();
-      });
-    } else if (this.messageType == 1 && this.messages == undefined) {
-      this.imService
-        .getMessages3(this.receiveGoodsDetailId, this.chatGroupId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((res) => {
+      this.imService.getMessages2().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res) => {
           this.messages = res.Data;
           this.chatGroupId = res.ChatGroupId;
           this.processMessages();
+        },
+        error: () => {
+          this.uiFeedbackService.presentToast('初始化失败，请刷新页面重试', 3000, 'middle');
+        }
+      });
+    } else if (this.messageType == 1 && this.chatGroupId == null) {
+      this.imService
+        .getMessages3(this.receiveGoodsDetailId, null)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (res) => {
+            if (this.messages == null || this.messages.length === 0) {
+              this.messages = res.Data;
+            }
+            this.chatGroupId = res.ChatGroupId;
+            this.processMessages();
+          },
+          error: () => {
+            this.uiFeedbackService.presentToast('初始化失败，请刷新页面重试', 3000, 'middle');
+          }
         });
     }
   }
@@ -217,6 +229,10 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   }
   sendMsg() {
     if (!this.canSendMessage()) return;
+    if (this.chatGroupId == null || this.chatGroupId == undefined) {
+      this.uiFeedbackService.presentToast('聊天组id不能为空,请刷新页面重试，多次失败请联系跟单员！', 3000, 'middle');
+      return;
+    }
     console.log("conn:", this.signalRConnection);
     this.signalRConnection
       .invoke(
@@ -253,7 +269,7 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   canSendMessage(): boolean {
-    return !!this.editorMsg && this.editorMsg.trim().length > 0;
+    return this.chatGroupId != null && !!this.editorMsg && this.editorMsg.trim().length > 0;
   }
 
   handleInputKeydown(event: KeyboardEvent) {
@@ -435,6 +451,10 @@ export class ChatPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
   sendFileMsg(res: any) {
+    if (this.chatGroupId == null || this.chatGroupId == undefined) {
+      this.uiFeedbackService.presentToast('聊天组id不能为空,请刷新页面重试，多次失败请联系跟单员！', 3000, 'middle');
+      return;
+    }
     this.signalRConnection
       .invoke(
         "sendToGroup",

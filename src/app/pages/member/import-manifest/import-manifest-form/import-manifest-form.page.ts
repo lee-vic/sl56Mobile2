@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, LoadingController, ToastController } from '@ionic/angular';
@@ -37,7 +37,7 @@ export class ImportManifestFormPage implements OnInit {
   attachmentTypes: AttachmentTypeOption[] = [];
   selectedAttachmentTypeId: number | null = null;
   attachments: ForwardingDocumentItem[] = [];
-  pendingUploads: { token: string; attachmentTypeId: number }[] = [];
+  pendingUploads: { filePath: string; fileName: string; attachmentTypeId: number; size: number }[] = [];
   deletedDocumentIds: number[] = [];
 
   constructor(
@@ -229,12 +229,12 @@ export class ImportManifestFormPage implements OnInit {
       return;
     }
 
-    // 同一附件类型不允许重复（报关资料除外），检查已上传 + 待上传
+    // 该附件类型不允许重复，检查已上传 + 待上传
     const typeName = this.attachmentTypes.find((t) => t.id === attachTypeId)?.name || '';
-    if (attachTypeId !== 58) {
+    if (this.isPrintAttachmentType(attachTypeId)) {
       const duplicate = this.attachments.some((d) => d.attachmentTypeId === attachTypeId);
       if (duplicate) {
-        this.showToast(`"${typeName}" 类型已存在，不允许重复`);
+        this.showToast(`"${typeName}" 类型不允许重复上传`);
         input.value = '';
         return;
       }
@@ -249,8 +249,8 @@ export class ImportManifestFormPage implements OnInit {
       return;
     }
 
-    // Validate file size (2MB limit, except customs type 58)
-    const maxSize = attachTypeId === 58 ? Infinity : 2 * 1024 * 1024;
+    // Validate file size (2MB limit for printed attachment types)
+    const maxSize = this.isPrintAttachmentType(attachTypeId) ? 2 * 1024 * 1024 : Infinity;
     if (file.size > maxSize) {
       this.showToast('文件大小超过限制（最大 2MB）');
       input.value = '';
@@ -266,17 +266,17 @@ export class ImportManifestFormPage implements OnInit {
           loading.dismiss();
           this.isUploading = false;
           input.value = '';
-          if (res.success && res.token) {
+          if (res.success && res.filePath) {
             const typeName = this.attachmentTypes.find((t) => t.id === attachTypeId)?.name || '';
             this.attachments.push({
-              token: res.token,
+              filePath: res.filePath,
               fileName: res.fileName || file.name,
               attachmentTypeId: attachTypeId,
               attachmentTypeName: typeName,
               size: file.size,
               isPending: true,
             });
-            this.pendingUploads.push({ token: res.token, attachmentTypeId: attachTypeId });
+            this.pendingUploads.push({ filePath: res.filePath, fileName: res.fileName || file.name, attachmentTypeId: attachTypeId, size: file.size });
             this.syncCustomsDeclarationFlag();
           } else {
             this.showToast(res.message || '上传失败，请重试');
@@ -296,11 +296,8 @@ export class ImportManifestFormPage implements OnInit {
     const doc = this.attachments[index];
     if (!doc) return;
 
-    if (doc.isPending && doc.token) {
-      // Remove from pending uploads
-      this.pendingUploads = this.pendingUploads.filter((p) => p.token !== doc.token);
-      // Try to delete temp file on server
-      this.service.deleteTempDocument(doc.token).subscribe();
+    if (doc.isPending && doc.filePath) {
+      this.pendingUploads = this.pendingUploads.filter((p) => p.filePath !== doc.filePath);
     } else if (doc.id) {
       // Already saved document - mark for deletion on save
       this.deletedDocumentIds.push(doc.id);
@@ -308,6 +305,12 @@ export class ImportManifestFormPage implements OnInit {
 
     this.attachments.splice(index, 1);
     this.syncCustomsDeclarationFlag();
+  }
+
+  /** Check if the given attachment type ID is a printed (IsPrint) type */
+  private isPrintAttachmentType(typeId: number): boolean {
+    const att = this.attachmentTypes.find((t) => t.id === typeId);
+    return att ? att.isPrint : false;
   }
 
   /** Auto-sync customs declaration flag with attachment type 58 (bidirectional) */
