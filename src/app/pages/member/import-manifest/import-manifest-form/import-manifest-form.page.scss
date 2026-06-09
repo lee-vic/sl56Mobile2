@@ -1,50 +1,66 @@
-/* ── Content ── */
-.form-content {
-  --background: var(--member-surface-100, #f1f5fb);
+.manifest-header {
+  ion-toolbar {
+    --background: rgba(247, 251, 255, 0.9);
+    backdrop-filter: blur(12px);
+    --border-color: rgba(11, 97, 189, 0.08);
+  }
+
+  ion-title {
+    font-weight: 700;
+    letter-spacing: 0;
+  }
 }
 
-/* ── Form Card ── */
+.form-content {
+  --background:
+    radial-gradient(circle at 8% -4%, rgba(124, 187, 255, 0.26), transparent 36%),
+    radial-gradient(circle at 100% 22%, rgba(0, 178, 169, 0.12), transparent 45%),
+    linear-gradient(180deg, #eff6ff 0%, #edf5ff 58%, #f4f8ff 100%);
+  color: #15315a;
+}
+
 .form-card {
-  margin: 10px;
-  background: var(--member-surface-0, #ffffff);
-  border-radius: 14px;
-  border: 1px solid var(--member-border-200, #d6e4f5);
-  box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+  margin: 10px 14px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(190, 215, 245, 0.6);
+  box-shadow: 0 4px 16px rgba(11, 61, 130, 0.08);
   overflow: hidden;
 }
 
 .form-card-header {
-  padding: 14px 16px 0;
+  padding: 12px 14px 4px;
+  background: linear-gradient(90deg, #fafcff 0%, #f4f9ff 100%);
+  border-bottom: 1px solid rgba(190, 215, 245, 0.45);
 
   h3 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: 14px;
     font-weight: 700;
-    color: var(--member-text-900, #12213a);
+    color: #15315a;
   }
 
   .optional {
-    font-size: 0.8rem;
+    font-size: 12px;
     font-weight: 400;
-    color: var(--member-text-500, #5f759a);
+    color: #8a9ec0;
   }
 }
 
-/* ── Form Field ── */
 .form-field {
-  padding: 12px 16px;
+  padding: 10px 14px;
 
   & + .form-field {
-    border-top: 1px solid var(--member-border-200, #d6e4f5);
+    border-top: 1px solid rgba(210, 228, 248, 0.7);
   }
 }
 
 .field-label {
   display: block;
   margin-bottom: 6px;
-  font-size: 0.84rem;
+  font-size: 12.5px;
   font-weight: 600;
-  color: var(--member-text-800, #1e3356);
+  color: #1e3355;
 
   .required {
     color: var(--member-accent-danger, #ff4d4f);
@@ -52,7 +68,7 @@
 }
 
 .field-input {
-  --background: var(--member-surface-100, #f1f5fb);
+  --background: #eef4fc;
   --border-radius: 10px;
   --padding-start: 12px;
   --padding-end: 12px;
@@ -63,7 +79,7 @@
 }
 
 .field-select {
-  --background: var(--member-surface-100, #f1f5fb);
+  --background: #eef4fc;
   --border-radius: 10px;
   --padding-start: 12px;
   --padding-end: 12px;
@@ -73,7 +89,7 @@
 }
 
 .field-textarea {
-  --background: var(--member-surface-100, #f1f5fb);
+  --background: #eef4fc;
   --border-radius: 10px;
   --padding-start: 12px;
   --padding-end: 12px;
@@ -83,8 +99,9 @@
 
 /* ── Content Type Toggle ── */
 .content-type-toggle {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .ct-card {
@@ -93,19 +110,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 14px 8px;
-  border: 2px solid var(--member-border-200, #d6e4f5);
+  gap: 2px;
+  padding: 10px 8px;
+  border: 1px solid rgba(190, 215, 245, 0.8);
   border-radius: 12px;
-  background: var(--member-surface-0, #ffffff);
-  color: var(--member-text-500, #5f759a);
+  background: #ffffff;
+  color: #6080a6;
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
   -webkit-tap-highlight-color: transparent;
 
   .ct-icon {
-    font-size: 28px;
+    font-size: 22px;
     margin-bottom: 2px;
   }
 
@@ -121,17 +138,17 @@
   }
 
   &.ct-active {
-    border-color: var(--member-brand-600, #084f9b);
-    background: rgba(8, 79, 155, 0.06);
-    color: var(--member-brand-600, #084f9b);
+    border-color: rgba(11, 97, 189, 0.45);
+    background: rgba(11, 97, 189, 0.08);
+    color: var(--member-brand-500, #0b61bd);
 
     .ct-icon {
-      color: var(--member-brand-600, #084f9b);
+      color: var(--member-brand-500, #0b61bd);
     }
   }
 
   &:active:not(.ct-active) {
-    background: var(--member-surface-100, #f1f5fb);
+    background: #eef4fc;
     transform: scale(0.97);
   }
 }
@@ -144,7 +161,7 @@
 }
 
 .attachment-type-select {
-  --background: var(--member-surface-100, #f1f5fb);
+  --background: #eef4fc;
   --border-radius: 10px;
   --padding-start: 12px;
   --padding-end: 12px;
@@ -156,8 +173,8 @@
 
 .attachment-add-btn {
   --border-radius: 10px;
-  --border-color: var(--member-brand-600, #084f9b);
-  --color: var(--member-brand-600, #084f9b);
+  --border-color: var(--member-brand-500, #0b61bd);
+  --color: var(--member-brand-500, #0b61bd);
   flex-shrink: 0;
   height: 42px;
   font-size: 0.82rem;
@@ -165,15 +182,15 @@
 }
 
 .attachment-list {
-  border-top: 1px solid var(--member-border-100, #e8eff8);
+  border-top: 1px solid rgba(210, 228, 248, 0.7);
 }
 
 .attachment-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--member-border-100, #e8eff8);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(210, 228, 248, 0.7);
 
   .attach-icon {
     width: 36px;
@@ -181,13 +198,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--member-surface-100, #f1f5fb);
+    background: #eef4fc;
     border-radius: 8px;
     flex-shrink: 0;
 
     ion-icon {
       font-size: 20px;
-      color: var(--member-text-600, #45618b);
+      color: #6080a6;
     }
   }
 
@@ -202,7 +219,7 @@
   .attach-name {
     font-size: 0.84rem;
     font-weight: 500;
-    color: var(--member-text-800, #1e3356);
+    color: #1e3355;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -210,7 +227,7 @@
 
   .attach-meta {
     font-size: 0.72rem;
-    color: var(--member-text-500, #5f759a);
+    color: #8a9ec0;
   }
 
   .attach-delete {
@@ -254,7 +271,7 @@
 .field-hint {
   margin-top: 4px;
   font-size: 0.74rem;
-  color: var(--member-text-500, #5f759a);
+  color: #8a9ec0;
 }
 
 /* ── Toggle Row ── */
@@ -270,9 +287,9 @@
 }
 
 .toggle-label {
-  font-size: 0.88rem;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--member-text-800, #1e3356);
+  color: #1e3355;
 }
 
 /* ── Readonly Notice ── */
@@ -301,10 +318,10 @@
 }
 
 .field-searchbar {
-  --background: var(--member-surface-100, #f1f5fb);
+  --background: #eef4fc;
   --border-radius: 10px;
   --box-shadow: none;
-  --placeholder-color: var(--member-text-500, #5f759a);
+  --placeholder-color: #7086a4;
   --placeholder-opacity: 1;
   padding: 0;
   min-height: 44px;
@@ -314,7 +331,7 @@
   margin: 0 10px 8px;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--member-border-200, #d6e4f5);
+  border: 1px solid rgba(190, 215, 245, 0.8);
   background: #ffffff;
   box-shadow: 0 8px 20px rgba(20, 49, 90, 0.08);
   max-height: 256px;
@@ -327,6 +344,6 @@
   --inner-padding-end: 14px;
 
   & + ion-item {
-    border-top: 1px solid var(--member-border-100, #e8eff8);
+    border-top: 1px solid rgba(210, 228, 248, 0.7);
   }
 }

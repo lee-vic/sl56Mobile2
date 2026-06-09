@@ -1,207 +1,170 @@
-<ion-header>
+﻿<ion-header translucent="true" class="forecast-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/member"></ion-back-button>
     </ion-buttons>
     <ion-title>快速预报</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="toggleSelectionMode()">
-        <ion-icon
-          [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'"
-        ></ion-icon>
+      <ion-button (click)="toggleSelectionMode()" [attr.aria-label]="isSelectionMode ? '退出选择' : '批量选择'">
+        <ion-icon [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-header>
 
-<ion-content class="import-manifest-content">
-  <!-- Refresher -->
-  <ion-refresher slot="fixed" (ionRefresh)="refreshItems($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <!-- Toolbar Card: Search + Date Filter -->
-  <div class="toolbar-card">
-    <!-- Search Bar -->
+  <ion-toolbar class="search-toolbar">
     <ion-searchbar
       #searchbar
-      placeholder="搜索单号..."
+      placeholder="搜索预报单号"
       (ionInput)="onSearchInput($event)"
       (ionCancel)="onSearchCancel()"
       [debounce]="280"
       showCancelButton="focus"
+      showClearButton="focus"
       animated
-      class="custom-searchbar"
     ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
 
-    <!-- Date Filter -->
-    <ion-segment
-      [value]="activeDateFilter"
-      (ionChange)="setDateFilter($event.detail.value)"
-      class="date-filter-segment"
-    >
-      <ion-segment-button value="today">
-        <ion-label>今天</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="7days">
-        <ion-label>7天</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="30days">
-        <ion-label>30天</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="">
-        <ion-label>全部</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-  </div>
+<ion-content class="import-manifest-content" fullscreen="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshItems($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-  <!-- Loading Skeleton -->
   <ng-container *ngIf="isLoading && items.length === 0">
     <div class="skeleton-list">
-      <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5]">
-        <div class="skeleton-card-top">
-          <ion-skeleton-text animated style="width: 55%; height: 18px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 50px; height: 20px; border-radius: 10px;"></ion-skeleton-text>
-        </div>
-        <div class="skeleton-card-meta">
-          <ion-skeleton-text animated style="width: 30%; height: 14px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 25%; height: 14px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 20%; height: 14px;"></ion-skeleton-text>
-        </div>
-        <div class="skeleton-card-footer">
-          <ion-skeleton-text animated style="width: 60%; height: 12px;"></ion-skeleton-text>
-        </div>
-      </div>
+      <ion-card class="forecast-card skeleton-card" *ngFor="let _ of [1,2,3,4]">
+        <ion-card-content>
+          <div class="skeleton-card-top">
+            <ion-skeleton-text animated style="width: 58%; height: 20px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 64px; height: 24px; border-radius: 12px;"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated style="width: 86%; height: 14px;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 66%; height: 14px;"></ion-skeleton-text>
+        </ion-card-content>
+      </ion-card>
     </div>
   </ng-container>
 
-  <!-- Error State -->
   <ng-container *ngIf="hasLoadError && !isLoading">
-    <div class="empty-state">
-      <div class="empty-state-icon">
-        <ion-icon name="cloud-offline-outline"></ion-icon>
-      </div>
-      <p class="empty-state-title">加载失败</p>
-      <p class="empty-state-desc">{{ loadErrorMessage }}</p>
-      <ion-button fill="outline" size="small" (click)="loadFirstPage(searchKeyword)" class="empty-state-btn">
+    <div class="state-panel">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <h2>加载失败</h2>
+      <p>{{ loadErrorMessage }}</p>
+      <ion-button fill="outline" shape="round" size="small" (click)="loadFirstPage(searchKeyword)">
         重新加载
       </ion-button>
     </div>
   </ng-container>
 
-  <!-- Empty State -->
   <ng-container *ngIf="isLoaded && items.length === 0 && !hasLoadError">
-    <div class="empty-state">
-      <div class="empty-state-icon">
-        <ion-icon name="document-text-outline"></ion-icon>
+    <div class="state-panel">
+      <ion-icon name="document-text-outline"></ion-icon>
+      <h2>暂无快速预报</h2>
+      <p>可以新建单条预报，或通过批量导入快速生成。</p>
+      <div class="state-actions">
+        <ion-button shape="round" size="small" (click)="createNew()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          新增预报
+        </ion-button>
+        <ion-button fill="outline" shape="round" size="small" (click)="goToImport()">
+          <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+          批量导入
+        </ion-button>
       </div>
-      <p class="empty-state-title">暂无快速预报数据</p>
-      <p class="empty-state-desc">点击右下角 + 号创建新预报或批量导入</p>
     </div>
   </ng-container>
 
-  <!-- Card List -->
-  <div class="card-list" *ngIf="items.length > 0">
-    <div
-      class="forecast-card"
-      *ngFor="let item of items; trackBy: trackById"
-      [class.selection-mode]="isSelectionMode"
-      (click)="viewDetail(item)"
-    >
-      <!-- Selection Checkbox -->
-      <div class="card-checkbox" *ngIf="isSelectionMode" (click)="$event.stopPropagation()">
-        <ion-checkbox
-          [checked]="item.Selected"
-          (ionChange)="toggleItemSelection(item)"
-        ></ion-checkbox>
-      </div>
-
-      <div class="card-body">
-        <!-- Top Row: ObjectNo + Status Badge -->
-        <div class="card-top">
-          <h3 class="card-object-no">{{ item.ObjectNo }}</h3>
-          <span class="status-badge" [class]="'status-' + getStatusColor(item.StatusCode)">
-            {{ item.StatusName }}
-          </span>
-        </div>
-
-        <!-- Meta Row: Country, Price, Piece -->
-        <div class="card-meta">
-          <span class="meta-tag">
-            <ion-icon name="globe-outline"></ion-icon>
-            {{ item.CountryName }}
-          </span>
-          <span class="meta-tag">
-            <ion-icon name="pricetag-outline"></ion-icon>
-            {{ item.CustomerPriceName }}
-          </span>
-          <span class="meta-tag">
-            <ion-icon name="cube-outline"></ion-icon>
-            {{ item.Piece }} 件
-          </span>
-        </div>
-
-        <!-- Footer Row: ContentType, extras -->
-        <div class="card-footer">
-          <span>{{ item.ContentTypeName }}</span>
-          <span *ngIf="item.PostalCode" class="footer-dot">·</span>
-          <span *ngIf="item.PostalCode">{{ item.PostalCode }}</span>
-          <span *ngIf="item.DeclaredValue" class="footer-dot">·</span>
-          <span *ngIf="item.DeclaredValue" class="footer-value">${{ item.DeclaredValue }}</span>
-          <ng-container *ngIf="item.ForwardingDocumentCount > 0">
-            <span class="footer-dot">·</span>
-            <span class="footer-doc">
-              <ion-icon name="attach-outline"></ion-icon>
-              {{ item.ForwardingDocumentCount }}
-            </span>
-          </ng-container>
-        </div>
-      </div>
-
-      <!-- Right: Date + Arrow -->
-      <div class="card-end" *ngIf="!isSelectionMode">
-        <span class="card-date">{{ item.CreateAt }}</span>
-        <ion-icon name="chevron-forward-outline" class="card-arrow"></ion-icon>
-      </div>
-    </div>
+  <div class="selection-strip" *ngIf="isSelectionMode && items.length > 0">
+    <ion-note>已选 {{ getSelectedCount() }} 项</ion-note>
+    <ion-button fill="clear" size="small" (click)="selectAllVisible()">全选当前页</ion-button>
+    <ion-button fill="clear" size="small" color="medium" (click)="clearSelection()">清空</ion-button>
   </div>
 
-  <!-- Infinite Scroll -->
+  <ion-list class="forecast-list" lines="none" *ngIf="items.length > 0">
+    <ion-item-sliding *ngFor="let item of items; trackBy: trackById">
+      <ion-item
+        button
+        detail="false"
+        class="forecast-item"
+        [class.selection-mode]="isSelectionMode"
+        (click)="viewDetail(item)"
+      >
+        <ion-checkbox
+          *ngIf="isSelectionMode"
+          slot="start"
+          [checked]="item.Selected"
+          (click)="$event.stopPropagation()"
+          (ionChange)="toggleItemSelection(item)"
+        ></ion-checkbox>
+
+        <ion-label>
+          <div class="item-head">
+            <h2>{{ item.ObjectNo }}</h2>
+            <ion-badge [ngClass]="'status-' + getStatusColor(item.StatusCode)">
+              {{ getCustomerStatusName(item) }}
+            </ion-badge>
+          </div>
+
+          <div class="item-summary">
+            <span>目的国：{{ item.CountryName || '-' }}</span>
+            <span>件数：{{ item.Piece || 0 }}</span>
+            <span>类型：{{ item.ContentTypeName || '-' }}</span>
+            <span>申报价值：{{ item.DeclaredValue ? ('$' + item.DeclaredValue) : '-' }}</span>
+          </div>
+
+          <div class="quote-row">
+            报价：{{ item.CustomerPriceName || '-' }}
+          </div>
+
+          <div class="item-foot">
+            <span>资料：{{ item.ForwardingDocumentCount || 0 }}</span>
+            <span>创建：{{ item.CreateAt || '-' }}</span>
+          </div>
+        </ion-label>
+      </ion-item>
+
+      <ion-item-options side="end" *ngIf="!isSelectionMode">
+        <ion-item-option color="primary" (click)="viewDetail(item)">
+          <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+        <ion-item-option color="danger" [disabled]="!canDelete(item)" (click)="deleteItem(item)">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
   <ion-infinite-scroll #infiniteScroll (ionInfinite)="loadNextPage($event)">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="正在加载更多"></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
-  <!-- FAB -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button class="custom-fab">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="!isSelectionMode">
+    <ion-fab-button>
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
     <ion-fab-list side="top">
-      <ion-fab-button (click)="createNew()" class="fab-sub">
+      <ion-fab-button (click)="createNew()">
         <ion-icon name="create-outline"></ion-icon>
       </ion-fab-button>
-      <ion-fab-button (click)="goToImport()" class="fab-sub">
+      <ion-fab-button (click)="goToImport()">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </ion-fab-button>
     </ion-fab-list>
   </ion-fab>
-
-  <!-- Selection Mode Toolbar -->
-  <ion-footer *ngIf="isSelectionMode">
-    <ion-toolbar>
-      <ion-title size="small">
-        已选 {{ getSelectedCount() }} 项
-      </ion-title>
-      <ion-buttons slot="end">
-        <ion-button
-          color="danger"
-          (click)="confirmBulkDelete()"
-          [disabled]="getSelectedCount() === 0 || isBatchDeleting"
-        >
-          <ion-icon name="trash-outline" slot="start"></ion-icon>
-          删除
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-footer>
 </ion-content>
+
+<ion-footer *ngIf="isSelectionMode" class="selection-footer">
+  <ion-toolbar>
+    <ion-title size="small">已选 {{ getSelectedCount() }} 项</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        color="danger"
+        (click)="confirmBulkDelete()"
+        [disabled]="getSelectedCount() === 0 || isBatchDeleting"
+      >
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        删除
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

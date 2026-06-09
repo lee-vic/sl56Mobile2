@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header translucent="true" class="manifest-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button
@@ -18,7 +18,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="import-content">
+<ion-content class="import-content" fullscreen="true">
   <!-- ========== Step 1: File Selection ========== -->
   <ng-container *ngIf="currentStep === 1">
     <div class="step-card step-upload">

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { HttpParams, HttpClient } from '@angular/common/http';
 import { apiUrl } from '../global';
 import {
@@ -212,5 +212,27 @@ export class ImportManifestService {
       this.baseUrl + '/GetForwardingDocuments?detailId=' + detailId,
       { withCredentials: true }
     );
+  }
+
+  getForwardingDocumentPreviewUrl(documentId: number) {
+    return this.baseUrl + '/PreviewDocument?id=' + documentId;
+  }
+
+  openForwardingDocumentPreview(documentId: number) {
+    const url = this.getForwardingDocumentPreviewUrl(documentId);
+    if (this.isMicroMessenger()) {
+      window.location.href = url;
+      return;
+    }
+
+    const previewWindow = window.open(url, '_blank');
+    if (!previewWindow) {
+      window.location.href = url;
+    }
+  }
+
+  private isMicroMessenger(): boolean {
+    const ua = navigator.userAgent || '';
+    return /MicroMessenger/i.test(ua);
   }
 }

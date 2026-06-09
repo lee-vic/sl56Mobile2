@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonSearchbar, IonInfiniteScroll, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -25,11 +25,6 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   isSelectionMode: boolean = false;
   selectedIds: Set<number> = new Set();
   isBatchDeleting: boolean = false;
-
-  // Date filter
-  filterStartDate: string = '';
-  filterEndDate: string = '';
-  activeDateFilter: string = '';
 
   private searchDebounceTimer?: ReturnType<typeof setTimeout>;
   private isListRequestRunning: boolean = false;
@@ -75,9 +70,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
     this.service
       .getList(
         this.currentPageIndex,
-        key || undefined,
-        this.filterStartDate || undefined,
-        this.filterEndDate || undefined
+        key || undefined
       )
       .pipe(
         takeUntil(this.destroy$),
@@ -143,43 +136,12 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
     this.loadFirstPage('');
   }
 
-  // ========== Date Filter ==========
-
-  setDateFilter(preset: string) {
-    this.activeDateFilter = preset;
-    const today = new Date();
-    const formatDate = (d: Date) =>
-      d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-' +
-      String(d.getDate()).padStart(2, '0');
-
-    if (preset === 'today') {
-      this.filterStartDate = formatDate(today);
-      this.filterEndDate = formatDate(today);
-    } else if (preset === '7days') {
-      const start = new Date(today);
-      start.setDate(start.getDate() - 7);
-      this.filterStartDate = formatDate(start);
-      this.filterEndDate = formatDate(today);
-    } else if (preset === '30days') {
-      const start = new Date(today);
-      start.setDate(start.getDate() - 30);
-      this.filterStartDate = formatDate(start);
-      this.filterEndDate = formatDate(today);
-    } else {
-      this.filterStartDate = '';
-      this.filterEndDate = '';
-    }
-    this.loadFirstPage(this.searchKeyword);
-  }
-
   // ========== Selection Mode ==========
 
   toggleSelectionMode() {
     this.isSelectionMode = !this.isSelectionMode;
     if (!this.isSelectionMode) {
-      this.selectedIds.clear();
-      this.items.forEach((item) => (item.Selected = false));
+      this.clearSelection();
     }
   }
 
@@ -194,6 +156,18 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
 
   getSelectedCount(): number {
     return this.selectedIds.size;
+  }
+
+  selectAllVisible(): void {
+    this.items.forEach((item) => {
+      item.Selected = true;
+      this.selectedIds.add(item.Id);
+    });
+  }
+
+  clearSelection(): void {
+    this.selectedIds.clear();
+    this.items.forEach((item) => (item.Selected = false));
   }
 
   // ========== Actions ==========
@@ -254,7 +228,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
 
     const alert = await this.alertCtrl.create({
       header: '确认批量删除',
-      message: `确定要删除选中的 ${count} 条预报吗？已收货的预报将被自动跳过。`,
+      message: `确定要删除选中的 ${count} 条预报吗？已交货的预报将被自动跳过。`,
       buttons: [
         { text: '取消', role: 'cancel' },
         {
@@ -304,6 +278,13 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
       default:
         return 'medium';
     }
+  }
+
+  getCustomerStatusName(item: ImportManifestListItem): string {
+    if (!item || !item.StatusName) {
+      return '未知';
+    }
+    return item.StatusName === '已收货' ? '已交货' : item.StatusName;
   }
 
   canDelete(item: ImportManifestListItem): boolean {

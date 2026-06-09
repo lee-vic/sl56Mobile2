@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, IonContent } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
@@ -39,16 +39,20 @@ export class ImportManifestDetailPage implements OnInit {
     this.service.getDetail(this.id).subscribe({
       next: (res) => {
         this.data = res;
-        // Load forwarding documents if available
-        if (res.ObjectId && res.ForwardingDocumentCount > 0) {
+        if (res.ObjectId) {
           this.service.getForwardingDocuments(res.ObjectId).subscribe({
             next: (docRes) => {
               if (docRes.success) {
                 this.attachments = docRes.rows || [];
+                if (this.data) this.data.ForwardingDocumentCount = this.attachments.length;
+              } else {
+                this.attachments = [];
+                if (this.data) this.data.ForwardingDocumentCount = 0;
               }
               this.isLoading = false;
             },
             error: () => {
+              this.attachments = [];
               this.isLoading = false;
             },
           });
@@ -118,6 +122,13 @@ export class ImportManifestDetailPage implements OnInit {
     }
   }
 
+  getCustomerStatusName(): string {
+    if (!this.data || !this.data.StatusName) {
+      return '未知';
+    }
+    return this.data.StatusName === '已收货' ? '已交货' : this.data.StatusName;
+  }
+
   getFileIcon(fileName: string): string {
     const ext = fileName.split('.').pop()?.toLowerCase();
     switch (ext) {
@@ -125,8 +136,14 @@ export class ImportManifestDetailPage implements OnInit {
       case 'jpg': case 'jpeg': case 'png': return 'image-outline';
       case 'doc': case 'docx': return 'document-text-outline';
       case 'xls': case 'xlsx': return 'grid-outline';
+      case 'zip': case 'rar': case '7z': return 'archive-outline';
       default: return 'attach-outline';
     }
+  }
+
+  previewDocument(doc: ForwardingDocumentItem) {
+    if (!doc || !doc.id) return;
+    this.service.openForwardingDocumentPreview(doc.id);
   }
 
   formatFileSize(bytes: number): string {

@@ -241,16 +241,22 @@ export class ImportManifestFormPage implements OnInit {
     }
 
     // Validate file type
+    const isPrintAttachment = this.isPrintAttachmentType(attachTypeId);
     const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx'];
+    if (!isPrintAttachment) {
+      allowedExts.push('.zip', '.rar', '.7z');
+    }
     const ext = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!allowedExts.includes(ext)) {
-      this.showToast('不支持的文件格式，仅支持 PDF/图片/Office 文档');
+      this.showToast(isPrintAttachment
+        ? '不支持的文件格式，仅支持 PDF/图片/Office 文档'
+        : '不支持的文件格式，仅支持 PDF/图片/Office 文档，或 zip/rar/7z 压缩包');
       input.value = '';
       return;
     }
 
     // Validate file size (2MB limit for printed attachment types)
-    const maxSize = this.isPrintAttachmentType(attachTypeId) ? 2 * 1024 * 1024 : Infinity;
+    const maxSize = isPrintAttachment ? 2 * 1024 * 1024 : Infinity;
     if (file.size > maxSize) {
       this.showToast('文件大小超过限制（最大 2MB）');
       input.value = '';
@@ -334,8 +340,14 @@ export class ImportManifestFormPage implements OnInit {
       case 'jpg': case 'jpeg': case 'png': return 'image-outline';
       case 'doc': case 'docx': return 'document-text-outline';
       case 'xls': case 'xlsx': return 'grid-outline';
+      case 'zip': case 'rar': case '7z': return 'archive-outline';
       default: return 'attach-outline';
     }
+  }
+
+  previewDocument(doc: ForwardingDocumentItem) {
+    if (!doc || !doc.id) return;
+    this.service.openForwardingDocumentPreview(doc.id);
   }
 
   formatFileSize(bytes: number): string {

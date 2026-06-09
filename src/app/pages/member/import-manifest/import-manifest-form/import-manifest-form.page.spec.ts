@@ -97,6 +97,8 @@ describe('ImportManifestFormPage', () => {
       'validateCustomerPriceName',
       'uploadTempDocument',
       'getForwardingDocuments',
+      'getForwardingDocumentPreviewUrl',
+      'openForwardingDocumentPreview',
     ]);
 
     const lSpy = jasmine.createSpyObj('LoadingController', ['create']);
@@ -707,6 +709,7 @@ describe('ImportManifestFormPage', () => {
     expect(component.getFileIcon('photo.png')).toBe('image-outline');
     expect(component.getFileIcon('doc.docx')).toBe('document-text-outline');
     expect(component.getFileIcon('sheet.xlsx')).toBe('grid-outline');
+    expect(component.getFileIcon('archive.zip')).toBe('archive-outline');
     expect(component.getFileIcon('unknown.xyz')).toBe('attach-outline');
   });
 

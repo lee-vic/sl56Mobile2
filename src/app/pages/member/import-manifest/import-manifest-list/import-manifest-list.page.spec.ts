@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -81,7 +81,7 @@ describe('ImportManifestListPage', () => {
 
     fixture.detectChanges(); // triggers ngOnInit
 
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined, undefined, undefined);
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined);
     expect(component.items.length).toBe(2);
     expect(component.items[0].ObjectNo).toBe('TEST001');
     expect(component.isLoaded).toBe(true);
@@ -131,7 +131,7 @@ describe('ImportManifestListPage', () => {
     expect(component.searchKeyword).toBe('TEST');
 
     setTimeout(() => {
-      expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'TEST', undefined, undefined);
+      expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'TEST');
       done();
     }, 300);
   });
@@ -145,36 +145,10 @@ describe('ImportManifestListPage', () => {
 
     expect(component.searchKeyword).toBe('');
     // loadFirstPage passes '' through getItems which does key || undefined => undefined
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined, undefined, undefined);
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined);
   });
 
-  // ── 8. Date filters ──
-  it('setDateFilter today should set startDate and endDate to today', () => {
-    serviceSpy.getList.and.returnValue(of(mockListResponse([])));
-
-    component.setDateFilter('today');
-
-    const today = new Date();
-    const expected = today.getFullYear() + '-' +
-      String(today.getMonth() + 1).padStart(2, '0') + '-' +
-      String(today.getDate()).padStart(2, '0');
-
-    expect(component.filterStartDate).toBe(expected);
-    expect(component.filterEndDate).toBe(expected);
-    expect(component.activeDateFilter).toBe('today');
-    expect(serviceSpy.getList).toHaveBeenCalled();
-  });
-
-  it('setDateFilter with empty string should clear date filters', () => {
-    serviceSpy.getList.and.returnValue(of(mockListResponse([])));
-
-    component.setDateFilter('');
-
-    expect(component.filterStartDate).toBe('');
-    expect(component.filterEndDate).toBe('');
-  });
-
-  // ── 9. Selection mode toggle ──
+  // ── 8. Selection mode toggle ──
   it('toggleSelectionMode should toggle mode and clear selections', () => {
     component.items = [mockItem({ Id: 1, Selected: true })];
     component.selectedIds.add(1);
@@ -187,7 +161,7 @@ describe('ImportManifestListPage', () => {
     expect(component.selectedIds.size).toBe(0);
   });
 
-  // ── 10. Toggle item selection ──
+  // ── 9. Toggle item selection ──
   it('toggleItemSelection should add/remove items from selectedIds', () => {
     const item = mockItem();
     component.toggleItemSelection(item);

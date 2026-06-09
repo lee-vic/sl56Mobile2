@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header translucent="true" class="manifest-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/member/import-manifest/list"></ion-back-button>
@@ -12,7 +12,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="form-content">
+<ion-content class="form-content" fullscreen="true">
   <form [formGroup]="form">
     <!-- Basic Info Card -->
     <div class="form-card">
@@ -250,7 +250,7 @@
             type="file"
             #fileInput
             style="display:none"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.zip,.rar,.7z"
             (change)="onAttachmentFileChange($event)"
           />
           <ion-button
@@ -264,7 +264,7 @@
             {{ isUploading ? '上传中...' : '添加附件' }}
           </ion-button>
         </div>
-        <div class="field-hint">支持 PDF / 图片 / Office 文档，单文件最大 2MB</div>
+        <div class="field-hint">支持 PDF / 图片 / Office 文档；随货资料可上传 zip / rar / 7z 压缩包</div>
       </div>
 
       <!-- Existing + Pending Files -->
@@ -281,6 +281,14 @@
               <ng-container *ngIf="doc.uploadDate"> · {{ doc.uploadDate | date:'yyyy-MM-dd' }}</ng-container>
             </span>
           </div>
+          <ion-button
+            fill="clear"
+            size="small"
+            [disabled]="!doc.id"
+            (click)="previewDocument(doc)"
+          >
+            <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+          </ion-button>
           <ion-button
             class="attach-delete"
             fill="clear"
@@ -303,7 +311,7 @@
     <!-- Readonly Notice -->
     <div class="readonly-notice" *ngIf="isReadonly">
       <ion-icon name="information-circle-outline"></ion-icon>
-      <span>该预报已收货，禁止编辑</span>
+      <span>该预报已交货，禁止编辑</span>
     </div>
   </form>
 </ion-content>

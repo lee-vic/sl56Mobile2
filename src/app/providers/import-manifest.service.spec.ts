@@ -433,4 +433,16 @@ describe('ImportManifestService', () => {
     expect(req.request.method).toBe('GET');
     req.flush(mockDocs);
   });
+
+  it('getForwardingDocumentPreviewUrl should build preview url by document id', () => {
+    expect(service.getForwardingDocumentPreviewUrl(123)).toBe(baseUrl + '/PreviewDocument?id=123');
+  });
+
+  it('openForwardingDocumentPreview should open preview url in a new window outside WeChat', () => {
+    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+
+    service.openForwardingDocumentPreview(123);
+
+    expect(openSpy).toHaveBeenCalledWith(baseUrl + '/PreviewDocument?id=123', '_blank');
+  });
 });
