@@ -223,6 +223,19 @@
         </div>
         <ion-toggle formControlName="RequiresDutiesAndTaxesPrepayment"></ion-toggle>
       </div>
+
+      <div class="form-field">
+        <label class="field-label">电池型号 <span class="optional">(选填)</span></label>
+        <ion-select
+          class="field-select"
+          formControlName="BatteryModel"
+          placeholder="请选择电池型号"
+          interface="action-sheet"
+          [cancelText]="'取消'"
+        >
+          <ion-select-option *ngFor="let opt of batteryModelOptions" [value]="opt.Value">{{ opt.Text }}</ion-select-option>
+        </ion-select>
+      </div>
     </div>
 
     <!-- Attachments Card -->

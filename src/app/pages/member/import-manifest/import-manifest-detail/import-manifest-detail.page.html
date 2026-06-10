@@ -140,6 +140,10 @@
             </span>
           </span>
         </div>
+        <div class="detail-row" *ngIf="data.BatteryModel">
+          <span class="detail-label">电池型号</span>
+          <span class="detail-value">{{ getBatteryModelText() }}</span>
+        </div>
       </div>
     </div>
 

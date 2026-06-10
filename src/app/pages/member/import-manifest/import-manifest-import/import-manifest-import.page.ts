@@ -163,6 +163,7 @@ export class ImportManifestImportPage implements OnInit {
       RequiresSeparateCustomsDeclaration: r.RequiresSeparateCustomsDeclaration,
       RequiresDutiesAndTaxesPrepayment: r.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: r.RequiresSpecialVatInvoice,
+      BatteryModel: r.BatteryModel || '',
     }));
 
     this.isSaving = true;

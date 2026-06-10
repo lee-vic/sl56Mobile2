@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, LoadingController, ToastController } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, BatteryModelOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -40,6 +40,9 @@ export class ImportManifestFormPage implements OnInit {
   pendingUploads: { filePath: string; fileName: string; attachmentTypeId: number; size: number }[] = [];
   deletedDocumentIds: number[] = [];
 
+  // Battery model options (fetched from API, single source of truth)
+  batteryModelOptions: BatteryModelOption[] = [];
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -62,6 +65,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresSeparateCustomsDeclaration: [false],
       RequiresDutiesAndTaxesPrepayment: [false],
       RequiresSpecialVatInvoice: [false],
+      BatteryModel: [''],
     });
   }
 
@@ -77,13 +81,15 @@ export class ImportManifestFormPage implements OnInit {
       this.service.getCountryOptions(),
       this.service.getCustomerPriceOptions(),
       this.service.getAttachmentTypes(),
+      this.service.getBatteryModelOptions(),
     ]).subscribe({
-      next: ([countries, prices, attachTypes]) => {
+      next: ([countries, prices, attachTypes, batteryModels]) => {
         this.countryOptions = countries || [];
         this.countrySearch = this.countryOptions;
         this.priceOptions = prices || [];
         this.priceSearch = this.priceOptions;
         this.attachmentTypes = attachTypes || [];
+        this.batteryModelOptions = batteryModels || [];
         // Default to first attachment type
         if (this.attachmentTypes.length > 0) {
           this.selectedAttachmentTypeId = this.attachmentTypes[0].id;
@@ -163,6 +169,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresSeparateCustomsDeclaration: detail.RequiresSeparateCustomsDeclaration,
       RequiresDutiesAndTaxesPrepayment: detail.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: detail.RequiresSpecialVatInvoice,
+      BatteryModel: detail.BatteryModel || '',
     });
 
     // Load existing forwarding documents
@@ -615,6 +622,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresSeparateCustomsDeclaration: formValue.RequiresSeparateCustomsDeclaration || false,
       RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
       RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
+      BatteryModel: formValue.BatteryModel || '',
       PendingDocumentsJson: pendingDocsJson,
       DeletedDocumentIds: this.deletedDocumentIds.length > 0 ? this.deletedDocumentIds : null,
     };

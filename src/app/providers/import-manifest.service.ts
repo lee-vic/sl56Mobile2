@@ -13,6 +13,7 @@ import {
   BulkDeleteResult,
   DropdownOption,
   AttachmentTypeOption,
+  BatteryModelOption,
   UploadTempDocumentResult,
   ForwardingDocumentItem,
   ForwardingDocumentListResult,
@@ -144,6 +145,16 @@ export class ImportManifestService {
   getCustomerPriceOptions() {
     return this.http.get<DropdownOption[]>(
       this.baseUrl + '/GetCustomerPriceOptions',
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * 获取电池型号下拉选项
+   */
+  getBatteryModelOptions() {
+    return this.http.get<BatteryModelOption[]>(
+      this.baseUrl + '/GetBatteryModelOptions',
       { withCredentials: true }
     );
   }

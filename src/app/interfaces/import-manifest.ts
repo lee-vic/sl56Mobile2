@@ -50,6 +50,7 @@ export interface ImportManifestDetail {
     RequiresSeparateCustomsDeclaration: boolean;
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
+    BatteryModel?: string;
     WaybillCreationStatus: number;
     TrackNumber: string;
     LabelPath: string;
@@ -72,6 +73,7 @@ export interface ImportManifestSaveRequest {
     RequiresSeparateCustomsDeclaration: boolean;
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
+    BatteryModel?: string;
     PendingDocumentsJson?: string | null;
     DeletedDocumentIds?: number[] | null;
     LastChanged?: any;
@@ -92,6 +94,7 @@ export interface ImportPreviewRow {
     RequiresSeparateCustomsDeclaration: boolean;
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
+    BatteryModel?: string;
     Errors: ImportValidationError[];
     HasError: boolean;
 }
@@ -131,6 +134,7 @@ export interface ImportRowModel {
     RequiresSeparateCustomsDeclaration: boolean;
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
+    BatteryModel?: string;
 }
 
 export interface ImportManifestActionResult {
@@ -162,6 +166,12 @@ export interface AttachmentTypeOption {
     id: number;
     name: string;
     isPrint: boolean;
+}
+
+/** 电池型号选项 */
+export interface BatteryModelOption {
+    Value: string;
+    Text: string;
 }
 
 /** 随货资料展示项 */

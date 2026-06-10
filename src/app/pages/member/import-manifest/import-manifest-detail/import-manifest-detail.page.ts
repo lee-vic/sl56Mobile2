@@ -2,7 +2,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, IonContent } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDetail, ForwardingDocumentItem, BatteryModelOption } from 'src/app/interfaces/import-manifest';
 
 @Component({
   selector: 'app-import-manifest-detail',
@@ -31,6 +31,9 @@ export class ImportManifestDetailPage implements OnInit {
     if (this.id) {
       this.loadDetail();
     }
+    this.service.getBatteryModelOptions().subscribe({
+      next: (opts) => { this.batteryModelOptions = opts || []; }
+    });
   }
 
   loadDetail() {
@@ -128,6 +131,15 @@ export class ImportManifestDetailPage implements OnInit {
     }
     return this.data.StatusName === '已收货' ? '已交货' : this.data.StatusName;
   }
+
+  getBatteryModelText(): string {
+    if (!this.batteryModelOptions.length) return '';
+    const opt = this.batteryModelOptions.find(o => o.Value === (this.data?.BatteryModel || ''));
+    return opt ? opt.Text : '';
+  }
+
+  // Battery model options (fetched from API, single source of truth)
+  batteryModelOptions: BatteryModelOption[] = [];
 
   getFileIcon(fileName: string): string {
     const ext = fileName.split('.').pop()?.toLowerCase();

@@ -131,6 +131,7 @@
           </div>
           <p class="preview-meta">
             {{ row.CountryName || '-' }} · {{ row.CustomerPriceName || '-' }} · {{ row.Piece || 0 }} 件 · {{ row.ContentTypeName || '-' }}
+            <span *ngIf="row.BatteryModel"> · {{ row.BatteryModel }}</span>
           </p>
           <p *ngIf="row.HasError && row.Errors" class="preview-errors">
             <span *ngFor="let err of row.Errors" class="error-chip">{{ err.Message }}</span>
