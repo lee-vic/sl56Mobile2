@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavController, ToastController, AlertController } from '@ionic/angular';
+import { NavController, ToastController, AlertController, LoadingController } from '@ionic/angular';
 import { WarehouseApplicationService } from '../../../providers/warehouse-application.service';
 import { WarehouseApplication } from '../../../interfaces/warehouse-application';
 declare var WeixinJSBridge: any;
@@ -18,7 +18,8 @@ export class WarehouseApplicationPage implements OnInit {
     private navCtrl: NavController,
     private warehouseService: WarehouseApplicationService,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController
   ) { }
 
   ngOnInit(): void {
@@ -100,8 +101,11 @@ export class WarehouseApplicationPage implements OnInit {
       Id: app.Id,
       TradeType: this.tradeType
     }
-    this.warehouseService.pay(postData).subscribe(
-      res => {
+    const loading = await this.loadingCtrl.create({ message: '请稍候...' });
+    await loading.present();
+    this.warehouseService.pay(postData).subscribe({
+      next: (res) => {
+        loading.dismiss();
         if (res.Success) {
           let jsApiParam = JSON.parse(res.Data);
           this.callpay(jsApiParam);
@@ -113,14 +117,15 @@ export class WarehouseApplicationPage implements OnInit {
           }).then(toast => toast.present());
         }
       },
-      err => {
+      error: (_err) => {
+        loading.dismiss();
         this.toastCtrl.create({
           message: '支付失败，请重试',
           duration: 3000,
           position: 'middle'
         }).then(toast => toast.present());
       }
-    );
+    });
   }
   callpay(jsApiParam) {
     if (typeof WeixinJSBridge != "undefined") {

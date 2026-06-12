@@ -16,7 +16,6 @@ export class ImportManifestFormPage implements OnInit {
   id: number | null = null;
   isEditMode: boolean = false;
   isReadonly: boolean = false;
-  isSubmitting: boolean = false;
   isUploading: boolean = false;
 
   countryOptions: DropdownOption[] = [];
@@ -602,9 +601,6 @@ export class ImportManifestFormPage implements OnInit {
       return;
     }
 
-    if (this.isSubmitting) return;
-    this.isSubmitting = true;
-
     const formValue = this.form.getRawValue();
     const pendingDocsJson = this.pendingUploads.length > 0
       ? JSON.stringify(this.pendingUploads)
@@ -637,7 +633,6 @@ export class ImportManifestFormPage implements OnInit {
     operation.subscribe({
       next: (res) => {
         loading.dismiss();
-        this.isSubmitting = false;
         if (res.Success) {
           this.showToast(this.isEditMode ? '编辑成功' : '新增成功');
           this.navCtrl.back();
@@ -647,7 +642,6 @@ export class ImportManifestFormPage implements OnInit {
       },
       error: () => {
         loading.dismiss();
-        this.isSubmitting = false;
         this.showAlert('错误', '网络错误，请稍后重试');
       },
     });

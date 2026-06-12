@@ -1,4 +1,4 @@
-import { NavController } from '@ionic/angular';
+import { LoadingController, NavController } from '@ionic/angular';
 import { FadadaService } from '../../../providers/fadada.service';
 import { Component, OnInit } from '@angular/core';
 import { FadadaSignTask } from 'src/app/interfaces/fadada-sign-task';
@@ -11,7 +11,7 @@ import { MemberPage } from '../../tabs/member/member.page';
 })
 export class SignTheContractComponent implements OnInit {
 
-  constructor(public faDaDaService: FadadaService, public navCtrl: NavController) {
+  constructor(public faDaDaService: FadadaService, public navCtrl: NavController, private loadingCtrl: LoadingController) {
   }
 
   list1: Array<FadadaSignTask> = []; // 待签署合同列表
@@ -72,14 +72,32 @@ export class SignTheContractComponent implements OnInit {
   }
 
   goToSignTask(item: FadadaSignTask) {
-    this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe(res => {
-      window.location.href = res;
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          window.location.href = res;
+        },
+        error: () => {
+          loading.dismiss();
+        },
+      });
     });
   }
 
   goToPreview(item: FadadaSignTask) {
-    this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe(res => {
-      window.open(res, '_blank');
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          window.open(res, '_blank');
+        },
+        error: () => {
+          loading.dismiss();
+        },
+      });
     });
   }
   

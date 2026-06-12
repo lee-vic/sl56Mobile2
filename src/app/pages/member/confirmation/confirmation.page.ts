@@ -17,7 +17,6 @@ export class ConfirmationPage implements OnInit, OnDestroy {
   totalAmount: number = 0;
   selectedCount: number = 0;
   selectedAmount: number = 0;
-  isSubmitting: boolean = false;
   showConfirmSuccess: boolean = false;
   lastConfirmedCount: number = 0;
   isLoading: boolean = false;
@@ -176,10 +175,6 @@ export class ConfirmationPage implements OnInit, OnDestroy {
 
   }
   onConfirmClick() {
-    if (this.isSubmitting) {
-      return;
-    }
-
     const selectedItems = this.getSelectedIds();
 
     if (selectedItems.length === 0) {
@@ -205,10 +200,6 @@ export class ConfirmationPage implements OnInit, OnDestroy {
     }
   }
   doConfirm(selectedIdList: string) {
-    if (this.isSubmitting) {
-      return;
-    }
-
     const selectedIds = selectedIdList
       .split(',')
       .map(id => id.trim())
@@ -219,14 +210,11 @@ export class ConfirmationPage implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSubmitting = true;
-
     this.uiFeedback.presentLoading('正在提交确认，请稍候...').then(loading => {
       this.service.confirm(selectedIds.toString())
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
-          this.isSubmitting = false;
           this.uiFeedback.dismissLoading(loading);
         })
       )

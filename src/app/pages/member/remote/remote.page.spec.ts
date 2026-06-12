@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -19,8 +19,10 @@ describe('RemotePage', () => {
   beforeEach(async(() => {
     remoteServiceSpy = jasmine.createSpyObj('RemoteService', ['getModeOfTransportTypeList', 'Query']);
     countryServiceSpy = jasmine.createSpyObj('CountryService', ['getCoutryList']);
-    uiFeedbackSpy = jasmine.createSpyObj('UiFeedbackService', ['presentToast']);
+    uiFeedbackSpy = jasmine.createSpyObj('UiFeedbackService', ['presentToast', 'presentLoading', 'dismissLoading']);
     uiFeedbackSpy.presentToast.and.returnValue(Promise.resolve());
+    uiFeedbackSpy.presentLoading.and.returnValue(Promise.resolve({ dismiss: jasmine.createSpy('dismiss') } as any));
+    uiFeedbackSpy.dismissLoading.and.returnValue(Promise.resolve());
 
     remoteServiceSpy.getModeOfTransportTypeList.and.returnValue(of([
       { Id: 1, Name: '空运' },
@@ -85,7 +87,7 @@ describe('RemotePage', () => {
     expect(uiFeedbackSpy.presentToast).toHaveBeenCalled();
   });
 
-  it('should map remote result after query', () => {
+  it('should map remote result after query', fakeAsync(() => {
     remoteServiceSpy.Query.and.returnValue(of({ Status: 0, IsRemote: true, Message: '' }));
     component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
     component.myForm.patchValue({
@@ -95,14 +97,15 @@ describe('RemotePage', () => {
     });
 
     component.doQuery(component.myForm.value);
+    tick();
 
     expect(remoteServiceSpy.Query).toHaveBeenCalled();
     expect(component.queryResult?.title).toBe('偏远');
     expect(component.queryResult?.success).toBe(true);
     expect(component.queryResult?.isRemote).toBe(true);
-  });
+  }));
 
-  it('should set query error state when request fails', () => {
+  it('should set query error state when request fails', fakeAsync(() => {
     remoteServiceSpy.Query.and.returnValue(throwError(() => new Error('network')));
     component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
     component.myForm.patchValue({
@@ -112,13 +115,14 @@ describe('RemotePage', () => {
     });
 
     component.doQuery(component.myForm.value);
+    tick();
 
     expect(component.queryErrorMessage).toBe('网络异常，暂时无法完成查询，请稍后重试。');
     expect(component.queryResult).toBeNull();
     expect(component.isQuerying).toBe(false);
-  });
+  }));
 
-  it('should stop query subscription on destroy', () => {
+  it('should stop query subscription on destroy', fakeAsync(() => {
     const querySubject = new Subject<any>();
     remoteServiceSpy.Query.and.returnValue(querySubject.asObservable());
     component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
@@ -129,6 +133,7 @@ describe('RemotePage', () => {
     });
 
     component.doQuery(component.myForm.value);
+    tick();
     expect(component.isQuerying).toBe(true);
 
     component.ngOnDestroy();
@@ -136,5 +141,5 @@ describe('RemotePage', () => {
 
     expect(component.queryResult).toBeNull();
     expect(component.isQuerying).toBe(false);
-  });
+  }));
 });

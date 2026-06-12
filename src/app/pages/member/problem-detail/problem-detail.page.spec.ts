@@ -39,7 +39,7 @@ describe('ProblemDetailPage', () => {
         { provide: CommonService, useValue: { getJsSdkConfig: () => of('{}') } },
         { provide: NavController, useValue: { navigateForward: jasmine.createSpy('navigateForward') } },
         { provide: AlertController, useValue: { create: () => Promise.resolve({ present: () => Promise.resolve() }) } },
-        { provide: LoadingController, useValue: { create: () => Promise.resolve({ present: () => Promise.resolve() }), dismiss: () => Promise.resolve() } },
+        { provide: LoadingController, useValue: { create: () => Promise.resolve({ present: () => Promise.resolve(), dismiss: () => Promise.resolve() }) } },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -77,7 +77,6 @@ describe('ProblemDetailPage', () => {
   it('should block submit when type4 exists but no checklist item is selected', () => {
     component.data = { Problem: { ProcessTypeList: [4] } } as any;
     component.checkListValue = [false, false];
-    component.isSubmiting = false;
     component.isFileProcessing = false;
     component.isWeAppUploadFile = false;
 
@@ -89,7 +88,6 @@ describe('ProblemDetailPage', () => {
   it('should allow submit when form is invalid but weapp file exists', () => {
     component.data = { Problem: { ProcessTypeList: [3] } } as any;
     component.checkListValue = [];
-    component.isSubmiting = false;
     component.isFileProcessing = false;
     component.isWeAppUploadFile = true;
 

@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { LoadingController } from '@ionic/angular';
 import { DistributeService } from 'src/app/providers/distribute.service';
 
 @Component({
@@ -15,7 +16,7 @@ export class ProfitPage implements OnInit {
   profits: any;
   isLoading = true;
 
-  constructor(private distributeService: DistributeService, private datePipe: DatePipe) { }
+  constructor(private distributeService: DistributeService, private datePipe: DatePipe, private loadingCtrl: LoadingController) { }
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -27,10 +28,17 @@ export class ProfitPage implements OnInit {
 
   changeType(type) {
     this.type = type;
-    this.isLoading = true;
-    this.distributeService.getProfits(type).subscribe(res => {
-      this.profits=res;
-      this.isLoading = false;
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.distributeService.getProfits(type).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          this.profits=res;
+        },
+        error: () => {
+          loading.dismiss();
+        },
+      });
     });
   }
 

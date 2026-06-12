@@ -14,7 +14,6 @@ export class LoginPage implements OnInit {
   public authForm: FormGroup;
 
   public isLogin: boolean;
-  public isLoggingIn = false;
 
   constructor(public formBuilder: FormBuilder,
     public toastCtrl: ToastController,
@@ -38,7 +37,6 @@ export class LoginPage implements OnInit {
   }
 
   async doLogin(formValue) {
-    this.isLoggingIn = true;
     const loading = await this.loadingCtrl.create({ message: '登录中...' });
     await loading.present();
     // Web application - always set clientType to web
@@ -47,7 +45,6 @@ export class LoginPage implements OnInit {
     formValue.unionId = this.cookieService.get('UnionId');
     this.userService.auth(formValue).subscribe({
       next: (res: any) => {
-        this.isLoggingIn = false;
         loading.dismiss();
         this.isLogin =  res.Success;
         console.log("aa" + this.cookieService.get('sl56Auth'));
@@ -65,7 +62,6 @@ export class LoginPage implements OnInit {
         }
       },
       error: (err) => {
-        this.isLoggingIn = false;
         loading.dismiss();
         this.toastCtrl.create({
           message: err.message,

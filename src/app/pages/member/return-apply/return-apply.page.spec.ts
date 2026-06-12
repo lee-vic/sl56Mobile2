@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AlertController, IonicModule, ModalController, NavController, ToastController } from '@ionic/angular';
+import { AlertController, IonicModule, LoadingController, ModalController, NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
@@ -18,6 +18,11 @@ describe('ReturnApplyPage', () => {
   const navBackSpy = jasmine.createSpy('navBack');
   const alertCreateSpy = jasmine.createSpy('alertCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
+  const mockLoading = {
+    present: jasmine.createSpy('loadingPresent').and.returnValue(Promise.resolve()),
+    dismiss: jasmine.createSpy('loadingDismiss').and.returnValue(Promise.resolve()),
+  };
+  const loadingCreateSpy = jasmine.createSpy('loadingCreate').and.returnValue(Promise.resolve(mockLoading));
 
   const applySpy = jasmine.createSpy('apply').and.returnValue(of({
     AllowApply: true,
@@ -60,6 +65,7 @@ describe('ReturnApplyPage', () => {
         },
         { provide: AlertController, useValue: { create: alertCreateSpy } },
         { provide: ToastController, useValue: { create: toastCreateSpy } },
+        { provide: LoadingController, useValue: { create: loadingCreateSpy } },
         { provide: ModalController, useValue: { create: jasmine.createSpy('modalCreate').and.returnValue(Promise.resolve(mockModal)) } },
       ],
       declarations: [ ReturnApplyPage ],
@@ -88,6 +94,9 @@ describe('ReturnApplyPage', () => {
     fill1Spy.calls.reset();
     alertCreateSpy.calls.reset();
     toastCreateSpy.calls.reset();
+    loadingCreateSpy.calls.reset();
+    mockLoading.present.calls.reset();
+    mockLoading.dismiss.calls.reset();
   });
 
   it('should create', () => {
@@ -111,7 +120,8 @@ describe('ReturnApplyPage', () => {
     component.doApply(form);
     tick();
 
-    expect(component.isSubmitting).toBe(false);
+    expect(loadingCreateSpy).toHaveBeenCalled();
+    expect(mockLoading.dismiss).toHaveBeenCalled();
     expect(apply1Spy).toHaveBeenCalled();
     expect(component.submitSuccess).toBe(true);
   }));
@@ -122,7 +132,7 @@ describe('ReturnApplyPage', () => {
     component.doApply(component.applyForm.value);
     tick();
 
-    expect(component.isSubmitting).toBe(false);
+    expect(mockLoading.dismiss).toHaveBeenCalled();
     expect(alertCreateSpy).toHaveBeenCalled();
   }));
 
@@ -207,7 +217,8 @@ describe('ReturnApplyPage', () => {
     component.doFill(component.applyForm.value);
     tick();
 
-    expect(component.isSubmitting).toBe(false);
+    expect(loadingCreateSpy).toHaveBeenCalled();
+    expect(mockLoading.dismiss).toHaveBeenCalled();
     expect(component.submitSuccess).toBe(true);
     expect(component.submitSuccessMessage).toBe('提货信息已提交');
   }));
@@ -218,27 +229,27 @@ describe('ReturnApplyPage', () => {
     component.doFill(component.applyForm.value);
     tick();
 
-    expect(component.isSubmitting).toBe(false);
+    expect(mockLoading.dismiss).toHaveBeenCalled();
     expect(component.submitSuccess).toBe(false);
     expect(alertCreateSpy).toHaveBeenCalled();
   }));
 
-  it('should set isSubmitting false on doFill error', fakeAsync(() => {
+  it('should dismiss loading on doFill error', fakeAsync(() => {
     fill1Spy.and.returnValue(throwError(() => new Error('network')));
 
     component.doFill(component.applyForm.value);
     tick();
 
-    expect(component.isSubmitting).toBe(false);
+    expect(mockLoading.dismiss).toHaveBeenCalled();
     expect(alertCreateSpy).toHaveBeenCalled();
   }));
 
-  it('should set isSubmitting false on doApply error', fakeAsync(() => {
+  it('should dismiss loading on doApply error', fakeAsync(() => {
     apply1Spy.and.returnValue(throwError(() => new Error('network')));
 
     component.doApply(component.applyForm.value);
     tick();
 
-    expect(component.isSubmitting).toBe(false);
+    expect(mockLoading.dismiss).toHaveBeenCalled();
   }));
 });

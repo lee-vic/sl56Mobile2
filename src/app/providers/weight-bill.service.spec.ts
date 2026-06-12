@@ -46,6 +46,36 @@ describe('WeightBillService', () => {
     req.flush({});
   });
 
+  it('printWeightBill should call endpoint with objectId', () => {
+    service.printWeightBill('print-1').subscribe();
+
+    const req = httpMock.expectOne(r => r.url === apiUrl + '/Measure/PrintWeightBill');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('objectId')).toBe('print-1');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush({ Success: true });
+  });
+
+  it('getList should call list endpoint with openId', () => {
+    service.getList('openid-list').subscribe();
+
+    const req = httpMock.expectOne(r => r.url === apiUrl + '/Measure/GetWeightBillList');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('openId')).toBe('openid-list');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush([]);
+  });
+
+  it('download should request weight bill file with objectId', () => {
+    service.download('file-1').subscribe();
+
+    const req = httpMock.expectOne(r => r.url === apiUrl + '/Measure/GetWeightBillFile');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('objectId')).toBe('file-1');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush([]);
+  });
+
   it('start should call start endpoint with credentials', () => {
     service.start({} as any).subscribe();
 
@@ -65,6 +95,16 @@ describe('WeightBillService', () => {
     req.flush([]);
   });
 
+  it('getHistoryCorporateAccount should send openid query param', () => {
+    service.getHistoryCorporateAccount('openid-corp').subscribe();
+
+    const req = httpMock.expectOne(r => r.url === apiUrl + '/Measure/HistoryCorporateAccount');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('openid')).toBe('openid-corp');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush([]);
+  });
+
   it('getWeightBillDefaultValue should send openId and vehicleNo query params', () => {
     service.getWeightBillDefaultValue('open-2', '粤B12345').subscribe();
 
@@ -74,5 +114,14 @@ describe('WeightBillService', () => {
     expect(req.request.params.get('vehicleNo')).toBe('粤B12345');
     expect(req.request.withCredentials).toBe(true);
     req.flush({});
+  });
+
+  it('getInParkVehicleNo should call in-park vehicle endpoint with credentials', () => {
+    service.getInParkVehicleNo().subscribe();
+
+    const req = httpMock.expectOne(apiUrl + '/Measure/InParkVehicleNo');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBe(true);
+    req.flush([]);
   });
 });

@@ -94,7 +94,7 @@
 
           <div class="action-row">
             <ion-button type="submit" expand="block" [disabled]="!canSubmit">
-              {{ isQuerying ? '查询中...' : '立即查询' }}
+              立即查询
             </ion-button>
             <ion-button type="button" fill="clear" expand="block" (click)="resetResult()" *ngIf="queryResult || queryErrorMessage">
               清除查询结果

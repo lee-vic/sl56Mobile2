@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MessageType } from 'src/app/interfaces/message-type';
 import { MessageSubscriptionService } from 'src/app/providers/message-subscription.service';
 import { ActivatedRoute } from "@angular/router";
-import { NavController,AlertController } from '@ionic/angular';
+import { NavController,AlertController, LoadingController } from '@ionic/angular';
 import { WechatUser } from 'src/app/interfaces/wechat-user';
 
 @Component({
@@ -19,7 +19,7 @@ export class MessageSubscriptionEditPage implements OnInit {
   isLoading = false;
   isSaving = false;
   loadError = false;
-  constructor(public route:ActivatedRoute,public service:MessageSubscriptionService,public nav:NavController,public alert:AlertController) { }
+  constructor(public route:ActivatedRoute,public service:MessageSubscriptionService,public nav:NavController,public alert:AlertController, private loadingCtrl: LoadingController) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((res:WechatUser)=>{
@@ -77,27 +77,32 @@ export class MessageSubscriptionEditPage implements OnInit {
     let selectedList=this.items.filter(p=>p.IsSelected);
     this.user.SubscribeMessageTypes.length=0;
     selectedList.forEach(p=>this.user.SubscribeMessageTypes.push(p.ObjectId));
-    this.service.subscribeWechatMessageType(this.type,this.user).subscribe(async res=>{
-      this.isSaving = false;
-      if(res.Success){
-        this.nav.back();
-      }else{
+    this.loadingCtrl.create({ message: '保存中...' }).then((loading) => {
+      loading.present();
+      this.service.subscribeWechatMessageType(this.type,this.user).subscribe(async res=>{
+        loading.dismiss();
+        this.isSaving = false;
+        if(res.Success){
+          this.nav.back();
+        }else{
+          const errorAlert = await this.alert.create({
+            header: '操作失败',
+            subHeader: '原因如下：',
+            message: '['+res.ErrMsg+']',
+            buttons: ['确定']
+          });
+          errorAlert.present();
+        }
+      }, async () => {
+        loading.dismiss();
+        this.isSaving = false;
         const errorAlert = await this.alert.create({
           header: '操作失败',
-          subHeader: '原因如下：',
-          message: '['+res.ErrMsg+']',
+          message: '网络异常，请稍后重试',
           buttons: ['确定']
         });
         errorAlert.present();
-      }
-    }, async () => {
-      this.isSaving = false;
-      const errorAlert = await this.alert.create({
-        header: '操作失败',
-        message: '网络异常，请稍后重试',
-        buttons: ['确定']
       });
-      errorAlert.present();
     });
   }
 

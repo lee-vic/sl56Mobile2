@@ -1,5 +1,5 @@
 import { WeightBillService } from './../../../providers/weight-bill.service';
-import { ToastController, NavController, AlertController } from '@ionic/angular';
+import { ToastController, NavController, AlertController, LoadingController } from '@ionic/angular';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -29,7 +29,8 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
     private toastCtrl: ToastController,
     private navCtrl: NavController,
     private alertController: AlertController,
-    private signalR: SignalR
+    private signalR: SignalR,
+    private loadingCtrl: LoadingController
   ) {
     this.objectId = this.route.snapshot.paramMap.get("id");
   }
@@ -153,30 +154,35 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
       return;
     }
     this.weightBill.TradeType = "JSAPI";
-    this.weightBillService.payWeighingFee(this.weightBill).subscribe({
-      next: (res) => {
-        if (res.Success) {
-          let jsApiParam = JSON.parse(res.Data);
-          this.callpay(jsApiParam);
-        } else {
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.weightBillService.payWeighingFee(this.weightBill).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          if (res.Success) {
+            let jsApiParam = JSON.parse(res.Data);
+            this.callpay(jsApiParam);
+          } else {
+            this.toastCtrl
+              .create({
+                message: res.ErrMsg,
+                position: "middle",
+                duration: 3000,
+              })
+              .then((p) => p.present());
+          }
+        },
+        error: (err) => {
+          loading.dismiss();
           this.toastCtrl
             .create({
-              message: res.ErrMsg,
+              message: err.message,
               position: "middle",
               duration: 3000,
             })
             .then((p) => p.present());
         }
-      },
-      error: (err) => {
-        this.toastCtrl
-          .create({
-            message: err.message,
-            position: "middle",
-            duration: 3000,
-          })
-          .then((p) => p.present());
-      }
+      });
     });
   }
 

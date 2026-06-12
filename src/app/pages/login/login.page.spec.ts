@@ -6,7 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, ToastController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of, throwError, Subject } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { LoginPage } from './login.page';
 import { UserService } from 'src/app/providers/user.service';
@@ -99,38 +99,25 @@ describe('LoginPage', () => {
     component.doLogin(formValue);
     tick();
 
-    expect(toastCreateSpy).toHaveBeenCalled();    expect(component.isLoggingIn).toBe(false);
+    expect(toastCreateSpy).toHaveBeenCalled();
+    expect(loadingCreateSpy).toHaveBeenCalled();
   }));
 
-  // ── isLoggingIn state management ──
-
-  it('should initialize isLoggingIn as false', () => {
-    expect(component.isLoggingIn).toBe(false);
-  });
-
-  it('should set isLoggingIn true when doLogin is called', () => {
-    authSpy.and.returnValue(new Subject());
-
-    component.doLogin({ username: 'u1', password: 'p1' });
-
-    expect(component.isLoggingIn).toBe(true);
-  });
-
-  it('should reset isLoggingIn to false after login completes', fakeAsync(() => {
+  it('should present loading while login request runs', fakeAsync(() => {
     authSpy.and.returnValue(of({ Success: true }));
 
     component.doLogin({ username: 'u1', password: 'p1' });
     tick();
 
-    expect(component.isLoggingIn).toBe(false);
+    expect(loadingCreateSpy).toHaveBeenCalled();
   }));
 
-  it('should reset isLoggingIn to false after login fails', fakeAsync(() => {
+  it('should present loading when login response is unsuccessful', fakeAsync(() => {
     authSpy.and.returnValue(of({ Success: false, ErrMsg: '错误' }));
 
     component.doLogin({ username: 'u1', password: 'wrong' });
     tick();
 
-    expect(component.isLoggingIn).toBe(false);
+    expect(loadingCreateSpy).toHaveBeenCalled();
   }));
 });

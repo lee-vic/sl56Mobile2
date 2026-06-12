@@ -36,7 +36,7 @@ export class MemberPage implements OnInit, OnDestroy {
     { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
     { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0, 1], url: "/member/confirmation" },
     { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
-    // { title: "快速预报", image: "assets/imgs/member-4.png", type: [0, 1], url: "/member/import-manifest/list" },
+    { title: "快速预报", image: "assets/imgs/member-4.png", type: [0, 1], url: "/member/import-manifest/list" },
     { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
     { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
     { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
@@ -64,7 +64,6 @@ export class MemberPage implements OnInit, OnDestroy {
   menuColumns: number = 3;
   isLogin: boolean = false;
   isDashboardLoading: boolean = false;
-  isLoggingIn: boolean = false;
   public authForm: FormGroup;
   public loading: any;
   userInfo: User;
@@ -142,7 +141,6 @@ export class MemberPage implements OnInit, OnDestroy {
 
   async doLogin(formValue) {
     this.releaseFocus();
-    this.isLoggingIn = true;
     const loading = await this.loadingCtrl.create({ message: '登录中...' });
     await loading.present();
     // Web application - always set clientType to web
@@ -151,7 +149,6 @@ export class MemberPage implements OnInit, OnDestroy {
     formValue.unionId = this.cookieService.get('UnionId');
     this.userService.auth(formValue).subscribe({
       next: (res: any) => {
-        this.isLoggingIn = false;
         loading.dismiss();
         this.isLogin = res.Success;
         if (this.isLogin == true) {
@@ -166,7 +163,6 @@ export class MemberPage implements OnInit, OnDestroy {
 
       },
       error: (err) => {
-        this.isLoggingIn = false;
         loading.dismiss();
         this.showToast(err.message);
       }

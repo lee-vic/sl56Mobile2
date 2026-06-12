@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
@@ -21,7 +21,8 @@ export class WeightBillListPage implements OnInit {
   constructor(private weightBillService: WeightBillService,
     private cookieService: CookieService,
     private navController: NavController,
-    private alertController: AlertController) { 
+    private alertController: AlertController,
+    private loadingCtrl: LoadingController) { 
       this.openId= this.cookieService.get("OpenId");
     }
 
@@ -52,7 +53,11 @@ export class WeightBillListPage implements OnInit {
     );
   }
   print(objectId) {
-    this.weightBillService.printWeightBill(objectId).subscribe((p) => {
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.weightBillService.printWeightBill(objectId).subscribe({
+        next: (p) => {
+          loading.dismiss();
           if (p.Success==true) {
             this.alertController.create({
               header: '打印成功',
@@ -81,6 +86,23 @@ export class WeightBillListPage implements OnInit {
               ]
             }).then(p => p.present());
           }
-        });
+        },
+        error: () => {
+          loading.dismiss();
+          this.alertController.create({
+            header: '打印失败',
+            message: '网络异常，请稍后重试',
+            backdropDismiss: false,
+            keyboardClose: false,
+            buttons: [
+              {
+                text: '确定',
+                role: 'cancel'
+              }
+            ]
+          }).then(p => p.present());
+        }
+      });
+    });
   }
 }

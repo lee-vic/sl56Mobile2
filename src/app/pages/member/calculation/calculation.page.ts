@@ -31,7 +31,6 @@ export class CalculationPage implements OnInit, OnDestroy {
   hasCountryValidationError: boolean = false;
   selectRuleIds: Array<number> = [];
   public myForm: FormGroup;
-  public isSubmitting = false;
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -216,7 +215,7 @@ export class CalculationPage implements OnInit, OnDestroy {
   }
 
   get canSubmit() {
-    return !this.isSubmitting && !this.submitHint;
+    return !this.submitHint;
   }
 
   get formProgress() {
@@ -389,10 +388,6 @@ export class CalculationPage implements OnInit, OnDestroy {
   }
 
   async doCalculate() {
-    if (this.isSubmitting) {
-      return;
-    }
-
     if (!this.selectedCountry) {
       this.hasCountryValidationError = true;
       this.myForm.get("countryId")?.markAsTouched();
@@ -407,7 +402,6 @@ export class CalculationPage implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSubmitting = true;
     const loading = await this.uiFeedback.presentLoading('正在计算报价，请稍候...');
 
     this.service
@@ -415,7 +409,6 @@ export class CalculationPage implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
-          this.isSubmitting = false;
           this.uiFeedback.dismissLoading(loading);
         })
       )

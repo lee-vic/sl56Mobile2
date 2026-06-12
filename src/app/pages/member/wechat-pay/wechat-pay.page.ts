@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AlertController, ActionSheetController, ToastController, LoadingController } from '@ionic/angular';
+import { AlertController, ActionSheetController, ToastController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
@@ -64,7 +64,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
   cid: number;
   allSelected: boolean = true;
   amountInputDisable: boolean = false;
-  isPaying: boolean = false;
   isLoading: boolean = true;
 
   get canPay(): boolean {
@@ -138,11 +137,9 @@ export class WechatPayPage implements OnInit, OnDestroy {
             }
             if (!obj || typeof obj !== 'object') return;
             if (obj.MsgContent === "True") {
-              this.isPaying = false;
               this.payHistory();
             }
             else {
-              this.isPaying = false;
               this.presentToast("支付失败", 1500);
     
             }
@@ -248,9 +245,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
     this.data.TotalAmount = (tempAmount + parseFloat(String(this.data.Commission))).toFixed(2);
   }
   payClick() {
-    if (this.isPaying) {
-      return;
-    }
     if (!this.canPay) {
       this.alertCtrl.create({
         header: '提示',
@@ -274,7 +268,6 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   payByJsApi() {
     this.data.TradeType = "JSAPI";
-    this.isPaying = true;
     this.uiFeedback.presentLoading('正在支付...').then(loading => {
       this.service.pay(this.data).pipe(
         takeUntil(this.destroy$),
@@ -288,24 +281,20 @@ export class WechatPayPage implements OnInit, OnDestroy {
           try {
             jsApiParam = JSON.parse(res.Data);
           } catch {
-            this.isPaying = false;
             this.presentToast('支付参数解析失败，请稍后重试', 3000);
             return;
           }
           if (!jsApiParam) {
-            this.isPaying = false;
             this.presentToast('支付参数缺失，请稍后重试', 3000);
             return;
           }
           this.callpay(jsApiParam);
         }
         else {
-          this.isPaying = false;
           this.presentToast(res.ErrMsg, 3000);
         }
       },
       error: (err) => {
-        this.isPaying = false;
         this.presentToast(err.message, 3000);
       }
       });
@@ -313,17 +302,24 @@ export class WechatPayPage implements OnInit, OnDestroy {
   }
   payByH5() {
     this.data.TradeType = "MWEB";
-    this.service.pay(this.data).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res) => {
-        if (res.Success)
-          location.href = res.PayUrl;
-        else {
-          this.presentToast(res.ErrMsg, 3000);
+    this.uiFeedback.presentLoading('正在支付...').then(loading => {
+      this.service.pay(this.data).pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.uiFeedback.dismissLoading(loading);
+        })
+      ).subscribe({
+        next: (res) => {
+          if (res.Success)
+            location.href = res.PayUrl;
+          else {
+            this.presentToast(res.ErrMsg, 3000);
+          }
+        },
+        error: (err) => {
+          this.presentToast(err.message, 3000);
         }
-      },
-      error: (err) => {
-        this.presentToast(err.message, 3000);
-      }
+      });
     });
   }
 
@@ -354,12 +350,10 @@ export class WechatPayPage implements OnInit, OnDestroy {
       jsApiParam,//josn串
       (res: { err_msg?: string }) => {
         if (res.err_msg === "get_brand_wcpay_request:ok") {
-          this.isPaying = false;
           this.presentToast("支付成功", 1000);
 
         }
         else {
-          this.isPaying = false;
           this.presentAlert("支付未完成", "您可在支付记录中查看订单状态，或稍后重试。");
         }
       });

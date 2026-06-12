@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
 import {
   AlertController,
+  LoadingController,
   NavController,
 } from "@ionic/angular";
 import { ActivatedRoute, Router, NavigationExtras } from "@angular/router";
@@ -33,7 +34,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   confirmFailMessage: string;
   processModel: ProblemProcessResultModel;
   isFileProcessing: boolean = false;
-  isSubmiting: boolean = false;
   isLoading = false;
   hasInitError = false;
   hasNotFound = false;
@@ -159,7 +159,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   canSubmit(form: NgForm): boolean {
-    if (this.isSubmiting || this.isFileProcessing) {
+    if (this.isFileProcessing) {
       return false;
     }
     if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) === -1) {
@@ -223,6 +223,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     private router: Router,
     private commonService: CommonService,
     private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(
@@ -283,12 +284,23 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   confirm() {
-    this.service.confirm(this.processModel.Id).pipe(takeUntil(this.destroy$)).subscribe((res) => {
-      if (!res.IsSuccess) {
-        this.confirmFailMessage = res.Message;
-      } else {
-        this.data.Problem.Status = 1;
-      }
+    this.confirmFailMessage = null;
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.service.confirm(this.processModel.Id).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          if (!res.IsSuccess) {
+            this.confirmFailMessage = res.Message;
+          } else {
+            this.data.Problem.Status = 1;
+          }
+        },
+        error: () => {
+          loading.dismiss();
+          this.confirmFailMessage = '确认失败，请稍后重试';
+        },
+      });
     });
   }
 
@@ -317,28 +329,39 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         //发票，预览处理
         if (this.processModel.Type3Result.AttachmentTypeId == "1") {
           this.isFileProcessing = true;
-          this.service
-            .invoicePretreatment(this.processModel)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((res) => {
-              this.isFileProcessing = false;
-              if (res.Result === true) {
-                this.fileFailMessage = null;
-                this.navCtrl.navigateForward("/member/invoice-preview", {
-                  queryParams: {
-                    filePath: res.Path,
-                    rgdId: this.receiveGoodsDetailId,
-                    problemId: this.problemId,
-                    isWeAppFile: false,
-                  },
-                });
-              } else {
-                this.fileFailMessage = res.Message;
-                let fileInputs: any = document.getElementsByName("type3Result");
-                fileInputs[0].value = null;
-                // fileInputs[1].value=null;
-              }
-            });
+          this.loadingCtrl.create({ message: '文件处理中...' }).then((loading) => {
+            loading.present();
+            this.service
+              .invoicePretreatment(this.processModel)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (res) => {
+                  loading.dismiss();
+                  this.isFileProcessing = false;
+                  if (res.Result === true) {
+                    this.fileFailMessage = null;
+                    this.navCtrl.navigateForward("/member/invoice-preview", {
+                      queryParams: {
+                        filePath: res.Path,
+                        rgdId: this.receiveGoodsDetailId,
+                        problemId: this.problemId,
+                        isWeAppFile: false,
+                      },
+                    });
+                  } else {
+                    this.fileFailMessage = res.Message;
+                    let fileInputs: any = document.getElementsByName("type3Result");
+                    fileInputs[0].value = null;
+                    // fileInputs[1].value=null;
+                  }
+                },
+                error: () => {
+                  loading.dismiss();
+                  this.isFileProcessing = false;
+                  this.fileFailMessage = '附件预览处理失败，请稍后重试';
+                },
+              });
+          });
         }
       });
       fileReader.readAsDataURL(file);
@@ -351,7 +374,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     if (!this.isFormOption()) {
       return;
     }
-    this.isSubmiting = true;
     this.submitFailMessage = null;
     let formValues = formGroup.form.value;
     //存在单选
@@ -382,50 +404,66 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         }
       });
     }
-    this.service.complete(this.processModel).pipe(takeUntil(this.destroy$)).subscribe((res) => {
-      this.isSubmiting = false;
-      if (res.Result === false) {
-        this.submitFailMessage = res.Message;
-      } else {
-        this.data.Problem.Status = 1;
-      }
-    }, _ => {
-      this.isSubmiting = false;
-      this.submitFailMessage = '提交失败，请稍后重试';
+    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+      loading.present();
+      this.service.complete(this.processModel).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res) => {
+          loading.dismiss();
+          if (res.Result === false) {
+            this.submitFailMessage = res.Message;
+          } else {
+            this.data.Problem.Status = 1;
+          }
+        },
+        error: () => {
+          loading.dismiss();
+          this.submitFailMessage = '提交失败，请稍后重试';
+        },
+      });
     });
   }
 
   getWeAppFileStatus(isInitPage) {
-    this.service.isWeAppUploadFile(this.problemId).pipe(takeUntil(this.destroy$)).subscribe((res) => {
-      this.isWeAppUploadFile = res;
-      if (isInitPage) return;
-      if (res) {
-        if (this.processModel.Type3Result.AttachmentTypeId === "1") {
-          this.isFileProcessing = true;
-          this.service
-            .invoicePretreatment(this.processModel)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((res) => {
-              this.isFileProcessing = false;
-              if (res.Result === true) {
-                this.navCtrl.navigateForward("/member/invoice-preview", {
-                      queryParams: {
-                        filePath: res.Path,
-                        rgdId: this.receiveGoodsDetailId,
-                        problemId: this.problemId,
-                        isWeAppFile: true,
-                      },
-                    });
-                  } else {
-                    this.fileFailMessage = res.Message;
-                    this.isWeAppUploadFile = false;
-                  }
-                }, _ => {
-                  this.isFileProcessing = false;
-                  this.fileFailMessage = '获取附件预览失败，请稍后重试';
+    const runStatusCheck = (loading?: any) => {
+      this.service.isWeAppUploadFile(this.problemId).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (res) => {
+          this.isWeAppUploadFile = res;
+          if (isInitPage) return;
+          if (res) {
+            if (this.processModel.Type3Result.AttachmentTypeId === "1") {
+              this.isFileProcessing = true;
+              this.service
+                .invoicePretreatment(this.processModel)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: (res) => {
+                    loading?.dismiss();
+                    this.isFileProcessing = false;
+                    if (res.Result === true) {
+                      this.navCtrl.navigateForward("/member/invoice-preview", {
+                        queryParams: {
+                          filePath: res.Path,
+                          rgdId: this.receiveGoodsDetailId,
+                          problemId: this.problemId,
+                          isWeAppFile: true,
+                        },
+                      });
+                    } else {
+                      this.fileFailMessage = res.Message;
+                      this.isWeAppUploadFile = false;
+                    }
+                  },
+                  error: () => {
+                    loading?.dismiss();
+                    this.isFileProcessing = false;
+                    this.fileFailMessage = '获取附件预览失败，请稍后重试';
+                  },
                 });
+            } else {
+              loading?.dismiss();
             }
           } else {
+            loading?.dismiss();
             this.alertCtrl
               .create({
                 header: "未检测到文件",
@@ -434,7 +472,9 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
               })
               .then((x) => x.present());
           }
-        }, _ => {
+        },
+        error: () => {
+          loading?.dismiss();
           this.alertCtrl
             .create({
               header: '获取失败',
@@ -442,6 +482,18 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
               buttons: ['我知道了'],
             })
             .then((x) => x.present());
-        });
+        },
+      });
+    };
+
+    if (isInitPage) {
+      runStatusCheck();
+      return;
+    }
+
+    this.loadingCtrl.create({ message: '文件处理中...' }).then((loading) => {
+      loading.present();
+      runStatusCheck(loading);
+    });
   }
 }

@@ -246,7 +246,7 @@
     <div class="footer-inner ion-padding-start ion-padding-end ion-padding-top ion-padding-bottom">
       <ion-note color="medium" *ngIf="submitHint">{{ submitHint }}</ion-note>
       <ion-button expand="block" [disabled]="!canSubmit" (click)="submitFromFooter()">
-        {{ isSubmitting ? '正在计算...' : '立即计算' }}
+        立即计算
       </ion-button>
     </div>
   </ion-toolbar>

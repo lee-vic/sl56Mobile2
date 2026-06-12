@@ -232,13 +232,10 @@
       <ion-button
         expand="block"
         class="pay-btn"
-        [disabled]="isPaying || !canPay"
-        [attr.aria-busy]="isPaying"
+        [disabled]="!canPay"
         (click)="payClick()">
-        <ion-spinner *ngIf="isPaying" slot="start" name="crescent"></ion-spinner>
-        <ion-icon *ngIf="!isPaying" slot="start" name="logo-wechat"></ion-icon>
-        <span *ngIf="!isPaying">立即支付 {{data?.TotalAmount | currency:'CNY'}}</span>
-        <span *ngIf="isPaying">正在发起支付...</span>
+        <ion-icon slot="start" name="logo-wechat"></ion-icon>
+        <span>立即支付 {{data?.TotalAmount | currency:'CNY'}}</span>
       </ion-button>
     </div>
   </ion-toolbar>

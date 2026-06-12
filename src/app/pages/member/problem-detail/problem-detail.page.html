@@ -233,8 +233,7 @@
           请完善必填项后再提交
         </ion-note>
         <ion-button expand="block" [disabled]="!canSubmit(formRef)" (click)="triggerFormSubmit()">
-          <ion-spinner *ngIf="isSubmiting" name="lines-small" slot="start"></ion-spinner>
-          {{isSubmiting ? '提交中...' : '提交处理结果'}}
+          提交处理结果
         </ion-button>
         <ion-button expand="block" fill="outline" color="primary" (click)="chat()">
           <ion-icon slot="start" name="chatbubble-outline"></ion-icon>

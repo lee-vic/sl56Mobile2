@@ -27,7 +27,6 @@ export class InterviewPage implements OnInit {
   getCodeSeconds: number = 60;
   interviewData: Interview = new Interview();
   verificationCode: string;
-  isSubmiting: boolean = false;
   getCodeTimeout;
   rates = [
     [1, "非常不满意"],
@@ -175,7 +174,6 @@ export class InterviewPage implements OnInit {
         },
         (res) => {
           this.showToast(res.error.Message + "：" + res.error.ExceptionMessage);
-          this.isSubmiting = false;
         }
       );
   }
@@ -211,7 +209,6 @@ export class InterviewPage implements OnInit {
       this.showToast("验证码不正确");
       return;
     }
-    this.isSubmiting = true;
     this.loadingCtrl.create({
       message: '请稍候...'
     }).then(loading => {
@@ -223,16 +220,13 @@ export class InterviewPage implements OnInit {
           if (res.Success) {
             this.showToast("感谢您对本次面访进行评价");
             this.pageStatus = 2;
-            this.isSubmiting = false;
           } else {
             this.showToast(res.Message);
-            this.isSubmiting = false;
           }
         },
         (res) => {
           loading.dismiss();
           this.showToast(res.error.Message + "：" + res.error.ExceptionMessage);
-          this.isSubmiting = false;
         }
       );
     });

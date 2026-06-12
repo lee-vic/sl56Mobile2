@@ -90,6 +90,7 @@ describe('ImportManifestFormPage', () => {
       'getCountryOptions',
       'getCustomerPriceOptions',
       'getAttachmentTypes',
+      'getBatteryModelOptions',
       'getDetail',
       'create',
       'edit',
@@ -138,6 +139,7 @@ describe('ImportManifestFormPage', () => {
     serviceSpy.getCountryOptions.and.returnValue(of(mockCountryOptions));
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(mockPriceOptions));
     serviceSpy.getAttachmentTypes.and.returnValue(of(mockAttachmentTypes));
+    serviceSpy.getBatteryModelOptions.and.returnValue(of([]));
     serviceSpy.getForwardingDocuments.and.returnValue(of({ success: true, rows: [] }));
     serviceSpy.uploadTempDocument.and.returnValue(of({ success: true, filePath: '/test.pdf', fileName: '' }));
     serviceSpy.validateObjectNo.and.returnValue(of({ Success: true, ErrMsg: '' }));
@@ -377,8 +379,8 @@ describe('ImportManifestFormPage', () => {
     );
   });
 
-  // ── 19. isSubmitting guard ──
-  it('should prevent duplicate submissions', async () => {
+  // ── 19. save loading ──
+  it('should present loading when saving', async () => {
     fixture.detectChanges();
     // Make form valid first
     component.form.patchValue({
@@ -388,9 +390,10 @@ describe('ImportManifestFormPage', () => {
       Piece: 1,
       ContentType: 0,
     });
-    component.isSubmitting = true;
+    serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     await component.save();
-    expect(serviceSpy.create).not.toHaveBeenCalled();
+    expect(loadingCtrlSpy.create).toHaveBeenCalled();
+    expect(serviceSpy.create).toHaveBeenCalled();
   });
 
   // ── 20. fillForm maps detail to form values ──

@@ -53,9 +53,7 @@
 <ion-footer>
   <ion-toolbar>
     <ion-button color="primary" expand="block" (click)="save()" [disabled]="isLoading || loadError || isSaving">
-      <ion-spinner name="crescent" *ngIf="isSaving"></ion-spinner>
-      <span *ngIf="!isSaving">保存设置</span>
-      <span *ngIf="isSaving">保存中...</span>
+      保存设置
     </ion-button>
   </ion-toolbar>
 </ion-footer>

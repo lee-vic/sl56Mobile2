@@ -14,7 +14,6 @@ export class ReturnApplyPage implements OnInit {
   ids: string;
   data: any;
   type: number;
-  isSubmitting = false;
   isInitialLoading = false;
   hasInitError = false;
   initErrorMessage = '';
@@ -40,9 +39,6 @@ export class ReturnApplyPage implements OnInit {
   }
 
   get submitButtonText(): string {
-    if (this.isSubmitting) {
-      return '提交中...';
-    }
     return this.type === 0 ? '提交退货申请' : '提交提货信息';
   }
 
@@ -105,10 +101,6 @@ export class ReturnApplyPage implements OnInit {
   }
 
   doSubmit(form: any) {
-    if (this.isSubmitting) {
-      return;
-    }
-
     if (this.selectedCount === 0) {
       this.presentToast('未找到有效退货单号，请返回待退货列表重试', 1800);
       return;
@@ -131,12 +123,10 @@ export class ReturnApplyPage implements OnInit {
 
   }
   doApply(form: any) {
-    this.isSubmitting = true;
     this.loadingController.create({ message: '请稍候...' }).then(loader => {
       loader.present();
       this.service.apply1(form).subscribe({
         next: (res) => {
-          this.isSubmitting = false;
           loader.dismiss();
           if (res.IsSuccess === false) {
             this.presentAlert('提交未成功', res.ErrorMessage);
@@ -147,7 +137,6 @@ export class ReturnApplyPage implements OnInit {
           }
         },
         error: (_error) => {
-          this.isSubmitting = false;
           loader.dismiss();
           this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
         }
@@ -156,12 +145,10 @@ export class ReturnApplyPage implements OnInit {
   }
 
   doFill(form: any) {
-    this.isSubmitting = true;
     this.loadingController.create({ message: '请稍候...' }).then(loader => {
       loader.present();
       this.service.fill1(form).subscribe({
         next: (res) => {
-          this.isSubmitting = false;
           loader.dismiss();
           if (res.IsSuccess === false) {
             this.presentAlert('提交未成功', res.Message);
@@ -172,7 +159,6 @@ export class ReturnApplyPage implements OnInit {
           this.submitSuccessMessage = '提货信息已提交';
         },
         error: () => {
-          this.isSubmitting = false;
           loader.dismiss();
           this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
         }

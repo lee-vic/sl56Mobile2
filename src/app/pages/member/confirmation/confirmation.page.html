@@ -1,7 +1,7 @@
 <ion-header translucent="true" class="confirm-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button [disabled]="isSubmitting"></ion-back-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>交货清单确认</ion-title>
   </ion-toolbar>
@@ -76,7 +76,7 @@
 
           <ion-item class="record-footer-item">
             <ion-label class="record-footer-tip">确认后不可撤销，请核对后提交</ion-label>
-            <ion-button slot="end" size="small" fill="outline" color="primary" (click)="onItemConfirmClick(item)" [disabled]="isSubmitting">
+            <ion-button slot="end" size="small" fill="outline" color="primary" (click)="onItemConfirmClick(item)">
               确认出货
             </ion-button>
           </ion-item>
@@ -118,9 +118,9 @@
     <div class="footer-action-row">
       <ion-button
         (click)="onConfirmClick()"
-        [disabled]="selectedCount===0 || isSubmitting"
-        [class.success-flash]="showConfirmSuccess && !isSubmitting">
-        {{isSubmitting ? '提交中...' : (showConfirmSuccess ? '已确认（' + lastConfirmedCount + '）' : '确认所选（' + selectedCount + '）')}}
+        [disabled]="selectedCount===0"
+        [class.success-flash]="showConfirmSuccess">
+        {{showConfirmSuccess ? '已确认（' + lastConfirmedCount + '）' : '确认所选（' + selectedCount + '）'}}
       </ion-button>
     </div>
   </ion-toolbar>

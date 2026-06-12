@@ -28,6 +28,12 @@ describe('ConfirmationPage', () => {
   const presentToastSpy = jasmine
     .createSpy('presentToast')
     .and.returnValue(Promise.resolve());
+  const presentLoadingSpy = jasmine
+    .createSpy('presentLoading')
+    .and.returnValue(Promise.resolve({ dismiss: jasmine.createSpy('dismiss') } as any));
+  const dismissLoadingSpy = jasmine
+    .createSpy('dismissLoading')
+    .and.returnValue(Promise.resolve());
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -45,6 +51,8 @@ describe('ConfirmationPage', () => {
           provide: UiFeedbackService,
           useValue: {
             presentToast: presentToastSpy,
+            presentLoading: presentLoadingSpy,
+            dismissLoading: dismissLoadingSpy,
           },
         },
         { provide: AlertController, useValue: { create: alertCreateSpy } },
@@ -64,6 +72,8 @@ describe('ConfirmationPage', () => {
     getReceiveGoodsDetailListSpy.calls.reset();
     alertCreateSpy.calls.reset();
     presentToastSpy.calls.reset();
+    presentLoadingSpy.calls.reset();
+    dismissLoadingSpy.calls.reset();
   });
 
   it('should create', () => {
@@ -172,7 +182,7 @@ describe('ConfirmationPage', () => {
 
     expect(confirmSpy).toHaveBeenCalledWith('3');
     expect(presentToastSpy).toHaveBeenCalled();
-    expect(component.isSubmitting).toBe(false);
+    expect(dismissLoadingSpy).toHaveBeenCalled();
   }));
 
   it('should show fallback error toast when confirm error has no message', fakeAsync(() => {
@@ -184,7 +194,7 @@ describe('ConfirmationPage', () => {
 
     expect(confirmSpy).toHaveBeenCalledWith('3');
     expect(presentToastSpy).toHaveBeenCalledWith('提交失败，请稍后重试', 2600, 'middle', 'member-theme-toast', 'danger');
-    expect(component.isSubmitting).toBe(false);
+    expect(dismissLoadingSpy).toHaveBeenCalled();
   }));
 
   it('should complete refresher when load fails', () => {
@@ -223,13 +233,17 @@ describe('ConfirmationPage', () => {
     expect(component.formatAmount(null)).toBe('0.00');
   });
 
-  it('should skip confirm request when submission is already in progress', () => {
-    component.isSubmitting = true;
+  it('should present loading when confirming selected items', fakeAsync(() => {
+    confirmSpy.and.returnValue(of([]));
 
     component.doConfirm('1,2');
+    flushMicrotasks();
+    tick();
 
-    expect(confirmSpy).not.toHaveBeenCalled();
-  });
+    expect(presentLoadingSpy).toHaveBeenCalled();
+    expect(dismissLoadingSpy).toHaveBeenCalled();
+    tick(2000);
+  }));
 
   it('should navigate to member center', () => {
     spyOn(router, 'navigateByUrl');
