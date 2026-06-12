@@ -24,16 +24,16 @@
   </div>
   <div *ngIf="isMiniProgram==true">
     <ion-segment [(ngModel)]="data.WeighingMode">
-      <ion-segment-button value="0">
+      <ion-segment-button [value]="0">
         称净重
       </ion-segment-button>
-      <ion-segment-button value="1">
+      <ion-segment-button [value]="1">
         称总重
       </ion-segment-button>
-      <ion-segment-button value="2">
+      <ion-segment-button [value]="2">
         称皮重
       </ion-segment-button>
-      <ion-segment-button value="3">
+      <ion-segment-button [value]="3">
         二次过磅
       </ion-segment-button>
     </ion-segment>

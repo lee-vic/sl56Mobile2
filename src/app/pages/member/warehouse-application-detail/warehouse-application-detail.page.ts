@@ -1,4 +1,4 @@
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, NavController, LoadingController } from '@ionic/angular';
 import { WarehouseApplicationService } from './../../../providers/warehouse-application.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -26,6 +26,7 @@ export class WarehouseApplicationDetailPage implements OnInit {
     private service: WarehouseApplicationService,
     private alertCtrl: AlertController,
     private navCtrl: NavController,
+    private loadingCtrl: LoadingController,
     ) {
     this.form = this.fb.group({
       ReferenceNumber: ['', [Validators.required, Validators.pattern('^[A-Z0-9]{8,32}$')]],
@@ -97,13 +98,16 @@ export class WarehouseApplicationDetailPage implements OnInit {
         buttons: ['确定']
       }).then(alert => alert.present());
     } else {
-      let submitObj: WarehouseApplication = {
-        ...this.form.value,
-        Amount: this.form.get('Amount').value,
-        Status: this.status
-      };
-      this.service.save(submitObj).subscribe(res => {
-        if (!res.Success) {
+      this.loadingCtrl.create({ message: '请稍候...' }).then(loading => {
+        loading.present();
+        let submitObj: WarehouseApplication = {
+          ...this.form.value,
+          Amount: this.form.get('Amount').value,
+          Status: this.status
+        };
+        this.service.save(submitObj).subscribe(res => {
+          loading.dismiss();
+          if (!res.Success) {
           this.alertCtrl.create({
             header: '操作失败',
             message: res.ErrMsg,
@@ -112,6 +116,7 @@ export class WarehouseApplicationDetailPage implements OnInit {
         } else {
           this.navCtrl.back();
         }
+        });
       });
     }
   }
@@ -122,8 +127,11 @@ export class WarehouseApplicationDetailPage implements OnInit {
       header: '提示',
       buttons: [{
         text: "确认", handler: () => {
+          this.loadingCtrl.create({ message: '正在取消...' }).then(loading => {
+            loading.present();
             this.service.cancel(this.id).subscribe({
               next: (res) => {
+                loading.dismiss();
                 if (res.Success) {
                   this.navCtrl.back();
                 } else {
@@ -135,12 +143,14 @@ export class WarehouseApplicationDetailPage implements OnInit {
                 }
               },
               error: (err) => {
+                loading.dismiss();
                 this.alertCtrl.create({
                   header: '操作失败',
                   message: err.message,
                 }).then(alert => alert.present());
               }
             });
+          });
         }
       }, {
         text: "取消",

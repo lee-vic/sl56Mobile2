@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AlertController, ActionSheetController, ToastController } from '@ionic/angular';
+import { AlertController, ActionSheetController, ToastController, LoadingController } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WechatPayService } from 'src/app/providers/wechat-pay.service';
 import { SignalRConnection, SignalR } from 'src/app/providers/signal-r.service';
 import { UserService } from 'src/app/providers/user.service';
 import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, finalize } from 'rxjs/operators';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 declare const WeixinJSBridge: {
   invoke: (method: string, params: Record<string, unknown>, callback: (res: { err_msg?: string }) => void) => void;
@@ -94,7 +95,8 @@ export class WechatPayPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private userService:UserService,
     private actionSheetCtrl:ActionSheetController,
-    private toastCtrl: ToastController) {
+    private toastCtrl: ToastController,
+    private readonly uiFeedback: UiFeedbackService) {
       this.openId = this.route.snapshot.paramMap.get('id') || '';
       if(this.route.snapshot.queryParams['cid']==null){
         this.cid=1;
@@ -273,7 +275,13 @@ export class WechatPayPage implements OnInit, OnDestroy {
   payByJsApi() {
     this.data.TradeType = "JSAPI";
     this.isPaying = true;
-    this.service.pay(this.data).pipe(takeUntil(this.destroy$)).subscribe({
+    this.uiFeedback.presentLoading('正在支付...').then(loading => {
+      this.service.pay(this.data).pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.uiFeedback.dismissLoading(loading);
+        })
+      ).subscribe({
       next: (res) => {
         if (res.Success) {
           let jsApiParam: Record<string, unknown> | null = null;
@@ -300,6 +308,7 @@ export class WechatPayPage implements OnInit, OnDestroy {
         this.isPaying = false;
         this.presentToast(err.message, 3000);
       }
+      });
     });
   }
   payByH5() {

@@ -241,37 +241,40 @@ export class RemotePage implements OnInit, OnDestroy {
     this.queryResult = null;
     this.isQuerying = true;
 
-    this.service
-      .Query(requestBody)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.isQuerying = false;
-        })
-      )
-      .subscribe({
-        next: (res: RemoteQueryResponse) => {
-          if (res?.Status === 0) {
-            this.queryResult = {
-              title: res.IsRemote ? '偏远' : '不偏远',
-              message: '当前查询仅供参考',
-              success: true,
-              isRemote: !!res.IsRemote,
-            };
-            return;
-          }
+    this.uiFeedback.presentLoading('正在查询...').then(loading => {
+      this.service
+        .Query(requestBody)
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            this.isQuerying = false;
+            this.uiFeedback.dismissLoading(loading);
+          })
+        )
+        .subscribe({
+          next: (res: RemoteQueryResponse) => {
+            if (res?.Status === 0) {
+              this.queryResult = {
+                title: res.IsRemote ? '偏远' : '不偏远',
+                message: '当前查询仅供参考',
+                success: true,
+                isRemote: !!res.IsRemote,
+              };
+              return;
+            }
 
-          this.queryResult = {
-            title: '查询失败',
-            message: res?.Message || '系统繁忙，请稍后重试。',
-            success: false,
-            isRemote: false,
-          };
-        },
-        error: () => {
-          this.queryErrorMessage = '网络异常，暂时无法完成查询，请稍后重试。';
-        },
-      });
+            this.queryResult = {
+              title: '查询失败',
+              message: res?.Message || '系统繁忙，请稍后重试。',
+              success: false,
+              isRemote: false,
+            };
+          },
+          error: () => {
+            this.queryErrorMessage = '网络异常，暂时无法完成查询，请稍后重试。';
+          },
+        });
+    });
   }
 
   private async showValidationToast(msg: string): Promise<void> {

@@ -2,7 +2,7 @@ import { Component, NgZone, OnInit } from "@angular/core";
 import { InterviewService } from "src/app/providers/interview.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Interview } from "src/app/interfaces/interview";
-import { ToastController } from "@ionic/angular";
+import { ToastController, LoadingController } from "@ionic/angular";
 declare var wx: any;
 @Component({
   selector: "app-interview",
@@ -14,6 +14,7 @@ export class InterviewPage implements OnInit {
     private interViewService: InterviewService,
     private activateRoute: ActivatedRoute,
     private toastCtrl: ToastController,
+    private loadingCtrl: LoadingController,
     private router: Router,
     private nz:NgZone
   ) {}
@@ -211,23 +212,30 @@ export class InterviewPage implements OnInit {
       return;
     }
     this.isSubmiting = true;
-    this.interViewService.saveInterview(this.interviewData).subscribe(
-      (res) => {
-        console.log(res);
-        if (res.Success) {
-          this.showToast("感谢您对本次面访进行评价");
-          this.pageStatus = 2;
-          this.isSubmiting = false;
-        } else {
-          this.showToast(res.Message);
+    this.loadingCtrl.create({
+      message: '请稍候...'
+    }).then(loading => {
+      loading.present();
+      this.interViewService.saveInterview(this.interviewData).subscribe(
+        (res) => {
+          console.log(res);
+          loading.dismiss();
+          if (res.Success) {
+            this.showToast("感谢您对本次面访进行评价");
+            this.pageStatus = 2;
+            this.isSubmiting = false;
+          } else {
+            this.showToast(res.Message);
+            this.isSubmiting = false;
+          }
+        },
+        (res) => {
+          loading.dismiss();
+          this.showToast(res.error.Message + "：" + res.error.ExceptionMessage);
           this.isSubmiting = false;
         }
-      },
-      (res) => {
-        this.showToast(res.error.Message + "：" + res.error.ExceptionMessage);
-        this.isSubmiting = false;
-      }
-    );
+      );
+    });
   }
 
   showToast(message) {

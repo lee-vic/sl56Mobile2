@@ -1,5 +1,5 @@
-import { NavController, AlertController, ToastController, ActionSheetController, IonInput } from '@ionic/angular';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { NavController, AlertController, ToastController, ActionSheetController, IonInput, LoadingController } from '@ionic/angular';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { WeightBillService } from 'src/app/providers/weight-bill.service';
@@ -13,7 +13,7 @@ import { Title } from '@angular/platform-browser';
   templateUrl: "./pay-weighing-fee.page.html",
   styleUrls: ["./pay-weighing-fee.page.scss"],
 })
-export class PayWeighingFeePage implements OnInit {
+export class PayWeighingFeePage implements OnInit, OnDestroy {
   signalRConnection: SignalRConnection;
   signalRConnected: boolean = false;
   subscriber: Subscription;
@@ -57,6 +57,7 @@ export class PayWeighingFeePage implements OnInit {
     private cookieService: CookieService,
     private weightBillService: WeightBillService,
     private navController: NavController,
+    private loadingCtrl: LoadingController,
     private alertController: AlertController,
     private signalR: SignalR,
     public toastController: ToastController,
@@ -125,22 +126,29 @@ export class PayWeighingFeePage implements OnInit {
   }
 
   loadDefaultValue() {
-    this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, "").subscribe({
-      next: (result) => {
-        //存在历史记录
-        if (result != null) {
-          this.data.VehicleNo = result.VehicleNo;
-          this.data.TareWeight = result.TareWeight;
+    this.loadingCtrl.create({
+      message: '请稍后',
+    }).then(lc => {
+      lc.present();
+      this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, "").subscribe({
+        next: (result) => {
+          //存在历史记录
+          if (result != null) {
+            this.data.VehicleNo = result.VehicleNo;
+            this.data.TareWeight = result.TareWeight;
+          }
+          //不存在历史记录
+          else {
+            this.data.VehicleNo = null;
+            this.data.TareWeight = null;
+            this.autoShowInparkHistory = true;//将自动显示入场记录的标识置为true
+          }
+          lc.dismiss();
+        },
+        error: (_error) => {
+          lc.dismiss();
         }
-        //不存在历史记录
-        else {
-          this.data.VehicleNo = null;
-          this.data.TareWeight = null;
-          this.autoShowInparkHistory = true;//将自动显示入场记录的标识置为true
-        }
-      },
-      error: (_error) => {
-      }
+      });
     });
   }
 
@@ -303,16 +311,18 @@ export class PayWeighingFeePage implements OnInit {
             InvokeClassName: this.data.WxOpenId,
             InvokeMethodName: ""
           };
-          let amount=parseInt(obj.InvokeMethodName);
+          let amount=parseFloat(obj.InvokeMethodName);
           //需要收费,跳转到支付页面
           if (amount> 0) {
             this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
+              this.loadingCtrl.dismiss();
               this.gotoPay(parseInt(obj.InvokeClassName));
             });
           }
           //不需要收费，跳转到磅单页面
           else {
             this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
+              this.loadingCtrl.dismiss();
               this.alertController.create({
                 header: '称重已完成',
                 subHeader: "点击确定后,系统将显示电子磅单",
@@ -331,6 +341,7 @@ export class PayWeighingFeePage implements OnInit {
           }
         }
         else if (obj.MsgContent == "Timeout") {
+          this.loadingCtrl.dismiss();
           this.alertController.create({
             header: '测量失败',
             subHeader: "测量超时",
@@ -360,6 +371,7 @@ export class PayWeighingFeePage implements OnInit {
             InvokeMethodName: ""
           };
           this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
+            this.loadingCtrl.dismiss();
             this.alertController.create({
               header: '测量失败',
               subHeader: "未找到第一次过磅记录",
@@ -393,6 +405,7 @@ export class PayWeighingFeePage implements OnInit {
             InvokeMethodName: ""
           };
           this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
+            this.loadingCtrl.dismiss();
             this.alertController.create({
               header: '测量失败',
               subHeader: "重量不正确",
@@ -545,14 +558,20 @@ export class PayWeighingFeePage implements OnInit {
     this.weightBillForm1.controls["corporateAccount"].setValue(val);
   }
   startRead() {
+    this.loadingCtrl.create({
+      message: '正在启动设备,请稍后...'
+    }).then(p => p.present());
     //通知读数端开始读数
     this.weightBillService.start(this.data)
       .subscribe({
         next: (started) => {
+          this.loadingCtrl.dismiss();
           console.log(typeof (started));
           console.log(started);
           if (started == true) {
-            // 设备已启动，等待SignalR回调
+            this.loadingCtrl.create({
+              message: '测量设备正在测量,请稍后...'
+            }).then(p => p.present());
 
           }
           else {
@@ -573,6 +592,7 @@ export class PayWeighingFeePage implements OnInit {
           }
         },
         error: (err) => {
+          this.loadingCtrl.dismiss();
           console.log(err);
           this.alertController.create({
             header: '启动失败',

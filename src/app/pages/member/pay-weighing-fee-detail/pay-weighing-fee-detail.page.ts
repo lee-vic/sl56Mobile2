@@ -1,7 +1,7 @@
 import { WeightBillService } from './../../../providers/weight-bill.service';
 import { ToastController, NavController, AlertController } from '@ionic/angular';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { apiUrl } from "src/app/global";
 import { SignalR, SignalRConnection } from 'src/app/providers/signal-r.service';
@@ -14,7 +14,7 @@ declare var wx: any;
   templateUrl: "./pay-weighing-fee-detail.page.html",
   styleUrls: ["./pay-weighing-fee-detail.page.scss"],
 })
-export class PayWeighingFeeDetailPage implements OnInit {
+export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
   weightBill: WeightBill = new WeightBill();
   signalRConnection: SignalRConnection;
   objectId;
