@@ -96,10 +96,12 @@ describe('ImportManifestFormPage', () => {
       'edit',
       'validateObjectNo',
       'validateCustomerPriceName',
-      'uploadTempDocument',
+      'uploadPendingDocument',
       'getForwardingDocuments',
       'getForwardingDocumentPreviewUrl',
       'openForwardingDocumentPreview',
+      'downloadForwardingDocument',
+      'markListDirty',
     ]);
 
     const lSpy = jasmine.createSpyObj('LoadingController', ['create']);
@@ -141,7 +143,7 @@ describe('ImportManifestFormPage', () => {
     serviceSpy.getAttachmentTypes.and.returnValue(of(mockAttachmentTypes));
     serviceSpy.getBatteryModelOptions.and.returnValue(of([]));
     serviceSpy.getForwardingDocuments.and.returnValue(of({ success: true, rows: [] }));
-    serviceSpy.uploadTempDocument.and.returnValue(of({ success: true, filePath: '/test.pdf', fileName: '' }));
+    serviceSpy.uploadPendingDocument.and.returnValue(of({ success: true, filePath: '/test.pdf', fileName: '' }));
     serviceSpy.validateObjectNo.and.returnValue(of({ Success: true, ErrMsg: '' }));
     serviceSpy.validateCustomerPriceName.and.returnValue(of({ Success: true, ErrMsg: '' }));
     serviceSpy.getDetail.and.returnValue(of(mockDetail));
@@ -163,11 +165,12 @@ describe('ImportManifestFormPage', () => {
   // ── 2. Form initialization ──
   it('should initialize form with default values', () => {
     fixture.detectChanges();
-    expect(component.form.get('ContentType')?.value).toBe(0);
+    expect(component.form.get('ContentType')?.value).toBe(1);
     expect(component.form.get('RequiresSeparateCustomsDeclaration')?.value).toBe(false);
     expect(component.form.get('RequiresDutiesAndTaxesPrepayment')?.value).toBe(false);
     expect(component.form.get('RequiresSpecialVatInvoice')?.value).toBe(false);
     expect(component.isEditMode).toBe(false);
+    expect(component.isInitializing).toBe(false);
   });
 
   // ── 3. loadDropdowns ──
@@ -354,6 +357,7 @@ describe('ImportManifestFormPage', () => {
     expect(serviceSpy.create).toHaveBeenCalledWith(
       jasmine.objectContaining({ ObjectNo: 'NEW001', Piece: 3 })
     );
+    expect(serviceSpy.markListDirty).toHaveBeenCalled();
     expect(navCtrlSpy.back).toHaveBeenCalled();
   });
 
@@ -408,9 +412,9 @@ describe('ImportManifestFormPage', () => {
     expect(component.form.get('ObjectNo')?.value).toBe('TEST001');
     expect(component.form.get('CountryId')?.value).toBe(1);
     expect(component.form.get('Piece')?.value).toBe(5);
-    expect(component.form.get('RequiresSeparateCustomsDeclaration')?.value).toBe(true);
-    expect(component.form.get('RequiresSpecialVatInvoice')?.value).toBe(true);
-    expect(component.showSpecialVat).toBe(true);
+    expect(component.form.get('RequiresSeparateCustomsDeclaration')?.value).toBe(false);
+    expect(component.form.get('RequiresSpecialVatInvoice')?.value).toBe(false);
+    expect(component.showSpecialVat).toBe(false);
   });
 
   // ── 21. Edit mode with readonly ──
@@ -421,7 +425,10 @@ describe('ImportManifestFormPage', () => {
     component.isEditMode = true;
     component.loadDetail(1);
 
-    expect(loadingCtrlSpy.create).toHaveBeenCalled();
+    expect(component.isReadonly).toBe(true);
+    expect(component.form.disabled).toBe(true);
+    expect(component.isInitializing).toBe(false);
+    expect(loadingCtrlSpy.create).not.toHaveBeenCalled();
   });
 
   // ── 22. Country autocomplete: filter by name and code ──
@@ -651,13 +658,32 @@ describe('ImportManifestFormPage', () => {
   // ── 41. setContentType should switch between 0 and 1 ──
   it('setContentType should toggle between DOC(0) and WPX(1)', () => {
     fixture.detectChanges();
-    expect(component.form.get('ContentType')?.value).toBe(0);
-
-    component.setContentType(1);
     expect(component.form.get('ContentType')?.value).toBe(1);
 
     component.setContentType(0);
     expect(component.form.get('ContentType')?.value).toBe(0);
+
+    component.setContentType(1);
+    expect(component.form.get('ContentType')?.value).toBe(1);
+  });
+
+  it('save should use package ContentType by default when creating', async () => {
+    fixture.detectChanges();
+    component.form.patchValue({
+      ObjectNo: 'PKG001',
+      CountryId: 1,
+      CustomerPriceName: 'PRICE01',
+      Piece: 1,
+    });
+    component.selectedPrice = mockPriceOptions[0];
+    serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
+
+    await component.save();
+
+    expect(serviceSpy.create).toHaveBeenCalledWith(
+      jasmine.objectContaining({ ContentType: 1 })
+    );
   });
 
   // ════════════════════════════════════════════════════════════
@@ -714,6 +740,18 @@ describe('ImportManifestFormPage', () => {
     expect(component.getFileIcon('sheet.xlsx')).toBe('grid-outline');
     expect(component.getFileIcon('archive.zip')).toBe('archive-outline');
     expect(component.getFileIcon('unknown.xyz')).toBe('attach-outline');
+  });
+
+  it('downloadDocument should download saved forwarding document', () => {
+    fixture.detectChanges();
+    component.downloadDocument({ id: 8, fileName: 'customs.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料' });
+    expect(serviceSpy.downloadForwardingDocument).toHaveBeenCalledWith(8);
+  });
+
+  it('downloadDocument should ignore pending document without id', () => {
+    fixture.detectChanges();
+    component.downloadDocument({ filePath: '/tmp/customs.pdf', fileName: 'customs.pdf', attachmentTypeId: 58, attachmentTypeName: '报关资料', isPending: true });
+    expect(serviceSpy.downloadForwardingDocument).not.toHaveBeenCalled();
   });
 
   // ── 47. formatFileSize formats correctly ──

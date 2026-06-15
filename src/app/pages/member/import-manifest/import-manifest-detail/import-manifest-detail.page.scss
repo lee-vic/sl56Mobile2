@@ -13,14 +13,10 @@
 
 .detail-content {
   --background:
-    radial-gradient(circle at 8% -4%, rgba(124, 187, 255, 0.26), transparent 36%),
-    radial-gradient(circle at 100% 22%, rgba(0, 178, 169, 0.12), transparent 45%),
-    linear-gradient(180deg, #eff6ff 0%, #edf5ff 58%, #f4f8ff 100%);
+    radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+    radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+    #f2f7ff;
   color: #15315a;
-}
-
-.skeleton-list {
-  padding: 10px 14px 20px;
 }
 
 .skeleton-card,
@@ -28,14 +24,92 @@
 .detail-hero-card {
   margin: 0 14px 10px;
   border: 1px solid rgba(190, 215, 245, 0.6);
-  border-radius: 16px;
+  border-radius: 8px;
   background: #ffffff;
-  box-shadow: 0 4px 16px rgba(11, 61, 130, 0.08);
+  box-shadow: 0 2px 8px rgba(20, 49, 90, 0.06);
   overflow: hidden;
 }
 
 .skeleton-card {
   padding: 14px;
+}
+
+.skeleton-hero-card,
+.skeleton-detail-card {
+  ion-skeleton-text {
+    --border-radius: 8px;
+    margin: 0;
+  }
+}
+
+.skeleton-object-no {
+  width: 58%;
+  max-width: 210px;
+  height: 22px;
+}
+
+.skeleton-status {
+  flex-shrink: 0;
+  width: 56px;
+  height: 26px;
+  border-radius: 12px;
+}
+
+.skeleton-meta {
+  width: 118px;
+  height: 14px;
+
+  &.short {
+    width: 72px;
+  }
+}
+
+.skeleton-button {
+  width: 100%;
+  height: 30px;
+  margin-top: 12px !important;
+  border-radius: 10px;
+}
+
+.skeleton-card-title {
+  width: 74px;
+  height: 16px;
+}
+
+.skeleton-label {
+  flex-shrink: 0;
+  width: 58px;
+  height: 16px;
+}
+
+.skeleton-value {
+  width: 42%;
+  max-width: 150px;
+  height: 16px;
+}
+
+.skeleton-attach-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.skeleton-attach-name {
+  width: 72%;
+  height: 16px;
+}
+
+.skeleton-attach-meta {
+  width: 52%;
+  height: 14px;
+}
+
+.skeleton-action {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
 }
 
 .empty-state {
@@ -111,6 +185,33 @@
   gap: 6px 16px;
   color: #8a9ec0;
   font-size: 12px;
+}
+
+.label-download-btn {
+  margin-top: 12px;
+  --border-color: rgba(11, 97, 189, 0.36);
+  --color: var(--member-brand-500, #0b61bd);
+  --border-radius: 8px;
+  font-weight: 700;
+}
+
+.readonly-inline-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(194, 122, 0, 0.2);
+  border-radius: 8px;
+  background: #fff8e6;
+  color: var(--member-accent-warning, #c27a00);
+  font-size: 12px;
+  font-weight: 700;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+  }
 }
 
 .status-badge {
@@ -219,7 +320,7 @@
 .attachment-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 10px 14px;
 
   & + .attachment-item {
@@ -280,4 +381,39 @@
     color: #9bb0ca;
     font-size: 18px;
   }
+}
+
+.detail-footer {
+  ion-toolbar {
+    --background: rgba(255, 255, 255, 0.96);
+    --border-color: rgba(190, 215, 245, 0.72);
+    --padding-top: 8px;
+    --padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    --padding-start: 14px;
+    --padding-end: 14px;
+  }
+}
+
+.detail-footer-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: 10px;
+}
+
+.footer-primary-btn,
+.footer-danger-btn {
+  --border-radius: 8px;
+  height: 44px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.footer-primary-btn {
+  --background: var(--member-brand-500, #0b61bd);
+  --background-activated: #094f9a;
+}
+
+.footer-danger-btn {
+  --border-color: rgba(235, 68, 90, 0.48);
+  --color: var(--ion-color-danger, #eb445a);
 }

@@ -2,6 +2,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, IonContent } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
+import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
 import { ImportManifestDetail, ForwardingDocumentItem, BatteryModelOption } from 'src/app/interfaces/import-manifest';
 
 @Component({
@@ -17,12 +18,18 @@ export class ImportManifestDetailPage implements OnInit {
   attachments: ForwardingDocumentItem[] = [];
   isLoading: boolean = true;
   hasError: boolean = false;
+  readonly skeletonInfoCards = [
+    { rows: [1, 2, 3, 4, 5] },
+    { rows: [1, 2, 3, 4] },
+    { rows: [1, 2, 3] },
+  ];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
     public service: ImportManifestService,
+    public domain: ImportManifestDomainService,
     private alertCtrl: AlertController
   ) {}
 
@@ -100,6 +107,7 @@ export class ImportManifestDetailPage implements OnInit {
     this.service.delete(this.id).subscribe({
       next: (res) => {
         if (res.Success) {
+          this.service.markListDirty();
           this.navCtrl.back();
         } else {
           this.showAlert('删除失败', res.ErrMsg);
@@ -117,19 +125,11 @@ export class ImportManifestDetailPage implements OnInit {
   }
 
   getStatusColor(status: number): string {
-    switch (status) {
-      case 0: return 'warning';
-      case 1: return 'success';
-      case 2: return 'danger';
-      default: return 'medium';
-    }
+    return this.domain.getStatusColor(status);
   }
 
   getCustomerStatusName(): string {
-    if (!this.data || !this.data.StatusName) {
-      return '未知';
-    }
-    return this.data.StatusName === '已收货' ? '已交货' : this.data.StatusName;
+    return this.domain.getCustomerStatusName(this.data?.StatusName);
   }
 
   getBatteryModelText(): string {
@@ -142,15 +142,7 @@ export class ImportManifestDetailPage implements OnInit {
   batteryModelOptions: BatteryModelOption[] = [];
 
   getFileIcon(fileName: string): string {
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    switch (ext) {
-      case 'pdf': return 'document-outline';
-      case 'jpg': case 'jpeg': case 'png': return 'image-outline';
-      case 'doc': case 'docx': return 'document-text-outline';
-      case 'xls': case 'xlsx': return 'grid-outline';
-      case 'zip': case 'rar': case '7z': return 'archive-outline';
-      default: return 'attach-outline';
-    }
+    return this.domain.getFileIcon(fileName);
   }
 
   previewDocument(doc: ForwardingDocumentItem) {
@@ -158,10 +150,17 @@ export class ImportManifestDetailPage implements OnInit {
     this.service.openForwardingDocumentPreview(doc.id);
   }
 
+  downloadDocument(doc: ForwardingDocumentItem) {
+    if (!doc || !doc.id) return;
+    this.service.downloadForwardingDocument(doc.id);
+  }
+
+  downloadLabel() {
+    if (!this.data || !this.data.ObjectId) return;
+    this.service.downloadLabel(this.data.ObjectId);
+  }
+
   formatFileSize(bytes: number): string {
-    if (!bytes || bytes <= 0) return '0 B';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
+    return this.domain.formatFileSize(bytes);
   }
 }

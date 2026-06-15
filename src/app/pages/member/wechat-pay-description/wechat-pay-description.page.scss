@@ -1,6 +1,7 @@
 ﻿.desc-content {
   --background:
-    radial-gradient(circle at 12% -6%, rgba(129, 189, 255, 0.22), transparent 42%),
+    radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+    radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
     #f2f7ff;
 }
 
@@ -175,7 +176,10 @@
 
 @media (prefers-color-scheme: dark) {
   .desc-content {
-    --background: linear-gradient(180deg, #0f1725 0%, #14233a 100%);
+    --background:
+      radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+      radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+      #f2f7ff;
   }
 
   .intro-card,

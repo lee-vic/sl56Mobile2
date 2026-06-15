@@ -39,6 +39,15 @@ describe('ImportManifestService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('list dirty flag should be consumed once', () => {
+    expect(service.consumeListDirty()).toBe(false);
+
+    service.markListDirty();
+
+    expect(service.consumeListDirty()).toBe(true);
+    expect(service.consumeListDirty()).toBe(false);
+  });
+
   // ── getList ──
   it('getList should request with pageIndex and return typed response', () => {
     const mockResponse: ImportManifestListResponse = {
@@ -270,6 +279,42 @@ describe('ImportManifestService', () => {
     req.flush({ Success: true, ErrMsg: '' });
   });
 
+  it('validateImportRows should POST with Rows wrapper', () => {
+    const rows = [
+      {
+        RowIndex: 0,
+        ObjectNo: 'IMP001',
+        CountryId: 10,
+        CustomerPriceName: 'PRICE01',
+        Piece: 3,
+        ContentType: 1,
+        PostalCode: '',
+        CustomerExpressNo: '',
+        DeclaredValue: null,
+        RequiresSeparateCustomsDeclaration: false,
+        RequiresDutiesAndTaxesPrepayment: false,
+        RequiresSpecialVatInvoice: false,
+      },
+    ];
+
+    service.validateImportRows(rows).subscribe((res) => {
+      expect(res.Success).toBe(true);
+      expect(res.Rows?.length).toBe(1);
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/ValidateImportRows');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.Rows[0].RowIndex).toBe(0);
+    req.flush({
+      Success: true,
+      ErrorType: 'NONE',
+      Message: '校验通过',
+      Summary: { TotalRows: 1, ValidRows: 1, ErrorRows: 0 },
+      Rows: [{ ...rows[0], CountryName: '美国', ContentTypeName: '包裹', Errors: [], HasError: false }],
+      RowErrors: [],
+    });
+  });
+
   // ── getCountryOptions ──
   it('getCountryOptions should GET dropdown options', () => {
     const mockOptions: DropdownOption[] = [
@@ -362,12 +407,12 @@ describe('ImportManifestService', () => {
     req.flush(mockTypes);
   });
 
-  // ── uploadTempDocument ──
-  it('uploadTempDocument should POST FormData with file and attachmentTypeId', () => {
+  // ── uploadPendingDocument ──
+  it('uploadPendingDocument should POST FormData with file and attachmentTypeId', () => {
     const file = new File(['test content'], 'invoice.pdf', { type: 'application/pdf' });
     const typeId = 58;
 
-    service.uploadTempDocument(file, typeId).subscribe((res) => {
+    service.uploadPendingDocument(file, typeId).subscribe((res) => {
       expect(res.success).toBe(true);
       expect(res.filePath).toBe('/UploadFiles/abc123/invoice.pdf');
       expect(res.fileName).toBe('invoice.pdf');
@@ -386,11 +431,11 @@ describe('ImportManifestService', () => {
     req.flush(mockResult);
   });
 
-  // ── uploadTempDocument failure ──
-  it('uploadTempDocument should handle upload failure', () => {
+  // ── uploadPendingDocument failure ──
+  it('uploadPendingDocument should handle upload failure', () => {
     const file = new File(['bad'], 'huge.pdf', { type: 'application/pdf' });
 
-    service.uploadTempDocument(file, 2).subscribe((res) => {
+    service.uploadPendingDocument(file, 2).subscribe((res) => {
       expect(res.success).toBe(false);
       expect(res.message).toBe('文件太大');
     });
@@ -438,11 +483,35 @@ describe('ImportManifestService', () => {
     expect(service.getForwardingDocumentPreviewUrl(123)).toBe(baseUrl + '/PreviewDocument?id=123');
   });
 
+  it('getForwardingDocumentDownloadUrl should build download url by document id', () => {
+    expect(service.getForwardingDocumentDownloadUrl(123)).toBe(baseUrl + '/DownloadDocument?id=123');
+  });
+
+  it('getLabelDownloadUrl should build label download url by detail id', () => {
+    expect(service.getLabelDownloadUrl(456)).toBe(baseUrl + '/GetLabel?id=456');
+  });
+
   it('openForwardingDocumentPreview should open preview url in a new window outside WeChat', () => {
     const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
 
     service.openForwardingDocumentPreview(123);
 
     expect(openSpy).toHaveBeenCalledWith(baseUrl + '/PreviewDocument?id=123', '_blank');
+  });
+
+  it('downloadForwardingDocument should open document download url', () => {
+    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+
+    service.downloadForwardingDocument(123);
+
+    expect(openSpy).toHaveBeenCalledWith(baseUrl + '/DownloadDocument?id=123', '_blank');
+  });
+
+  it('downloadLabel should open label download url', () => {
+    const openSpy = spyOn(window, 'open').and.returnValue({} as Window);
+
+    service.downloadLabel(456);
+
+    expect(openSpy).toHaveBeenCalledWith(baseUrl + '/GetLabel?id=456', '_blank');
   });
 });

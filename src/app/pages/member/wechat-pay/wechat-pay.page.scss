@@ -8,9 +8,9 @@
 
 .wx-pay-content {
   --background:
-    radial-gradient(circle at 8% -4%, rgba(124, 187, 255, 0.26), transparent 36%),
-    radial-gradient(circle at 100% 22%, rgba(0, 178, 169, 0.12), transparent 45%),
-    linear-gradient(180deg, #eff6ff 0%, #edf5ff 58%, #f4f8ff 100%);
+    radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+    radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+    #f2f7ff;
 }
 
 .pay-header ion-toolbar {
@@ -516,7 +516,10 @@ ion-select:focus-visible {
   }
 
   .wx-pay-content {
-    --background: linear-gradient(180deg, #0e1622 0%, #121d2c 56%, #162338 100%);
+    --background:
+      radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+      radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+      #f2f7ff;
   }
 }
 

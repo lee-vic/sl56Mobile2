@@ -1,42 +1,46 @@
 <ion-header translucent="true" class="manifest-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button
-        *ngIf="currentStep === 1"
-        defaultHref="/member/import-manifest/list"
-      ></ion-back-button>
-      <ion-button
-        *ngIf="currentStep > 1"
-        (click)="resetImport()"
-      >
+      <ion-back-button *ngIf="currentStep === 1" defaultHref="/member/import-manifest/list"></ion-back-button>
+      <ion-button *ngIf="currentStep > 1" (click)="resetImport()">
         <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>
-      {{ currentStep === 1 ? '批量导入' : currentStep === 2 ? '预览校验' : '导入结果' }}
-    </ion-title>
+    <ion-title>{{ currentStep === 1 ? '批量导入' : currentStep === 2 ? '预览校验' : '导入结果' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="import-content" fullscreen="true">
-  <!-- ========== Step 1: File Selection ========== -->
+  <section class="import-steps">
+    <div class="step-node" [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+      <span>1</span>
+      <p>上传</p>
+    </div>
+    <div class="step-line" [class.done]="currentStep > 1"></div>
+    <div class="step-node" [class.active]="currentStep === 2" [class.done]="currentStep > 2">
+      <span>2</span>
+      <p>校验</p>
+    </div>
+    <div class="step-line" [class.done]="currentStep > 2"></div>
+    <div class="step-node" [class.active]="currentStep === 3">
+      <span>3</span>
+      <p>结果</p>
+    </div>
+  </section>
+
   <ng-container *ngIf="currentStep === 1">
     <div class="step-card step-upload">
       <div class="upload-icon-wrap">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </div>
-      <h2>导入 Excel/CSV 文件</h2>
-      <p class="upload-desc">
-        支持 .csv、.xls、.xlsx 格式，单次最多 500 行，文件不超过 5 MB
-      </p>
+      <h2>导入标准模板文件</h2>
+      <p class="upload-desc">支持 .csv、.xls、.xlsx 格式，单次最多 500 行，文件不超过 5 MB</p>
 
-      <!-- Download Template -->
       <button type="button" class="template-btn" (click)="downloadTemplate()">
         <ion-icon name="download-outline"></ion-icon>
         下载标准模板
       </button>
 
-      <!-- File Input -->
       <div class="file-input-wrap">
         <input
           type="file"
@@ -45,28 +49,19 @@
           style="display: none"
           #fileInput
         />
-        <button
-          type="button"
-          class="file-btn"
-          (click)="fileInput.click()"
-          [disabled]="isParsing"
-        >
+        <button type="button" class="file-btn" (click)="fileInput.click()" [disabled]="isParsing || isReferenceLoading">
           <ion-icon name="folder-open-outline"></ion-icon>
           选择文件
         </button>
       </div>
 
-      <p *ngIf="selectedFileName" class="selected-file">
-        已选择：{{ selectedFileName }}
-      </p>
+      <p *ngIf="selectedFileName" class="selected-file">已选择：{{ selectedFileName }}</p>
 
-      <!-- Parsing spinner -->
-      <div class="parsing-state" *ngIf="isParsing">
+      <div class="parsing-state" *ngIf="isParsing || isReferenceLoading">
         <ion-spinner name="crescent" color="primary"></ion-spinner>
-        <p>正在解析文件...</p>
+        <p>{{ isReferenceLoading ? '正在加载基础数据...' : '正在解析文件...' }}</p>
       </div>
 
-      <!-- Parse Error -->
       <div class="parse-error" *ngIf="parseError">
         <ion-icon name="alert-circle"></ion-icon>
         <span>{{ parseError }}</span>
@@ -74,104 +69,248 @@
     </div>
   </ng-container>
 
-  <!-- ========== Step 2: Preview ========== -->
   <ng-container *ngIf="currentStep === 2">
-    <!-- Summary Card -->
-    <div class="summary-card">
-      <div class="summary-item">
+    <section class="preview-hero" [class.clean]="summary.errorRows === 0">
+      <div>
+        <p class="preview-kicker">{{ summary.errorRows > 0 ? '预览校验' : '校验完成' }}</p>
+        <h2>{{ getPreviewLeadTitle() }}</h2>
+        <p>{{ getPreviewLeadText() }}</p>
+      </div>
+      <ion-button fill="clear" size="small" (click)="selectRows('visible')">
+        <ion-icon name="checkbox-outline" slot="start"></ion-icon>
+        选当前
+      </ion-button>
+    </section>
+
+    <div class="summary-grid">
+      <div class="summary-tile">
         <span class="summary-num">{{ summary.totalRows }}</span>
         <span class="summary-label">总行数</span>
       </div>
-      <div class="summary-divider"></div>
-      <div class="summary-item success">
-        <span class="summary-num">{{ getValidCount() }}</span>
-        <span class="summary-label">有效</span>
+      <div class="summary-tile success">
+        <span class="summary-num">{{ summary.validRows }}</span>
+        <span class="summary-label">可导入</span>
       </div>
-      <div class="summary-divider"></div>
-      <div class="summary-item danger">
-        <span class="summary-num">{{ getErrorCount() }}</span>
-        <span class="summary-label">错误</span>
+      <div class="summary-tile danger">
+        <span class="summary-num">{{ summary.errorRows }}</span>
+        <span class="summary-label">需修正</span>
+      </div>
+      <div class="summary-tile">
+        <span class="summary-num">{{ summary.modifiedRows }}</span>
+        <span class="summary-label">已修改</span>
       </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <ion-segment
-      [value]="activeFilter"
-      (ionChange)="applyFilter($event.detail.value)"
-      class="filter-segment"
-    >
+    <div class="error-digest" *ngIf="errorCategories.length > 0">
+      <button
+        type="button"
+        *ngFor="let group of errorCategories"
+        [class.active]="activeErrorCategory === group.key"
+        (click)="applyErrorCategory(group)"
+      >
+        {{ group.text }} {{ group.count }}
+      </button>
+    </div>
+
+    <ion-segment [value]="activeFilter" (ionChange)="applyFilter($event.detail.value)" class="filter-segment">
+      <ion-segment-button value="actionable">
+        <ion-label>需处理 {{ summary.errorRows }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="valid">
+        <ion-label>可导入 {{ summary.validRows }}</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="modified">
+        <ion-label>已修改 {{ summary.modifiedRows }}</ion-label>
+      </ion-segment-button>
       <ion-segment-button value="all">
         <ion-label>全部</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="errors">
-        <ion-label>错误 ({{ getErrorCount() }})</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="modified">
-        <ion-label>有效 ({{ getValidCount() }})</ion-label>
-      </ion-segment-button>
     </ion-segment>
 
-    <!-- Preview Rows -->
-    <div class="preview-list">
-      <div class="preview-card" *ngFor="let row of filteredRows; let i = index" [class.has-error]="row.HasError">
+    <div class="selection-toolbar">
+      <div class="selection-buttons">
+        <button type="button" (click)="selectRows('errors')" [disabled]="summary.errorRows === 0">选需处理</button>
+        <button type="button" (click)="selectRows('valid')" [disabled]="summary.validRows === 0">选可导入</button>
+        <button type="button" (click)="clearSelection()" [disabled]="getSelectedCount() === 0">清空</button>
+      </div>
+      <button type="button" class="batch-entry" (click)="openBatchSheet()" [disabled]="getSelectedCount() === 0">
+        <ion-icon name="options-outline"></ion-icon>
+        批量修正
+        <span *ngIf="getSelectedCount() > 0">{{ getSelectedCount() }}</span>
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="next-error-fab"
+      *ngIf="activeFilter === 'actionable' && summary.errorRows > 0"
+      (click)="jumpToNextError()"
+    >
+      <ion-icon name="arrow-down-outline"></ion-icon>
+      下一条错误
+    </button>
+
+    <div class="preview-list mobile-first">
+      <div
+        class="preview-card"
+        *ngFor="let row of filteredRows; let i = index; trackBy: trackByIndex"
+        [id]="'import-row-' + previewRows.indexOf(row)"
+        [class.has-error]="row.HasError"
+        [class.is-selected]="row.Selected"
+      >
         <div class="preview-left">
-          <ion-icon
-            [name]="getRowStatusIcon(row)"
-            [color]="getRowStatusColor(row)"
-            class="preview-icon"
-          ></ion-icon>
+          <ion-checkbox [(ngModel)]="row.Selected"></ion-checkbox>
         </div>
+
         <div class="preview-body">
+          <div class="error-strip" *ngIf="row.HasError && row.Errors?.length">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ row.Errors[0].Message }}</span>
+          </div>
           <div class="preview-top">
-            <span class="preview-index">#{{ i + 1 }}</span>
+            <span class="preview-index">#{{ previewRows.indexOf(row) + 1 }}</span>
             <strong class="preview-object-no">{{ row.ObjectNo }}</strong>
-            <span class="preview-badge" [class.error]="row.HasError">
-              {{ row.HasError ? '错误' : '通过' }}
-            </span>
+            <span class="preview-badge" [class.error]="row.HasError">{{ row.HasError ? '错误' : '通过' }}</span>
           </div>
           <p class="preview-meta">
             {{ row.CountryName || '-' }} · {{ row.CustomerPriceName || '-' }} · {{ row.Piece || 0 }} 件 · {{ row.ContentTypeName || '-' }}
+            <span *ngIf="row.PostalCode"> · {{ row.PostalCode }}</span>
             <span *ngIf="row.BatteryModel"> · {{ row.BatteryModel }}</span>
           </p>
+          <p class="preview-meta" *ngIf="row.CustomerExpressNo">快递单号：{{ row.CustomerExpressNo }}</p>
           <p *ngIf="row.HasError && row.Errors" class="preview-errors">
-            <span *ngFor="let err of row.Errors" class="error-chip">{{ err.Message }}</span>
+            <span *ngFor="let err of row.Errors.slice(1)" class="error-chip">{{ err.Message }}</span>
           </p>
+          <div class="row-extra" *ngIf="row.IsExpanded">
+            <span>邮编：{{ row.PostalCode || '-' }}</span>
+            <span>申报价值：{{ row.DeclaredValue || '-' }}</span>
+            <span>电池型号：{{ row.BatteryModel || '-' }}</span>
+            <span>单独报关：{{ row.RequiresSeparateCustomsDeclaration ? '是' : '否' }}</span>
+            <span>关税预付：{{ row.RequiresDutiesAndTaxesPrepayment ? '是' : '否' }}</span>
+          </div>
+          <div class="row-actions compact">
+            <button type="button" class="row-primary" (click)="startEdit(row)">
+              <ion-icon name="create-outline" slot="start"></ion-icon>
+              {{ row.HasError ? '修正' : '编辑' }}
+            </button>
+            <button type="button" class="row-secondary" (click)="toggleRowExpanded(row)">
+              {{ row.IsExpanded ? '收起' : '更多' }}
+            </button>
+            <span *ngIf="row.IsDirty" class="dirty-label">已修改</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Empty -->
     <div *ngIf="filteredRows.length === 0" class="empty-state">
       <p class="empty-state-title">无匹配记录</p>
     </div>
 
-    <!-- Confirm Footer -->
-    <div class="confirm-footer" *ngIf="canProceed()">
-      <button
-        type="button"
-        class="confirm-btn"
-        (click)="confirmImport()"
-        [disabled]="isSaving"
-      >
+    <div class="confirm-footer" *ngIf="summary.totalRows > 0">
+      <p class="confirm-hint" *ngIf="getImportConfirmHint()">{{ getImportConfirmHint() }}</p>
+      <button type="button" class="confirm-btn" (click)="confirmImport()" [disabled]="isSaving || !canProceed()">
         <ion-spinner *ngIf="isSaving" name="crescent"></ion-spinner>
-        确认导入 {{ getValidCount() }} 条
+        {{ getConfirmButtonText() }}
       </button>
     </div>
+
+    <div class="sheet-backdrop" *ngIf="editingRow" (click)="cancelEdit(editingRow)"></div>
+    <section class="mobile-sheet edit-sheet" *ngIf="editingRow">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <div>
+          <p>单行修正</p>
+          <h3>{{ editingRow.ObjectNo || '未填写单号' }}</h3>
+        </div>
+        <button type="button" (click)="cancelEdit(editingRow)">取消</button>
+      </div>
+      <div class="edit-body">
+        <ion-input label="单号" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.ObjectNo"></ion-input>
+        <ion-select label="目的国" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.CountryId" interface="action-sheet">
+          <ion-select-option *ngFor="let c of countryOptions" [value]="c.Id">{{ c.Code }} {{ c.Name }}</ion-select-option>
+        </ion-select>
+        <ion-select label="报价" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.CustomerPriceName" interface="action-sheet">
+          <ion-select-option *ngFor="let p of priceOptions" [value]="p.Code">{{ p.Code }} - {{ p.Name }}</ion-select-option>
+        </ion-select>
+        <div class="edit-grid">
+          <ion-input label="件数" labelPlacement="stacked" type="number" [(ngModel)]="editingRow.EditModel.Piece"></ion-input>
+          <ion-select label="类型" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.ContentType" interface="action-sheet">
+            <ion-select-option [value]="0">文件</ion-select-option>
+            <ion-select-option [value]="1">包裹</ion-select-option>
+          </ion-select>
+        </div>
+        <div class="edit-grid">
+          <ion-input label="邮编" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.PostalCode"></ion-input>
+          <ion-input label="申报价值" labelPlacement="stacked" type="number" [(ngModel)]="editingRow.EditModel.DeclaredValue"></ion-input>
+        </div>
+        <ion-textarea label="快递单号" labelPlacement="stacked" rows="2" [(ngModel)]="editingRow.EditModel.CustomerExpressNo"></ion-textarea>
+        <ion-select label="电池型号" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.BatteryModel" interface="action-sheet">
+          <ion-select-option *ngFor="let opt of batteryModelOptions" [value]="opt.Value">{{ opt.Text }}</ion-select-option>
+        </ion-select>
+        <div class="edit-toggles">
+          <ion-toggle [(ngModel)]="editingRow.EditModel.RequiresSeparateCustomsDeclaration">单独报关</ion-toggle>
+          <ion-toggle [(ngModel)]="editingRow.EditModel.RequiresSpecialVatInvoice">单独报关开专票</ion-toggle>
+          <ion-toggle [(ngModel)]="editingRow.EditModel.RequiresDutiesAndTaxesPrepayment">关税预付</ion-toggle>
+        </div>
+      </div>
+      <button type="button" class="sheet-primary-btn" (click)="saveRowEdit(editingRow)">保存并重新校验</button>
+    </section>
+
+    <div class="sheet-backdrop" *ngIf="isBatchSheetOpen" (click)="closeBatchPanel()"></div>
+    <section class="mobile-sheet batch-sheet" *ngIf="isBatchSheetOpen">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <div>
+          <p>批量修正</p>
+          <h3>已选 {{ getSelectedCount() }} 行</h3>
+        </div>
+        <button type="button" (click)="closeBatchPanel()">取消</button>
+      </div>
+      <ion-segment [(ngModel)]="batchMode" class="batch-field-segment">
+        <ion-segment-button value="country"><ion-label>国家</ion-label></ion-segment-button>
+        <ion-segment-button value="price"><ion-label>报价</ion-label></ion-segment-button>
+        <ion-segment-button value="contentType"><ion-label>类型</ion-label></ion-segment-button>
+        <ion-segment-button value="customs"><ion-label>报关</ion-label></ion-segment-button>
+        <ion-segment-button value="duty"><ion-label>关税</ion-label></ion-segment-button>
+      </ion-segment>
+      <div class="batch-panel sheet-panel">
+        <ng-container [ngSwitch]="batchMode">
+          <ion-select *ngSwitchCase="'country'" [(ngModel)]="batchCountryId" placeholder="选择目的国" interface="action-sheet">
+            <ion-select-option *ngFor="let c of countryOptions" [value]="c.Id">{{ c.Code }} {{ c.Name }}</ion-select-option>
+          </ion-select>
+          <ion-select *ngSwitchCase="'price'" [(ngModel)]="batchPriceCode" placeholder="选择报价" interface="action-sheet">
+            <ion-select-option *ngFor="let p of priceOptions" [value]="p.Code">{{ p.Code }} - {{ p.Name }}</ion-select-option>
+          </ion-select>
+          <ion-segment *ngSwitchCase="'contentType'" [(ngModel)]="batchContentType">
+            <ion-segment-button [value]="0"><ion-label>文件</ion-label></ion-segment-button>
+            <ion-segment-button [value]="1"><ion-label>包裹</ion-label></ion-segment-button>
+          </ion-segment>
+          <div *ngSwitchCase="'customs'" class="batch-customs-mode">
+            <div class="batch-hint">仅用于单独报关费用发票</div>
+            <ion-segment [(ngModel)]="batchCustomsMode">
+              <ion-segment-button value="none"><ion-label>不开</ion-label></ion-segment-button>
+              <ion-segment-button value="common"><ion-label>普票</ion-label></ion-segment-button>
+              <ion-segment-button value="special"><ion-label>专票</ion-label></ion-segment-button>
+            </ion-segment>
+          </div>
+          <ion-segment *ngSwitchCase="'duty'" [(ngModel)]="batchDutyValue">
+            <ion-segment-button [value]="false"><ion-label>否</ion-label></ion-segment-button>
+            <ion-segment-button [value]="true"><ion-label>是</ion-label></ion-segment-button>
+          </ion-segment>
+        </ng-container>
+      </div>
+      <button type="button" class="sheet-primary-btn" (click)="applyBatchSet()">应用到选中行</button>
+    </section>
   </ng-container>
 
-  <!-- ========== Step 3: Result ========== -->
   <ng-container *ngIf="currentStep === 3 && saveResult">
     <div class="step-card step-result">
       <div class="result-icon-wrap" [class.success]="saveResult.success" [class.fail]="!saveResult.success">
-        <ion-icon
-          [name]="saveResult.success ? 'checkmark-circle' : 'close-circle'"
-        ></ion-icon>
+        <ion-icon [name]="saveResult.success ? 'checkmark-circle' : 'close-circle'"></ion-icon>
       </div>
       <h2>{{ saveResult.success ? '导入成功' : '导入失败' }}</h2>
       <p>{{ saveResult.message }}</p>
-      <button type="button" class="back-btn" (click)="backToList()">
-        返回列表
-      </button>
+      <button type="button" class="back-btn" (click)="backToList()">返回列表</button>
     </div>
   </ng-container>
 </ion-content>

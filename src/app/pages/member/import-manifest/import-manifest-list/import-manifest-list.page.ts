@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
+import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
 import { ImportManifestListItem } from 'src/app/interfaces/import-manifest';
 
 @Component({
@@ -35,12 +36,21 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
 
   constructor(
     public service: ImportManifestService,
+    public domain: ImportManifestDomainService,
     private router: Router,
     private alertCtrl: AlertController
   ) {}
 
   ngOnInit() {
     this.loadFirstPage();
+  }
+
+  ionViewWillEnter() {
+    if (!this.service.consumeListDirty()) return;
+
+    this.clearSelection();
+    this.isSelectionMode = false;
+    this.loadFirstPage(this.searchKeyword);
   }
 
   ngOnDestroy() {
@@ -268,27 +278,15 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   // ========== Helpers ==========
 
   getStatusColor(statusCode: number): string {
-    switch (statusCode) {
-      case 0:
-        return 'warning';
-      case 1:
-        return 'success';
-      case 2:
-        return 'danger';
-      default:
-        return 'medium';
-    }
+    return this.domain.getStatusColor(statusCode);
   }
 
   getCustomerStatusName(item: ImportManifestListItem): string {
-    if (!item || !item.StatusName) {
-      return '未知';
-    }
-    return item.StatusName === '已收货' ? '已交货' : item.StatusName;
+    return this.domain.getCustomerStatusName(item?.StatusName);
   }
 
   canDelete(item: ImportManifestListItem): boolean {
-    return item.StatusCode === 0;
+    return this.domain.canDelete(item?.StatusCode);
   }
 
   trackById(_index: number, item: ImportManifestListItem): number {

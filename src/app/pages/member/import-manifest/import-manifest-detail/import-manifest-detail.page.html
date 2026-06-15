@@ -4,30 +4,50 @@
       <ion-back-button defaultHref="/member/import-manifest/list"></ion-back-button>
     </ion-buttons>
     <ion-title>预报详情</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        *ngIf="data && data.Status === 0"
-        (click)="edit()"
-      >
-        <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-      <ion-button
-        *ngIf="data && data.Status === 0"
-        (click)="confirmDelete()"
-      >
-        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="detail-content" fullscreen="true">
   <!-- Loading -->
   <ng-container *ngIf="isLoading">
-    <div class="skeleton-list">
-      <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5]">
-        <ion-skeleton-text animated style="width: 55%; height: 20px;"></ion-skeleton-text>
-        <ion-skeleton-text animated style="width: 80%; height: 14px; margin-top: 8px;"></ion-skeleton-text>
+    <div class="detail-hero-card skeleton-hero-card">
+      <div class="hero-top">
+        <ion-skeleton-text animated class="skeleton-object-no"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-status"></ion-skeleton-text>
+      </div>
+      <div class="hero-meta">
+        <ion-skeleton-text animated class="skeleton-meta"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-meta short"></ion-skeleton-text>
+      </div>
+      <ion-skeleton-text animated class="skeleton-button"></ion-skeleton-text>
+    </div>
+
+    <div class="detail-card skeleton-detail-card" *ngFor="let card of skeletonInfoCards">
+      <div class="detail-card-header">
+        <ion-skeleton-text animated class="skeleton-card-title"></ion-skeleton-text>
+      </div>
+      <div class="detail-rows">
+        <div class="detail-row" *ngFor="let _ of card.rows">
+          <ion-skeleton-text animated class="skeleton-label"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-value"></ion-skeleton-text>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card skeleton-detail-card">
+      <div class="detail-card-header">
+        <ion-skeleton-text animated class="skeleton-card-title"></ion-skeleton-text>
+      </div>
+      <div class="attachment-list">
+        <div class="attachment-item" *ngFor="let _ of [1,2]">
+          <ion-skeleton-text animated class="skeleton-attach-icon"></ion-skeleton-text>
+          <div class="attach-info">
+            <ion-skeleton-text animated class="skeleton-attach-name"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skeleton-attach-meta"></ion-skeleton-text>
+          </div>
+          <ion-skeleton-text animated class="skeleton-action"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-action"></ion-skeleton-text>
+        </div>
       </div>
     </div>
   </ng-container>
@@ -57,6 +77,14 @@
       <div class="hero-meta">
         <span>创建：{{ data.CreateAt || '-' }}</span>
         <span>资料：{{ data.ForwardingDocumentCount || 0 }}</span>
+      </div>
+      <ion-button expand="block" size="small" fill="outline" class="label-download-btn" (click)="downloadLabel()">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        下载标签
+      </ion-button>
+      <div class="readonly-inline-notice" *ngIf="data.Status !== 0">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>该预报已交货，仅支持查看资料</span>
       </div>
     </div>
 
@@ -129,7 +157,7 @@
           </span>
         </div>
         <div class="detail-row" *ngIf="data.RequiresSeparateCustomsDeclaration">
-          <span class="detail-label">发票类型</span>
+          <span class="detail-label">单独报关发票</span>
           <span class="detail-value">{{ data.RequiresSpecialVatInvoice ? '专用发票' : '普通发票' }}</span>
         </div>
         <div class="detail-row">
@@ -165,8 +193,11 @@
               <ng-container *ngIf="doc.uploadDate"> · {{ doc.uploadDate }}</ng-container>
             </span>
           </div>
-          <ion-button fill="clear" size="small" [disabled]="!doc.id" (click)="previewDocument(doc)">
+          <ion-button fill="clear" size="small" [disabled]="!doc.id" (click)="previewDocument(doc)" aria-label="预览随货资料">
             <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" size="small" [disabled]="!doc.id" (click)="downloadDocument(doc)" aria-label="下载随货资料">
+            <ion-icon name="download-outline" slot="icon-only"></ion-icon>
           </ion-button>
         </div>
       </div>
@@ -177,3 +208,18 @@
     </div>
   </ng-container>
 </ion-content>
+
+<ion-footer class="detail-footer" *ngIf="data && data.Status === 0 && !isLoading">
+  <ion-toolbar>
+    <div class="detail-footer-actions">
+      <ion-button expand="block" fill="outline" class="footer-danger-btn" (click)="confirmDelete()">
+        <ion-icon name="trash-outline" slot="start"></ion-icon>
+        删除
+      </ion-button>
+      <ion-button expand="block" class="footer-primary-btn" (click)="edit()">
+        <ion-icon name="create-outline" slot="start"></ion-icon>
+        编辑
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

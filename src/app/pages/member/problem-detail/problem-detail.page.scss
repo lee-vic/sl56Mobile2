@@ -9,7 +9,10 @@
 }
 
 .problem-detail-content {
-  --background: var(--problem-surface-soft);
+  --background:
+    radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+    radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+    #f2f7ff;
   --padding-bottom: calc(72px + env(safe-area-inset-bottom));
 }
 
@@ -522,4 +525,3 @@ ion-button[expand="block"] {
         font-size: 1.1rem;
     }
 }
-

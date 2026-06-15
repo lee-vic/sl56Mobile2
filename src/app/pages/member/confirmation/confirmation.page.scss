@@ -1,5 +1,8 @@
 ﻿ion-content {
-    --background: radial-gradient(circle at 0% -10%, #d7e7ff 0%, #edf4ff 30%, #f7faff 72%, #fbfdff 100%);
+    --background:
+        radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+        radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+        #f2f7ff;
     --padding-bottom: calc(84px + env(safe-area-inset-bottom));
 }
 
@@ -431,7 +434,10 @@ ion-button[disabled] {
 
 @media (prefers-color-scheme: dark) {
     ion-content {
-        --background: radial-gradient(circle at 0% -10%, #1d2f45 0%, #132133 36%, #0c1726 100%);
+        --background:
+            radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+            radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+            #f2f7ff;
     }
 
     .confirm-header ion-toolbar {
@@ -503,4 +509,3 @@ ion-button[disabled] {
         color: #d3e5ff;
     }
 }
-

@@ -10,7 +10,10 @@
 }
 
 ion-content.chat-content {
-    --background: linear-gradient(180deg, #f5f8fd 0%, #f8fafe 36%, #fbfcff 100%);
+    --background:
+        radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+        radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+        #f2f7ff;
 }
 
 .scroll-bottom-btn {

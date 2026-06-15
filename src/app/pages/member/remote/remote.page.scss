@@ -4,9 +4,9 @@
 
 .remote-content {
 	--background:
-		radial-gradient(circle at 8% 0%, rgba(98, 174, 255, 0.26), transparent 32%),
-		radial-gradient(circle at 96% 18%, rgba(36, 214, 187, 0.2), transparent 38%),
-		linear-gradient(180deg, #f4f8ff 0%, #edf4ff 46%, #f7faff 100%);
+		radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+		radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+		#f2f7ff;
 	--padding-start: 0;
 	--padding-end: 0;
 	--padding-bottom: calc(24px + env(safe-area-inset-bottom));

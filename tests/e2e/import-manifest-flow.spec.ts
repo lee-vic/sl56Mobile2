@@ -264,26 +264,17 @@ test.describe('import manifest list page', () => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/list');
 
-    // Searchbar
     await expect(page.locator('ion-searchbar')).toBeVisible();
-
-    // Date filter segment
-    await expect(page.locator('.date-filter-segment')).toBeVisible();
-    await expect(page.locator('.date-filter-segment ion-segment-button')).toHaveCount(4);
-
-    // Card items should render
-    await expect(page.locator('.forecast-card')).toHaveCount(3);
+    await expect(page.locator('.forecast-item')).toHaveCount(3);
   });
 
   test('displays list cards with status badges', async ({ page }) => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/list');
 
-    // Each card should show ObjectNo in heading
-    await expect(page.locator('.card-object-no').first()).toContainText('TEST001');
+    await expect(page.locator('.forecast-item .item-head h2').first()).toContainText('TEST001');
 
-    // Status badges with correct color classes
-    const badges = page.locator('.status-badge');
+    const badges = page.locator('.forecast-item ion-badge');
     await expect(badges.nth(0)).toHaveClass(/status-warning/);
     await expect(badges.nth(1)).toHaveClass(/status-success/);
     await expect(badges.nth(2)).toHaveClass(/status-danger/);
@@ -325,18 +316,8 @@ test.describe('import manifest list page', () => {
 
     await page.goto('/member/import-manifest/list');
 
-    await expect(page.locator('.empty-state')).toBeVisible();
-    await expect(page.locator('.empty-state-title')).toBeVisible();
-  });
-
-  test('date filter segment changes active state', async ({ page }) => {
-    await setupImportManifestRoutes(page);
-    await page.goto('/member/import-manifest/list');
-
-    const todayBtn = page.locator('.date-filter-segment ion-segment-button').first();
-    await todayBtn.click();
-
-    await expect(todayBtn).toHaveClass(/segment-button-checked/);
+    await expect(page.locator('.state-panel')).toBeVisible();
+    await expect(page.locator('.state-panel h2')).toBeVisible();
   });
 
   test('can enter selection mode', async ({ page }) => {
@@ -347,12 +328,10 @@ test.describe('import manifest list page', () => {
     const selectionBtn = page.locator('ion-header ion-buttons[slot="end"] ion-button');
     await selectionBtn.click();
 
-    // Checkboxes should appear
-    await expect(page.locator('.card-checkbox ion-checkbox').first()).toBeVisible();
+    await expect(page.locator('.forecast-item ion-checkbox').first()).toBeVisible();
 
-    // Exit selection mode
     await selectionBtn.click();
-    await expect(page.locator('.card-checkbox').first()).not.toBeVisible();
+    await expect(page.locator('.forecast-item ion-checkbox').first()).not.toBeVisible();
   });
 });
 
@@ -452,8 +431,7 @@ test.describe('import manifest navigation flow', () => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/list');
 
-    // Click first card to navigate to detail
-    await page.locator('.forecast-card').first().click();
+    await page.locator('.forecast-item').first().click();
 
     await page.waitForURL('**/member/import-manifest/detail/*');
   });

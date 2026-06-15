@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, LoadingController, ToastController } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
 import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, BatteryModelOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
+import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -16,7 +17,15 @@ export class ImportManifestFormPage implements OnInit {
   id: number | null = null;
   isEditMode: boolean = false;
   isReadonly: boolean = false;
+  isInitializing: boolean = true;
   isUploading: boolean = false;
+  isSaving: boolean = false;
+  readonly skeletonFormCards = [
+    { fields: ['input', 'input', 'input', 'input', 'contentType'], attachments: false },
+    { fields: ['input', 'input', 'textarea'], attachments: false },
+    { fields: ['toggle', 'toggle', 'toggle', 'input'], attachments: false },
+    { fields: ['attachmentUpload'], attachments: true },
+  ];
 
   countryOptions: DropdownOption[] = [];
   countrySearch: DropdownOption[] = [];
@@ -47,6 +56,7 @@ export class ImportManifestFormPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     public service: ImportManifestService,
+    public domain: ImportManifestDomainService,
     private alertCtrl: AlertController,
     private navCtrl: NavController,
     private loadingCtrl: LoadingController,
@@ -57,7 +67,7 @@ export class ImportManifestFormPage implements OnInit {
       CountryId: [null, [Validators.required]],
       CustomerPriceName: ['', [Validators.required]],
       Piece: [null, [Validators.required, Validators.min(1), Validators.max(9999)]],
-      ContentType: [0, [Validators.required]],
+      ContentType: [1, [Validators.required]],
       PostalCode: ['', [Validators.maxLength(16)]],
       DeclaredValue: [null],
       CustomerExpressNo: ['', [Validators.maxLength(512)]],
@@ -96,53 +106,48 @@ export class ImportManifestFormPage implements OnInit {
 
         if (this.id) {
           this.loadDetail(this.id);
+        } else {
+          this.isInitializing = false;
         }
+      },
+      error: () => {
+        this.isInitializing = false;
+        this.showToast('加载失败，请重试');
       },
     });
 
     // Auto uppercase ObjectNo
     this.form.get('ObjectNo')?.valueChanges.subscribe((val) => {
-      if (val && val !== val.toUpperCase()) {
-        this.form.get('ObjectNo')?.setValue(val.toUpperCase(), { emitEvent: false });
+      const normalized = this.domain.normalizeObjectNo(val || '');
+      if (val && val !== normalized) {
+        this.form.get('ObjectNo')?.setValue(normalized, { emitEvent: false });
       }
     });
 
     // Show/hide special VAT invoice when separate customs changes
     this.form.get('RequiresSeparateCustomsDeclaration')?.valueChanges.subscribe((val) => {
-      this.showSpecialVat = val;
-      if (!val) {
-        this.form.get('RequiresSpecialVatInvoice')?.setValue(false);
-      }
+      this.applyCustomsState(!!val, !!this.form.get('RequiresSpecialVatInvoice')?.value, true);
+    });
 
-      // 勾选"单独报关"但无报关资料附件时，自动取消勾选并提示
-      if (val) {
-        const hasCustomsDoc = this.attachments.some((d) => d.attachmentTypeId === 58);
-        if (!hasCustomsDoc) {
-          this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(false, { emitEvent: false });
-          this.showSpecialVat = false;
-          this.showToast('勾选"是否单独报关"前，请先上传报关资料');
-        }
-      }
+    this.form.get('RequiresSpecialVatInvoice')?.valueChanges.subscribe((val) => {
+      this.applyCustomsState(!!this.form.get('RequiresSeparateCustomsDeclaration')?.value, !!val, false);
     });
   }
 
   loadDetail(id: number) {
-    this.loadingCtrl.create({ message: '加载中...' }).then((loading) => {
-      loading.present();
-      this.service.getDetail(id).subscribe({
-        next: (detail) => {
-          loading.dismiss();
-          this.fillForm(detail);
-          if (detail.Status !== 0) {
-            this.isReadonly = true;
-            this.form.disable();
-          }
-        },
-        error: () => {
-          loading.dismiss();
-          this.showToast('加载失败，请重试');
-        },
-      });
+    this.service.getDetail(id).subscribe({
+      next: (detail) => {
+        this.fillForm(detail);
+        if (detail.Status !== 0) {
+          this.isReadonly = true;
+          this.form.disable();
+        }
+        this.isInitializing = false;
+      },
+      error: () => {
+        this.isInitializing = false;
+        this.showToast('加载失败，请重试');
+      },
     });
   }
 
@@ -169,7 +174,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresDutiesAndTaxesPrepayment: detail.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: detail.RequiresSpecialVatInvoice,
       BatteryModel: detail.BatteryModel || '',
-    });
+    }, { emitEvent: false });
 
     // Load existing forwarding documents
     if (detail.ObjectId) {
@@ -179,6 +184,7 @@ export class ImportManifestFormPage implements OnInit {
         next: (res) => {
           if (res.success) {
             this.attachments = (res.rows || []).map((d) => ({ ...d, isPending: false }));
+            this.syncCustomsDeclarationFlag();
           }
         },
       });
@@ -246,25 +252,9 @@ export class ImportManifestFormPage implements OnInit {
       }
     }
 
-    // Validate file type
-    const isPrintAttachment = this.isPrintAttachmentType(attachTypeId);
-    const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx'];
-    if (!isPrintAttachment) {
-      allowedExts.push('.zip', '.rar', '.7z');
-    }
-    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!allowedExts.includes(ext)) {
-      this.showToast(isPrintAttachment
-        ? '不支持的文件格式，仅支持 PDF/图片/Office 文档'
-        : '不支持的文件格式，仅支持 PDF/图片/Office 文档，或 zip/rar/7z 压缩包');
-      input.value = '';
-      return;
-    }
-
-    // Validate file size (2MB limit for printed attachment types)
-    const maxSize = isPrintAttachment ? 2 * 1024 * 1024 : Infinity;
-    if (file.size > maxSize) {
-      this.showToast('文件大小超过限制（最大 2MB）');
+    const validation = this.domain.validateAttachment(file, attachTypeId, this.attachmentTypes, this.attachments);
+    if (!validation.ok) {
+      this.showToast(validation.message || '附件不符合上传规则');
       input.value = '';
       return;
     }
@@ -273,7 +263,7 @@ export class ImportManifestFormPage implements OnInit {
     loadingPromise.then((loading) => {
       loading.present();
       this.isUploading = true;
-      this.service.uploadTempDocument(file, attachTypeId).subscribe({
+      this.service.uploadPendingDocument(file, attachTypeId).subscribe({
         next: (res) => {
           loading.dismiss();
           this.isUploading = false;
@@ -327,28 +317,15 @@ export class ImportManifestFormPage implements OnInit {
 
   /** Auto-sync customs declaration flag with attachment type 58 (bidirectional) */
   private syncCustomsDeclarationFlag() {
-    const hasCustomsDoc = this.attachments.some((d) => d.attachmentTypeId === 58);
-    const isChecked = this.form.get('RequiresSeparateCustomsDeclaration')?.value;
-
-    if (hasCustomsDoc && !isChecked) {
-      // 有报关资料但未勾选→自动勾选
-      this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(true);
-    } else if (!hasCustomsDoc && isChecked) {
-      // 无报关资料但已勾选→自动取消
-      this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(false);
-    }
+    this.applyCustomsState(
+      !!this.form.get('RequiresSeparateCustomsDeclaration')?.value,
+      !!this.form.get('RequiresSpecialVatInvoice')?.value,
+      true
+    );
   }
 
   getFileIcon(fileName: string): string {
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    switch (ext) {
-      case 'pdf': return 'document-outline';
-      case 'jpg': case 'jpeg': case 'png': return 'image-outline';
-      case 'doc': case 'docx': return 'document-text-outline';
-      case 'xls': case 'xlsx': return 'grid-outline';
-      case 'zip': case 'rar': case '7z': return 'archive-outline';
-      default: return 'attach-outline';
-    }
+    return this.domain.getFileIcon(fileName);
   }
 
   previewDocument(doc: ForwardingDocumentItem) {
@@ -356,11 +333,13 @@ export class ImportManifestFormPage implements OnInit {
     this.service.openForwardingDocumentPreview(doc.id);
   }
 
+  downloadDocument(doc: ForwardingDocumentItem) {
+    if (!doc || !doc.id) return;
+    this.service.downloadForwardingDocument(doc.id);
+  }
+
   formatFileSize(bytes: number): string {
-    if (!bytes || bytes <= 0) return '0 B';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
+    return this.domain.formatFileSize(bytes);
   }
 
   // ========== Country Autocomplete ==========
@@ -566,29 +545,18 @@ export class ImportManifestFormPage implements OnInit {
     }
 
     // 快递单号：校验单个长度 + 去重
-    const rawExpressNo = this.form.get('CustomerExpressNo')?.value?.trim() || '';
-    if (rawExpressNo) {
-      const parts = rawExpressNo
-        .split(/[,;，；]/)
-        .map((p: string) => p.trim())
-        .filter((p: string) => p.length > 0);
-      for (let i = 0; i < parts.length; i++) {
-        if (parts[i].length > 32) {
-          const alert = await this.alertCtrl.create({
-            header: '快递单号格式错误',
-            message: `第 ${i + 1} 个快递单号长度不能超过 32 个字符`,
-            buttons: ['确定'],
-          });
-          await alert.present();
-          return;
-        }
-      }
-      // 去重后重新写入
-      const uniqueParts = [...new Set(parts.map((p: string) => p.toLowerCase()))];
-      const deduped = uniqueParts.join(',');
-      if (deduped !== rawExpressNo.replace(/[,;，；]/g, ',').replace(/,,+/g, ',').replace(/^,|,$/g, '')) {
-        this.form.get('CustomerExpressNo')?.setValue(deduped);
-      }
+    const expressNoResult = this.domain.normalizeCustomerExpressNo(this.form.get('CustomerExpressNo')?.value || '');
+    if (!expressNoResult.ok) {
+      const alert = await this.alertCtrl.create({
+        header: '快递单号格式错误',
+        message: expressNoResult.error,
+        buttons: ['确定'],
+      });
+      await alert.present();
+      return;
+    }
+    if (this.form.get('CustomerExpressNo')?.value !== expressNoResult.value) {
+      this.form.get('CustomerExpressNo')?.setValue(expressNoResult.value);
     }
 
     if (this.form.invalid) {
@@ -614,7 +582,7 @@ export class ImportManifestFormPage implements OnInit {
       ContentType: formValue.ContentType,
       PostalCode: formValue.PostalCode?.trim() || null,
       DeclaredValue: formValue.DeclaredValue || null,
-      CustomerExpressNo: formValue.CustomerExpressNo?.trim() || null,
+      CustomerExpressNo: expressNoResult.value || null,
       RequiresSeparateCustomsDeclaration: formValue.RequiresSeparateCustomsDeclaration || false,
       RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
       RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
@@ -629,12 +597,15 @@ export class ImportManifestFormPage implements OnInit {
 
     const loading = await this.loadingCtrl.create({ message: '保存中...' });
     await loading.present();
+    this.isSaving = true;
 
     operation.subscribe({
       next: (res) => {
         loading.dismiss();
+        this.isSaving = false;
         if (res.Success) {
           this.showToast(this.isEditMode ? '编辑成功' : '新增成功');
+          this.service.markListDirty();
           this.navCtrl.back();
         } else {
           this.showAlert('操作失败', res.ErrMsg);
@@ -642,6 +613,7 @@ export class ImportManifestFormPage implements OnInit {
       },
       error: () => {
         loading.dismiss();
+        this.isSaving = false;
         this.showAlert('错误', '网络错误，请稍后重试');
       },
     });
@@ -660,5 +632,20 @@ export class ImportManifestFormPage implements OnInit {
       color: 'dark',
     });
     await toast.present();
+  }
+
+  private applyCustomsState(requestedSeparate: boolean, requestedSpecialVat: boolean, showMessage: boolean) {
+    const state = this.domain.resolveCustomsState(this.attachments, requestedSeparate, requestedSpecialVat);
+    this.showSpecialVat = state.showSpecialVat;
+
+    if (this.form.get('RequiresSeparateCustomsDeclaration')?.value !== state.requiresSeparateCustomsDeclaration) {
+      this.form.get('RequiresSeparateCustomsDeclaration')?.setValue(state.requiresSeparateCustomsDeclaration, { emitEvent: false });
+    }
+    if (this.form.get('RequiresSpecialVatInvoice')?.value !== state.requiresSpecialVatInvoice) {
+      this.form.get('RequiresSpecialVatInvoice')?.setValue(state.requiresSpecialVatInvoice, { emitEvent: false });
+    }
+    if (showMessage && state.message) {
+      this.showToast(state.message);
+    }
   }
 }

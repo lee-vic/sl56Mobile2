@@ -5,8 +5,14 @@
     </ion-buttons>
     <ion-title>快速预报</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="toggleSelectionMode()" [attr.aria-label]="isSelectionMode ? '退出选择' : '批量选择'">
-        <ion-icon [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'" slot="icon-only"></ion-icon>
+      <ion-button
+        class="selection-mode-btn"
+        fill="clear"
+        (click)="toggleSelectionMode()"
+        [attr.aria-label]="isSelectionMode ? '退出选择' : '批量选择'"
+      >
+        <ion-icon [name]="isSelectionMode ? 'close-outline' : 'checkmark-done-outline'" slot="start"></ion-icon>
+        <span>{{ isSelectionMode ? '取消' : '选择' }}</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -31,18 +37,34 @@
   </ion-refresher>
 
   <ng-container *ngIf="isLoading && items.length === 0">
-    <div class="skeleton-list">
-      <ion-card class="forecast-card skeleton-card" *ngFor="let _ of [1,2,3,4]">
-        <ion-card-content>
-          <div class="skeleton-card-top">
-            <ion-skeleton-text animated style="width: 58%; height: 20px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 64px; height: 24px; border-radius: 12px;"></ion-skeleton-text>
-          </div>
-          <ion-skeleton-text animated style="width: 86%; height: 14px;"></ion-skeleton-text>
-          <ion-skeleton-text animated style="width: 66%; height: 14px;"></ion-skeleton-text>
-        </ion-card-content>
-      </ion-card>
-    </div>
+    <ion-list class="forecast-list skeleton-list" lines="none">
+      <ion-item-sliding *ngFor="let _ of [1,2,3,4]">
+        <ion-item detail="false" class="forecast-item skeleton-item">
+          <ion-label>
+            <div class="item-head">
+              <ion-skeleton-text animated class="skeleton-object-no"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-status"></ion-skeleton-text>
+            </div>
+
+            <div class="item-summary skeleton-summary">
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <ion-skeleton-text animated></ion-skeleton-text>
+            </div>
+
+            <ion-skeleton-text animated class="skeleton-quote-row"></ion-skeleton-text>
+
+            <div class="item-foot skeleton-foot">
+              <ion-skeleton-text animated></ion-skeleton-text>
+              <ion-skeleton-text animated></ion-skeleton-text>
+            </div>
+          </ion-label>
+        </ion-item>
+      </ion-item-sliding>
+    </ion-list>
   </ng-container>
 
   <ng-container *ngIf="hasLoadError && !isLoading">
@@ -106,18 +128,35 @@
           </div>
 
           <div class="item-summary">
-            <span>目的国：{{ item.CountryName || '-' }}</span>
-            <span>件数：{{ item.Piece || 0 }}</span>
-            <span>类型：{{ item.ContentTypeName || '-' }}</span>
-            <span>申报价值：{{ item.DeclaredValue ? ('$' + item.DeclaredValue) : '-' }}</span>
+            <span>
+              <ion-icon name="flag-outline"></ion-icon>
+              {{ item.CountryName || '-' }}
+            </span>
+            <span>
+              <ion-icon name="pricetag-outline"></ion-icon>
+              {{ item.CustomerPriceName || '-' }}
+            </span>
+            <span>
+              <ion-icon name="cube-outline"></ion-icon>
+              {{ item.Piece || 0 }} 件
+            </span>
+            <span>
+              <ion-icon name="document-text-outline"></ion-icon>
+              {{ item.ForwardingDocumentCount || 0 }} 份资料
+            </span>
           </div>
 
           <div class="quote-row">
-            报价：{{ item.CustomerPriceName || '-' }}
+            <span>{{ item.ModeOfTransportName || '-' }}</span>
+            <span>{{ item.ContentTypeName || '-' }}</span>
+            <span *ngIf="item.PostalCode">邮编 {{ item.PostalCode }}</span>
+            <span *ngIf="item.DeclaredValue">申报 ${{ item.DeclaredValue }}</span>
+          </div>
+          <div class="quote-row" *ngIf="item.CustomerExpressNo">
+            快递单号：{{ item.CustomerExpressNo }}
           </div>
 
           <div class="item-foot">
-            <span>资料：{{ item.ForwardingDocumentCount || 0 }}</span>
             <span>创建：{{ item.CreateAt || '-' }}</span>
           </div>
         </ion-label>
@@ -138,20 +177,22 @@
     <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="正在加载更多"></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="!isSelectionMode">
-    <ion-fab-button>
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-    <ion-fab-list side="top">
-      <ion-fab-button (click)="createNew()">
-        <ion-icon name="create-outline"></ion-icon>
-      </ion-fab-button>
-      <ion-fab-button (click)="goToImport()">
-        <ion-icon name="cloud-upload-outline"></ion-icon>
-      </ion-fab-button>
-    </ion-fab-list>
-  </ion-fab>
 </ion-content>
+
+<ion-footer *ngIf="!isSelectionMode" class="quick-action-footer">
+  <ion-toolbar>
+    <section class="quick-action-panel">
+      <ion-button class="quick-action primary" expand="block" (click)="createNew()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        <span>新增预报</span>
+      </ion-button>
+      <ion-button class="quick-action" expand="block" fill="outline" (click)="goToImport()">
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        <span>批量导入</span>
+      </ion-button>
+    </section>
+  </ion-toolbar>
+</ion-footer>
 
 <ion-footer *ngIf="isSelectionMode" class="selection-footer">
   <ion-toolbar>
@@ -163,7 +204,7 @@
         [disabled]="getSelectedCount() === 0 || isBatchDeleting"
       >
         <ion-icon name="trash-outline" slot="start"></ion-icon>
-        删除
+        {{ isBatchDeleting ? '删除中' : '删除' }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

@@ -123,6 +123,7 @@ export interface SaveImportRequest {
 }
 
 export interface ImportRowModel {
+    RowIndex?: number;
     ObjectNo: string;
     CountryId: number;
     CustomerPriceName: string;
@@ -135,6 +136,23 @@ export interface ImportRowModel {
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
     BatteryModel?: string;
+}
+
+export interface ImportSaveRowError {
+    RowIndex: number;
+    ObjectNo: string;
+    Errors: ImportValidationError[];
+}
+
+export interface ImportRowsValidationResult {
+    Success: boolean;
+    ErrorType?: string;
+    Message?: string;
+    Summary?: ParseImportSummary;
+    Rows?: ImportPreviewRow[];
+    RowErrors?: ImportSaveRowError[];
+    ErrMsg?: string;
+    Data?: any;
 }
 
 export interface ImportManifestActionResult {

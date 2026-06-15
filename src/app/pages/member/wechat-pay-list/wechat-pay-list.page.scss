@@ -8,8 +8,9 @@
 
 .pay-list-content {
   --background:
-    radial-gradient(circle at 10% -8%, rgba(129, 189, 255, 0.2), transparent 38%),
-    var(--wx-list-surface-soft);
+    radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+    radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+    #f2f7ff;
 }
 
 .summary-card {
@@ -215,7 +216,10 @@
 
 @media (prefers-color-scheme: dark) {
   .pay-list-content {
-    --background: linear-gradient(180deg, #0f1725 0%, #14233a 100%);
+    --background:
+      radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
+      radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
+      #f2f7ff;
   }
 
   .summary-card,

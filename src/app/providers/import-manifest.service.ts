@@ -8,6 +8,7 @@ import {
   ImportManifestSaveRequest,
   ParseImportResponse,
   ImportRowModel,
+  ImportRowsValidationResult,
   ImportManifestActionResult,
   BulkDeleteRequest,
   BulkDeleteResult,
@@ -24,8 +25,19 @@ import {
 })
 export class ImportManifestService {
   private baseUrl = apiUrl + '/ImportManifest';
+  private listDirty = false;
 
   constructor(public http: HttpClient) {}
+
+  markListDirty() {
+    this.listDirty = true;
+  }
+
+  consumeListDirty(): boolean {
+    const dirty = this.listDirty;
+    this.listDirty = false;
+    return dirty;
+  }
 
   /**
    * 获取快速预报列表
@@ -122,8 +134,19 @@ export class ImportManifestService {
    * 确认批量导入 (Step 2)
    */
   saveImport(rows: ImportRowModel[]) {
-    return this.http.post<ImportManifestActionResult>(
+    return this.http.post<ImportRowsValidationResult>(
       this.baseUrl + '/SaveImport',
+      { Rows: rows },
+      { withCredentials: true }
+    );
+  }
+
+  /**
+   * 校验导入预览行，业务规则由服务层统一处理。
+   */
+  validateImportRows(rows: ImportRowModel[]) {
+    return this.http.post<ImportRowsValidationResult>(
+      this.baseUrl + '/ValidateImportRows',
       { Rows: rows },
       { withCredentials: true }
     );
@@ -202,9 +225,10 @@ export class ImportManifestService {
   }
 
   /**
-   * 上传临时附件
+   * 上传待绑定随货资料文件。
+   * 后端复用 PC 端 UploadTempDocument 入口，实际保存到文件服务器，保存预报时再绑定记录。
    */
-  uploadTempDocument(file: File, attachmentTypeId: number) {
+  uploadPendingDocument(file: File, attachmentTypeId: number) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('attachmentTypeId', attachmentTypeId.toString());
@@ -213,6 +237,10 @@ export class ImportManifestService {
       formData,
       { withCredentials: true }
     );
+  }
+
+  uploadTempDocument(file: File, attachmentTypeId: number) {
+    return this.uploadPendingDocument(file, attachmentTypeId);
   }
 
   /**
@@ -229,15 +257,37 @@ export class ImportManifestService {
     return this.baseUrl + '/PreviewDocument?id=' + documentId;
   }
 
+  getForwardingDocumentDownloadUrl(documentId: number) {
+    return this.baseUrl + '/DownloadDocument?id=' + documentId;
+  }
+
+  getLabelDownloadUrl(detailId: number) {
+    return this.baseUrl + '/GetLabel?id=' + detailId;
+  }
+
   openForwardingDocumentPreview(documentId: number) {
     const url = this.getForwardingDocumentPreviewUrl(documentId);
+    this.openUrl(url);
+  }
+
+  downloadForwardingDocument(documentId: number) {
+    const url = this.getForwardingDocumentDownloadUrl(documentId);
+    this.openUrl(url);
+  }
+
+  downloadLabel(detailId: number) {
+    const url = this.getLabelDownloadUrl(detailId);
+    this.openUrl(url);
+  }
+
+  private openUrl(url: string) {
     if (this.isMicroMessenger()) {
       window.location.href = url;
       return;
     }
 
-    const previewWindow = window.open(url, '_blank');
-    if (!previewWindow) {
+    const newWindow = window.open(url, '_blank');
+    if (!newWindow) {
       window.location.href = url;
     }
   }
