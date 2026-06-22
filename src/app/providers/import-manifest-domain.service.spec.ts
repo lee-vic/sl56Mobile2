@@ -41,7 +41,9 @@ describe('ImportManifestDomainService', () => {
   it('maps status names and colors', () => {
     expect(service.getStatusColor(0)).toBe('warning');
     expect(service.getStatusColor(1)).toBe('success');
-    expect(service.getCustomerStatusName('已收货')).toBe('已交货');
+    expect(service.getCustomerStatusName('已交货')).toBe('已交货');
+    expect(service.getCustomerStatusNameByCode(0)).toBe('待交货');
+    expect(service.getCustomerStatusNameByCode(1)).toBe('已交货');
     expect(service.canDelete(0)).toBe(true);
     expect(service.canDelete(1)).toBe(false);
   });

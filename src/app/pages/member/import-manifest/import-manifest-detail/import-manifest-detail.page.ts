@@ -129,7 +129,11 @@ export class ImportManifestDetailPage implements OnInit {
   }
 
   getCustomerStatusName(): string {
-    return this.domain.getCustomerStatusName(this.data?.StatusName);
+    return this.domain.getCustomerStatusNameByCode(this.data?.Status, this.data?.StatusName);
+  }
+
+  getReadonlyNoticeText(): string {
+    return `该预报${this.getCustomerStatusName()}，仅支持查看资料`;
   }
 
   getBatteryModelText(): string {

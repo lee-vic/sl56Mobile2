@@ -50,6 +50,7 @@ export class ImportManifestFormPage implements OnInit {
 
   // Battery model options (fetched from API, single source of truth)
   batteryModelOptions: BatteryModelOption[] = [];
+  readonlyStatusName = '';
 
   constructor(
     private fb: FormBuilder,
@@ -140,6 +141,7 @@ export class ImportManifestFormPage implements OnInit {
         this.fillForm(detail);
         if (detail.Status !== 0) {
           this.isReadonly = true;
+          this.readonlyStatusName = this.domain.getCustomerStatusNameByCode(detail.Status, detail.StatusName);
           this.form.disable();
         }
         this.isInitializing = false;
@@ -225,6 +227,14 @@ export class ImportManifestFormPage implements OnInit {
   setContentType(value: number) {
     this.form.get('ContentType')?.setValue(value);
     this.form.get('ContentType')?.markAsTouched();
+  }
+
+  get contentTypeOptions() {
+    return this.domain.contentTypeOptions;
+  }
+
+  getReadonlyNoticeText(): string {
+    return `该预报${this.readonlyStatusName || this.domain.getCustomerStatusNameByCode(1)}，禁止编辑`;
   }
 
   // ========== Attachments ==========

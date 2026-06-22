@@ -75,6 +75,10 @@ export class ImportManifestImportPage implements OnInit {
     this.loadReferenceData();
   }
 
+  get contentTypeOptions() {
+    return this.domain.contentTypeOptions;
+  }
+
   loadReferenceData() {
     this.isReferenceLoading = true;
     forkJoin([
@@ -238,6 +242,7 @@ export class ImportManifestImportPage implements OnInit {
       IsDirty: true,
       EditModel: undefined,
     });
+    row.ContentTypeName = this.domain.getContentTypeName(row.ContentType);
     this.editingRow = null;
     this.validatePreviewRows();
   }
@@ -320,7 +325,7 @@ export class ImportManifestImportPage implements OnInit {
           return;
         }
         row.ContentType = this.batchContentType;
-        row.ContentTypeName = this.batchContentType === 1 ? '包裹' : '文件';
+        row.ContentTypeName = this.domain.getContentTypeName(this.batchContentType);
       } else if (this.batchMode === 'customs') {
         if (!this.batchCustomsMode) {
           this.showToast('请先选择报关方式');

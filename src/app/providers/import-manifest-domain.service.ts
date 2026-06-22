@@ -35,6 +35,10 @@ export interface ImportRowValidationResult {
 @Injectable({ providedIn: 'root' })
 export class ImportManifestDomainService {
   readonly customsAttachmentTypeId = 58;
+  readonly contentTypeOptions = [
+    { value: 0, name: '文件', code: 'DOC' },
+    { value: 1, name: '包裹', code: 'WPX' },
+  ];
   private readonly objectNoPattern = /^[A-Z0-9\-]+$/;
   private readonly expressSeparators = /[,;，；\r\n\t]+/;
   private readonly printAttachmentMaxBytes = 2 * 1024 * 1024;
@@ -106,10 +110,28 @@ export class ImportManifestDomainService {
   }
 
   getCustomerStatusName(statusName?: string): string {
-    if (!statusName) {
-      return '未知';
+    return statusName || '未知';
+  }
+
+  getCustomerStatusNameByCode(statusCode: number | null | undefined, statusName?: string): string {
+    if (statusName) {
+      return statusName;
     }
-    return statusName === '已收货' ? '已交货' : statusName;
+    if (statusCode === 0) {
+      return '待交货';
+    }
+    if (statusCode === 1) {
+      return '已交货';
+    }
+    return '未知';
+  }
+
+  getContentTypeName(contentType: number | null | undefined, contentTypeName?: string): string {
+    if (contentTypeName) {
+      return contentTypeName;
+    }
+    const option = this.contentTypeOptions.find((p) => p.value === contentType);
+    return option ? option.name : '';
   }
 
   canDelete(statusCode: number | null | undefined): boolean {
@@ -286,7 +308,7 @@ export class ImportManifestDomainService {
       CustomerPriceName: priceCode,
       Piece: piece,
       ContentType: contentType,
-      ContentTypeName: contentType === 1 ? '包裹' : '文件',
+      ContentTypeName: this.getContentTypeName(contentType, raw.ContentTypeName),
       PostalCode: postalCode,
       CustomerExpressNo: expressResult.value,
       DeclaredValue: declaredValue,

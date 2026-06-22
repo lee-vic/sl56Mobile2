@@ -235,8 +235,7 @@
         <div class="edit-grid">
           <ion-input label="件数" labelPlacement="stacked" type="number" [(ngModel)]="editingRow.EditModel.Piece"></ion-input>
           <ion-select label="类型" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.ContentType" interface="action-sheet">
-            <ion-select-option [value]="0">文件</ion-select-option>
-            <ion-select-option [value]="1">包裹</ion-select-option>
+            <ion-select-option *ngFor="let opt of contentTypeOptions" [value]="opt.value">{{ opt.name }}</ion-select-option>
           </ion-select>
         </div>
         <div class="edit-grid">
@@ -282,8 +281,7 @@
             <ion-select-option *ngFor="let p of priceOptions" [value]="p.Code">{{ p.Code }} - {{ p.Name }}</ion-select-option>
           </ion-select>
           <ion-segment *ngSwitchCase="'contentType'" [(ngModel)]="batchContentType">
-            <ion-segment-button [value]="0"><ion-label>文件</ion-label></ion-segment-button>
-            <ion-segment-button [value]="1"><ion-label>包裹</ion-label></ion-segment-button>
+            <ion-segment-button *ngFor="let opt of contentTypeOptions" [value]="opt.value"><ion-label>{{ opt.name }}</ion-label></ion-segment-button>
           </ion-segment>
           <div *ngSwitchCase="'customs'" class="batch-customs-mode">
             <div class="batch-hint">仅用于单独报关费用发票</div>

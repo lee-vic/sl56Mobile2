@@ -84,7 +84,7 @@
       </ion-button>
       <div class="readonly-inline-notice" *ngIf="data.Status !== 0">
         <ion-icon name="information-circle-outline"></ion-icon>
-        <span>该预报已交货，仅支持查看资料</span>
+        <span>{{ getReadonlyNoticeText() }}</span>
       </div>
     </div>
 

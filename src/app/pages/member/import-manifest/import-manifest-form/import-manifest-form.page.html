@@ -172,15 +172,16 @@
           货物类型 <span class="required">*</span>
         </label>
         <div class="content-type-toggle">
-          <button type="button" class="ct-card" [class.ct-active]="form.get('ContentType')?.value === 0" (click)="setContentType(0)">
-            <ion-icon name="document-text-outline" class="ct-icon"></ion-icon>
-            <span class="ct-label">文件</span>
-            <span class="ct-code">DOC</span>
-          </button>
-          <button type="button" class="ct-card" [class.ct-active]="form.get('ContentType')?.value === 1" (click)="setContentType(1)">
-            <ion-icon name="cube-outline" class="ct-icon"></ion-icon>
-            <span class="ct-label">包裹</span>
-            <span class="ct-code">WPX</span>
+          <button
+            type="button"
+            class="ct-card"
+            *ngFor="let opt of contentTypeOptions"
+            [class.ct-active]="form.get('ContentType')?.value === opt.value"
+            (click)="setContentType(opt.value)"
+          >
+            <ion-icon [name]="opt.value === 0 ? 'document-text-outline' : 'cube-outline'" class="ct-icon"></ion-icon>
+            <span class="ct-label">{{ opt.name }}</span>
+            <span class="ct-code">{{ opt.code }}</span>
           </button>
         </div>
       </div>
@@ -367,7 +368,7 @@
     <!-- Readonly Notice -->
     <div class="readonly-notice" *ngIf="isReadonly">
       <ion-icon name="information-circle-outline"></ion-icon>
-      <span>该预报已交货，禁止编辑</span>
+      <span>{{ getReadonlyNoticeText() }}</span>
     </div>
   </form>
 </ion-content>

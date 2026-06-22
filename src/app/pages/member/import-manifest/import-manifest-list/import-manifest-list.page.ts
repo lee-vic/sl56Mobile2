@@ -235,10 +235,11 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   async confirmBulkDelete() {
     const count = this.getSelectedCount();
     if (count === 0) return;
+    const receivedStatusName = this.items.find((item) => item.StatusCode === 1)?.StatusName;
 
     const alert = await this.alertCtrl.create({
       header: '确认批量删除',
-      message: `确定要删除选中的 ${count} 条预报吗？已交货的预报将被自动跳过。`,
+      message: `确定要删除选中的 ${count} 条预报吗？${this.domain.getCustomerStatusNameByCode(1, receivedStatusName)}的预报将被自动跳过。`,
       buttons: [
         { text: '取消', role: 'cancel' },
         {
@@ -282,7 +283,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   }
 
   getCustomerStatusName(item: ImportManifestListItem): string {
-    return this.domain.getCustomerStatusName(item?.StatusName);
+    return this.domain.getCustomerStatusNameByCode(item?.StatusCode, item?.StatusName);
   }
 
   canDelete(item: ImportManifestListItem): boolean {

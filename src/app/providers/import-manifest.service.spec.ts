@@ -221,10 +221,10 @@ describe('ImportManifestService', () => {
     expect(req.request.body.Ids).toEqual([1, 2, 3]);
     const result: BulkDeleteResult = {
       Success: true,
-      Message: '删除成功，1条已收货记录被跳过',
+      Message: '删除成功，1条已交货记录被跳过',
       DeletedCount: 2,
       SkippedCount: 1,
-      SkippedMessages: ['单据 TEST003 已收货，无法删除'],
+      SkippedMessages: ['单据 TEST003 已交货，无法删除'],
     };
     req.flush(result);
   });
