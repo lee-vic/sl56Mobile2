@@ -10,6 +10,7 @@ import {
   ImportRowModel,
   ImportRowsValidationResult,
   ImportManifestActionResult,
+  AvailableCustomerPricesResponse,
   BulkDeleteRequest,
   BulkDeleteResult,
   DropdownOption,
@@ -169,6 +170,20 @@ export class ImportManifestService {
     return this.http.get<DropdownOption[]>(
       this.baseUrl + '/GetCustomerPriceOptions',
       { withCredentials: true }
+    );
+  }
+
+  /**
+   * 按当前预报参数动态计算可用报价。
+   */
+  getAvailableCustomerPrices(model: ImportManifestSaveRequest) {
+    return this.http.post<AvailableCustomerPricesResponse>(
+      this.baseUrl + '/GetAvailableCustomerPrices',
+      JSON.stringify(model),
+      {
+        headers: { 'content-type': 'application/json' },
+        withCredentials: true,
+      }
     );
   }
 

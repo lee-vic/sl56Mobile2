@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Problem } from '../interfaces/problem';
+import { Problem, ProblemCompleteResponse } from '../interfaces/problem';
 import { apiUrl } from '../global';
 
 @Injectable({
@@ -60,7 +60,7 @@ export class ProblemService {
   complete(model) {
     let data = JSON.stringify(model);
     console.log(data);
-    let seq = this.http.post<any>(apiUrl + "/Problem/Complete", data, {
+    let seq = this.http.post<ProblemCompleteResponse>(apiUrl + "/Problem/Complete", data, {
       headers: {
         "content-type": "application/json",
       },

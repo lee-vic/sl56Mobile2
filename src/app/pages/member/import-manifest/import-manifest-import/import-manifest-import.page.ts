@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { AlertController, NavController, ToastController } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
 import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
 import {
+  AvailableCustomerPriceItem,
   BatteryModelOption,
   DropdownOption,
+  ImportManifestSaveRequest,
   ImportPreviewRow,
   ImportRowModel,
   ImportRowsValidationResult,
@@ -61,6 +63,12 @@ export class ImportManifestImportPage implements OnInit {
   batchDutyValue: boolean | null = null;
 
   editingRow: ImportPreviewUiRow | null = null;
+  availableEditPrices: DropdownOption[] = [];
+  isEditPriceLoading = false;
+  editPriceMessage = '';
+  editPriceMessageIsError = false;
+  private editPriceReloadTimer: any = null;
+  private editPriceRequestSeq = 0;
   errorCursor = -1;
 
   constructor(
@@ -219,6 +227,159 @@ export class ImportManifestImportPage implements OnInit {
     }, 80);
   }
 
+  private getCurrentPriceOption(code: string): DropdownOption | null {
+    const normalizedCode = (code || '').trim().toUpperCase();
+    if (!normalizedCode) return null;
+    const existing = this.priceOptions.find((p) => (p.Code || '').toUpperCase() === normalizedCode);
+    if (existing) return existing;
+    return { Id: 0, Code: normalizedCode, Name: normalizedCode };
+  }
+
+  private mapAvailablePriceItem(item: AvailableCustomerPriceItem): DropdownOption | null {
+    const code = ((item.value || item.Value || '') as string).trim().toUpperCase();
+    if (!code) return null;
+
+    const text = ((item.text || item.Text || code) as string).trim();
+    const codePrefix = code + '-';
+    const name = text.toUpperCase().indexOf(codePrefix) === 0
+      ? text.substring(codePrefix.length)
+      : text;
+
+    return { Id: 0, Code: code, Name: name || code };
+  }
+
+  private hasRequiredEditPriceParams(model: Partial<ImportPreviewRow> | undefined): boolean {
+    if (!model) return false;
+    const piece = Number(model.Piece);
+    const weight = Number(model.Weight);
+    const contentType = Number(model.ContentType);
+    return !!Number(model.CountryId) && piece > 0 && weight > 0 && (contentType === 0 || contentType === 1);
+  }
+
+  private buildEditPriceRequest(): ImportManifestSaveRequest | null {
+    const model = this.editingRow?.EditModel;
+    if (!model) return null;
+
+    const rawDeclaredValue = model.DeclaredValue as any;
+    const declaredValue = rawDeclaredValue === null || rawDeclaredValue === undefined || rawDeclaredValue === ''
+      ? undefined
+      : Number(rawDeclaredValue);
+
+    return {
+      ObjectNo: (model.ObjectNo || '').trim().toUpperCase(),
+      CountryId: Number(model.CountryId) || 0,
+      CustomerPriceName: (model.CustomerPriceName || '').trim().toUpperCase(),
+      Piece: Number(model.Piece) || 0,
+      Weight: Number(model.Weight) || 0,
+      ContentType: Number(model.ContentType),
+      PostalCode: (model.PostalCode || '').trim(),
+      DeclaredValue: Number.isFinite(declaredValue as number) ? declaredValue : undefined,
+      CustomerExpressNo: (model.CustomerExpressNo || '').trim(),
+      RequiresSeparateCustomsDeclaration: !!model.RequiresSeparateCustomsDeclaration || !!model.RequiresSpecialVatInvoice,
+      RequiresDutiesAndTaxesPrepayment: !!model.RequiresDutiesAndTaxesPrepayment,
+      RequiresSpecialVatInvoice: !!model.RequiresSpecialVatInvoice,
+      BatteryModel: (model.BatteryModel || '').trim().toUpperCase(),
+    };
+  }
+
+  private setEditPriceMessage(message: string, isError = false) {
+    this.editPriceMessage = message || '';
+    this.editPriceMessageIsError = !!isError;
+  }
+
+  private resetEditPriceOptions(message: string, isError = true) {
+    this.availableEditPrices = [];
+    if (this.editingRow?.EditModel) {
+      this.editingRow.EditModel.CustomerPriceName = '';
+    }
+    this.setEditPriceMessage(message, isError);
+  }
+
+  private cancelEditPriceReload() {
+    if (this.editPriceReloadTimer) {
+      clearTimeout(this.editPriceReloadTimer);
+      this.editPriceReloadTimer = null;
+    }
+    this.editPriceRequestSeq++;
+    this.isEditPriceLoading = false;
+  }
+
+  scheduleEditPriceReload(delay = 300) {
+    if (!this.editingRow?.EditModel) return;
+    if (this.editPriceReloadTimer) {
+      clearTimeout(this.editPriceReloadTimer);
+    }
+
+    if (this.hasRequiredEditPriceParams(this.editingRow.EditModel)) {
+      this.isEditPriceLoading = true;
+      this.setEditPriceMessage('报价计算中...', false);
+    } else {
+      this.isEditPriceLoading = false;
+    }
+
+    this.editPriceReloadTimer = setTimeout(() => {
+      this.editPriceReloadTimer = null;
+      this.loadEditAvailablePrices();
+    }, delay);
+  }
+
+  private loadEditAvailablePrices() {
+    const request = this.buildEditPriceRequest();
+    if (!request || !this.editingRow?.EditModel) return;
+
+    if (!this.hasRequiredEditPriceParams(this.editingRow.EditModel)) {
+      this.editPriceRequestSeq++;
+      this.isEditPriceLoading = false;
+      this.resetEditPriceOptions('请先填写目的国、件数、重量和货物类型');
+      return;
+    }
+
+    const requestSeq = ++this.editPriceRequestSeq;
+    const previousCode = (this.editingRow.EditModel.CustomerPriceName || '').trim().toUpperCase();
+    this.isEditPriceLoading = true;
+    this.setEditPriceMessage('报价计算中...', false);
+
+    this.service.getAvailableCustomerPrices(request).subscribe({
+      next: (res) => {
+        if (requestSeq !== this.editPriceRequestSeq || !this.editingRow?.EditModel) return;
+
+        if (!res || res.success === false || res.Success === false) {
+          this.resetEditPriceOptions(res?.message || res?.Message || '报价计算失败，请稍后重试');
+          return;
+        }
+
+        const rawItems = res.items || res.Items || [];
+        const items = rawItems
+          .map((item) => this.mapAvailablePriceItem(item))
+          .filter((item): item is DropdownOption => !!item);
+
+        if (items.length === 0) {
+          this.resetEditPriceOptions(res.message || res.Message || '未计算到可用报价，请调整预报数据');
+          return;
+        }
+
+        this.availableEditPrices = items;
+        const isPreviousAvailable = !!previousCode && items.some((p) => p.Code.toUpperCase() === previousCode);
+        if (isPreviousAvailable) {
+          this.editingRow.EditModel.CustomerPriceName = previousCode;
+          this.setEditPriceMessage('', false);
+        } else {
+          this.editingRow.EditModel.CustomerPriceName = '';
+          this.setEditPriceMessage(previousCode ? '原报价不在当前可用报价中，请重新选择报价' : '', !!previousCode);
+        }
+      },
+      error: () => {
+        if (requestSeq !== this.editPriceRequestSeq) return;
+        this.resetEditPriceOptions('报价计算失败，请稍后重试');
+      },
+      complete: () => {
+        if (requestSeq === this.editPriceRequestSeq) {
+          this.isEditPriceLoading = false;
+        }
+      },
+    });
+  }
+
   startEdit(row: ImportPreviewUiRow) {
     if (this.editingRow && this.editingRow !== row) {
       this.cancelEdit(this.editingRow);
@@ -226,17 +387,29 @@ export class ImportManifestImportPage implements OnInit {
     row.IsEditing = true;
     row.EditModel = { ...row };
     this.editingRow = row;
+    const currentPrice = this.getCurrentPriceOption(row.CustomerPriceName);
+    this.availableEditPrices = currentPrice ? [currentPrice] : [];
+    this.setEditPriceMessage('', false);
+    this.scheduleEditPriceReload(0);
   }
 
   cancelEdit(row: ImportPreviewUiRow) {
+    this.cancelEditPriceReload();
     row.IsEditing = false;
     row.EditModel = undefined;
+    this.availableEditPrices = [];
+    this.setEditPriceMessage('', false);
     if (this.editingRow === row) {
       this.editingRow = null;
     }
   }
 
   saveRowEdit(row: ImportPreviewUiRow) {
+    if (this.isEditPriceLoading) {
+      this.showToast('报价仍在计算中，请稍后再保存');
+      return;
+    }
+
     Object.assign(row, row.EditModel || row, {
       IsEditing: false,
       IsDirty: true,
@@ -244,6 +417,8 @@ export class ImportManifestImportPage implements OnInit {
     });
     row.ContentTypeName = this.domain.getContentTypeName(row.ContentType);
     this.editingRow = null;
+    this.availableEditPrices = [];
+    this.setEditPriceMessage('', false);
     this.validatePreviewRows();
   }
 
@@ -402,7 +577,10 @@ export class ImportManifestImportPage implements OnInit {
     this.saveResult = null;
     this.batchMode = null;
     this.isBatchSheetOpen = false;
+    this.cancelEditPriceReload();
     this.editingRow = null;
+    this.availableEditPrices = [];
+    this.setEditPriceMessage('', false);
     this.activeErrorCategory = '';
     this.errorCursor = -1;
     this.recalculateSummary();

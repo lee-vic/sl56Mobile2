@@ -886,6 +886,25 @@
   gap: 8px;
 }
 
+.edit-price-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: -2px 2px 2px;
+  color: #6e87a8;
+  font-size: 0.76rem;
+  font-weight: 700;
+
+  ion-spinner {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.edit-price-status-error {
+  color: var(--member-accent-danger, #ff4d4f);
+}
+
 .edit-toggles {
   display: grid;
   gap: 6px;
@@ -971,6 +990,11 @@
   font-size: 0.92rem;
   font-weight: 800;
   box-shadow: 0 8px 20px rgba(11, 97, 189, 0.22);
+
+  &:disabled {
+    opacity: 0.55;
+    box-shadow: none;
+  }
 }
 
 .batch-field-segment {

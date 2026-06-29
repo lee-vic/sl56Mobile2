@@ -145,6 +145,23 @@ async function setupImportManifestRoutes(page: any) {
       return;
     }
 
+    // Dynamic available customer prices
+    if (url.includes(`${importManifestBase}/GetAvailableCustomerPrices`)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: '',
+          items: [
+            { value: 'PRICE01', text: 'PRICE01-Price A' },
+            { value: 'PRICE02', text: 'PRICE02-Price B' },
+          ],
+        }),
+      });
+      return;
+    }
+
     // Attachment types
     if (url.includes(`${importManifestBase}/GetAttachmentTypes`)) {
       await route.fulfill({
@@ -392,16 +409,17 @@ test.describe('import manifest form page', () => {
     const countryItem = page.locator('.autocomplete-result-list ion-item').first();
     await countryItem.click();
 
-    // Type price code in second searchbar and press Enter
-    const priceSearchbar = page.locator('ion-searchbar').last();
-    await priceSearchbar.locator('input').fill('PRICE01');
-    await priceSearchbar.locator('input').press('Enter');
-
     // Fill piece count
     await page.locator('ion-input[formControlName="Piece"] input').fill('5');
 
     // Select content type (WPX)
     await page.locator('.ct-card').last().click();
+
+    // Type price code in second searchbar and press Enter
+    const priceSearchbar = page.locator('ion-searchbar').last();
+    await expect(priceSearchbar).not.toBeDisabled();
+    await priceSearchbar.locator('input').fill('PRICE01');
+    await priceSearchbar.locator('input').press('Enter');
 
     // Click save
     await page.locator('ion-buttons[slot="end"] ion-button').click();

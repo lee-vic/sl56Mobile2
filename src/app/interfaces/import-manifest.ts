@@ -5,6 +5,7 @@
     ModeOfTransportName: string;
     CustomerPriceName: string;
     Piece: number;
+    Weight: number;
     ContentTypeName: string;
     ContentType: number;
     PostalCode: string;
@@ -41,6 +42,7 @@ export interface ImportManifestDetail {
     Status: number;
     StatusName: string;
     Piece: number;
+    Weight: number;
     PostalCode: string;
     ContentType: number;
     ContentTypeName: string;
@@ -66,6 +68,7 @@ export interface ImportManifestSaveRequest {
     CountryId: number;
     CustomerPriceName: string;
     Piece: number;
+    Weight: number;
     ContentType: number;
     PostalCode?: string;
     DeclaredValue?: number;
@@ -86,6 +89,7 @@ export interface ImportPreviewRow {
     CountryId: number;
     CustomerPriceName: string;
     Piece: number;
+    Weight: number;
     ContentType: number;
     ContentTypeName: string;
     PostalCode: string;
@@ -128,6 +132,7 @@ export interface ImportRowModel {
     CountryId: number;
     CustomerPriceName: string;
     Piece: number;
+    Weight: number;
     ContentType: number;
     PostalCode?: string;
     CustomerExpressNo?: string;
@@ -159,6 +164,22 @@ export interface ImportManifestActionResult {
     Success: boolean;
     ErrMsg: string;
     Data?: any;
+}
+
+export interface AvailableCustomerPriceItem {
+    value?: string;
+    text?: string;
+    Value?: string;
+    Text?: string;
+}
+
+export interface AvailableCustomerPricesResponse {
+    success?: boolean;
+    message?: string;
+    items?: AvailableCustomerPriceItem[];
+    Success?: boolean;
+    Message?: string;
+    Items?: AvailableCustomerPriceItem[];
 }
 
 export interface BulkDeleteRequest {

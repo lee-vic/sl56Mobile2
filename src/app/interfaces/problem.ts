@@ -43,3 +43,13 @@ interface ProblemProcessType3ResultModel{
 interface ProblemProcessType4ResultModel{
     Values:Array<string>
 }
+
+//问题件处理完成响应（兼容新旧格式）
+export interface ProblemCompleteResponse {
+    Result?: boolean;
+    Success?: boolean;
+    Message?: string;
+    message?: string;
+    Messages?: string[];
+    ErrorId?: string;
+}

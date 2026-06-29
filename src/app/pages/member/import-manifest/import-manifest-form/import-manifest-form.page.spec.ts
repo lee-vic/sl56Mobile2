@@ -1,5 +1,5 @@
 ﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -89,6 +89,7 @@ describe('ImportManifestFormPage', () => {
     const sSpy = jasmine.createSpyObj('ImportManifestService', [
       'getCountryOptions',
       'getCustomerPriceOptions',
+      'getAvailableCustomerPrices',
       'getAttachmentTypes',
       'getBatteryModelOptions',
       'getDetail',
@@ -140,6 +141,11 @@ describe('ImportManifestFormPage', () => {
 
     serviceSpy.getCountryOptions.and.returnValue(of(mockCountryOptions));
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(mockPriceOptions));
+    serviceSpy.getAvailableCustomerPrices.and.returnValue(of({
+      success: true,
+      message: '',
+      items: [{ Value: 'PRICE01', Text: 'PRICE01-报价一' }],
+    }));
     serviceSpy.getAttachmentTypes.and.returnValue(of(mockAttachmentTypes));
     serviceSpy.getBatteryModelOptions.and.returnValue(of([]));
     serviceSpy.getForwardingDocuments.and.returnValue(of({ success: true, rows: [] }));
@@ -174,10 +180,11 @@ describe('ImportManifestFormPage', () => {
   });
 
   // ── 3. loadDropdowns ──
-  it('should load country and price options on init', () => {
+  it('should load country options and defer price options until calculation', () => {
     fixture.detectChanges();
     expect(component.countryOptions.length).toBe(2);
-    expect(component.priceOptions.length).toBe(1);
+    expect(serviceSpy.getCustomerPriceOptions).not.toHaveBeenCalled();
+    expect(component.priceOptions.length).toBe(0);
   });
 
   // ── 4. Form validation - required fields ──
@@ -620,11 +627,11 @@ describe('ImportManifestFormPage', () => {
   });
 
   // ── 37. fillForm sets priceInput when no match ──
-  it('fillForm should fallback to raw CustomerPriceName when no match', () => {
+  it('fillForm should keep raw CustomerPriceName for dynamic price echo', () => {
     fixture.detectChanges();
     component.priceOptions = [{ Id: 1, Code: 'OTHER', Name: '其他' }];
     component.fillForm(mockDetail);
-    expect(component.selectedPrice).toBeNull();
+    expect(component.selectedPrice?.Code).toBe('PRICE01');
     expect(component.priceInput).toBe('PRICE01');
   });
 
@@ -847,4 +854,42 @@ describe('ImportManifestFormPage', () => {
     expect(component.selectedPrice).toBeNull();
     expect(component.hasPriceValidationError).toBe(true);
   });
+
+  it('should dynamically load available prices after forecast params are complete', fakeAsync(() => {
+    fixture.detectChanges();
+
+    component.form.patchValue({
+      CountryId: 1,
+      Piece: 2,
+      ContentType: 1,
+    });
+    tick(300);
+
+    expect(serviceSpy.getAvailableCustomerPrices).toHaveBeenCalled();
+    expect(component.priceOptions.length).toBe(1);
+    expect(component.priceOptions[0].Code).toBe('PRICE01');
+  }));
+
+  it('should clear selected price when latest available prices do not include it', fakeAsync(() => {
+    fixture.detectChanges();
+    serviceSpy.getAvailableCustomerPrices.and.returnValue(of({
+      success: true,
+      message: '',
+      items: [{ Value: 'PRICE02', Text: 'PRICE02-报价二' }],
+    }));
+
+    component.selectedPrice = { Id: 1, Code: 'PRICE01', Name: '报价一' };
+    component.priceInput = 'PRICE01';
+    component.form.patchValue({
+      CountryId: 1,
+      CustomerPriceName: 'PRICE01',
+      Piece: 2,
+      ContentType: 1,
+    });
+    tick(300);
+
+    expect(component.selectedPrice).toBeNull();
+    expect(component.form.get('CustomerPriceName')?.value).toBeNull();
+    expect(component.priceMessage).toContain('原报价不在当前可用报价中');
+  }));
 });

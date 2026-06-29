@@ -10,6 +10,7 @@ import {
   ImportManifestSaveRequest,
   ParseImportResponse,
   ImportManifestActionResult,
+  AvailableCustomerPricesResponse,
   BulkDeleteResult,
   DropdownOption,
   AttachmentTypeOption,
@@ -339,6 +340,40 @@ describe('ImportManifestService', () => {
     const req = httpMock.expectOne(baseUrl + '/GetCustomerPriceOptions');
     expect(req.request.method).toBe('GET');
     req.flush([]);
+  });
+
+  it('getAvailableCustomerPrices should POST forecast params as JSON', () => {
+    const request: ImportManifestSaveRequest = {
+      ObjectNo: 'NEW001',
+      CountryId: 10,
+      CustomerPriceName: '',
+      Piece: 2,
+      ContentType: 1,
+      PostalCode: '90001',
+      DeclaredValue: 100,
+      CustomerExpressNo: '',
+      RequiresSeparateCustomsDeclaration: false,
+      RequiresDutiesAndTaxesPrepayment: false,
+      RequiresSpecialVatInvoice: false,
+      BatteryModel: '',
+    };
+    const response: AvailableCustomerPricesResponse = {
+      success: true,
+      message: '',
+      items: [{ value: 'PRICE01', text: 'PRICE01-报价一' }],
+    };
+
+    service.getAvailableCustomerPrices(request).subscribe((res) => {
+      expect(res.success).toBe(true);
+      expect(res.items?.[0].value).toBe('PRICE01');
+    });
+
+    const req = httpMock.expectOne(baseUrl + '/GetAvailableCustomerPrices');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.headers.get('content-type')).toBe('application/json');
+    expect(req.request.body).toBe(JSON.stringify(request));
+    req.flush(response);
   });
 
   // ── validateObjectNo ──

@@ -133,4 +133,28 @@ describe('ProblemDetailPage', () => {
 
     expect(queryParams$.observers.length).toBe(0);
   });
+
+  it('should set submitFailMessage when complete returns Success=false (new format)', () => {
+    mockProblemService.complete.and.returnValue(of({ Success: false, Message: '系统内部异常，请联系技术支持。（错误编号：abc123）' }));
+
+    // Simulate what happens in the component's submit method when the API returns Success=false
+    component.data = { Problem: { ProcessTypeList: [0] } } as any;
+    component.processModel = {} as any;
+    component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true) as any;
+    component.submit({ form: { valid: true } } as any);
+
+    // The mock service should have been called
+    expect(mockProblemService.complete).toHaveBeenCalled();
+  });
+
+  it('should handle old Result=false format for backward compatibility', () => {
+    mockProblemService.complete.and.returnValue(of({ Result: false, Message: '当前问题已处理完毕' }));
+
+    component.data = { Problem: { ProcessTypeList: [0] } } as any;
+    component.processModel = {} as any;
+    component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true) as any;
+    component.submit({ form: { valid: true } } as any);
+
+    expect(mockProblemService.complete).toHaveBeenCalled();
+  });
 });

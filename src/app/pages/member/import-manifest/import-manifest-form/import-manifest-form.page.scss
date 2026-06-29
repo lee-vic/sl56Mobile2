@@ -1,4 +1,4 @@
-.manifest-header {
+﻿.manifest-header {
   ion-toolbar {
     --background: rgba(247, 251, 255, 0.9);
     backdrop-filter: blur(12px);
@@ -370,6 +370,25 @@
   margin-top: 4px;
   font-size: 0.74rem;
   color: #8a9ec0;
+}
+
+.price-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.76rem;
+  color: #8a9ec0;
+
+  ion-spinner {
+    width: 14px;
+    height: 14px;
+    color: var(--member-brand-500, #0b61bd);
+  }
+}
+
+.price-status-error {
+  color: var(--member-accent-danger, #ff4d4f);
 }
 
 /* ── Toggle Row ── */

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, NavController, LoadingController, ToastController } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
-import { ImportManifestDetail, DropdownOption, AttachmentTypeOption, BatteryModelOption, ForwardingDocumentItem } from 'src/app/interfaces/import-manifest';
+import { AvailableCustomerPriceItem, ImportManifestDetail, DropdownOption, AttachmentTypeOption, BatteryModelOption, ForwardingDocumentItem, ImportManifestSaveRequest } from 'src/app/interfaces/import-manifest';
 import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
 import { forkJoin } from 'rxjs';
 
@@ -21,9 +21,8 @@ export class ImportManifestFormPage implements OnInit {
   isUploading: boolean = false;
   isSaving: boolean = false;
   readonly skeletonFormCards = [
-    { fields: ['input', 'input', 'input', 'input', 'contentType'], attachments: false },
-    { fields: ['input', 'input', 'textarea'], attachments: false },
-    { fields: ['toggle', 'toggle', 'toggle', 'input'], attachments: false },
+    { fields: ['input', 'input', 'input', 'contentType', 'input', 'input', 'input', 'toggle', 'toggle', 'toggle', 'input'], attachments: false },
+    { fields: ['textarea'], attachments: false },
     { fields: ['attachmentUpload'], attachments: true },
   ];
 
@@ -39,7 +38,16 @@ export class ImportManifestFormPage implements OnInit {
   priceInput: string = '';
   showPriceList: boolean = false;
   hasPriceValidationError: boolean = false;
+  isPriceLoading: boolean = false;
+  priceMessage: string = '';
+  priceMessageIsError: boolean = false;
   showSpecialVat: boolean = false;
+  private appliedRequiresSeparateCustomsDeclaration: boolean = false;
+  private appliedRequiresSpecialVatInvoice: boolean = false;
+  private initialPriceCode: string = '';
+  private originalPriceCode: string = '';
+  private priceCalculationTimer: ReturnType<typeof setTimeout> | null = null;
+  private priceCalculationRequestNo: number = 0;
 
   // Attachments
   attachmentTypes: AttachmentTypeOption[] = [];
@@ -68,6 +76,7 @@ export class ImportManifestFormPage implements OnInit {
       CountryId: [null, [Validators.required]],
       CustomerPriceName: ['', [Validators.required]],
       Piece: [null, [Validators.required, Validators.min(1), Validators.max(9999)]],
+      Weight: [null, [Validators.required, Validators.min(0.01)]],
       ContentType: [1, [Validators.required]],
       PostalCode: ['', [Validators.maxLength(16)]],
       DeclaredValue: [null],
@@ -89,15 +98,14 @@ export class ImportManifestFormPage implements OnInit {
     // Load dropdowns first, then detail (so countryOptions is available for fillForm)
     forkJoin([
       this.service.getCountryOptions(),
-      this.service.getCustomerPriceOptions(),
       this.service.getAttachmentTypes(),
       this.service.getBatteryModelOptions(),
     ]).subscribe({
-      next: ([countries, prices, attachTypes, batteryModels]) => {
+      next: ([countries, attachTypes, batteryModels]) => {
         this.countryOptions = countries || [];
         this.countrySearch = this.countryOptions;
-        this.priceOptions = prices || [];
-        this.priceSearch = this.priceOptions;
+        this.priceOptions = [];
+        this.priceSearch = [];
         this.attachmentTypes = attachTypes || [];
         this.batteryModelOptions = batteryModels || [];
         // Default to first attachment type
@@ -109,6 +117,8 @@ export class ImportManifestFormPage implements OnInit {
           this.loadDetail(this.id);
         } else {
           this.isInitializing = false;
+          this.resetCustomerPriceOptions('请先填写目的国、件数、重量和货物类型', true);
+          this.scheduleAvailablePriceReload(0);
         }
       },
       error: () => {
@@ -127,12 +137,18 @@ export class ImportManifestFormPage implements OnInit {
 
     // Show/hide special VAT invoice when separate customs changes
     this.form.get('RequiresSeparateCustomsDeclaration')?.valueChanges.subscribe((val) => {
-      this.applyCustomsState(!!val, !!this.form.get('RequiresSpecialVatInvoice')?.value, true);
+      if (this.applyCustomsState(!!val, !!this.form.get('RequiresSpecialVatInvoice')?.value, true)) {
+        this.scheduleAvailablePriceReload();
+      }
     });
 
     this.form.get('RequiresSpecialVatInvoice')?.valueChanges.subscribe((val) => {
-      this.applyCustomsState(!!this.form.get('RequiresSeparateCustomsDeclaration')?.value, !!val, false);
+      if (this.applyCustomsState(!!this.form.get('RequiresSeparateCustomsDeclaration')?.value, !!val, false)) {
+        this.scheduleAvailablePriceReload();
+      }
     });
+
+    this.watchPriceCalculationInputs();
   }
 
   loadDetail(id: number) {
@@ -143,6 +159,8 @@ export class ImportManifestFormPage implements OnInit {
           this.isReadonly = true;
           this.readonlyStatusName = this.domain.getCustomerStatusNameByCode(detail.Status, detail.StatusName);
           this.form.disable();
+        } else {
+          this.scheduleAvailablePriceReload(0);
         }
         this.isInitializing = false;
       },
@@ -159,15 +177,20 @@ export class ImportManifestFormPage implements OnInit {
     const matched = this.countryOptions.find((c) => c.Id === detail.CountryId) || null;
     this.selectedCountry = matched;
     this.countryInput = matched ? `${matched.Name} (${matched.Code})` : '';
-    // Set selected price for autocomplete display
-    const matchedPrice = this.priceOptions.find((p) => p.Code === detail.CustomerPriceName) || null;
-    this.selectedPrice = matchedPrice;
-    this.priceInput = matchedPrice ? matchedPrice.Code : (detail.CustomerPriceName || '');
+    this.initialPriceCode = detail.CustomerPriceName || '';
+    this.originalPriceCode = this.initialPriceCode;
+    this.selectedPrice = this.initialPriceCode
+      ? { Id: 0, Code: this.initialPriceCode, Name: this.initialPriceCode }
+      : null;
+    this.priceOptions = this.selectedPrice ? [this.selectedPrice] : [];
+    this.priceSearch = this.priceOptions;
+    this.priceInput = this.initialPriceCode;
     this.form.patchValue({
       ObjectNo: detail.ObjectNo,
       CountryId: detail.CountryId,
       CustomerPriceName: detail.CustomerPriceName,
       Piece: detail.Piece,
+      Weight: detail.Weight,
       ContentType: detail.ContentType,
       PostalCode: detail.PostalCode || '',
       DeclaredValue: detail.DeclaredValue,
@@ -177,6 +200,8 @@ export class ImportManifestFormPage implements OnInit {
       RequiresSpecialVatInvoice: detail.RequiresSpecialVatInvoice,
       BatteryModel: detail.BatteryModel || '',
     }, { emitEvent: false });
+    this.appliedRequiresSeparateCustomsDeclaration = !!detail.RequiresSeparateCustomsDeclaration;
+    this.appliedRequiresSpecialVatInvoice = !!detail.RequiresSpecialVatInvoice;
 
     // Load existing forwarding documents
     if (detail.ObjectId) {
@@ -220,6 +245,191 @@ export class ImportManifestFormPage implements OnInit {
         }
       },
     });
+  }
+
+  private watchPriceCalculationInputs() {
+    [
+      'Piece',
+      'Weight',
+      'ContentType',
+      'PostalCode',
+      'DeclaredValue',
+      'RequiresDutiesAndTaxesPrepayment',
+      'BatteryModel',
+    ].forEach((controlName) => {
+      this.form.get(controlName)?.valueChanges.subscribe(() => {
+        this.scheduleAvailablePriceReload();
+      });
+    });
+  }
+
+  private scheduleAvailablePriceReload(delay: number = 300) {
+    if (this.isReadonly) {
+      return;
+    }
+
+    if (this.priceCalculationTimer) {
+      clearTimeout(this.priceCalculationTimer);
+    }
+
+    if (this.hasRequiredPriceCalculationParams()) {
+      this.isPriceLoading = true;
+      this.setPriceMessage('报价计算中...', false);
+    } else {
+      this.isPriceLoading = false;
+    }
+
+    this.priceCalculationTimer = setTimeout(() => {
+      this.loadAvailableCustomerPrices();
+    }, delay);
+  }
+
+  private hasRequiredPriceCalculationParams(): boolean {
+    const countryId = this.form.get('CountryId')?.value;
+    const piece = Number(this.form.get('Piece')?.value || 0);
+    const weight = Number(this.form.get('Weight')?.value || 0);
+    const contentType = this.form.get('ContentType')?.value;
+    return !!countryId && piece > 0 && weight > 0 && contentType !== null && contentType !== undefined && contentType !== '';
+  }
+
+  private getPriceCalculationPayload(): ImportManifestSaveRequest {
+    const formValue = this.form.getRawValue();
+    return {
+      ObjectNo: formValue.ObjectNo || '',
+      CountryId: formValue.CountryId,
+      CustomerPriceName: formValue.CustomerPriceName || '',
+      Piece: formValue.Piece,
+      Weight: formValue.Weight,
+      ContentType: formValue.ContentType,
+      PostalCode: formValue.PostalCode || '',
+      DeclaredValue: formValue.DeclaredValue || null,
+      CustomerExpressNo: formValue.CustomerExpressNo || '',
+      RequiresSeparateCustomsDeclaration: formValue.RequiresSeparateCustomsDeclaration || false,
+      RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
+      RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
+      BatteryModel: formValue.BatteryModel || '',
+    };
+  }
+
+  private loadAvailableCustomerPrices() {
+    if (this.isReadonly) {
+      return;
+    }
+
+    if (!this.hasRequiredPriceCalculationParams()) {
+      this.priceCalculationRequestNo++;
+      this.isPriceLoading = false;
+      this.resetCustomerPriceOptions('请先填写目的国、件数、重量和货物类型', true);
+      return;
+    }
+
+    const requestNo = ++this.priceCalculationRequestNo;
+    const previousCode = this.selectedPrice?.Code || this.form.get('CustomerPriceName')?.value || this.initialPriceCode || this.originalPriceCode || '';
+    this.isPriceLoading = true;
+    this.setPriceMessage('报价计算中...', false);
+
+    this.service.getAvailableCustomerPrices(this.getPriceCalculationPayload()).subscribe({
+      next: (res) => {
+        if (requestNo !== this.priceCalculationRequestNo) {
+          return;
+        }
+
+        const success = res && res.success !== false && res.Success !== false;
+        const items = (res && (res.items || res.Items)) || [];
+
+        if (!success) {
+          this.resetCustomerPriceOptions((res && (res.message || res.Message)) || '报价计算失败，请稍后重试', true);
+          return;
+        }
+
+        if (items.length === 0) {
+          this.resetCustomerPriceOptions((res && (res.message || res.Message)) || '未计算到可用报价，请调整预报数据', true);
+          return;
+        }
+
+        this.renderAvailablePriceOptions(items, previousCode);
+        this.initialPriceCode = '';
+      },
+      error: () => {
+        if (requestNo !== this.priceCalculationRequestNo) {
+          return;
+        }
+        this.isPriceLoading = false;
+        this.resetCustomerPriceOptions('报价计算失败，请稍后重试', true);
+      },
+      complete: () => {
+        if (requestNo === this.priceCalculationRequestNo) {
+          this.isPriceLoading = false;
+        }
+      },
+    });
+  }
+
+  private renderAvailablePriceOptions(items: AvailableCustomerPriceItem[], previousCode: string) {
+    const selectedCode = (previousCode || '').trim().toUpperCase();
+    const originalCode = (this.originalPriceCode || '').trim().toUpperCase();
+    const candidateCodes = [selectedCode];
+    if (originalCode && originalCode !== selectedCode) {
+      candidateCodes.push(originalCode);
+    }
+
+    this.priceOptions = items
+      .map((item, index) => this.toDropdownOption(item, index))
+      .filter((item) => !!item.Code);
+    this.priceSearch = this.priceOptions;
+
+    const selected = candidateCodes
+      .filter((code) => !!code)
+      .map((code) => this.priceOptions.find((item) => item.Code.toUpperCase() === code) || null)
+      .find((item) => !!item) || null;
+
+    if (selected) {
+      this.setSelectedPrice(selected);
+      this.setPriceMessage('', false);
+      return;
+    }
+
+    this.clearSelectedPrice();
+    if (originalCode && !this.priceOptions.some((item) => item.Code.toUpperCase() === originalCode)) {
+      this.setPriceMessage('原报价不在当前可用报价中，请重新选择报价', true);
+    } else {
+      this.setPriceMessage('', false);
+    }
+  }
+
+  private toDropdownOption(item: AvailableCustomerPriceItem, index: number): DropdownOption {
+    const code = (item.value || item.Value || '').trim();
+    const text = (item.text || item.Text || code).trim();
+    const prefix = code + '-';
+    const name = code && text.toUpperCase().startsWith(prefix.toUpperCase())
+      ? text.substring(prefix.length)
+      : text;
+
+    return {
+      Id: index + 1,
+      Code: code,
+      Name: name || code,
+    };
+  }
+
+  private resetCustomerPriceOptions(message: string, isError: boolean) {
+    this.priceOptions = [];
+    this.priceSearch = [];
+    this.clearSelectedPrice();
+    this.setPriceMessage(message, isError);
+  }
+
+  private clearSelectedPrice() {
+    this.priceInput = '';
+    this.selectedPrice = null;
+    this.showPriceList = false;
+    this.hasPriceValidationError = false;
+    this.form.get('CustomerPriceName')?.setValue(null, { emitEvent: false });
+  }
+
+  private setPriceMessage(message: string, isError: boolean) {
+    this.priceMessage = message || '';
+    this.priceMessageIsError = !!isError;
   }
 
   // ========== ContentType Toggle ==========
@@ -327,11 +537,13 @@ export class ImportManifestFormPage implements OnInit {
 
   /** Auto-sync customs declaration flag with attachment type 58 (bidirectional) */
   private syncCustomsDeclarationFlag() {
-    this.applyCustomsState(
+    if (this.applyCustomsState(
       !!this.form.get('RequiresSeparateCustomsDeclaration')?.value,
       !!this.form.get('RequiresSpecialVatInvoice')?.value,
       true
-    );
+    )) {
+      this.scheduleAvailablePriceReload();
+    }
   }
 
   getFileIcon(fileName: string): string {
@@ -401,6 +613,7 @@ export class ImportManifestFormPage implements OnInit {
     this.showCountryList = false;
     this.hasCountryValidationError = false;
     this.form.get('CountryId')?.setValue(null, { emitEvent: false });
+    this.scheduleAvailablePriceReload(0);
   }
 
   selectCountry() {
@@ -437,6 +650,7 @@ export class ImportManifestFormPage implements OnInit {
     this.form.get('CountryId')?.markAsTouched();
     this.selectedCountry = item;
     this.hasCountryValidationError = false;
+    this.scheduleAvailablePriceReload(0);
   }
 
   get isCountryErrorVisible(): boolean {
@@ -540,6 +754,10 @@ export class ImportManifestFormPage implements OnInit {
       (!!this.form.get('CustomerPriceName')?.touched && !this.selectedPrice);
   }
 
+  get isPriceSearchDisabled(): boolean {
+    return this.isReadonly || this.isPriceLoading || !this.hasRequiredPriceCalculationParams() || this.priceOptions.length === 0;
+  }
+
   // ========== Save ==========
 
   async save() {
@@ -548,6 +766,16 @@ export class ImportManifestFormPage implements OnInit {
       const alert = await this.alertCtrl.create({
         header: '文件上传未完成',
         message: '文件仍在上传中，请等待上传完成后再保存',
+        buttons: ['确定'],
+      });
+      await alert.present();
+      return;
+    }
+
+    if (this.isPriceLoading) {
+      const alert = await this.alertCtrl.create({
+        header: '报价仍在计算',
+        message: '请稍后再保存',
         buttons: ['确定'],
       });
       await alert.present();
@@ -589,6 +817,7 @@ export class ImportManifestFormPage implements OnInit {
       CountryId: formValue.CountryId,
       CustomerPriceName: this.selectedPrice?.Code || formValue.CustomerPriceName?.trim().toUpperCase(),
       Piece: formValue.Piece,
+      Weight: formValue.Weight,
       ContentType: formValue.ContentType,
       PostalCode: formValue.PostalCode?.trim() || null,
       DeclaredValue: formValue.DeclaredValue || null,
@@ -644,7 +873,9 @@ export class ImportManifestFormPage implements OnInit {
     await toast.present();
   }
 
-  private applyCustomsState(requestedSeparate: boolean, requestedSpecialVat: boolean, showMessage: boolean) {
+  private applyCustomsState(requestedSeparate: boolean, requestedSpecialVat: boolean, showMessage: boolean): boolean {
+    const previousSeparate = this.appliedRequiresSeparateCustomsDeclaration;
+    const previousSpecialVat = this.appliedRequiresSpecialVatInvoice;
     const state = this.domain.resolveCustomsState(this.attachments, requestedSeparate, requestedSpecialVat);
     this.showSpecialVat = state.showSpecialVat;
 
@@ -654,8 +885,14 @@ export class ImportManifestFormPage implements OnInit {
     if (this.form.get('RequiresSpecialVatInvoice')?.value !== state.requiresSpecialVatInvoice) {
       this.form.get('RequiresSpecialVatInvoice')?.setValue(state.requiresSpecialVatInvoice, { emitEvent: false });
     }
+    this.appliedRequiresSeparateCustomsDeclaration = state.requiresSeparateCustomsDeclaration;
+    this.appliedRequiresSpecialVatInvoice = state.requiresSpecialVatInvoice;
+
     if (showMessage && state.message) {
       this.showToast(state.message);
     }
+
+    return previousSeparate !== state.requiresSeparateCustomsDeclaration ||
+      previousSpecialVat !== state.requiresSpecialVatInvoice;
   }
 }

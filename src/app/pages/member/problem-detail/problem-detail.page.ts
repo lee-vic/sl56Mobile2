@@ -409,15 +409,15 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       this.service.complete(this.processModel).pipe(takeUntil(this.destroy$)).subscribe({
         next: (res) => {
           loading.dismiss();
-          if (res.Result === false) {
-            this.submitFailMessage = res.Message;
+          if (res.Success === false || res.Result === false) {
+            this.submitFailMessage = res.Message || res.message || '提交失败，请稍后重试';
           } else {
             this.data.Problem.Status = 1;
           }
         },
         error: () => {
           loading.dismiss();
-          this.submitFailMessage = '提交失败，请稍后重试';
+          this.submitFailMessage = '系统异常，请稍后重试';
         },
       });
     });

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import {
   AttachmentTypeOption,
   BatteryModelOption,
@@ -271,6 +271,11 @@ export class ImportManifestDomainService {
       errors.push({ Code: 'PIECE_INVALID', Message: '件数必须为正整数' });
     }
 
+    const weight = this.parseNullableNumber(raw.Weight);
+    if (weight === null || weight <= 0) {
+      errors.push({ Code: 'WEIGHT_INVALID', Message: '重量必须为大于 0 的数字' });
+    }
+
     const contentType = this.toNumber(raw.ContentType);
     if (contentType !== 0 && contentType !== 1) {
       errors.push({ Code: 'CONTENT_TYPE_INVALID', Message: '类型必须是文件或包裹' });
@@ -307,6 +312,7 @@ export class ImportManifestDomainService {
       CountryName: country ? country.Name : (raw.CountryName || ''),
       CustomerPriceName: priceCode,
       Piece: piece,
+      Weight: weight || 0,
       ContentType: contentType,
       ContentTypeName: this.getContentTypeName(contentType, raw.ContentTypeName),
       PostalCode: postalCode,
@@ -347,6 +353,7 @@ export class ImportManifestDomainService {
       CountryId: row.CountryId,
       CustomerPriceName: (row.CustomerPriceName || '').trim().toUpperCase(),
       Piece: row.Piece,
+      Weight: row.Weight,
       ContentType: row.ContentType,
       PostalCode: row.PostalCode || '',
       CustomerExpressNo: row.CustomerExpressNo || '',
@@ -376,6 +383,7 @@ export class ImportManifestDomainService {
     if (message.includes('国家') || message.includes('目的国')) return { key: 'country', text: '国家问题' };
     if (message.includes('报价')) return { key: 'price', text: '报价问题' };
     if (message.includes('件数')) return { key: 'piece', text: '件数问题' };
+    if (message.includes('重量')) return { key: 'weight', text: '重量问题' };
     if (message.includes('类型')) return { key: 'contentType', text: '类型问题' };
     if (message.includes('邮编')) return { key: 'postalCode', text: '邮编问题' };
     if (message.includes('申报价值')) return { key: 'declaredValue', text: '申报价值问题' };
