@@ -59,8 +59,9 @@ describe('ImportManifestService', () => {
           ObjectNo: 'TEST001',
           CountryName: '美国',
           ModeOfTransportName: '空运',
-          CustomerPriceName: 'PRICE01',
+          CustomerPriceCode: 'PRICE01',
           Piece: 3,
+          Weight: 1.0,
           ContentTypeName: '包裹',
           ContentType: 1,
           PostalCode: '90001',
@@ -117,10 +118,11 @@ describe('ImportManifestService', () => {
       CountryName: '美国',
       ModeOfTransportId: 1,
       ModeOfTransportName: '空运',
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Status: 0,
       StatusName: '已预报',
       Piece: 3,
+      Weight: 1.5,
       PostalCode: '90001',
       ContentType: 1,
       ContentTypeName: '包裹',
@@ -154,8 +156,9 @@ describe('ImportManifestService', () => {
       ObjectId: null,
       ObjectNo: 'NEW001',
       CountryId: 10,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 5,
+      Weight: 5,
       ContentType: 1,
       PostalCode: '90001',
       DeclaredValue: 200,
@@ -181,8 +184,9 @@ describe('ImportManifestService', () => {
       ObjectId: 5,
       ObjectNo: 'EDIT001',
       CountryId: 20,
-      CustomerPriceName: 'PRICE02',
+      CustomerPriceCode: 'PRICE02',
       Piece: 2,
+      Weight: 2,
       ContentType: 0,
       PostalCode: null,
       DeclaredValue: null,
@@ -259,8 +263,9 @@ describe('ImportManifestService', () => {
       {
         ObjectNo: 'IMP001',
         CountryId: 10,
-        CustomerPriceName: 'PRICE01',
+        CustomerPriceCode: 'PRICE01',
         Piece: 3,
+        Weight: 3,
         ContentType: 1,
         PostalCode: '',
         CustomerExpressNo: '',
@@ -286,8 +291,9 @@ describe('ImportManifestService', () => {
         RowIndex: 0,
         ObjectNo: 'IMP001',
         CountryId: 10,
-        CustomerPriceName: 'PRICE01',
+        CustomerPriceCode: 'PRICE01',
         Piece: 3,
+        Weight: 3,
         ContentType: 1,
         PostalCode: '',
         CustomerExpressNo: '',
@@ -346,8 +352,9 @@ describe('ImportManifestService', () => {
     const request: ImportManifestSaveRequest = {
       ObjectNo: 'NEW001',
       CountryId: 10,
-      CustomerPriceName: '',
+      CustomerPriceCode: '',
       Piece: 2,
+      Weight: 2,
       ContentType: 1,
       PostalCode: '90001',
       DeclaredValue: 100,
@@ -397,16 +404,6 @@ describe('ImportManifestService', () => {
     req.flush({ Success: true, ErrMsg: '' });
   });
 
-  // ── validateCustomerPriceName ──
-  it('validateCustomerPriceName should POST with PriceCode', () => {
-    service.validateCustomerPriceName('PRICE01').subscribe((res) => {
-      expect(res.Success).toBe(true);
-    });
-
-    const req = httpMock.expectOne(baseUrl + '/ValidateCustomerPriceName');
-    expect(req.request.body.PriceCode).toBe('PRICE01');
-    req.flush({ Success: true, ErrMsg: '' });
-  });
 
   // ── downloadTemplate ──
   it('downloadTemplate should GET as blob', () => {

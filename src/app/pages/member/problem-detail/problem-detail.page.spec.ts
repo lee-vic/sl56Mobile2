@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -134,7 +134,7 @@ describe('ProblemDetailPage', () => {
     expect(queryParams$.observers.length).toBe(0);
   });
 
-  it('should set submitFailMessage when complete returns Success=false (new format)', () => {
+  it('should set submitFailMessage when complete returns Success=false (new format)', fakeAsync(() => {
     mockProblemService.complete.and.returnValue(of({ Success: false, Message: '系统内部异常，请联系技术支持。（错误编号：abc123）' }));
 
     // Simulate what happens in the component's submit method when the API returns Success=false
@@ -143,11 +143,13 @@ describe('ProblemDetailPage', () => {
     component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true) as any;
     component.submit({ form: { valid: true } } as any);
 
+    flush();
+
     // The mock service should have been called
     expect(mockProblemService.complete).toHaveBeenCalled();
-  });
+  }));
 
-  it('should handle old Result=false format for backward compatibility', () => {
+  it('should handle old Result=false format for backward compatibility', fakeAsync(() => {
     mockProblemService.complete.and.returnValue(of({ Result: false, Message: '当前问题已处理完毕' }));
 
     component.data = { Problem: { ProcessTypeList: [0] } } as any;
@@ -155,6 +157,8 @@ describe('ProblemDetailPage', () => {
     component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true) as any;
     component.submit({ form: { valid: true } } as any);
 
+    flush();
+
     expect(mockProblemService.complete).toHaveBeenCalled();
-  });
+  }));
 });

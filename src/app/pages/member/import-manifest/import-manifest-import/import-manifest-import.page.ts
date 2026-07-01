@@ -268,7 +268,7 @@ export class ImportManifestImportPage implements OnInit {
     return {
       ObjectNo: (model.ObjectNo || '').trim().toUpperCase(),
       CountryId: Number(model.CountryId) || 0,
-      CustomerPriceName: (model.CustomerPriceName || '').trim().toUpperCase(),
+      CustomerPriceCode: (model.CustomerPriceCode || '').trim().toUpperCase(),
       Piece: Number(model.Piece) || 0,
       Weight: Number(model.Weight) || 0,
       ContentType: Number(model.ContentType),
@@ -290,7 +290,7 @@ export class ImportManifestImportPage implements OnInit {
   private resetEditPriceOptions(message: string, isError = true) {
     this.availableEditPrices = [];
     if (this.editingRow?.EditModel) {
-      this.editingRow.EditModel.CustomerPriceName = '';
+      this.editingRow.EditModel.CustomerPriceCode = '';
     }
     this.setEditPriceMessage(message, isError);
   }
@@ -335,7 +335,7 @@ export class ImportManifestImportPage implements OnInit {
     }
 
     const requestSeq = ++this.editPriceRequestSeq;
-    const previousCode = (this.editingRow.EditModel.CustomerPriceName || '').trim().toUpperCase();
+    const previousCode = (this.editingRow.EditModel.CustomerPriceCode || '').trim().toUpperCase();
     this.isEditPriceLoading = true;
     this.setEditPriceMessage('报价计算中...', false);
 
@@ -361,10 +361,10 @@ export class ImportManifestImportPage implements OnInit {
         this.availableEditPrices = items;
         const isPreviousAvailable = !!previousCode && items.some((p) => p.Code.toUpperCase() === previousCode);
         if (isPreviousAvailable) {
-          this.editingRow.EditModel.CustomerPriceName = previousCode;
+          this.editingRow.EditModel.CustomerPriceCode = previousCode;
           this.setEditPriceMessage('', false);
         } else {
-          this.editingRow.EditModel.CustomerPriceName = '';
+          this.editingRow.EditModel.CustomerPriceCode = '';
           this.setEditPriceMessage(previousCode ? '原报价不在当前可用报价中，请重新选择报价' : '', !!previousCode);
         }
       },
@@ -387,7 +387,7 @@ export class ImportManifestImportPage implements OnInit {
     row.IsEditing = true;
     row.EditModel = { ...row };
     this.editingRow = row;
-    const currentPrice = this.getCurrentPriceOption(row.CustomerPriceName);
+    const currentPrice = this.getCurrentPriceOption(row.CustomerPriceCode);
     this.availableEditPrices = currentPrice ? [currentPrice] : [];
     this.setEditPriceMessage('', false);
     this.scheduleEditPriceReload(0);
@@ -493,7 +493,7 @@ export class ImportManifestImportPage implements OnInit {
           this.showToast('请先选择报价');
           return;
         }
-        row.CustomerPriceName = price.Code;
+        row.CustomerPriceCode = price.Code;
       } else if (this.batchMode === 'contentType') {
         if (this.batchContentType !== 0 && this.batchContentType !== 1) {
           this.showToast('请先选择货物类型');

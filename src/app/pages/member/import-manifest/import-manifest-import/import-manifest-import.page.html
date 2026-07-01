@@ -173,7 +173,7 @@
             <span class="preview-badge" [class.error]="row.HasError">{{ row.HasError ? '错误' : '通过' }}</span>
           </div>
           <p class="preview-meta">
-            {{ row.CountryName || '-' }} · {{ row.CustomerPriceName || '-' }} · {{ row.Piece || 0 }} 件 · {{ row.Weight || '-' }} KG · {{ row.ContentTypeName || '-' }}
+            {{ row.CountryName || '-' }} · {{ row.CustomerPriceCode || '-' }} · {{ row.Piece || 0 }} 件 · {{ row.Weight || '-' }} KG · {{ row.ContentTypeName || '-' }}
             <span *ngIf="row.PostalCode"> · {{ row.PostalCode }}</span>
             <span *ngIf="row.BatteryModel"> · {{ row.BatteryModel }}</span>
           </p>
@@ -230,7 +230,7 @@
         <ion-select label="目的国" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.CountryId" interface="action-sheet" (ionChange)="scheduleEditPriceReload()">
           <ion-select-option *ngFor="let c of countryOptions" [value]="c.Id">{{ c.Code }} {{ c.Name }}</ion-select-option>
         </ion-select>
-        <ion-select label="报价" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.CustomerPriceName" interface="action-sheet" [disabled]="isEditPriceLoading || availableEditPrices.length === 0">
+        <ion-select label="报价" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.CustomerPriceCode" interface="action-sheet" [disabled]="isEditPriceLoading || availableEditPrices.length === 0">
           <ion-select-option *ngFor="let p of availableEditPrices" [value]="p.Code">{{ p.Code }} - {{ p.Name }}</ion-select-option>
         </ion-select>
         <div class="edit-price-status" [class.edit-price-status-error]="editPriceMessageIsError" *ngIf="editPriceMessage">

@@ -74,7 +74,7 @@ export class ImportManifestFormPage implements OnInit {
     this.form = this.fb.group({
       ObjectNo: ['', [Validators.required, Validators.maxLength(32), Validators.pattern('^[A-Z0-9\\-]+$')]],
       CountryId: [null, [Validators.required]],
-      CustomerPriceName: ['', [Validators.required]],
+      CustomerPriceCode: ['', [Validators.required]],
       Piece: [null, [Validators.required, Validators.min(1), Validators.max(9999)]],
       Weight: [null, [Validators.required, Validators.min(0.01)]],
       ContentType: [1, [Validators.required]],
@@ -177,7 +177,7 @@ export class ImportManifestFormPage implements OnInit {
     const matched = this.countryOptions.find((c) => c.Id === detail.CountryId) || null;
     this.selectedCountry = matched;
     this.countryInput = matched ? `${matched.Name} (${matched.Code})` : '';
-    this.initialPriceCode = detail.CustomerPriceName || '';
+    this.initialPriceCode = detail.CustomerPriceCode || '';
     this.originalPriceCode = this.initialPriceCode;
     this.selectedPrice = this.initialPriceCode
       ? { Id: 0, Code: this.initialPriceCode, Name: this.initialPriceCode }
@@ -188,7 +188,7 @@ export class ImportManifestFormPage implements OnInit {
     this.form.patchValue({
       ObjectNo: detail.ObjectNo,
       CountryId: detail.CountryId,
-      CustomerPriceName: detail.CustomerPriceName,
+      CustomerPriceCode: detail.CustomerPriceCode,
       Piece: detail.Piece,
       Weight: detail.Weight,
       ContentType: detail.ContentType,
@@ -233,19 +233,6 @@ export class ImportManifestFormPage implements OnInit {
     });
   }
 
-  async validateCustomerPriceName() {
-    const priceCode = this.form.get('CustomerPriceName')?.value?.trim();
-    if (!priceCode) return;
-
-    this.service.validateCustomerPriceName(priceCode).subscribe({
-      next: (res) => {
-        if (!res.Success) {
-          this.showToast(res.ErrMsg);
-          this.form.get('CustomerPriceName')?.setErrors({ invalid: true });
-        }
-      },
-    });
-  }
 
   private watchPriceCalculationInputs() {
     [
@@ -297,7 +284,7 @@ export class ImportManifestFormPage implements OnInit {
     return {
       ObjectNo: formValue.ObjectNo || '',
       CountryId: formValue.CountryId,
-      CustomerPriceName: formValue.CustomerPriceName || '',
+      CustomerPriceCode: formValue.CustomerPriceCode || '',
       Piece: formValue.Piece,
       Weight: formValue.Weight,
       ContentType: formValue.ContentType,
@@ -324,7 +311,7 @@ export class ImportManifestFormPage implements OnInit {
     }
 
     const requestNo = ++this.priceCalculationRequestNo;
-    const previousCode = this.selectedPrice?.Code || this.form.get('CustomerPriceName')?.value || this.initialPriceCode || this.originalPriceCode || '';
+    const previousCode = this.selectedPrice?.Code || this.form.get('CustomerPriceCode')?.value || this.initialPriceCode || this.originalPriceCode || '';
     this.isPriceLoading = true;
     this.setPriceMessage('报价计算中...', false);
 
@@ -424,7 +411,7 @@ export class ImportManifestFormPage implements OnInit {
     this.selectedPrice = null;
     this.showPriceList = false;
     this.hasPriceValidationError = false;
-    this.form.get('CustomerPriceName')?.setValue(null, { emitEvent: false });
+    this.form.get('CustomerPriceCode')?.setValue(null, { emitEvent: false });
   }
 
   private setPriceMessage(message: string, isError: boolean) {
@@ -666,7 +653,7 @@ export class ImportManifestFormPage implements OnInit {
   }
 
   onPriceBlur() {
-    this.form.get('CustomerPriceName')?.markAsTouched();
+    this.form.get('CustomerPriceCode')?.markAsTouched();
     setTimeout(() => this.selectPrice(), 120);
   }
 
@@ -682,7 +669,7 @@ export class ImportManifestFormPage implements OnInit {
     this.showPriceList = true;
     this.selectedPrice = null;
     this.hasPriceValidationError = false;
-    this.form.get('CustomerPriceName')?.setValue(null, { emitEvent: false });
+    this.form.get('CustomerPriceCode')?.setValue(null, { emitEvent: false });
 
     if (val && val.trim() !== '') {
       const lower = val.toLowerCase();
@@ -710,7 +697,7 @@ export class ImportManifestFormPage implements OnInit {
     this.selectedPrice = null;
     this.showPriceList = false;
     this.hasPriceValidationError = false;
-    this.form.get('CustomerPriceName')?.setValue(null, { emitEvent: false });
+    this.form.get('CustomerPriceCode')?.setValue(null, { emitEvent: false });
   }
 
   selectPrice() {
@@ -743,15 +730,15 @@ export class ImportManifestFormPage implements OnInit {
   private setSelectedPrice(item: DropdownOption) {
     this.showPriceList = false;
     this.priceInput = item.Code;
-    this.form.get('CustomerPriceName')?.setValue(item.Code, { emitEvent: false });
-    this.form.get('CustomerPriceName')?.markAsTouched();
+    this.form.get('CustomerPriceCode')?.setValue(item.Code, { emitEvent: false });
+    this.form.get('CustomerPriceCode')?.markAsTouched();
     this.selectedPrice = item;
     this.hasPriceValidationError = false;
   }
 
   get isPriceErrorVisible(): boolean {
     return this.hasPriceValidationError ||
-      (!!this.form.get('CustomerPriceName')?.touched && !this.selectedPrice);
+      (!!this.form.get('CustomerPriceCode')?.touched && !this.selectedPrice);
   }
 
   get isPriceSearchDisabled(): boolean {
@@ -815,7 +802,7 @@ export class ImportManifestFormPage implements OnInit {
       ObjectId: this.id,
       ObjectNo: formValue.ObjectNo?.trim().toUpperCase(),
       CountryId: formValue.CountryId,
-      CustomerPriceName: this.selectedPrice?.Code || formValue.CustomerPriceName?.trim().toUpperCase(),
+      CustomerPriceCode: this.selectedPrice?.Code || formValue.CustomerPriceCode?.trim().toUpperCase(),
       Piece: formValue.Piece,
       Weight: formValue.Weight,
       ContentType: formValue.ContentType,

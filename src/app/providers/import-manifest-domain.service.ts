@@ -238,7 +238,7 @@ export class ImportManifestDomainService {
   validateImportRow(
     raw: Partial<ImportPreviewRow>,
     countries: DropdownOption[],
-    prices: DropdownOption[],
+    _prices: DropdownOption[],
     rowIndex: number,
     allRows: Partial<ImportPreviewRow>[] = [],
     batteryModels: BatteryModelOption[] = []
@@ -258,12 +258,9 @@ export class ImportManifestDomainService {
       errors.push({ Code: 'COUNTRY_INVALID', Message: '请选择有效目的国' });
     }
 
-    const priceCode = (raw.CustomerPriceName || '').trim().toUpperCase();
-    const price = prices.find((p) => p.Code.toUpperCase() === priceCode);
+    const priceCode = (raw.CustomerPriceCode || '').trim().toUpperCase();
     if (!priceCode) {
       errors.push({ Code: 'PRICE_REQUIRED', Message: '报价代码不能为空' });
-    } else if (!price) {
-      errors.push({ Code: 'PRICE_INVALID', Message: '报价代码无效，请重新选择' });
     }
 
     const piece = this.toNumber(raw.Piece);
@@ -310,7 +307,7 @@ export class ImportManifestDomainService {
       ObjectNo: objectNo,
       CountryId: country ? country.Id : countryId,
       CountryName: country ? country.Name : (raw.CountryName || ''),
-      CustomerPriceName: priceCode,
+      CustomerPriceCode: priceCode,
       Piece: piece,
       Weight: weight || 0,
       ContentType: contentType,
@@ -351,7 +348,7 @@ export class ImportManifestDomainService {
       RowIndex: row.RowIndex,
       ObjectNo: this.normalizeObjectNo(row.ObjectNo),
       CountryId: row.CountryId,
-      CustomerPriceName: (row.CustomerPriceName || '').trim().toUpperCase(),
+      CustomerPriceCode: (row.CustomerPriceCode || '').trim().toUpperCase(),
       Piece: row.Piece,
       Weight: row.Weight,
       ContentType: row.ContentType,

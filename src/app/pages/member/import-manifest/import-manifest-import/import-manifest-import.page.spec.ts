@@ -1,5 +1,5 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController, NavController, ToastController } from '@ionic/angular';
 import { of, throwError } from 'rxjs';
@@ -32,8 +32,9 @@ describe('ImportManifestImportPage', () => {
     ObjectNo: 'TEST001',
     CountryName: '美国',
     CountryId: 1,
-    CustomerPriceName: 'PRICE01',
+    CustomerPriceCode: 'PRICE01',
     Piece: 1,
+    Weight: 2.5,
     ContentType: 1,
     ContentTypeName: '包裹',
     PostalCode: '90001',
@@ -55,6 +56,7 @@ describe('ImportManifestImportPage', () => {
     const sSpy = jasmine.createSpyObj('ImportManifestService', [
       'getCountryOptions',
       'getCustomerPriceOptions',
+      'getAvailableCustomerPrices',
       'getBatteryModelOptions',
       'parseImport',
       'downloadTemplate',
@@ -86,6 +88,7 @@ describe('ImportManifestImportPage', () => {
 
     serviceSpy.getCountryOptions.and.returnValue(of(countryOptions));
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(priceOptions));
+    serviceSpy.getAvailableCustomerPrices.and.returnValue(of({ success: true, message: '', items: [{ value: 'PRICE01', text: 'PRICE01-报价一' }] }));
     serviceSpy.getBatteryModelOptions.and.returnValue(of([{ Value: 'BAT01', Text: '电池型号一' }]));
     serviceSpy.parseImport.and.returnValue(of({
       Success: true,
@@ -105,8 +108,9 @@ describe('ImportManifestImportPage', () => {
         ObjectNo: (r.ObjectNo || '').trim().toUpperCase(),
         CountryName: r.CountryId === 2 ? '英国' : '美国',
         CountryId: r.CountryId,
-        CustomerPriceName: (r.CustomerPriceName || '').trim().toUpperCase(),
+        CustomerPriceCode: (r.CustomerPriceCode || '').trim().toUpperCase(),
         Piece: r.Piece,
+        Weight: r.Weight,
         ContentType: r.ContentType,
         ContentTypeName: r.ContentType === 1 ? '包裹' : '文件',
         PostalCode: r.PostalCode || '',
@@ -255,7 +259,7 @@ describe('ImportManifestImportPage', () => {
     expect(component.filteredRows[0].Errors[0].Message).toContain('报价');
   });
 
-  it('saveRowEdit should validate edited row and update summary', () => {
+  it('saveRowEdit should validate edited row and update summary', fakeAsync(() => {
     fixture.detectChanges();
     const row = mockRow({ ObjectNo: 'old001' }) as any;
     component.previewRows = [row];
@@ -265,6 +269,8 @@ describe('ImportManifestImportPage', () => {
 
     expect(component.editingRow).toBe(row);
 
+    tick(0);
+
     component.saveRowEdit(row);
 
     expect(row.IsEditing).toBe(false);
@@ -273,7 +279,7 @@ describe('ImportManifestImportPage', () => {
     expect(row.ObjectNo).toBe('NEW001');
     expect(row.Piece).toBe(2);
     expect(component.summary.modifiedRows).toBe(1);
-  });
+  }));
 
   it('selectRows and clearSelection should manage selected rows', () => {
     component.previewRows = [

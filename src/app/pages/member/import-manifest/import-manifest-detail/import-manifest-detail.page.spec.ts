@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule, AlertController, NavController } from '@ionic/angular';
@@ -24,10 +24,11 @@ describe('ImportManifestDetailPage', () => {
     CountryName: '美国',
     ModeOfTransportId: 1,
     ModeOfTransportName: '空运',
-    CustomerPriceName: 'PRICE01',
+    CustomerPriceCode: 'PRICE01',
     Status: 0,
     StatusName: '已预报',
     Piece: 2,
+    Weight: 1.5,
     PostalCode: '90001',
     ContentType: 1,
     ContentTypeName: '包裹',

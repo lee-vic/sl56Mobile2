@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { ImportManifestDomainService } from './import-manifest-domain.service';
 import { AttachmentTypeOption, DropdownOption, ForwardingDocumentItem, ImportPreviewRow } from '../interfaces/import-manifest';
 
@@ -84,7 +84,7 @@ describe('ImportManifestDomainService', () => {
     const result = service.validateImportRow({
       ObjectNo: 'dup001',
       CountryId: 1,
-      CustomerPriceName: 'P01',
+      CustomerPriceCode: 'P01',
       Piece: 1,
       ContentType: 1,
     }, countries, prices, 0, rows);
@@ -98,7 +98,7 @@ describe('ImportManifestDomainService', () => {
     const result = service.validateImportRow({
       ObjectNo: 'OK001',
       CountryId: 1,
-      CustomerPriceName: 'P01',
+      CustomerPriceCode: 'P01',
       Piece: 2,
       ContentType: 0,
       CustomerExpressNo: 'SF1;SF2',
@@ -115,8 +115,9 @@ describe('ImportManifestDomainService', () => {
     const result = service.validateImportRow({
       ObjectNo: 'OK002',
       CountryId: 1,
-      CustomerPriceName: 'P01',
+      CustomerPriceCode: 'P01',
       Piece: 10000,
+      Weight: 1,
       ContentType: 1,
       RequiresSeparateCustomsDeclaration: false,
       RequiresSpecialVatInvoice: true,
@@ -131,7 +132,7 @@ describe('ImportManifestDomainService', () => {
     const result = service.validateImportRow({
       ObjectNo: 'OK003',
       CountryId: 1,
-      CustomerPriceName: 'P01',
+      CustomerPriceCode: 'P01',
       Piece: 1,
       ContentType: 1,
       BatteryModel: 'BAD',

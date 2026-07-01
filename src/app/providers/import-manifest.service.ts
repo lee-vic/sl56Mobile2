@@ -209,17 +209,6 @@ export class ImportManifestService {
   }
 
   /**
-   * 校验报价代码是否可用
-   */
-  validateCustomerPriceName(priceCode: string) {
-    return this.http.post<ImportManifestActionResult>(
-      this.baseUrl + '/ValidateCustomerPriceName',
-      { PriceCode: priceCode },
-      { withCredentials: true }
-    );
-  }
-
-  /**
    * 下载导入模板
    */
   downloadTemplate() {

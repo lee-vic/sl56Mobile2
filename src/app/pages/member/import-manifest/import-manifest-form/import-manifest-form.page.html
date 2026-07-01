@@ -228,7 +228,7 @@
         <ion-toggle formControlName="RequiresDutiesAndTaxesPrepayment"></ion-toggle>
       </div>
 
-      <!-- CustomerPriceName (Dynamic Autocomplete) -->
+      <!-- CustomerPriceCode (Dynamic Autocomplete) -->
       <div class="form-field" [class.field-error-state]="isPriceErrorVisible || priceMessageIsError">
         <label class="field-label">
           报价代码 <span class="required">*</span>
@@ -256,8 +256,8 @@
         </div>
       </div>
 
-      <!-- Hidden CustomerPriceName form value -->
-      <input type="hidden" formControlName="CustomerPriceName" />
+      <!-- Hidden CustomerPriceCode form value -->
+      <input type="hidden" formControlName="CustomerPriceCode" />
 
       <!-- Price Dropdown -->
       <ion-list *ngIf="showPriceList" class="autocomplete-result-list" lines="none">

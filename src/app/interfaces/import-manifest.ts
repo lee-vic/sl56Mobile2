@@ -3,7 +3,7 @@
     ObjectNo: string;
     CountryName: string;
     ModeOfTransportName: string;
-    CustomerPriceName: string;
+    CustomerPriceCode: string;
     Piece: number;
     Weight: number;
     ContentTypeName: string;
@@ -38,7 +38,7 @@ export interface ImportManifestDetail {
     CountryName: string;
     ModeOfTransportId: number;
     ModeOfTransportName: string;
-    CustomerPriceName: string;
+    CustomerPriceCode: string;
     Status: number;
     StatusName: string;
     Piece: number;
@@ -66,7 +66,7 @@ export interface ImportManifestSaveRequest {
     ObjectId?: number;
     ObjectNo: string;
     CountryId: number;
-    CustomerPriceName: string;
+    CustomerPriceCode: string;
     Piece: number;
     Weight: number;
     ContentType: number;
@@ -87,7 +87,7 @@ export interface ImportPreviewRow {
     ObjectNo: string;
     CountryName: string;
     CountryId: number;
-    CustomerPriceName: string;
+    CustomerPriceCode: string;
     Piece: number;
     Weight: number;
     ContentType: number;
@@ -130,7 +130,7 @@ export interface ImportRowModel {
     RowIndex?: number;
     ObjectNo: string;
     CountryId: number;
-    CustomerPriceName: string;
+    CustomerPriceCode: string;
     Piece: number;
     Weight: number;
     ContentType: number;

@@ -54,10 +54,11 @@ describe('ImportManifestFormPage', () => {
     CountryName: '美国',
     ModeOfTransportId: 1,
     ModeOfTransportName: '空运',
-    CustomerPriceName: 'PRICE01',
+    CustomerPriceCode: 'PRICE01',
     Status: 0,
     StatusName: '已预报',
     Piece: 5,
+    Weight: 5.0,
     PostalCode: '90001',
     ContentType: 1,
     ContentTypeName: '包裹',
@@ -96,7 +97,6 @@ describe('ImportManifestFormPage', () => {
       'create',
       'edit',
       'validateObjectNo',
-      'validateCustomerPriceName',
       'uploadPendingDocument',
       'getForwardingDocuments',
       'getForwardingDocumentPreviewUrl',
@@ -151,7 +151,6 @@ describe('ImportManifestFormPage', () => {
     serviceSpy.getForwardingDocuments.and.returnValue(of({ success: true, rows: [] }));
     serviceSpy.uploadPendingDocument.and.returnValue(of({ success: true, filePath: '/test.pdf', fileName: '' }));
     serviceSpy.validateObjectNo.and.returnValue(of({ Success: true, ErrMsg: '' }));
-    serviceSpy.validateCustomerPriceName.and.returnValue(of({ Success: true, ErrMsg: '' }));
     serviceSpy.getDetail.and.returnValue(of(mockDetail));
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     serviceSpy.edit.and.returnValue(of({ Success: true, ErrMsg: '' }));
@@ -188,14 +187,14 @@ describe('ImportManifestFormPage', () => {
   });
 
   // ── 4. Form validation - required fields ──
-  it('should require ObjectNo, CountryId, CustomerPriceName, Piece, ContentType', () => {
+  it('should require ObjectNo, CountryId, CustomerPriceCode, Piece, ContentType', () => {
     fixture.detectChanges();
     const form = component.form;
 
     expect(form.valid).toBe(false);
     expect(form.get('ObjectNo')?.errors?.['required']).toBe(true);
     expect(form.get('CountryId')?.errors?.['required']).toBe(true);
-    expect(form.get('CustomerPriceName')?.errors?.['required']).toBe(true);
+    expect(form.get('CustomerPriceCode')?.errors?.['required']).toBe(true);
     expect(form.get('Piece')?.errors?.['required']).toBe(true);
   });
 
@@ -271,8 +270,9 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'TEST001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 5,
+      Weight: 5,
       ContentType: 1,
     });
 
@@ -309,27 +309,6 @@ describe('ImportManifestFormPage', () => {
     expect(serviceSpy.validateObjectNo).not.toHaveBeenCalled();
   });
 
-  // ── 14. validateCustomerPriceName success ──
-  it('validateCustomerPriceName should not set error on success', () => {
-    fixture.detectChanges();
-    serviceSpy.validateCustomerPriceName.and.returnValue(of({ Success: true, ErrMsg: '' }));
-
-    component.form.get('CustomerPriceName')?.setValue('PRICE01');
-    component.validateCustomerPriceName();
-
-    expect(serviceSpy.validateCustomerPriceName).toHaveBeenCalledWith('PRICE01');
-  });
-
-  // ── 15. validateCustomerPriceName invalid ──
-  it('validateCustomerPriceName should set invalid error when API fails', () => {
-    fixture.detectChanges();
-    serviceSpy.validateCustomerPriceName.and.returnValue(of({ Success: false, ErrMsg: '报价不可用' }));
-
-    component.form.get('CustomerPriceName')?.setValue('BADPRICE');
-    component.validateCustomerPriceName();
-
-    expect(component.form.get('CustomerPriceName')?.errors?.['invalid']).toBe(true);
-  });
 
   // ── 16. save with invalid form shows alert ──
   it('save should show alert when form is invalid', async () => {
@@ -352,10 +331,12 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'NEW001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 3,
+      Weight: 3,
       ContentType: 1,
     });
+    (component as any).isPriceLoading = false;
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
 
@@ -374,10 +355,12 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'FAIL001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 1,
+      Weight: 1,
       ContentType: 0,
     });
+    (component as any).isPriceLoading = false;
     serviceSpy.create.and.returnValue(of({ Success: false, ErrMsg: '创建失败' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
     const mockAlert = { present: jasmine.createSpy('present') };
@@ -397,11 +380,14 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'GUARD001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 1,
+      Weight: 1,
       ContentType: 0,
     });
+    (component as any).isPriceLoading = false;
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
+    loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
     await component.save();
     expect(loadingCtrlSpy.create).toHaveBeenCalled();
     expect(serviceSpy.create).toHaveBeenCalled();
@@ -553,12 +539,12 @@ describe('ImportManifestFormPage', () => {
     fixture.detectChanges();
     component.selectedPrice = { Id: 1, Code: 'PRICE01', Name: '报价一' };
     component.priceInput = 'PRICE01';
-    component.form.get('CustomerPriceName')?.setValue('PRICE01');
+    component.form.get('CustomerPriceCode')?.setValue('PRICE01');
 
     component.filterPriceItems({ detail: { value: 'PRICE01' } });
     // selectedPrice should remain unchanged (guard hit)
     expect(component.selectedPrice).toBeTruthy();
-    expect(component.form.get('CustomerPriceName')?.value).toBe('PRICE01');
+    expect(component.form.get('CustomerPriceCode')?.value).toBe('PRICE01');
   });
 
   // ── 31. Price autocomplete: select via click ──
@@ -567,7 +553,7 @@ describe('ImportManifestFormPage', () => {
     const price: DropdownOption = { Id: 10, Code: 'PRICE10', Name: '报价十' };
     component.priceItemClick(price);
     expect(component.selectedPrice).toEqual(price);
-    expect(component.form.get('CustomerPriceName')?.value).toBe('PRICE10');
+    expect(component.form.get('CustomerPriceCode')?.value).toBe('PRICE10');
     expect(component.showPriceList).toBe(false);
     expect(component.priceInput).toBe('PRICE10');
   });
@@ -582,7 +568,7 @@ describe('ImportManifestFormPage', () => {
     expect(component.selectedPrice).toBeNull();
     expect(component.showPriceList).toBe(false);
     expect(component.hasPriceValidationError).toBe(false);
-    expect(component.form.get('CustomerPriceName')?.value).toBeNull();
+    expect(component.form.get('CustomerPriceCode')?.value).toBeNull();
   });
 
   // ── 33. Price autocomplete: selectPrice exact match ──
@@ -627,7 +613,7 @@ describe('ImportManifestFormPage', () => {
   });
 
   // ── 37. fillForm sets priceInput when no match ──
-  it('fillForm should keep raw CustomerPriceName for dynamic price echo', () => {
+  it('fillForm should keep raw CustomerPriceCode for dynamic price echo', () => {
     fixture.detectChanges();
     component.priceOptions = [{ Id: 1, Code: 'OTHER', Name: '其他' }];
     component.fillForm(mockDetail);
@@ -638,7 +624,7 @@ describe('ImportManifestFormPage', () => {
   // ── 38. isPriceErrorVisible when no selection ──
   it('isPriceErrorVisible should be true when touched and no selection', () => {
     fixture.detectChanges();
-    component.form.get('CustomerPriceName')?.markAsTouched();
+    component.form.get('CustomerPriceCode')?.markAsTouched();
     component.selectedPrice = null;
     expect(component.isPriceErrorVisible).toBe(true);
   });
@@ -679,9 +665,11 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'PKG001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 1,
+      Weight: 1,
     });
+    (component as any).isPriceLoading = false;
     component.selectedPrice = mockPriceOptions[0];
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
@@ -778,10 +766,12 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'PEND001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 1,
+      Weight: 1,
       ContentType: 0,
     });
+    (component as any).isPriceLoading = false;
     component.pendingUploads = [{ filePath: '/UploadFiles/tok1/test.pdf', fileName: 'test.pdf', attachmentTypeId: 58, size: 1024 }];
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
@@ -801,10 +791,12 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       ObjectNo: 'NOPEN001',
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 1,
+      Weight: 1,
       ContentType: 0,
     });
+    (component as any).isPriceLoading = false;
     component.pendingUploads = [];
     serviceSpy.create.and.returnValue(of({ Success: true, ErrMsg: '' }));
     loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
@@ -861,6 +853,7 @@ describe('ImportManifestFormPage', () => {
     component.form.patchValue({
       CountryId: 1,
       Piece: 2,
+      Weight: 2,
       ContentType: 1,
     });
     tick(300);
@@ -880,16 +873,18 @@ describe('ImportManifestFormPage', () => {
 
     component.selectedPrice = { Id: 1, Code: 'PRICE01', Name: '报价一' };
     component.priceInput = 'PRICE01';
+    (component as any).originalPriceCode = 'PRICE01';
     component.form.patchValue({
       CountryId: 1,
-      CustomerPriceName: 'PRICE01',
+      CustomerPriceCode: 'PRICE01',
       Piece: 2,
+      Weight: 2,
       ContentType: 1,
     });
     tick(300);
 
     expect(component.selectedPrice).toBeNull();
-    expect(component.form.get('CustomerPriceName')?.value).toBeNull();
+    expect(component.form.get('CustomerPriceCode')?.value).toBeNull();
     expect(component.priceMessage).toContain('原报价不在当前可用报价中');
   }));
 });
