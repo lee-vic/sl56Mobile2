@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -16,6 +16,7 @@ describe('ReturnApplyPage', () => {
   let fixture: ComponentFixture<ReturnApplyPage>;
 
   const navBackSpy = jasmine.createSpy('navBack');
+  const navNavigateBackSpy = jasmine.createSpy('navigateBack');
   const alertCreateSpy = jasmine.createSpy('alertCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const mockLoading = {
@@ -53,7 +54,7 @@ describe('ReturnApplyPage', () => {
       providers: [
         CookieService,
         { provide: ActivatedRoute, useValue: mockRoute },
-        { provide: NavController, useValue: { back: navBackSpy } },
+        { provide: NavController, useValue: { back: navBackSpy, navigateBack: navNavigateBackSpy } },
         {
           provide: ReturnService,
           useValue: {
@@ -82,6 +83,7 @@ describe('ReturnApplyPage', () => {
     fixture = TestBed.createComponent(ReturnApplyPage);
     component = fixture.componentInstance;
     navBackSpy.calls.reset();
+    navNavigateBackSpy.calls.reset();
     applySpy.calls.reset();
     applySpy.and.returnValue(of({
       AllowApply: true,
@@ -91,7 +93,9 @@ describe('ReturnApplyPage', () => {
     apply1Spy.calls.reset();
     apply1Spy.and.returnValue(of({ IsSuccess: true }));
     fillSpy.calls.reset();
+    fillSpy.and.returnValue(of({ RequiredDate: '2026-05-23', ReferenceNumber: 'RGD-002' }));
     fill1Spy.calls.reset();
+    fill1Spy.and.returnValue(of({ IsSuccess: true }));
     alertCreateSpy.calls.reset();
     toastCreateSpy.calls.reset();
     loadingCreateSpy.calls.reset();
@@ -104,6 +108,12 @@ describe('ReturnApplyPage', () => {
   });
 
   it('should load apply defaults on init when type is 0', () => {
+    applySpy.and.returnValue(of({
+      AllowApply: true,
+      RequiredDate: '2026-05-23',
+      ReferenceNumber: 'RGD-001',
+      WarningMessage: '请提前准备取件资料'
+    }));
     component.type = 0;
     component.ids = '1,2';
 
@@ -112,6 +122,7 @@ describe('ReturnApplyPage', () => {
     expect(applySpy).toHaveBeenCalledWith('1,2');
     expect(component.applyForm.controls['RequiredDate'].value).toBe('2026-05-23');
     expect(component.applyForm.controls['ReferenceNumber'].value).toBe('RGD-001');
+    expect(component.warningMessage).toBe('请提前准备取件资料');
   });
 
   it('should mark success state after successful apply submit', fakeAsync(() => {
@@ -183,6 +194,23 @@ describe('ReturnApplyPage', () => {
     expect(component.type).toBe(0);
   });
 
+  it('should enter init error when query has no valid ids', () => {
+    mockRoute.snapshot.queryParams = {
+      type: 0,
+      ids: 'abc,,'
+    };
+
+    fixture = TestBed.createComponent(ReturnApplyPage);
+    component = fixture.componentInstance;
+    component.ngOnInit();
+
+    expect(component.selectedCount).toBe(0);
+    expect(component.hasInitError).toBe(true);
+    expect(component.initErrorMessage).toContain('缺少有效退货单号');
+    expect(applySpy).not.toHaveBeenCalled();
+    expect(fillSpy).not.toHaveBeenCalled();
+  });
+
   it('should show toast when submit is triggered with invalid form', () => {
     component.applyForm.patchValue({
       PersonName: '',
@@ -196,6 +224,34 @@ describe('ReturnApplyPage', () => {
     expect(fill1Spy).not.toHaveBeenCalled();
   });
 
+  it('should only accept mainland China mobile numbers before submit', () => {
+    component.applyForm.patchValue({
+      PersonName: '张三',
+      MobilePhone: '+8613800138000'
+    });
+
+    component.doSubmit(component.applyForm.value);
+
+    expect(component.applyForm.controls['MobilePhone'].invalid).toBe(true);
+    expect(apply1Spy).not.toHaveBeenCalled();
+    expect(fill1Spy).not.toHaveBeenCalled();
+  });
+
+  it('should submit apply flow with normalized IdList', fakeAsync(() => {
+    component.applyForm.patchValue({
+      PersonName: '张三',
+      MobilePhone: '13800138000'
+    });
+
+    component.doSubmit(component.applyForm.value);
+    tick();
+
+    expect(apply1Spy).toHaveBeenCalledWith(jasmine.objectContaining({
+      IdList: '1,2'
+    }));
+    expect(component.submitSuccess).toBe(true);
+  }));
+
   it('should enter blocked state when apply response does not allow submission', () => {
     applySpy.and.returnValue(of({
       AllowApply: false,
@@ -207,6 +263,60 @@ describe('ReturnApplyPage', () => {
     expect(component.isApplyBlocked).toBe(true);
     expect(component.blockedMessage).toBe('当前不可申请');
     expect(component.canShowForm).toBe(false);
+  });
+
+  it('should load fill defaults when type is 1', () => {
+    mockRoute.snapshot.queryParams = {
+      type: 1,
+      ids: '9'
+    };
+    fillSpy.and.returnValue(of({
+      RequiredDate: '2026-06-01',
+      ReferenceNumber: 'PICK-9',
+      WarningMessage: '请确认手机号码'
+    }));
+
+    fixture = TestBed.createComponent(ReturnApplyPage);
+    component = fixture.componentInstance;
+    component.ngOnInit();
+
+    expect(fillSpy).toHaveBeenCalledWith('9');
+    expect(component.applyForm.controls['RequiredDate'].value).toBe('2026-06-01');
+    expect(component.applyForm.controls['ReferenceNumber'].value).toBe('PICK-9');
+    expect(component.warningMessage).toBe('请确认手机号码');
+  });
+
+  it('should enter init error when fill defaults fail to load', () => {
+    mockRoute.snapshot.queryParams = {
+      type: 1,
+      ids: '9'
+    };
+    fillSpy.and.returnValue(throwError(() => new Error('network')));
+
+    fixture = TestBed.createComponent(ReturnApplyPage);
+    component = fixture.componentInstance;
+    component.ngOnInit();
+
+    expect(component.hasInitError).toBe(true);
+    expect(component.initErrorMessage).toContain('提货信息加载失败');
+  });
+
+  it('should reset success state when retrying load', () => {
+    component.submitSuccess = true;
+    component.submitSuccessMessage = 'done';
+    applySpy.calls.reset();
+
+    component.retryLoad();
+
+    expect(component.submitSuccess).toBe(false);
+    expect(component.submitSuccessMessage).toBe('');
+    expect(applySpy).toHaveBeenCalledWith('1,2');
+  });
+
+  it('should navigate back to waiting list', () => {
+    component.backToWaitingList();
+
+    expect(navNavigateBackSpy).toHaveBeenCalledWith('/member/return-waiting');
   });
 
   // ── doFill flow ──

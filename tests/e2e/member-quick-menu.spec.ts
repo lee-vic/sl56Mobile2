@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 const apiBase = 'https://api.sl56.com/api';
 
@@ -61,15 +61,15 @@ test.describe('member quick menu customization', () => {
 
     await page.locator('ion-modal ion-button', { hasText: '保存' }).click();
 
-    await expect(header.locator('.menu-title').first()).toHaveText('交货清单确认');
+    await expect(header.locator('.menu-title').first()).toHaveText('业务公告');
 
     await page.reload();
 
     const headerAfterReload = page.locator('section.menu-section').first();
-    await expect(headerAfterReload.locator('.menu-title').first()).toHaveText('交货清单确认');
+    await expect(headerAfterReload.locator('.menu-title').first()).toHaveText('业务公告');
   });
 
-  test('resets quick menu to default list with wechat pay', async ({ page }) => {
+  test('resets quick menu to default business shortcuts', async ({ page }) => {
     await page.route(`${apiBase}/**`, async route => {
       const url = route.request().url();
 
@@ -120,14 +120,14 @@ test.describe('member quick menu customization', () => {
     const chooseSection = page.locator('section.quick-manage-section').filter({
       has: page.locator('h3', { hasText: '选择常用功能' })
     });
-    const wechatPayRow = chooseSection.locator('ion-item', { hasText: '微信支付' });
-    const noticeRow = chooseSection.locator('ion-item', { hasText: '业务公告' });
+    const remoteRow = chooseSection.locator('ion-item', { hasText: '偏远查询' });
+    const customerServiceRow = chooseSection.locator('ion-item', { hasText: '联系客服' });
 
-    await wechatPayRow.locator('ion-checkbox').click();
-    await noticeRow.locator('ion-checkbox').click();
+    await remoteRow.locator('ion-checkbox').click();
+    await customerServiceRow.locator('ion-checkbox').click();
     await page.locator('ion-modal ion-button', { hasText: '保存' }).click();
 
-    await expect(quickSection.locator('.menu-title')).toContainText(['业务公告']);
+    await expect(quickSection.locator('.menu-title')).toContainText(['联系客服']);
 
     await quickSection.locator('button.quick-reset-btn').click();
 
@@ -135,11 +135,15 @@ test.describe('member quick menu customization', () => {
     await expect(quickTitles).toHaveCount(6);
     await expect(quickTitles).toHaveText([
       '价格查询',
-      '交货清单确认',
-      '问题跟进',
+      '业务公告',
+      '快速预报',
       '交货记录',
+      '退货管理',
       '偏远查询',
-      '微信支付',
     ]);
+    await expect(page.locator('.menu-title', { hasText: '交货清单确认' })).toHaveCount(0);
+    await expect(page.locator('.menu-title', { hasText: '问题跟进' })).toHaveCount(0);
+    await expect(page.locator('.menu-title', { hasText: '合同签署' })).toHaveCount(0);
+    await expect(page.locator('.menu-title', { hasText: '微信支付' })).toHaveCount(0);
   });
 });

@@ -1,15 +1,50 @@
-<ion-header>
+﻿<ion-header translucent="true" class="waiting-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button (click)="back()"></ion-back-button>
+      <ion-back-button (click)="back()" defaultHref="/member/return-list"></ion-back-button>
     </ion-buttons>
-    <ion-title>
-      待退货列表
-    </ion-title>
+    <ion-title>待退货列表</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="waiting-content">
-  <div class="waiting-shell" *ngIf="items.length > 0">
+
+<ion-content fullscreen="true" class="waiting-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshItems($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingSpinner="crescent" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="waiting-summary">
+    <div class="summary-item">
+      <span>待退货</span>
+      <strong *ngIf="!showSkeleton">{{items.length}}</strong>
+      <ion-skeleton-text *ngIf="showSkeleton" animated class="summary-skeleton"></ion-skeleton-text>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <span>已选择</span>
+      <strong *ngIf="!showSkeleton">{{selectedCount}}</strong>
+      <ion-skeleton-text *ngIf="showSkeleton" animated class="summary-skeleton"></ion-skeleton-text>
+    </div>
+  </section>
+
+  <div class="waiting-shell" *ngIf="showSkeleton" aria-label="待退货列表加载中">
+    <ion-card class="waiting-card skeleton-card" *ngFor="let item of skeletonCards">
+      <ion-card-content>
+        <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line wide"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <div class="error-wrap" *ngIf="isLoaded && hasLoadError">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <p class="empty-title">待退货列表加载失败</p>
+    <p class="empty-subtitle">网络或服务暂时不可用，请稍后重试。</p>
+    <ion-button size="small" fill="outline" (click)="retryLoad()">重新加载</ion-button>
+  </div>
+
+  <div class="waiting-shell" *ngIf="isLoaded && !hasLoadError && items.length > 0">
     <ion-card class="waiting-card" *ngFor="let item of items" (click)="check(item)">
       <ion-item lines="none" class="waiting-head">
         <ion-checkbox
@@ -56,19 +91,20 @@
         </div>
         <div class="amount-row">
           <span>金额</span>
-          <strong>{{item.Amount |currency:'CNY'}}</strong>
+          <strong>{{item.Amount | currency:'CNY'}}</strong>
         </div>
       </ion-card-content>
     </ion-card>
   </div>
 
-  <div class="empty-wrap" *ngIf="items.length === 0">
+  <div class="empty-wrap" *ngIf="isLoaded && !hasLoadError && items.length === 0">
     <img src="assets/imgs/empty.png" alt="待退货列表为空">
     <p class="empty-title">待退货列表为空</p>
-        <p class="empty-subtitle">请先从交货记录中勾选原单号并加入待退货列表。</p>
+    <p class="empty-subtitle">请先从交货记录中勾选原单号并加入待退货列表。</p>
   </div>
 </ion-content>
-<ion-footer class="waiting-footer">
+
+<ion-footer class="waiting-footer" *ngIf="hasItems">
   <ion-toolbar role="region" aria-label="待退货操作栏">
     <div class="footer-top">
       <div class="select-all-wrap">

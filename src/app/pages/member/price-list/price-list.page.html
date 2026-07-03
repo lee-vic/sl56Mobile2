@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -7,25 +7,83 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list *ngFor="let item of items" lines="full">
-    <ion-item>
-      <ion-label>{{item.Name}}</ion-label>
-      <ion-note slot="end">{{item.ModeOfTransportName}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>生效时间</ion-label>
-      <ion-note slot="end">{{item.StartDate}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>失效时间</ion-label>
-      <ion-note slot="end">{{item.EndDate}}</ion-note>
-    </ion-item>
-  </ion-list>
-  <ion-infinite-scroll (ionInfinite)="getItems($event)">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+<ion-content class="price-page">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingSpinner="crescent" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="page-intro">
+    <div class="intro-icon">
+      <ion-icon name="receipt-outline"></ion-icon>
+    </div>
+    <div>
+      <h1>可用报价</h1>
+      <p>这里展示当前账号可查看的报价文件和运输方式。</p>
+    </div>
+  </section>
+
+  <section class="price-list skeleton-list" *ngIf="isInitialLoading" aria-label="加载中">
+    <ion-card class="price-card ion-no-margin" *ngFor="let item of [1,2,3]">
+      <ion-card-header>
+        <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-badge"></ion-skeleton-text>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="state-wrap" *ngIf="isLoaded && loadError && items.length === 0">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <h2>报价加载失败</h2>
+    <p>网络可能不稳定，请稍后重试。</p>
+    <ion-button fill="outline" size="small" (click)="refreshList()">重新加载</ion-button>
+  </section>
+
+  <section class="state-wrap" *ngIf="isLoaded && !loadError && items.length === 0">
+    <ion-icon name="file-tray-outline"></ion-icon>
+    <h2>暂无可查看报价</h2>
+    <p>有新的报价权限后会在这里展示。</p>
+  </section>
+
+  <section class="price-list" *ngIf="items.length > 0">
+    <ion-card class="price-card ion-no-margin" *ngFor="let item of items; trackBy: trackByPrice">
+      <ion-card-header>
+        <div>
+          <ion-card-subtitle>报价名称</ion-card-subtitle>
+          <ion-card-title>{{item.Name}}</ion-card-title>
+        </div>
+        <ion-badge color="primary">{{item.ModeOfTransportName}}</ion-badge>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="validity-row">
+          <div>
+            <span>生效时间</span>
+            <strong>{{item.StartDate}}</strong>
+          </div>
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+          <div>
+            <span>失效时间</span>
+            <strong>{{item.EndDate}}</strong>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <ion-infinite-scroll (ionInfinite)="getItems($event)" [disabled]="loadError">
+    <ion-infinite-scroll-content loadingSpinner="dots" loadingText="加载更多..."></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
-<ion-footer>
-  <ion-button href="{{downloadUrl}}" expand="full" *ngIf="allowDownload">下载完整报价</ion-button>
+
+<ion-footer class="ion-no-border" *ngIf="allowDownload">
+  <ion-toolbar>
+    <ion-button [href]="downloadUrl" expand="block">
+      <ion-icon slot="start" name="download-outline"></ion-icon>
+      下载完整报价
+    </ion-button>
+  </ion-toolbar>
 </ion-footer>

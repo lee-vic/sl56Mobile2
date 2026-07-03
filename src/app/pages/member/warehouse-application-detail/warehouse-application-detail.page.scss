@@ -1,8 +1,212 @@
-﻿ion-item > ion-label:not([position="stacked"]):not(.label-stacked) {
-	flex: 0 0 clamp(8.5em, 36vw, 11em);
-	max-width: clamp(8.5em, 36vw, 11em);
-	min-width: clamp(8.5em, 36vw, 11em);
-	white-space: normal;
-	word-break: keep-all;
+﻿.warehouse-detail-page {
+	--background: linear-gradient(180deg, #eef5ff 0%, #f7fbff 42%, #ffffff 100%);
+	--padding-bottom: 92px;
 }
 
+.detail-skeleton,
+form {
+	display: grid;
+	gap: 12px;
+}
+
+.detail-card,
+.state-card {
+	border: 1px solid #d8e7f8;
+	border-radius: 14px;
+	background: #ffffff;
+	box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.summary-card ion-card-content {
+}
+
+.summary-head {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: 12px;
+	align-items: center;
+}
+
+.summary-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	color: var(--ion-color-primary);
+	background: #edf5ff;
+}
+
+.summary-icon ion-icon {
+	font-size: 23px;
+}
+
+.summary-head h1,
+.summary-head p {
+	margin: 0;
+}
+
+.summary-head h1 {
+	color: #132743;
+	font-size: 18px;
+	font-weight: 800;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+}
+
+.summary-head p,
+.detail-card ion-card-subtitle,
+.fee-card ion-note {
+	color: #60718a;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.summary-head p {
+	margin-top: 5px;
+}
+
+.summary-head ion-badge {
+	font-weight: 800;
+}
+
+.detail-card ion-card-header {
+}
+
+.detail-card ion-card-title {
+	color: #132743;
+	font-size: 17px;
+	font-weight: 800;
+}
+
+.detail-card ion-card-content {
+}
+
+.detail-form-list {
+	padding: 0;
+	border: 1px solid #e5eef9;
+	border-radius: 12px;
+	background: #ffffff;
+	overflow: hidden;
+}
+
+.detail-form-list ion-item {
+	--padding-start: 12px;
+	--inner-padding-end: 12px;
+	--min-height: 72px;
+}
+
+.detail-form-list ion-label {
+	color: #204a82;
+	font-weight: 700;
+}
+
+.detail-form-list ion-input,
+.detail-form-list ion-select {
+	--placeholder-color: #8fa1b8;
+}
+
+.detail-form-list ion-note {
+	display: block;
+	padding-bottom: 8px;
+	font-size: 12px;
+}
+
+.fee-card ion-card-content {
+	display: grid;
+	gap: 8px;
+	border-left: 3px solid rgba(11, 97, 189, 0.36);
+}
+
+.fee-card span,
+.fee-card strong {
+	display: block;
+}
+
+.fee-card span {
+	margin-bottom: 5px;
+	color: #71829b;
+	font-size: 12px;
+}
+
+.fee-card strong {
+	color: #132743;
+	font-size: 22px;
+	line-height: 1;
+}
+
+.state-card ion-card-content {
+	display: grid;
+	justify-items: center;
+	gap: 8px;
+	text-align: center;
+}
+
+.state-card ion-icon {
+	padding: 12px;
+	border-radius: 16px;
+	color: var(--ion-color-primary);
+	background: #edf5ff;
+	font-size: 30px;
+}
+
+.state-card h2,
+.state-card p {
+	margin: 0;
+}
+
+.state-card h2 {
+	color: #132743;
+	font-size: 17px;
+	font-weight: 800;
+}
+
+.state-card p {
+	color: #60718a;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.state-card ion-button {
+	--border-radius: 10px;
+	margin-top: 4px;
+}
+
+.skeleton-title {
+	width: 68%;
+	height: 20px;
+	border-radius: 6px;
+}
+
+.skeleton-line {
+	width: 92%;
+	height: 14px;
+	margin-top: 12px;
+	border-radius: 6px;
+}
+
+.skeleton-line.short {
+	width: 54%;
+}
+
+ion-footer ion-toolbar {
+	--background: rgba(255, 255, 255, 0.96);
+	--padding-start: 12px;
+	--padding-end: 12px;
+	--padding-top: 8px;
+	--padding-bottom: 8px;
+}
+
+ion-footer ion-button {
+	--border-radius: 12px;
+	font-weight: 800;
+}
+
+@media (min-width: 768px) {
+	.warehouse-detail-page {
+		--padding-start: 24px;
+		--padding-end: 24px;
+		--padding-top: 16px;
+	}
+}

@@ -1,4 +1,4 @@
-<ion-header class="delivery-header">
+﻿<ion-header class="delivery-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -69,7 +69,7 @@
           </div>
         </ion-label>
 
-        <ion-badge slot="end" color="medium" class="country-badge">{{ getCountryLabel(item) }}</ion-badge>
+        <ion-badge slot="end" class="country-badge">{{ getCountryLabel(item) }}</ion-badge>
       </ion-item>
 
       <ion-card-content class="record-body" (click)="onRecordClick(item)">

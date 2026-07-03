@@ -1,4 +1,4 @@
-// Ionic Variables and Theming. For more info, please see:
+﻿// Ionic Variables and Theming. For more info, please see:
 // http://ionicframework.com/docs/theming/
 
 /*
@@ -7,24 +7,86 @@
  */
 
 :root {
+	--app-brand-50: #f3f8ff;
+	--app-brand-100: #e7f2ff;
+	--app-brand-200: #cfe5ff;
+	--app-brand-300: #4ca0ff;
+	--app-brand-500: #0b61bd;
+	--app-brand-600: #084f9b;
+	--app-brand-700: #083f7a;
+	--app-brand-800: #062f5f;
+
+	--app-surface-0: #ffffff;
+	--app-surface-100: #f1f5fb;
+	--app-surface-200: #e8f1fe;
+	--app-surface-page: #f5f9fe;
+	--app-surface-soft: #edf6ff;
+
+	--app-text-900: #12213a;
+	--app-text-800: #1e3356;
+	--app-text-700: #304a70;
+	--app-text-500: #5f759a;
+	--app-text-400: #7890b0;
+
+	--app-border-200: #d6e4f5;
+	--app-border-100: #e3edf8;
+	--app-accent-danger: #ff4d4f;
+	--app-accent-success: #2f9e44;
+	--app-accent-warning: #c27a00;
+	--app-accent-info: #168aad;
+	--app-amount-orange: #ec6a2d;
+
+	--app-spacing-xs: 6px;
+	--app-spacing-sm: 8px;
+	--app-spacing-md: 12px;
+	--app-spacing-lg: 16px;
+
+	--app-radius-sm: 8px;
+	--app-radius-md: 10px;
+	--app-card-radius: 8px;
+	--app-control-radius: 12px;
+	--app-toolbar-height: 52px;
+	--app-shadow-card: 0 10px 26px rgba(8, 63, 122, 0.1);
+	--app-shadow-soft: 0 8px 20px rgba(8, 63, 122, 0.08);
+
+	--ion-color-primary: var(--app-brand-500);
+	--ion-color-primary-rgb: 11, 97, 189;
+	--ion-color-primary-contrast: #ffffff;
+	--ion-color-primary-contrast-rgb: 255, 255, 255;
+	--ion-color-primary-shade: var(--app-brand-600);
+	--ion-color-primary-tint: var(--app-brand-300);
+	--ion-background-color: var(--app-surface-page);
+	--ion-text-color: var(--app-text-900);
+	--ion-border-color: var(--app-border-200);
+	--ion-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+
 	--member-brand-300: #4ca0ff;
 	--member-brand-500: #0b61bd;
 	--member-brand-600: #084f9b;
 	--member-brand-700: #083f7a;
 	--member-brand-800: #062f5f;
+	--member-brand-50: #f3f8ff;
+	--member-brand-100: #e7f2ff;
+	--member-brand-200: #cfe5ff;
 
 	--member-surface-0: #ffffff;
 	--member-surface-100: #f1f5fb;
 	--member-surface-200: #e8f1fe;
+	--member-surface-page: #f5f9fe;
+	--member-surface-soft: #edf6ff;
 
 	--member-text-900: #12213a;
 	--member-text-800: #1e3356;
+	--member-text-700: #304a70;
 	--member-text-500: #5f759a;
+	--member-text-400: #7890b0;
 
 	--member-border-200: #d6e4f5;
+	--member-border-100: #e3edf8;
 	--member-accent-danger: #ff4d4f;
 	--member-accent-success: #2f9e44;
 	--member-accent-warning: #c27a00;
+	--member-accent-info: #168aad;
 	--member-amount-orange: #ec6a2d;
 
 	--member-spacing-xs: 6px;
@@ -32,7 +94,12 @@
 	--member-spacing-md: 12px;
 	--member-spacing-lg: 16px;
 
-	--member-radius-sm: 12px;
-	--member-radius-md: 16px;
+	--member-radius-sm: 8px;
+	--member-radius-md: 10px;
+	--member-radius-lg: 14px;
+	--member-card-radius: 8px;
+	--member-control-radius: 12px;
+	--member-toolbar-height: 52px;
 	--member-shadow-card: 0 10px 26px rgba(8, 63, 122, 0.11);
+	--member-shadow-soft: 0 8px 20px rgba(8, 63, 122, 0.08);
 }

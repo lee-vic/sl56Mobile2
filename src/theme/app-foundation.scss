@@ -1,0 +1,200 @@
+﻿/*
+ * App-wide visual foundation.
+ * Keep this layer focused on Ionic primitives so page-level styles can stay small.
+ */
+
+html,
+body,
+ion-app {
+  background: var(--app-surface-page);
+  color: var(--app-text-900);
+  font-family: var(--ion-font-family);
+}
+
+body {
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--app-brand-600);
+  text-decoration: none;
+}
+
+ion-content {
+  --background: var(--app-surface-page);
+  color: var(--app-text-900);
+}
+
+ion-header {
+  background: var(--app-surface-0);
+}
+
+ion-header ion-toolbar {
+  --min-height: var(--app-toolbar-height);
+  --background: rgba(255, 255, 255, 0.96);
+  --color: var(--app-text-900);
+  --border-color: var(--app-border-200);
+  --padding-start: 8px;
+  --padding-end: 8px;
+  backdrop-filter: blur(12px);
+}
+
+ion-title {
+  color: var(--app-text-900);
+  font-size: 1.04rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+ion-card {
+  border: 1px solid var(--app-border-200);
+  border-radius: var(--app-card-radius);
+  background: var(--app-surface-0);
+  box-shadow: var(--app-shadow-card);
+  color: var(--app-text-900);
+}
+
+ion-card-header,
+ion-card-content {
+  color: var(--app-text-800);
+}
+
+ion-card-title {
+  color: var(--app-text-900);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+ion-card-subtitle {
+  color: var(--app-text-500);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: var(--app-surface-0);
+  --background-hover: var(--app-brand-50);
+  --background-activated: var(--app-brand-100);
+  --color: var(--app-text-900);
+  --border-color: var(--app-border-100);
+  --detail-icon-color: var(--app-brand-500);
+  --detail-icon-opacity: 1;
+}
+
+ion-item ion-label h1,
+ion-item ion-label h2,
+ion-item ion-label h3 {
+  color: var(--app-text-900);
+  letter-spacing: 0;
+}
+
+ion-item ion-label p,
+ion-note {
+  color: var(--app-text-500);
+}
+
+ion-button {
+  --border-radius: var(--app-control-radius);
+  --box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-button[fill="outline"] {
+  --border-color: var(--app-border-200);
+  --color: var(--app-brand-600);
+}
+
+ion-searchbar {
+  --background: var(--app-surface-100);
+  --border-radius: var(--app-control-radius);
+  --box-shadow: none;
+  --color: var(--app-text-900);
+  --icon-color: var(--app-text-500);
+  --placeholder-color: var(--app-text-500);
+  --clear-button-color: var(--app-text-500);
+  letter-spacing: 0;
+}
+
+ion-segment {
+  --background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--app-border-200);
+  border-radius: var(--app-control-radius);
+}
+
+ion-segment-button {
+  --color: var(--app-text-500);
+  --color-checked: var(--app-brand-600);
+  --indicator-color: var(--app-brand-100);
+  min-height: 38px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-segment-button.segment-button-checked {
+  color: var(--app-brand-600);
+}
+
+ion-badge {
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+ion-chip {
+  border-radius: var(--app-control-radius);
+  font-weight: 600;
+}
+
+ion-modal {
+  --background: var(--app-surface-page);
+  --border-radius: 16px 16px 0 0;
+  --box-shadow: 0 18px 40px rgba(8, 63, 122, 0.18);
+}
+
+ion-alert,
+ion-action-sheet {
+  --backdrop-opacity: 0.32;
+}
+
+ion-toast {
+  --border-radius: var(--app-control-radius);
+  --box-shadow: 0 12px 28px rgba(8, 63, 122, 0.18);
+}
+
+ion-refresher-content,
+ion-infinite-scroll-content {
+  color: var(--app-text-500);
+  font-size: 0.82rem;
+}
+
+ion-skeleton-text {
+  --border-radius: 8px;
+  --background: rgba(180, 200, 225, 0.34);
+  --background-rgb: 180, 200, 225;
+}
+
+.ion-page {
+  background: var(--app-surface-page);
+}
+
+@media (max-width: 390px) {
+  ion-title {
+    font-size: 1rem;
+  }
+
+  ion-segment-button {
+    min-height: 36px;
+    font-size: 0.8rem;
+  }
+}

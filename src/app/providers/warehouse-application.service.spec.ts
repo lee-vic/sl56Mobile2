@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+﻿import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 import { WarehouseApplicationService } from './warehouse-application.service';
@@ -36,7 +36,7 @@ describe('WarehouseApplicationService', () => {
   });
 
   it('save should set Id to null when application Id is 0', () => {
-    const model: any = { Id: 0, Name: 'A' };
+    const model = { Id: 0, ReferenceNumber: 'HK20260701', Piece: 1, Source: '自行送货', Amount: 143, Status: 0 };
 
     service.save(model).subscribe();
 
@@ -69,7 +69,7 @@ describe('WarehouseApplicationService', () => {
   });
 
   it('pay should post data with credentials', () => {
-    const payload = { orderId: 10, amount: 20 };
+    const payload = { Id: 10, TradeType: 'JSAPI' };
     service.pay(payload).subscribe();
 
     const req = httpMock.expectOne(apiUrl + '/WarehouseTask/Pay');

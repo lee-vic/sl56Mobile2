@@ -1,69 +1,109 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>入仓申请信息</ion-title>
-    <ion-buttons slot="end" *ngIf="id>0 && status!=9">
-      <ion-button (click)="cancel()">取消</ion-button>
+    <ion-title>入仓申请</ion-title>
+    <ion-buttons slot="end" *ngIf="showCancelButton">
+      <ion-button fill="clear" color="medium" [disabled]="isCancelling" (click)="cancel()">取消申请</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>温馨提示</ion-card-title>
-    </ion-card-header>
-  
+<ion-content class="warehouse-detail-page">
+  <section class="detail-skeleton" *ngIf="isLoading" aria-live="polite" aria-busy="true">
+    <ion-card class="detail-card ion-no-margin">
+      <ion-card-content>
+        <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <ion-card class="state-card ion-no-margin" *ngIf="loadError && !isLoading">
     <ion-card-content>
-      本功能仅用于我司香港仓库的入仓申请(直接交货到我司香港仓库场景)。
+      <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+      <h2>详情加载失败</h2>
+      <p>请检查网络后重试。</p>
+      <ion-button fill="outline" size="small" (click)="loadDetail()">重新加载</ion-button>
     </ion-card-content>
   </ion-card>
-  <form [formGroup]="form" (ngSubmit)="save()">
 
-    <ion-list>
-      <ion-item>
-        <ion-label position="stacked">单号</ion-label>
-        <ion-input aria-label="单号" type="text" formControlName="ReferenceNumber" 
-                  placeholder="必填，请输入单号" [readonly]="status != 0"></ion-input>
-        <ion-note *ngIf="form.get('ReferenceNumber')?.invalid && form.get('ReferenceNumber')?.touched" color="danger">
-          <span *ngIf="form.get('ReferenceNumber')?.errors?.required">单号不能为空</span>
-          <span *ngIf="form.get('ReferenceNumber')?.errors?.pattern">单号只能为大写字母或数字的组合,并且长度至少8位</span>
-        </ion-note>
-      </ion-item>
+  <form [formGroup]="form" (ngSubmit)="save()" *ngIf="!isLoading && !loadError">
+    <ion-card class="detail-card summary-card ion-no-margin">
+      <ion-card-content>
+        <div class="summary-head">
+          <div class="summary-icon" aria-hidden="true">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+          <div>
+            <h1>{{ id > 0 ? (form.get('ReferenceNumber')?.value || '入仓申请') : '新增入仓申请' }}</h1>
+            <p>直接交货到我司香港仓库时使用</p>
+          </div>
+          <ion-badge [color]="getStatusMeta(status).color">{{ getStatusMeta(status).label }}</ion-badge>
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-      <ion-item>
-        <ion-label position="stacked">件数</ion-label>
-        <ion-input aria-label="件数" type="number" formControlName="Piece" 
-                  placeholder="必填，请输入件数" [readonly]="status != 0"></ion-input>
-        <ion-note *ngIf="form.get('Piece')?.invalid && form.get('Piece')?.touched" color="danger">
-          <span *ngIf="form.get('Piece')?.errors?.required">件数不能为空</span>
-          <span *ngIf="form.get('Piece')?.errors?.min">件数必须是正整数</span>
-        </ion-note>
-      </ion-item>
+    <ion-card class="detail-card ion-no-margin">
+      <ion-card-header>
+        <ion-card-title>申请信息</ion-card-title>
+        <ion-card-subtitle>请核对单号、件数和送货方式</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list class="detail-form-list" lines="full">
+          <ion-item>
+            <ion-label position="stacked">单号</ion-label>
+            <ion-input aria-label="单号" type="text" formControlName="ReferenceNumber"
+                      placeholder="请输入大写字母或数字单号" [readonly]="!isEditable"></ion-input>
+            <ion-note *ngIf="form.get('ReferenceNumber')?.invalid && form.get('ReferenceNumber')?.touched" color="danger">
+              <span *ngIf="form.get('ReferenceNumber')?.errors?.required">单号不能为空</span>
+              <span *ngIf="form.get('ReferenceNumber')?.errors?.pattern">单号需为 8-32 位大写字母或数字</span>
+            </ion-note>
+          </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">送货方式</ion-label>
-        <ion-select formControlName="Source" [disabled]="status != 0">
-          <ion-select-option *ngFor="let item of sourceList" [value]="item.value">
-            {{ item.text }}
-          </ion-select-option>
-        </ion-select>
-        <ion-note *ngIf="form.get('Source')?.invalid && form.get('Source')?.touched" color="danger">
-          <span *ngIf="form.get('Source')?.errors?.required">送货方式不能为空</span>
-        </ion-note>
-      </ion-item>
+          <ion-item>
+            <ion-label position="stacked">件数</ion-label>
+            <ion-input aria-label="件数" type="number" inputmode="numeric" formControlName="Piece"
+                      placeholder="请输入件数" [readonly]="!isEditable"></ion-input>
+            <ion-note *ngIf="form.get('Piece')?.invalid && form.get('Piece')?.touched" color="danger">
+              <span *ngIf="form.get('Piece')?.errors?.required">件数不能为空</span>
+              <span *ngIf="form.get('Piece')?.errors?.min">件数必须大于 0</span>
+            </ion-note>
+          </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">费用</ion-label>
-        <ion-input aria-label="费用" type="number" formControlName="Amount" readonly></ion-input>
-      </ion-item>
-    </ion-list>
-    <div class="save-content">
-      <ion-button type="submit" expand="block" *ngIf="status===0">
-        保存
-      </ion-button>
-    </div>
+          <ion-item>
+            <ion-label position="stacked">送货方式</ion-label>
+            <ion-select formControlName="Source" interface="popover" cancelButtonText="取消" okButtonText="确定">
+              <ion-select-option *ngFor="let item of sourceList" [value]="item.value">
+                {{ item.text }}
+              </ion-select-option>
+            </ion-select>
+            <ion-note *ngIf="form.get('Source')?.invalid && form.get('Source')?.touched" color="danger">
+              <span *ngIf="form.get('Source')?.errors?.required">请选择送货方式</span>
+            </ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="detail-card fee-card ion-no-margin">
+      <ion-card-content>
+        <div>
+          <span>预计费用</span>
+          <strong>HK$ {{ form.get('Amount')?.value || 0 }}</strong>
+        </div>
+        <ion-note>费用根据件数自动计算，保存后可在列表中继续支付。</ion-note>
+      </ion-card-content>
+    </ion-card>
   </form>
 </ion-content>
+
+<ion-footer *ngIf="!isLoading && !loadError && isEditable" translucent="true">
+  <ion-toolbar>
+    <ion-button expand="block" [disabled]="isSaving" (click)="save()">
+      {{ isSaving ? '保存中...' : '保存申请' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

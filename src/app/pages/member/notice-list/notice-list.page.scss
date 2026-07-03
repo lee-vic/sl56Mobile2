@@ -1,4 +1,4 @@
-:host {
+﻿:host {
 	--notice-radius-soft: 12px;
 	--notice-radius-card: 14px;
 	--notice-shadow-card: 0 6px 12px rgba(20, 49, 90, 0.06);
@@ -9,11 +9,53 @@ ion-content {
 }
 
 .notice-list-content {
-	--padding-start: 10px;
-	--padding-end: 10px;
-	--padding-top: 10px;
-	--padding-bottom: 18px;
 	font-family: 'Noto Sans SC', 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+}
+
+.notice-hero {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 12px;
+	align-items: center;
+	margin-bottom: 10px;
+	padding: 14px;
+	border: 1px solid #d8e7f8;
+	border-radius: var(--notice-radius-card);
+	background: var(--member-surface-0);
+	box-shadow: var(--notice-shadow-card);
+}
+
+.notice-hero-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	color: var(--member-brand-600);
+	background: #edf5ff;
+}
+
+.notice-hero-icon ion-icon {
+	font-size: 23px;
+}
+
+.notice-hero h1,
+.notice-hero p {
+	margin: 0;
+}
+
+.notice-hero h1 {
+	color: var(--member-text-900);
+	font-size: 18px;
+	font-weight: 800;
+}
+
+.notice-hero p {
+	margin-top: 5px;
+	color: var(--member-text-500);
+	font-size: 13px;
+	line-height: 1.45;
 }
 
 .notice-list-stack {
@@ -48,9 +90,10 @@ ion-content {
 
 .notice-card-head {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
+	padding-right: 24px;
 }
 
 .notice-card-time {
@@ -63,7 +106,20 @@ ion-content {
 
 .notice-card-badge {
 	flex: 0 0 auto;
-	min-width: 34px;
+	min-width: 38px;
+	text-align: center;
+}
+
+/* 已读状态：浅灰底 + 深灰文字，确保可读 */
+.notice-card-badge[color="medium"] {
+	--background: #e9ecf2;
+	--color: #5f759a;
+}
+
+/* 未读状态额外留白，确保与已读标签栏位对齐 */
+.notice-card-badge[color="primary"] {
+	--background: var(--member-brand-500);
+	--color: #ffffff;
 }
 
 .notice-card-body {
@@ -100,6 +156,43 @@ ion-content {
 	pointer-events: none;
 }
 
+.skeleton-card {
+	padding: 0;
+}
+
+.skeleton-card ion-card-content {
+}
+
+.skeleton-time {
+	width: 42%;
+	height: 14px;
+	border-radius: 6px;
+}
+
+.skeleton-badge {
+	width: 42px;
+	height: 22px;
+	border-radius: 999px;
+}
+
+.skeleton-title {
+	width: 72%;
+	height: 18px;
+	margin-top: 12px;
+	border-radius: 6px;
+}
+
+.skeleton-line {
+	width: 92%;
+	height: 13px;
+	margin-top: 10px;
+	border-radius: 6px;
+}
+
+.skeleton-line.short {
+	width: 58%;
+}
+
 ion-label p {
 	margin: 0;
 	color: var(--member-text-500);
@@ -115,24 +208,48 @@ ion-label h3 {
 	line-height: 1.35;
 }
 
-ion-badge {
-	min-width: 34px;
-	font-weight: 700;
-}
-
-.notice-empty {
+.notice-state-card {
 	border: 1px solid #dde8f6;
 	border-radius: var(--notice-radius-card);
-	padding: 16px 12px;
-	text-align: center;
 	background: var(--member-surface-0);
 	box-shadow: var(--notice-shadow-card);
+	text-align: center;
 }
 
-.notice-empty p {
+.notice-state-card ion-card-content {
+	display: grid;
+	justify-items: center;
+	gap: 8px;
+}
+
+.notice-state-card ion-icon {
+	padding: 12px;
+	border-radius: 16px;
+	color: var(--member-brand-600);
+	background: #edf5ff;
+	font-size: 30px;
+}
+
+.notice-state-card h2,
+.notice-state-card p {
 	margin: 0;
+}
+
+.notice-state-card h2 {
+	color: var(--member-text-900);
+	font-size: 17px;
+	font-weight: 800;
+}
+
+.notice-state-card p {
 	color: var(--member-text-500);
 	font-size: 13px;
+	line-height: 1.45;
+}
+
+.notice-state-card ion-button {
+	--border-radius: 10px;
+	margin-top: 4px;
 }
 
 ion-infinite-scroll {

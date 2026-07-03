@@ -1,65 +1,251 @@
-/* 入仓申请页面样式 */
-.container {
-  padding: 16px;
+﻿.warehouse-page {
+  --background: linear-gradient(180deg, #eef5ff 0%, #f7fbff 42%, #ffffff 100%);
+  --padding-bottom: 92px;
 }
 
-/* 空数据提示 */
-.empty-tip {
-  display: flex;
-  flex-direction: column;
+.warehouse-intro {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid #d8e7f8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.intro-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 0;
-  color: var(--ion-color-medium);
-  
-  ion-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
-  
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--ion-color-primary);
+  background: #edf5ff;
 }
 
-/* 没有更多数据提示 */
+.intro-icon ion-icon {
+  font-size: 23px;
+}
+
+.warehouse-intro h1,
+.warehouse-intro p {
+  margin: 0;
+}
+
+.warehouse-intro h1 {
+  color: #132743;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.warehouse-intro p {
+  margin-top: 5px;
+  color: #60718a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.application-list {
+  display: grid;
+  gap: 12px;
+}
+
+.application-card,
+.state-card {
+  border: 1px solid #d8e7f8;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.application-card {
+  cursor: pointer;
+}
+
+.application-card:active {
+  transform: scale(0.995);
+}
+
+.application-card ion-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.application-card ion-card-subtitle {
+  color: #60718a;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.application-card ion-card-title {
+  margin-top: 4px;
+  color: #132743;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.application-card ion-badge {
+  flex: 0 0 auto;
+  font-weight: 800;
+}
+
+.application-card ion-card-content {
+}
+
+.application-meta {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 1fr;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e5eef9;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.application-meta span,
+.application-meta strong {
+  display: block;
+}
+
+.application-meta span {
+  margin-bottom: 5px;
+  color: #71829b;
+  font-size: 12px;
+}
+
+.application-meta strong {
+  color: #132743;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.application-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.application-actions ion-button {
+  --border-radius: 10px;
+  margin: 0;
+  font-weight: 800;
+}
+
+.state-card ion-card-content {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.state-card ion-icon {
+  padding: 12px;
+  border-radius: 16px;
+  color: var(--ion-color-primary);
+  background: #edf5ff;
+  font-size: 30px;
+}
+
+.state-card h2,
+.state-card p {
+  margin: 0;
+}
+
+.state-card h2 {
+  color: #132743;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.state-card p,
 .no-more-tip {
+  color: #60718a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.state-card ion-button {
+  --border-radius: 10px;
+  margin-top: 4px;
+}
+
+.skeleton-card ion-card-content {
+}
+
+.skeleton-head {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 0;
-  color: var(--ion-color-medium);
-  
-  ion-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-    color: var(--ion-color-success);
-  }
-  
-  p {
-    margin: 0;
-    font-size: 14px;
-  }
+  justify-content: space-between;
+  gap: 12px;
 }
 
-/* hover效果 */
-ion-item:hover {
-  --background: var(--ion-color-light);
-  transition: background-color 0.2s ease;
+.skeleton-title {
+  width: 58%;
+  height: 18px;
+  border-radius: 6px;
 }
 
-/* 浮动按钮样式 */
+.skeleton-badge {
+  width: 58px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.skeleton-line {
+  width: 92%;
+  height: 14px;
+  margin-top: 12px;
+  border-radius: 6px;
+}
+
+.skeleton-line.short {
+  width: 54%;
+}
+
+.skeleton-action {
+  width: 88px;
+  height: 30px;
+  margin-top: 14px;
+  margin-left: auto;
+  border-radius: 10px;
+}
+
+.no-more-tip {
+  margin: 16px 0 0;
+  text-align: center;
+}
+
 ion-fab {
-  margin-bottom: 20px;
-  margin-right: 20px;
+  margin-bottom: 16px;
+  margin-right: 10px;
 }
 
 ion-fab-button {
   --background: var(--ion-color-primary);
   --background-activated: var(--ion-color-primary-shade);
   --background-hover: var(--ion-color-primary-tint);
-  --box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-  --size: 56px;
+  --box-shadow: 0 8px 18px rgba(20, 97, 189, 0.22);
+  --size: 54px;
+}
+
+@media (min-width: 768px) {
+  .warehouse-page {
+    --padding-start: 24px;
+    --padding-end: 24px;
+    --padding-top: 16px;
+  }
+
+  .application-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

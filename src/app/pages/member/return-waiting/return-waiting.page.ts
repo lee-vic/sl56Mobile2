@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import{ AlertController,NavController, ToastController} from '@ionic/angular';
-import{ReturnService} from 'src/app/providers/return.service';
-import{DeliveryRecord} from 'src/app/interfaces/delivery-record';
-import { NavigationEnd, Router} from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { AlertController, NavController, ToastController } from '@ionic/angular';
+import { Observable, Subject } from 'rxjs';
+import { filter, finalize, takeUntil } from 'rxjs/operators';
+import { ReturnWaitingItem } from 'src/app/interfaces/return';
+import { ReturnService } from 'src/app/providers/return.service';
 import { WaitingReturnEventsService } from 'src/app/providers/waiting-return-events.service';
 
 @Component({
@@ -10,27 +12,33 @@ import { WaitingReturnEventsService } from 'src/app/providers/waiting-return-eve
   templateUrl: './return-waiting.page.html',
   styleUrls: ['./return-waiting.page.scss']
 })
-export class ReturnWaitingPage implements OnInit {
-  items:Array<DeliveryRecord>=[];
-  selectedCount:number=0;
+export class ReturnWaitingPage implements OnInit, OnDestroy {
+  readonly skeletonCards = [1, 2, 3];
+
+  items: ReturnWaitingItem[] = [];
+  selectedCount = 0;
   isMutating = false;
-  navigationSubscription;
+  isLoading = false;
+  isLoaded = false;
+  hasLoadError = false;
+
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
-    public service:ReturnService,
-    public alert:AlertController,
-    public navCtrl:NavController,
+    public service: ReturnService,
+    public alert: AlertController,
+    public navCtrl: NavController,
     public toastCtrl: ToastController,
-    private waitingReturnEventsService: WaitingReturnEventsService,
-    private router: Router) {
-      this.navigationSubscription = this.router.events.subscribe((event: any) => {
-        if (event instanceof NavigationEnd) {
-          this.getWaitingReturnList();
-        }
-       });
-     }
+    private readonly waitingReturnEventsService: WaitingReturnEventsService,
+    private readonly router: Router
+  ) {}
 
   get hasItems(): boolean {
     return this.items.length > 0;
+  }
+
+  get showSkeleton(): boolean {
+    return this.isLoading && !this.isLoaded;
   }
 
   get allSelected(): boolean {
@@ -56,17 +64,33 @@ export class ReturnWaitingPage implements OnInit {
     return `提交退货申请 (${this.selectedCount})`;
   }
 
+  private get selectedIds(): string {
+    return this.items.filter(item => item.Selected).map(item => item.Id).toString();
+  }
+
   ngOnInit(): void {
-    // this.getWaitingReturnList();
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.getWaitingReturnList();
+      });
+
+    this.getWaitingReturnList();
   }
 
   ngOnDestroy(): void {
-    if (this.navigationSubscription) {
-     this.navigationSubscription.unsubscribe();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
-  
-  check(item:DeliveryRecord){
+
+  refreshItems(event: CustomEvent): void {
+    this.getWaitingReturnList(event);
+  }
+
+  check(item: ReturnWaitingItem): void {
     if (this.isMutating) {
       return;
     }
@@ -74,36 +98,53 @@ export class ReturnWaitingPage implements OnInit {
     this.updateSelectedCount();
   }
 
-  getWaitingReturnList(){
-    this.service.getWaitReturnList().subscribe(res=>{
-        this.items = (res || []).map(item => ({ ...item, Selected: true }));
-        this.updateSelectedCount();
-    });
+  getWaitingReturnList(refresherEvent?: CustomEvent): void {
+    this.isLoading = true;
+    this.isLoaded = false;
+    this.hasLoadError = false;
+    this.service.getWaitReturnList()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoading = false;
+          this.completeRefresher(refresherEvent);
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.items = (res || []).map(item => ({ ...item, Selected: true }));
+          this.isLoaded = true;
+          this.updateSelectedCount();
+        },
+        error: () => {
+          this.items = [];
+          this.hasLoadError = true;
+          this.isLoaded = true;
+          this.updateSelectedCount();
+        }
+      });
   }
 
-  remove(){
+  remove(): void {
     if (this.isMutating) {
       return;
     }
-    if(this.selectedCount===0){
+    if (this.selectedCount === 0) {
       this.presentToast('请先选择要移除的单号');
       return;
     }
-    this.isMutating = true;
-    let ids = this.items.filter(p=>p.Selected).map(p=>p.Id).toString();
-    this.service.removeWaitReturnList(ids).subscribe(_ => {
-      this.items = this.items.filter(p=>!p.Selected);
-      this.updateSelectedCount();
-      this.isMutating = false;
-      this.waitingReturnEventsService.notifyReloadWaitingReturn();
-      this.presentToast('已移除所选单号');
-    }, _ => {
-      this.isMutating = false;
-      this.presentToast('移除失败，请稍后重试');
-    });
+
+    this.runWaitingMutation(
+      () => this.service.removeWaitReturnList(this.selectedIds),
+      '已移除所选单号',
+      '移除失败，请稍后重试',
+      () => {
+        this.items = this.items.filter(item => !item.Selected);
+      }
+    );
   }
 
-  removeOne(item: DeliveryRecord, event?: Event): void {
+  removeOne(item: ReturnWaitingItem, event?: Event): void {
     if (event) {
       event.stopPropagation();
     }
@@ -111,44 +152,38 @@ export class ReturnWaitingPage implements OnInit {
       return;
     }
 
-    this.isMutating = true;
-    this.service.removeWaitReturnList(item.Id.toString()).subscribe(_ => {
-      this.items = this.items.filter(p => p.Id !== item.Id);
-      this.updateSelectedCount();
-      this.isMutating = false;
-      this.waitingReturnEventsService.notifyReloadWaitingReturn();
-      this.presentToast('已移除该记录');
-    }, _ => {
-      this.isMutating = false;
-      this.presentToast('移除失败，请稍后重试');
-    });
+    this.runWaitingMutation(
+      () => this.service.removeWaitReturnList(item.Id.toString()),
+      '已移除该记录',
+      '移除失败，请稍后重试',
+      () => {
+        this.items = this.items.filter(row => row.Id !== item.Id);
+      }
+    );
   }
 
-  async clear(){
-    if (this.isMutating) {
+  async clear(): Promise<void> {
+    if (this.isMutating || this.items.length === 0) {
       return;
     }
-    if(this.items.length==0) return;
     const alert = await this.alert.create({
       header: '清空待退货列表',
       message: '清空后需重新从交货记录添加，确认清空吗？',
       buttons: [
         {
           text: '取消'
-        }, {
+        },
+        {
           text: '确认清空',
           handler: () => {
-            this.isMutating = true;
-            this.service.clearWaitReturnList().subscribe(_ => {
-              this.items=[];
-              this.updateSelectedCount();
-              this.isMutating = false;
-              this.waitingReturnEventsService.notifyReloadWaitingReturn();
-              this.presentToast('待退货列表已清空');
-            }, _ => {
-              this.isMutating = false;
-              this.presentToast('清空失败，请稍后重试');
-            });
+            this.runWaitingMutation(
+              () => this.service.clearWaitReturnList(),
+              '待退货列表已清空',
+              '清空失败，请稍后重试',
+              () => {
+                this.items = [];
+              }
+            );
           }
         }
       ]
@@ -157,31 +192,34 @@ export class ReturnWaitingPage implements OnInit {
     await alert.present();
   }
 
-  goReturn(){
+  goReturn(): void {
     if (this.isMutating) {
       return;
     }
-    if(this.selectedCount===0){
+    if (this.selectedCount === 0) {
       this.presentToast('请先选择要申请退货的单号');
       return;
     }
-    let ids =this.items.filter(p=>p.Selected).map(p=>p.Id).toString();
-    this.navCtrl.navigateForward("/member/return-apply", { queryParams: { type: 0,ids:ids } })
+    this.navCtrl.navigateForward('/member/return-apply', { queryParams: { type: 0, ids: this.selectedIds } });
   }
 
-  selectAll(event?: CustomEvent){
+  selectAll(event?: CustomEvent): void {
     if (this.isMutating) {
       return;
     }
-    let checked = event ? !!(event.detail as any).checked : !this.allSelected;
-    this.items.forEach(item=>{
-      item.Selected=checked;
+    const checked = event ? !!(event.detail as { checked?: boolean }).checked : !this.allSelected;
+    this.items.forEach(item => {
+      item.Selected = checked;
     });
     this.updateSelectedCount();
   }
 
-  back(){
+  back(): void {
     this.waitingReturnEventsService.notifyReloadWaitingReturn();
+  }
+
+  retryLoad(): void {
+    this.getWaitingReturnList();
   }
 
   private presentToast(message: string): void {
@@ -189,11 +227,44 @@ export class ReturnWaitingPage implements OnInit {
       message,
       duration: 1500,
       position: 'middle'
-    }).then(p => p.present());
+    }).then(toast => toast.present());
   }
 
   private updateSelectedCount(): void {
     this.selectedCount = this.items.filter(item => !!item.Selected).length;
   }
 
+  private runWaitingMutation(
+    requestFactory: () => Observable<unknown>,
+    successMessage: string,
+    errorMessage: string,
+    applySuccess: () => void
+  ): void {
+    this.isMutating = true;
+    requestFactory()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isMutating = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          applySuccess();
+          this.updateSelectedCount();
+          this.waitingReturnEventsService.notifyReloadWaitingReturn();
+          this.presentToast(successMessage);
+        },
+        error: () => {
+          this.presentToast(errorMessage);
+        }
+      });
+  }
+
+  private completeRefresher(event?: CustomEvent): void {
+    const target = event?.target as HTMLIonRefresherElement | undefined;
+    if (target && typeof target.complete === 'function') {
+      target.complete();
+    }
+  }
 }

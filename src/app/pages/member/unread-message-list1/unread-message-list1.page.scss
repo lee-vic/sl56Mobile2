@@ -1,4 +1,4 @@
-:host {
+﻿:host {
     --waybill-radius-soft: 12px;
     --waybill-radius-card: 14px;
     --waybill-shadow-card: 0 6px 12px rgba(20, 49, 90, 0.06);
@@ -9,10 +9,6 @@ ion-content {
 }
 
 .waybill-message-content {
-    --padding-start: 10px;
-    --padding-end: 10px;
-    --padding-top: 10px;
-    --padding-bottom: 18px;
     font-family: 'Noto Sans SC', 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
 }
 
@@ -72,6 +68,13 @@ ion-item {
 
 .loading-panel ion-badge {
     opacity: 0.4;
+}
+
+.placeholder-badge {
+    --background: #eef6ff;
+    --color: var(--member-brand-600, #084f9b);
+    border: 1px solid rgba(11, 97, 189, 0.18);
+    border-radius: 8px;
 }
 
 ion-label {

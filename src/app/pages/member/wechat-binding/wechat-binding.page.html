@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -7,11 +7,62 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list>
-    <ion-item *ngFor="let item of list">
-      <ion-label>{{item.Name}}</ion-label>
-      <ion-button slot="end" fill="outline" (click)="onItemDeleteClick(item)">解除绑定</ion-button>
-    </ion-item>
-  </ion-list>
+<ion-content class="wechat-binding-page">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingSpinner="crescent" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="page-intro">
+    <div class="intro-icon">
+      <ion-icon name="logo-wechat"></ion-icon>
+    </div>
+    <div>
+      <h1>已绑定微信</h1>
+      <p>管理可用于快捷登录和业务提醒接收的微信账号。</p>
+    </div>
+  </section>
+
+  <section class="binding-list skeleton-list" *ngIf="isLoading && list.length === 0" aria-label="加载中">
+    <ion-card class="binding-card ion-no-margin" *ngFor="let item of [1,2,3]">
+      <ion-card-content>
+        <ion-skeleton-text animated class="skeleton-avatar"></ion-skeleton-text>
+        <div>
+          <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="state-wrap" *ngIf="isLoaded && loadError && list.length === 0">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <h2>绑定信息加载失败</h2>
+    <p>网络可能不稳定，请稍后重试。</p>
+    <ion-button fill="outline" size="small" (click)="getList()">重新加载</ion-button>
+  </section>
+
+  <section class="state-wrap" *ngIf="isLoaded && !loadError && list.length === 0">
+    <ion-icon name="logo-wechat"></ion-icon>
+    <h2>暂无绑定微信</h2>
+    <p>绑定微信后可使用快捷登录和消息提醒。</p>
+  </section>
+
+  <section class="binding-list" *ngIf="list.length > 0">
+    <ion-card class="binding-card ion-no-margin" *ngFor="let item of list; trackBy: trackByWechatId">
+      <ion-card-content>
+        <ion-avatar>
+          <img [src]="item.HeadUrl" [alt]="item.Name" *ngIf="item.HeadUrl">
+          <span *ngIf="!item.HeadUrl">{{getInitial(item)}}</span>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{item.Name || '微信账号'}}</h2>
+          <p>{{item.ShortName || '已完成绑定'}}</p>
+        </ion-label>
+        <ion-button fill="clear" color="medium" size="small" (click)="onItemDeleteClick(item)" [disabled]="deletingId === item.Id">
+          <ion-spinner slot="start" name="crescent" *ngIf="deletingId === item.Id"></ion-spinner>
+          {{deletingId === item.Id ? '处理中' : '解除'}}
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </section>
 </ion-content>

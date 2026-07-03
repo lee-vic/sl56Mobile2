@@ -1,4 +1,4 @@
-import { ActionResult } from './action-result';
+﻿import { ActionResult } from './action-result';
 
 export interface WarehouseApplication {
     Id: number;
@@ -15,4 +15,13 @@ export interface WarehouseApplicationResult extends ActionResult {
 
 export interface WarehouseApplicationListResult extends ActionResult {
     Data?: Array<WarehouseApplication>;
+}
+
+export interface WarehousePaymentRequest {
+    Id: number;
+    TradeType: string;
+}
+
+export interface WarehousePaymentResult extends ActionResult {
+    Data?: string;
 }

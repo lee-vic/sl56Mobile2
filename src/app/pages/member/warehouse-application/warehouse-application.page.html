@@ -1,57 +1,107 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>入仓申请</ion-title>
+    <ion-title>香港入仓申请</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>温馨提示</ion-card-title>
-    </ion-card-header>
-  
+<ion-content class="warehouse-page">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新申请" refreshingSpinner="crescent" refreshingText="正在刷新..."></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="warehouse-intro">
+    <div class="intro-icon" aria-hidden="true">
+      <ion-icon name="business-outline"></ion-icon>
+    </div>
+    <div>
+      <h1>香港仓库入仓</h1>
+      <p>用于直接交货到我司香港仓库的入仓申请。</p>
+    </div>
+  </section>
+
+  <section class="application-list" *ngIf="isInitialLoading" aria-live="polite" aria-busy="true">
+    <ion-card class="application-card skeleton-card ion-no-margin" *ngFor="let item of [1,2,3]">
+      <ion-card-content>
+        <div class="skeleton-head">
+          <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-badge"></ion-skeleton-text>
+        </div>
+        <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-action"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <ion-card class="state-card ion-no-margin" *ngIf="loadError && !isInitialLoading">
     <ion-card-content>
-      本功能仅用于我司香港仓库的入仓申请(直接交货到我司香港仓库场景)。
+      <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+      <h2>申请列表加载失败</h2>
+      <p>请检查网络后重试。</p>
+      <ion-button fill="outline" size="small" (click)="refreshList()">重新加载</ion-button>
     </ion-card-content>
   </ion-card>
-  <div class="container">
-    <ion-list>
-      <div *ngIf="!applications || applications?.length === 0" class="empty-tip">
-        <ion-icon name="document-text-outline"></ion-icon>
-        <p>当前无数据</p>
-      </div>
-      
-      <ion-item *ngFor="let app of applications" (click)="goToDetail(app.Id)">
-        <ion-label>
-          <h2>单号: {{app.ReferenceNumber}}</h2>
-          <p>件数：{{app.Piece}}</p>
-          <p>送货方式：{{app.Source}}</p>
-          <p>费用：{{app.Amount}}</p>
-          <p>状态: {{app.Status === 0 ? '初始' : app.Status === 1 ? '已收款' : app.Status === 2 ? '已入仓' : '已取消'}}</p>
-        </ion-label>
-        <ion-button *ngIf="app.Status === 0" slot="end" (click)="pay(app); $event.stopPropagation()">
-          支付
-        </ion-button>
-      </ion-item>
-    </ion-list>
 
-    <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)">
-      <ion-infinite-scroll-content
-        loadingSpinner="bubbles"
-        loadingText="加载更多...">
-      </ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-    
-    <div *ngIf="!hasMore && applications?.length > 0" class="no-more-tip">
-      <p>没有更多数据了</p>
-    </div>
-  </div>
+  <ion-card class="state-card ion-no-margin" *ngIf="isLoaded && !isInitialLoading && !loadError && applications.length === 0">
+    <ion-card-content>
+      <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
+      <h2>暂无入仓申请</h2>
+      <p>新增申请后，可在这里查看状态、费用和支付入口。</p>
+      <ion-button size="small" (click)="add()">新增申请</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <section class="application-list" *ngIf="!isInitialLoading && !loadError && applications.length > 0">
+    <ion-card class="application-card ion-no-margin" *ngFor="let app of applications; trackBy: trackByApplicationId" button (click)="goToDetail(app.Id)">
+      <ion-card-header>
+        <div>
+          <ion-card-subtitle>入仓单号</ion-card-subtitle>
+          <ion-card-title>{{ app.ReferenceNumber }}</ion-card-title>
+        </div>
+        <ion-badge [color]="getStatusMeta(app.Status).color">{{ getStatusMeta(app.Status).label }}</ion-badge>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="application-meta">
+          <div>
+            <span>件数</span>
+            <strong>{{ app.Piece }}</strong>
+          </div>
+          <div>
+            <span>送货方式</span>
+            <strong>{{ app.Source || '--' }}</strong>
+          </div>
+          <div>
+            <span>费用</span>
+            <strong>HK$ {{ app.Amount || 0 }}</strong>
+          </div>
+        </div>
+
+        <div class="application-actions">
+          <ion-button fill="clear" size="small">
+            查看详情
+            <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="app.Status === 0" size="small" (click)="pay(app); $event.stopPropagation()">
+            <ion-icon slot="start" name="wallet-outline"></ion-icon>
+            支付
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="正在加载更多..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <p *ngIf="!hasMore && applications.length > 0" class="no-more-tip">没有更多申请了</p>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="add()">
+    <ion-fab-button aria-label="新增入仓申请" (click)="add()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

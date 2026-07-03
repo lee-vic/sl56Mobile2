@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -7,46 +7,96 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-list *ngFor="let item of items" lines="none"  class="ion-margin-top">
-    <ion-item lines="full">
-      <ion-label>{{item.Date}}</ion-label>
-      <ion-note slot="end" color="primary">{{item.Status}}</ion-note>
-      <!-- <ion-button fill="outline"  slot="end" (click)="delete(item.Id)" *ngIf="item.Status!='已收款'">删除</ion-button> -->
-    </ion-item>
-   
-    <ion-item>
-      <ion-thumbnail slot="start">
-        <img class="thumbnail-img-size" src="assets/imgs/bank-slips-1.png">
-      </ion-thumbnail>
-     
-      <ion-label class="ion-text-wrap">
-      
-        <ion-text>
-          <h3>{{item.Name}}</h3>
-        </ion-text>
-      
-      </ion-label>
-      <ion-button  href="{{item.Url}}" size="default">下载</ion-button>
-      <ion-button color="danger" fill="outline" size="default" (click)="delete(item.Id)" *ngIf="item.Status!='已收款'">删除</ion-button>
-      
-      </ion-item>
-  </ion-list>
-  <ion-infinite-scroll (ionInfinite)="getItems()">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+<ion-content class="bank-slips-page">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingSpinner="crescent" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="page-intro">
+    <div class="intro-icon">
+      <ion-icon name="cloud-upload-outline"></ion-icon>
+    </div>
+    <div>
+      <h1>上传付款凭证</h1>
+      <p>上传银行水单后，财务可更快核对收款并处理优先放货。</p>
+    </div>
+  </section>
+
+  <section class="skeleton-list" *ngIf="isInitialLoading" aria-label="加载中">
+    <ion-card class="slip-card ion-no-margin" *ngFor="let item of [1,2,3]">
+      <ion-card-header>
+        <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-badge"></ion-skeleton-text>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <section class="state-wrap" *ngIf="isLoaded && loadError && items.length === 0">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <h2>水单加载失败</h2>
+    <p>网络可能不稳定，请稍后重试。</p>
+    <ion-button fill="outline" size="small" (click)="refreshList()">重新加载</ion-button>
+  </section>
+
+  <section class="state-wrap" *ngIf="isLoaded && !loadError && items.length === 0">
+    <ion-icon name="receipt-outline"></ion-icon>
+    <h2>暂无水单记录</h2>
+    <p>点击底部按钮上传付款凭证。</p>
+  </section>
+
+  <section class="slip-list" *ngIf="items.length > 0">
+    <ion-card class="slip-card ion-no-margin" *ngFor="let item of items; trackBy: trackBySlipId">
+      <ion-card-header>
+        <div>
+          <ion-card-subtitle>{{item.Date}}</ion-card-subtitle>
+          <ion-card-title>{{item.Name}}</ion-card-title>
+        </div>
+        <ion-badge [color]="getStatusColor(item.Status)">{{item.Status}}</ion-badge>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-item lines="none">
+          <span slot="start" class="file-icon">
+            <ion-icon name="document-text-outline"></ion-icon>
+          </span>
+          <ion-label>
+            <p>付款凭证</p>
+            <h2>{{item.Extension || '附件文件'}}</h2>
+          </ion-label>
+        </ion-item>
+
+        <div class="slip-actions">
+          <ion-button [href]="item.Url" fill="clear" size="small">
+            <ion-icon slot="start" name="download-outline"></ion-icon>
+            下载
+          </ion-button>
+          <ion-button color="medium" fill="clear" size="small" (click)="delete(item.Id)" *ngIf="item.Status !== '已收款'">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            删除
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <ion-infinite-scroll (ionInfinite)="getItems($event)" [disabled]="loadError">
+    <ion-infinite-scroll-content loadingSpinner="dots" loadingText="加载更多..."></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
-<ion-footer>
-  
 
-    <form (ngSubmit)="doSubmit(form.value)" [formGroup]="form" novalidate>
-
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <form (ngSubmit)="doSubmit()" [formGroup]="form" novalidate>
       <input type="file" id="avatar" (change)="onFileChange($event)" #fileInput style="display: none;">
-
-
-      <ion-button  expand="block" type="submit">上传</ion-button>
-
-
+      <ion-button expand="block" type="submit" [disabled]="isUploading">
+        <ion-spinner slot="start" name="crescent" *ngIf="isUploading"></ion-spinner>
+        <ion-icon slot="start" name="cloud-upload-outline" *ngIf="!isUploading"></ion-icon>
+        {{isUploading ? '上传中' : '上传水单'}}
+      </ion-button>
     </form>
- 
+  </ion-toolbar>
 </ion-footer>

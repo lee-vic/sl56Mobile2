@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -8,11 +8,48 @@
 </ion-header>
 
 <ion-content class="notice-list-content">
-  <section class="notice-list-stack" *ngIf="items.length > 0">
-    <button type="button" class="notice-card" *ngFor="let item of items" (click)="openDetail(item)">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingText="下拉刷新公告" refreshingSpinner="crescent" refreshingText="正在刷新..."></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="notice-hero">
+    <div class="notice-hero-icon" aria-hidden="true">
+      <ion-icon name="megaphone-outline"></ion-icon>
+    </div>
+    <div>
+      <h1>业务公告</h1>
+      <p>查看服务调整、渠道通知和重要业务提醒。</p>
+    </div>
+  </section>
+
+  <section class="notice-list-stack" *ngIf="isInitialLoading" aria-live="polite" aria-busy="true">
+    <ion-card class="notice-card skeleton-card ion-no-margin" *ngFor="let item of [1,2,3]">
+      <ion-card-content>
+        <div class="notice-card-head">
+          <ion-skeleton-text animated class="skeleton-time"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-badge"></ion-skeleton-text>
+        </div>
+        <ion-skeleton-text animated class="skeleton-title"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line"></ion-skeleton-text>
+        <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </section>
+
+  <ion-card class="notice-state-card ion-no-margin" *ngIf="loadError && !isInitialLoading">
+    <ion-card-content>
+      <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+      <h2>公告加载失败</h2>
+      <p>请检查网络后重试，或稍后下拉刷新。</p>
+      <ion-button fill="outline" size="small" (click)="refreshList()">重新加载</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <section class="notice-list-stack" *ngIf="!isInitialLoading && !loadError && items.length > 0">
+    <button type="button" class="notice-card" *ngFor="let item of items; trackBy: trackByNoticeId" (click)="openDetail(item)">
       <div class="notice-card-head">
         <span class="notice-card-time">{{ item.CreateAt }}</span>
-        <ion-badge class="notice-card-badge" [color]="item.IsRead ? 'success' : 'danger'">{{ item.IsRead ? '已读' : '未读' }}</ion-badge>
+        <ion-badge class="notice-card-badge" [color]="item.IsRead ? 'medium' : 'primary'">{{ item.IsRead ? '已读' : '未读' }}</ion-badge>
       </div>
 
       <div class="notice-card-body">
@@ -24,11 +61,15 @@
     </button>
   </section>
 
-  <section class="notice-empty" *ngIf="!isBusy && items.length === 0">
-    <p>暂无业务公告</p>
-  </section>
+  <ion-card class="notice-state-card ion-no-margin" *ngIf="isLoaded && !isInitialLoading && !loadError && items.length === 0">
+    <ion-card-content>
+      <ion-icon name="notifications-off-outline" aria-hidden="true"></ion-icon>
+      <h2>暂无业务公告</h2>
+      <p>新的公告发布后会显示在这里。</p>
+    </ion-card-content>
+  </ion-card>
 
-  <ion-infinite-scroll (ionInfinite)="getItems()">
-    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  <ion-infinite-scroll (ionInfinite)="getItems($event)">
+    <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="正在加载更多..."></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>

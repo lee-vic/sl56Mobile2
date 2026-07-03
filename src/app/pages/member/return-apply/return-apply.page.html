@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -21,9 +21,9 @@
             <p class="state-kicker">LOADING</p>
             <h3>正在加载申请信息</h3>
             <p>请稍候，我们正在准备当前单号的申请数据。</p>
-            <ion-skeleton-text animated style="width: 100%; height: 16px; border-radius: 6px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 78%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
-            <ion-skeleton-text animated style="width: 64%; height: 14px; margin-top: 10px; border-radius: 6px;"></ion-skeleton-text>
+            <ion-skeleton-text animated class="apply-skeleton wide"></ion-skeleton-text>
+            <ion-skeleton-text animated class="apply-skeleton"></ion-skeleton-text>
+            <ion-skeleton-text animated class="apply-skeleton short"></ion-skeleton-text>
           </ion-card-content>
         </ion-card>
 
@@ -60,6 +60,26 @@
               <ion-button fill="outline" color="medium" (click)="backToWaitingList()">返回待退货</ion-button>
               <ion-button (click)="backToDeliveryRecord()">返回交货记录</ion-button>
             </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="return-summary-card ion-no-margin" *ngIf="canShowForm">
+          <ion-card-content>
+            <div class="summary-icon">
+              <ion-icon name="return-down-back-outline"></ion-icon>
+            </div>
+            <div class="summary-copy">
+              <p>{{ type === 0 ? '本次退货申请' : '补填提货资料' }}</p>
+              <h2>{{ selectedCount }} 条单号</h2>
+              <span>{{ applyForm.controls['ReferenceNumber'].value || '正在确认单号信息' }}</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="return-warning-card ion-no-margin" *ngIf="canShowForm && warningMessage">
+          <ion-card-content>
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <p>{{ warningMessage }}</p>
           </ion-card-content>
         </ion-card>
 
@@ -115,7 +135,7 @@
                   size="large"
                   expand="block"
                   type="submit"
-                  [disabled]="applyForm.invalid"
+                  [disabled]="applyForm.invalid || isSubmitting"
                   class="submit-btn">
                   {{ submitButtonText }}
                 </ion-button>

@@ -1,9 +1,11 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
+﻿import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { AlertController, IonInfiniteScroll, NavController } from '@ionic/angular';
+import { finalize } from 'rxjs/operators';
+import { apiUrl } from 'src/app/global';
 import { BankSlips } from 'src/app/interfaces/bank-slips';
 import { BankSlipsService } from 'src/app/providers/bank-slips.service';
-import { AlertController, NavController, IonInfiniteScroll } from '@ionic/angular';
-import { apiUrl } from 'src/app/global';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
 @Component({
   selector: 'app-bank-slips',
@@ -11,126 +13,213 @@ import { apiUrl } from 'src/app/global';
   styleUrls: ['./bank-slips.page.scss'],
 })
 export class BankSlipsPage implements OnInit {
+  private readonly pageSize = 15;
 
-  ngOnInit(): void {
-    this.getItems();
-  }
   public form: FormGroup;
-  @ViewChild('fileInput',{static:true}) fileInput: ElementRef;
-  @ViewChild(IonInfiniteScroll,{static:true}) infiniteScroll: IonInfiniteScroll;
-  isBusy: boolean = false;
-  currentPageIndex: number = 1;
+  @ViewChild('fileInput', { static: true }) fileInput: ElementRef<HTMLInputElement>;
+  @ViewChild(IonInfiniteScroll, { static: true }) infiniteScroll: IonInfiniteScroll;
+
+  isBusy = false;
+  isInitialLoading = false;
+  isLoaded = false;
+  loadError = false;
+  isUploading = false;
+  currentPageIndex = 1;
   items: BankSlips[] = [];
-  constructor(public navCtrl: NavController,
+
+  constructor(
+    public navCtrl: NavController,
     public formBuilder: FormBuilder,
     public service: BankSlipsService,
-    public alertCtrl: AlertController) {
+    public alertCtrl: AlertController,
+    private readonly uiFeedbackService: UiFeedbackService
+  ) {
     this.form = this.formBuilder.group({
-
       file: null
     });
   }
 
-  
+  ngOnInit(): void {
+    this.refreshList();
+  }
 
+  onFileChange(event: Event): void {
+    if (this.isUploading) {
+      return;
+    }
 
-  onFileChange(event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
 
-    let reader = new FileReader();
-    if (event.target.files && event.target.files.length > 0) {
-      let file = event.target.files[0];
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        let fileContent:string=String(reader.result);
-        this.form.get('file').setValue({
-          name: file.name,
-          type: file.type,
-          value: fileContent.split(',')[1]
-        });
+    const file = input.files[0];
+    const reader = new FileReader();
+    this.isUploading = true;
 
-        this.service.upload(this.form.value.file).subscribe(res => {
-          if(res.Success){
+    reader.onload = () => {
+      const fileContent = String(reader.result);
+      this.form.get('file').setValue({
+        name: file.name,
+        type: file.type,
+        value: fileContent.split(',')[1]
+      });
+
+      this.service.upload(this.form.value.file).pipe(
+        finalize(() => {
+          this.isUploading = false;
+          input.value = '';
+        })
+      ).subscribe({
+        next: res => {
+          if (res.Success) {
+            this.uiFeedbackService.presentToast('水单已上传', 1600, 'middle', undefined, 'success');
             this.refreshList();
+            return;
           }
+          this.uiFeedbackService.presentToast(res.ErrMsg || '上传失败，请稍后重试', 2400, 'middle', undefined, 'danger');
+        },
+        error: () => {
+          this.uiFeedbackService.presentToast('上传失败，请检查网络后重试', 2400, 'middle', undefined, 'danger');
+        }
+      });
+    };
 
-        });
-      };
-    }
+    reader.onerror = () => {
+      this.isUploading = false;
+      input.value = '';
+      this.uiFeedbackService.presentToast('读取文件失败，请重新选择', 2200, 'middle', undefined, 'danger');
+    };
+
+    reader.readAsDataURL(file);
   }
 
-  doSubmit(event) {
-    let el: HTMLElement = this.fileInput.nativeElement as HTMLElement;
-    el.click();
-  }
-
-  private disableInfiniteScroll(): void {
-    if (!this.infiniteScroll) return;
-    const setDisabled = (this.infiniteScroll as any).setDisabled;
-    if (typeof setDisabled === 'function') {
-      setDisabled.call(this.infiniteScroll, true);
+  doSubmit(): void {
+    if (this.isUploading) {
       return;
     }
-    this.infiniteScroll.disabled = true;
+    this.fileInput.nativeElement.click();
   }
 
-  getItems() {
-    if (this.isBusy == true)
+  getItems(event?: CustomEvent): void {
+    if (this.isBusy) {
       return;
+    }
+
     this.isBusy = true;
-    this.service.getList(this.currentPageIndex).subscribe(res => {
-
-      if (res.length < 15 && this.infiniteScroll != null) {
-        this.disableInfiniteScroll();
+    this.loadError = false;
+    this.service.getList(this.currentPageIndex).pipe(
+      finalize(() => {
+        this.isBusy = false;
+        this.isInitialLoading = false;
+        this.isLoaded = true;
+        this.completeEvent(event);
+      })
+    ).subscribe({
+      next: res => {
+        if (res.length < this.pageSize && this.infiniteScroll) {
+          this.disableInfiniteScroll();
+        }
+        res.forEach(item => {
+          item.Url = `${apiUrl}/UploadBankSlips/Detail/${item.Id}`;
+          this.items.push(item);
+        });
+        this.currentPageIndex++;
+      },
+      error: () => {
+        this.loadError = true;
+        this.uiFeedbackService.presentToast('水单列表加载失败，请稍后重试', 2200, 'middle', undefined, 'danger');
       }
-      for (var i = 0; i < res.length; i++) {
-        res[i].Url = apiUrl + "/UploadBankSlips/Detail/" + res[i].Id;
-        this.items.push(res[i]);
-      }
-      this.currentPageIndex++;
-      if (this.infiniteScroll != null)
-      this.infiniteScroll.complete();
-      this.isBusy = false;
     });
   }
-  delete(id) {
 
-    let confirm = this.alertCtrl.create({
-      header: '确认删除当前回单?',
+  refresh(event?: CustomEvent): void {
+    this.refreshList(event);
+  }
 
+  delete(id: number): void {
+    this.alertCtrl.create({
+      header: '删除水单',
+      message: '删除后该付款凭证将不再展示，确认继续吗？',
       buttons: [
         {
-          text: '取消'
+          text: '取消',
+          role: 'cancel'
         },
         {
-          text: '确认',
+          text: '删除',
+          role: 'destructive',
           handler: () => {
             this.doDelete(id);
           }
         }
       ]
-    }).then(p=>p.present());
-   
+    }).then(alert => alert.present());
   }
-  doDelete(id) {
-    this.service.delete(id).subscribe(res => {
-      console.log(res);
-      if (!res.Success) {
-        const alert = this.alertCtrl.create({
-          header: '删除失败',
-          subHeader: res.ErrMsg,
-          buttons: ['确定']
-        }).then(p=>p.present());
-      
-      }
-      else{
+
+  doDelete(id: number): void {
+    this.service.delete(id).subscribe({
+      next: res => {
+        if (!res.Success) {
+          this.uiFeedbackService.presentToast(res.ErrMsg || '删除失败，请稍后重试', 2200, 'middle', undefined, 'danger');
+          return;
+        }
+        this.uiFeedbackService.presentToast('水单已删除', 1600, 'middle', undefined, 'success');
         this.refreshList();
+      },
+      error: () => {
+        this.uiFeedbackService.presentToast('删除失败，请检查网络后重试', 2200, 'middle', undefined, 'danger');
       }
     });
   }
-  refreshList(){
-    this.currentPageIndex=1;
-    this.items.length=0;
-    this.getItems();
+
+  refreshList(event?: CustomEvent): void {
+    this.isInitialLoading = this.items.length === 0;
+    this.loadError = false;
+    this.currentPageIndex = 1;
+    this.items = [];
+    this.enableInfiniteScroll();
+    this.getItems(event);
   }
 
+  trackBySlipId(_index: number, item: BankSlips): number {
+    return item.Id;
+  }
+
+  getStatusColor(status: string): string {
+    if (status === '已收款') {
+      return 'success';
+    }
+    if (status === '已删除' || status === '已驳回') {
+      return 'medium';
+    }
+    return 'primary';
+  }
+
+  private completeEvent(event?: CustomEvent): void {
+    const target = event?.target as HTMLIonRefresherElement | HTMLIonInfiniteScrollElement;
+    if (target && typeof target.complete === 'function') {
+      target.complete();
+      return;
+    }
+    if (this.infiniteScroll) {
+      this.infiniteScroll.complete();
+    }
+  }
+
+  private disableInfiniteScroll(): void {
+    if (!this.infiniteScroll) return;
+    const infiniteScroll = this.infiniteScroll as IonInfiniteScroll & { setDisabled?: (disabled: boolean) => void };
+    if (typeof infiniteScroll.setDisabled === 'function') {
+      infiniteScroll.setDisabled(true);
+      return;
+    }
+    this.infiniteScroll.disabled = true;
+  }
+
+  private enableInfiniteScroll(): void {
+    if (this.infiniteScroll) {
+      this.infiniteScroll.disabled = false;
+    }
+  }
 }

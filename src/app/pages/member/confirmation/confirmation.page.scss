@@ -49,7 +49,7 @@
 .hero-kicker {
     margin: 0;
     font-size: 11px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     text-transform: uppercase;
     color: var(--member-brand-600);
     font-weight: 700;
@@ -106,7 +106,6 @@
 .control-card ion-card-content {
     display: grid;
     gap: 12px;
-    padding: 12px;
 }
 
 .control-card ion-searchbar {

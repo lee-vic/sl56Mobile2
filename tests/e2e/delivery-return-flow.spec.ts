@@ -1,8 +1,112 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 const apiBase = 'https://api.sl56.com/api';
 
 test.describe('delivery -> return flow', () => {
+  test('shows skeletons while return management initializes', async ({ page }) => {
+    let releaseOngoing: (() => void) | undefined;
+    const ongoingGate = new Promise<void>(resolve => {
+      releaseOngoing = resolve;
+    });
+
+    await page.route(`${apiBase}/**`, async route => {
+      const url = route.request().url();
+
+      if (url.includes('/Return/GetWaitReturnList')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([])
+        });
+        return;
+      }
+
+      if (url.includes('/Return/GetList1')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([])
+        });
+        return;
+      }
+
+      if (url.includes('/Return/GetList2')) {
+        await ongoingGate;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            {
+              ObjectId: 501,
+              ReferenceNumber: '101_REF-501',
+              CreateAt: '2026-06-01 10:00:00',
+              ApplyType: 0,
+              MobilePhone: '13800138000',
+              Remark: '处理中'
+            }
+          ])
+        });
+        return;
+      }
+
+      await route.continue();
+    });
+
+    await page.goto('/member/return-list');
+    await expect(page.locator('app-return-list .skeleton-card').first()).toBeVisible();
+
+    releaseOngoing?.();
+    await expect(page.locator('app-return-list ion-card').filter({ hasText: 'REF-501' })).toBeVisible();
+  });
+
+  test('shows history modal skeleton and fills selected contact on return apply', async ({ page }) => {
+    let releaseHistory: (() => void) | undefined;
+    const historyGate = new Promise<void>(resolve => {
+      releaseHistory = resolve;
+    });
+
+    await page.route(`${apiBase}/**`, async route => {
+      const url = route.request().url();
+
+      if (url.includes('/Return/ApplyHistory')) {
+        await historyGate;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(['张三 13800138000'])
+        });
+        return;
+      }
+
+      if (url.includes('/Return/Apply')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            AllowApply: true,
+            RequiredDate: '2026-06-03',
+            ReferenceNumber: 'REF-APPLY'
+          })
+        });
+        return;
+      }
+
+      await route.continue();
+    });
+
+    await page.goto('/member/return-apply?type=0&ids=101');
+    await page.getByText('历史提货人').click();
+
+    await expect(page.locator('app-return-apply-history .skeleton-item').first()).toBeVisible();
+    releaseHistory?.();
+
+    await page.locator('app-return-apply-history ion-item').filter({ hasText: '张三' }).click();
+    await page.locator('app-return-apply-history ion-footer ion-button').click();
+
+    await expect(page.locator('ion-input[formcontrolname="PersonName"] input')).toHaveValue('张三');
+    await expect(page.locator('ion-input[formcontrolname="MobilePhone"] input')).toHaveValue('13800138000');
+  });
+
   test('shows clear hint and uses bottom entry after adding from delivery record', async ({ page }) => {
     const waitingIds = new Set<number>();
 

@@ -1,103 +1,398 @@
-<ion-header>
+﻿<ion-header translucent="true" class="return-list-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button defaultHref="/app/tabs/member"></ion-back-button>
     </ion-buttons>
     <ion-title>退货管理</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="goWaitingList()">
+        <ion-icon slot="start" name="list-outline"></ion-icon>
+        待提交
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar class="search-toolbar">
+    <ion-searchbar
+      [value]="activeSearchValue"
+      [placeholder]="activeSearchPlaceholder"
+      showClearButton="focus"
+      autocomplete="off"
+      [attr.aria-label]="activeSearchAriaLabel"
+      (ionInput)="onSearchInput($event)"
+      (ionClear)="clearSearch()">
+    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-segment [(ngModel)]="tab">
-    <ion-segment-button value="1">
+<ion-content fullscreen="true" class="return-list-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refreshActive($event)">
+    <ion-refresher-content pullingText="下拉刷新" refreshingSpinner="crescent" refreshingText="正在刷新"></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="return-overview" aria-label="退货状态概览">
+    <button type="button" class="overview-card waiting" (click)="goWaitingList()">
+      <span class="overview-icon">
+        <ion-icon name="file-tray-full-outline"></ion-icon>
+      </span>
+      <span class="overview-copy">
+        <span class="overview-title">待提交</span>
+        <strong *ngIf="!isWaitingCountLoading">{{waitingCount}}</strong>
+        <ion-skeleton-text *ngIf="isWaitingCountLoading" animated class="overview-skeleton"></ion-skeleton-text>
+      </span>
+      <span class="overview-meta">{{waitingCountText}}</span>
+    </button>
+
+    <button type="button" class="overview-card" [class.active]="activeTab === 'ongoing'" (click)="switchTo('ongoing')">
+      <span class="overview-icon">
+        <ion-icon name="sync-outline"></ion-icon>
+      </span>
+      <span class="overview-copy">
+        <span class="overview-title">退货中</span>
+        <strong *ngIf="isOngoingLoaded">{{allOngoingItems.length}}</strong>
+        <ion-skeleton-text *ngIf="!isOngoingLoaded && isOngoingLoading" animated class="overview-skeleton"></ion-skeleton-text>
+      </span>
+      <span class="overview-meta">{{ongoingCountText}}</span>
+    </button>
+
+    <button type="button" class="overview-card" [class.active]="activeTab === 'completed'" (click)="switchTo('completed')">
+      <span class="overview-icon">
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </span>
+      <span class="overview-copy">
+        <span class="overview-title">已完成</span>
+        <strong *ngIf="isCompletedLoaded">{{completedItems.length}}</strong>
+        <ion-skeleton-text *ngIf="!isCompletedLoaded && isCompletedLoading" animated class="overview-skeleton"></ion-skeleton-text>
+      </span>
+      <span class="overview-meta">{{completedCountText}}</span>
+    </button>
+  </section>
+
+  <section class="segment-shell">
+    <ion-segment [value]="activeTab" (ionChange)="onSegmentChange($event)" aria-label="切换退货列表">
+      <ion-segment-button value="ongoing">
+        <ion-label>退货中</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="completed">
         <ion-label>已完成</ion-label>
-   
-    </ion-segment-button>
-    <ion-segment-button value="2">
-     
-      <ion-label> 退货中</ion-label>
-    
-     
-    </ion-segment-button>
-   
+      </ion-segment-button>
+    </ion-segment>
+  </section>
 
-  </ion-segment>
-  <div [ngSwitch]="tab">
-    <div *ngSwitchCase="'1'" class="bg">
-    
-        <ion-searchbar placeholder="原、转单号，国家，报价，运输方式，类型，子单号" showClearButton="focus" (ionInput)="searchItems($event)" #searchbar></ion-searchbar>
-     
-      <ion-list *ngFor="let item of items1" lines="none">
-        <ion-item class="bottom-border order-head">
-          <ion-label class="head-label">
-            <div class="ref-no">原单号:{{item.ReferenceNumber}}</div>
-            <div class="track-no">转单号:{{item.TrackNumber}}</div>
-          </ion-label>
-        </ion-item>
-        <ion-item detail class="item-last" (click)="detail(item)">
-          <ion-label>
-            <h3>{{item.PriceName}}</h3>
-            <p>计费重:{{item.Weight}}Kg</p>
-            <p>计价时间:{{item.Date}}</p>
-          </ion-label>
+  <ng-container [ngSwitch]="activeTab">
+    <section class="list-shell" *ngSwitchCase="'ongoing'">
+      <ng-container *ngIf="showOngoingSkeleton">
+        <ion-card class="return-progress-card skeleton-card ongoing-skeleton-card" *ngFor="let item of skeletonCards">
+          <section class="progress-summary">
+            <div class="progress-copy">
+              <ion-skeleton-text animated class="skeleton-kicker"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-reference"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-time"></ion-skeleton-text>
+            </div>
+            <ion-skeleton-text animated class="skeleton-status"></ion-skeleton-text>
+          </section>
 
-          <ion-note slot="end" class="ion-margin-vertical">￥{{item.Amount}}</ion-note>
-        </ion-item>
-      </ion-list>
-      <ion-infinite-scroll (ionInfinite)="scrollItems($event)">
-        <ion-infinite-scroll-content></ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-    </div>
+          <section class="pickup-section skeleton-pickup-section">
+            <div class="pickup-head">
+              <div class="pickup-title">
+                <ion-skeleton-text animated class="skeleton-icon"></ion-skeleton-text>
+                <span class="pickup-title-copy">
+                  <ion-skeleton-text animated class="skeleton-pickup-title"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="skeleton-pickup-subtitle"></ion-skeleton-text>
+                </span>
+              </div>
+              <ion-skeleton-text animated class="skeleton-validity"></ion-skeleton-text>
+            </div>
 
-    <div *ngSwitchCase="'2'" class="ion-padding-top bg">
-      <ion-list *ngFor="let item of items2" lines="none">
+            <div class="pickup-code-row">
+              <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+              <div class="pickup-code-value">
+                <ion-skeleton-text animated class="skeleton-code"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skeleton-copy-action"></ion-skeleton-text>
+              </div>
+            </div>
 
-        <ion-item  class="bottom-border">
-          <ion-label>单号</ion-label>
-          <ion-note slot="end">{{item.ReferenceNumber}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>申请时间</ion-label>
-          <ion-note slot="end">{{item.CreateAt}}</ion-note>
-        </ion-item>
-        <ion-item>
-          <ion-label>手机号码</ion-label>
-          <ion-note slot="end"  *ngIf="!item.isEditMobilePhone">{{item.MobilePhone}}</ion-note>
-          <ion-button slot="end" (click)="editMobilePhone(item)" expand="block" fill="clear" shape="round" *ngIf="!item.isEditMobilePhone">
-            修改
-          </ion-button>
+            <div class="pickup-details">
+              <div class="pickup-detail">
+                <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skeleton-field-value"></ion-skeleton-text>
+              </div>
+              <div class="pickup-detail">
+                <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skeleton-field-value short"></ion-skeleton-text>
+              </div>
+            </div>
 
-          <ion-input aria-label="编辑手机号码" [(ngModel)]="tempPhone"  *ngIf="item.isEditMobilePhone" data-id="item.ObjectId"></ion-input>
-          <ion-button slot="end" (click)="cancelMobilePhone(item)" expand="block" fill="clear" shape="round"  *ngIf="item.isEditMobilePhone">
-            取消
-          </ion-button>
-          <ion-button slot="end" (click)="submitMobilePhone(item)" expand="block" fill="clear" shape="round"  *ngIf="item.isEditMobilePhone">
-            保存
-          </ion-button>
-        </ion-item>
-        <ion-item *ngIf="item.PickupCode.length>0">
-          <ion-label>取件码</ion-label>
-          <ion-note slot="end">{{item.PickupCode}}</ion-note>
-        </ion-item>
-        <ion-item *ngIf="item.PickupCode.length>0">
-          <ion-label>有效期</ion-label>
-          <ion-note slot="end" [ngStyle]="{'color': getIsExpiredTimeOut(item)?'red':''}">
-            {{item.ExpiredTime}}
-            <span style="color:red" *ngIf="getIsExpiredTimeOut(item)">[过期]</span>
-          </ion-note>
-          <ion-button slot="end" (click)="resetPickupCode(item)" expand="block" fill="clear" shape="round" *ngIf="getIsExpiredTimeOut(item)">
-            重新获取
-          </ion-button>
-        </ion-item>
-        <ion-item [class.bottom-border]="item.ApplyType==0">
-          <ion-label>当前状态</ion-label>
-          <ion-note slot="end">{{item.Remark}}</ion-note>
-        </ion-item>
-        <ion-item class="item-last" *ngIf="item.ApplyType==0">
-          <ion-button slot="end" fill="outline" (click)="cancelApply(item)">取消申请</ion-button>
-        </ion-item>
-      </ion-list>
-    </div>
+            <div class="pickup-action-row">
+              <ion-skeleton-text animated class="skeleton-action"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-action narrow"></ion-skeleton-text>
+            </div>
+          </section>
 
-  </div>
+          <section class="application-actions">
+            <ion-skeleton-text animated class="skeleton-cancel-action"></ion-skeleton-text>
+          </section>
+        </ion-card>
+      </ng-container>
+
+      <ng-container *ngIf="!showOngoingSkeleton">
+        <div class="error-wrap" *ngIf="ongoingLoadError">
+          <ion-icon name="cloud-offline-outline"></ion-icon>
+          <p class="state-title">退货进度加载失败</p>
+          <p class="state-subtitle">网络或服务暂时不可用，请稍后重试。</p>
+          <ion-button size="small" fill="outline" (click)="retryActive()">重新加载</ion-button>
+        </div>
+
+        <div class="empty-wrap" *ngIf="isOngoingLoaded && !ongoingLoadError && ongoingItems.length === 0">
+          <img src="assets/imgs/empty.png" alt="暂无退货中记录">
+          <p class="state-title">{{ongoingSearchKeyword ? '未找到匹配记录' : '暂无退货中记录'}}</p>
+          <p class="state-subtitle">
+            {{ongoingSearchKeyword ? '可以尝试更换关键词或清空搜索。' : '从交货记录加入待退货并提交后，可在这里查看处理进度。'}}
+          </p>
+          <ion-button *ngIf="ongoingSearchKeyword" size="small" fill="outline" (click)="clearSearch()">清空搜索</ion-button>
+          <ion-button *ngIf="!ongoingSearchKeyword" size="small" (click)="goWaitingList()">查看待提交</ion-button>
+        </div>
+
+        <ion-card class="return-progress-card" *ngFor="let item of ongoingItems; trackBy: trackOngoing">
+          <section class="progress-summary">
+            <div class="progress-copy">
+              <div class="progress-kicker">{{getApplyTypeText(item)}}</div>
+              <h2>{{item.displayReferenceNumber || item.ReferenceNumber || '--'}}</h2>
+              <p>提交时间 {{item.CreateAt || '--'}}</p>
+            </div>
+            <ion-badge class="progress-status" [class.progress-status-pickup]="item.ApplyType !== 0">
+              {{item.Remark || '处理中'}}
+            </ion-badge>
+          </section>
+
+          <section
+            class="pickup-section"
+            [class.expired]="hasPickupCode(item) && isPickupCodeExpired(item)"
+            [class.pending]="!hasPickupCode(item)">
+            <div class="pickup-head">
+              <div class="pickup-title">
+                <span class="pickup-icon">
+                  <ion-icon name="keypad-outline"></ion-icon>
+                </span>
+                <span class="pickup-title-copy">
+                  <strong>取件码信息</strong>
+                  <small>{{hasPickupCode(item) ? '用于现场核验取件' : '生成后将短信发送'}}</small>
+                </span>
+              </div>
+              <ion-badge class="validity-badge" *ngIf="hasPickupCode(item)" [class.expired]="isPickupCodeExpired(item)">
+                {{isPickupCodeExpired(item) ? '已过期' : '有效中'}}
+              </ion-badge>
+              <ion-badge class="validity-badge pending" *ngIf="!hasPickupCode(item)">等待生成</ion-badge>
+            </div>
+
+            <div class="pickup-code-row" *ngIf="hasPickupCode(item)">
+              <span>取件码</span>
+              <div class="pickup-code-value">
+                <strong>{{item.PickupCode}}</strong>
+                <ion-button
+                  fill="clear"
+                  size="small"
+                  class="pickup-copy-button"
+                  aria-label="复制取件码"
+                  (click)="copyPickupCode(item)">
+                  <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+            <p class="pickup-empty" *ngIf="!hasPickupCode(item)">取件码生成后，会发送到下方接收手机。</p>
+
+            <div class="pickup-details">
+              <div class="pickup-detail" *ngIf="hasPickupCode(item)">
+                <span>有效至</span>
+                <strong>{{item.ExpiredTime || '--'}}</strong>
+              </div>
+              <div class="pickup-detail">
+                <span>接收手机</span>
+                <strong>{{item.MobilePhone || '--'}}</strong>
+              </div>
+            </div>
+
+            <div class="pickup-action-row">
+              <ion-button fill="clear" size="small" class="pickup-action" (click)="openMobileEdit(item)" [disabled]="isMutating(item)">
+                <ion-icon slot="start" name="call-outline"></ion-icon>
+                修改接收手机
+              </ion-button>
+              <ion-button
+                *ngIf="hasPickupCode(item) && isPickupCodeExpired(item)"
+                fill="clear"
+                color="medium"
+                class="pickup-action quiet-warning-action"
+                size="small"
+                (click)="resetPickupCode(item)"
+                [disabled]="isMutating(item)">
+                <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                重新获取取件码
+              </ion-button>
+            </div>
+          </section>
+
+          <section class="application-actions" *ngIf="item.ApplyType === 0">
+            <ion-button
+              fill="clear"
+              color="medium"
+              class="quiet-danger-action"
+              size="small"
+              (click)="cancelApply(item)"
+              [disabled]="isMutating(item)">
+              <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+              取消申请
+            </ion-button>
+          </section>
+        </ion-card>
+      </ng-container>
+    </section>
+
+    <section class="list-shell" *ngSwitchCase="'completed'">
+      <ng-container *ngIf="showCompletedSkeleton">
+        <ion-card class="completed-card skeleton-card completed-skeleton-card" *ngFor="let item of skeletonCards">
+          <ion-item lines="none" class="completed-head">
+            <ion-label>
+              <div class="no-row">
+                <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skeleton-completed-no"></ion-skeleton-text>
+              </div>
+              <div class="no-row">
+                <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skeleton-completed-track"></ion-skeleton-text>
+              </div>
+            </ion-label>
+            <ion-skeleton-text slot="end" animated class="skeleton-country-badge"></ion-skeleton-text>
+          </ion-item>
+
+          <ion-card-content class="completed-body">
+            <div class="channel-line">
+              <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-channel"></ion-skeleton-text>
+            </div>
+            <div class="compact-field">
+              <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-field-value short"></ion-skeleton-text>
+            </div>
+            <div class="compact-field">
+              <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+              <ion-skeleton-text animated class="skeleton-field-value"></ion-skeleton-text>
+            </div>
+            <div class="completed-foot">
+              <div>
+                <ion-skeleton-text animated class="skeleton-field-label"></ion-skeleton-text>
+                <ion-skeleton-text animated class="skeleton-amount"></ion-skeleton-text>
+              </div>
+              <ion-skeleton-text animated class="skeleton-detail-button"></ion-skeleton-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+
+      <ng-container *ngIf="!showCompletedSkeleton">
+        <div class="error-wrap" *ngIf="completedLoadError && completedItems.length === 0">
+          <ion-icon name="cloud-offline-outline"></ion-icon>
+          <p class="state-title">已完成记录加载失败</p>
+          <p class="state-subtitle">网络或服务暂时不可用，请稍后重试。</p>
+          <ion-button size="small" fill="outline" (click)="retryActive()">重新加载</ion-button>
+        </div>
+
+        <div class="empty-wrap" *ngIf="isCompletedLoaded && !completedLoadError && completedItems.length === 0">
+          <img src="assets/imgs/empty.png" alt="暂无已完成退货">
+          <p class="state-title">{{searchKeyword ? '未找到匹配记录' : '暂无已完成退货'}}</p>
+          <p class="state-subtitle">
+            {{searchKeyword ? '可以尝试更换关键词或清空搜索。' : '完成退货的运单会展示在这里。'}}
+          </p>
+          <ion-button *ngIf="searchKeyword" size="small" fill="outline" (click)="clearSearch()">清空搜索</ion-button>
+        </div>
+
+        <ion-card class="completed-card" *ngFor="let item of completedItems; trackBy: trackCompleted">
+          <ion-item lines="none" class="completed-head" (click)="detail(item)">
+            <ion-label>
+              <div class="no-row">
+                <span>原单号</span>
+                <strong>{{item.ReferenceNumber || '--'}}</strong>
+              </div>
+              <div class="no-row">
+                <span>转单号</span>
+                <strong class="muted">{{item.TrackNumber || '--'}}</strong>
+              </div>
+            </ion-label>
+            <ion-badge slot="end" class="country-badge">{{getCountryLabel(item)}}</ion-badge>
+          </ion-item>
+
+          <ion-card-content class="completed-body" (click)="detail(item)">
+            <div class="channel-line">
+              <span>渠道</span>
+              <strong>{{item.PriceName || '--'}}</strong>
+            </div>
+            <div class="compact-field">
+              <span>计费重</span>
+              <strong>{{item.Weight || item.ChargeableWeight || '--'}} Kg</strong>
+            </div>
+            <div class="compact-field">
+              <span>计价时间</span>
+              <strong>{{item.Date || '--'}}</strong>
+            </div>
+            <div class="completed-foot">
+              <div>
+                <span>金额</span>
+                <ion-text>{{item.Amount | currency:'CNY'}}</ion-text>
+              </div>
+              <ion-button fill="clear" size="small" (click)="$event.stopPropagation(); detail(item)">
+                查看详情
+                <ion-icon slot="end" name="chevron-forward-outline"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+    </section>
+  </ng-container>
+
+  <ion-infinite-scroll
+    [disabled]="activeTab !== 'completed' || !completedHasMore || completedLoadError || isCompletedLoading"
+    (ionInfinite)="scrollCompleted($event)">
+    <ion-infinite-scroll-content loadingSpinner="dots" loadingText="加载更多..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
+
+<ion-modal
+  [isOpen]="isMobileEditOpen"
+  [initialBreakpoint]="0.48"
+  [breakpoints]="[0, 0.48, 0.82]"
+  (didDismiss)="closeMobileEdit()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeMobileEdit()" [disabled]="isMobileSaving">取消</ion-button>
+        </ion-buttons>
+        <ion-title>修改接收手机</ion-title>
+        <ion-buttons slot="end">
+          <ion-button strong="true" (click)="submitMobilePhone()" [disabled]="!canSaveMobilePhone">
+            {{isMobileSaving ? '保存中...' : '确定'}}
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="mobile-edit-content">
+      <section class="mobile-edit-card">
+        <p class="edit-hint">用于接收退货取件通知，请确认手机号码可正常接收短信。</p>
+        <ion-input
+          aria-label="手机号码"
+          label="手机号码"
+          labelPlacement="stacked"
+          fill="outline"
+          type="tel"
+          maxlength="11"
+          inputmode="tel"
+          [value]="mobileDraft"
+          [disabled]="isMobileSaving"
+          (ionInput)="onMobileDraftInput($event)">
+        </ion-input>
+        <ion-note color="danger" *ngIf="mobileEditError">{{mobileEditError}}</ion-note>
+      </section>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -1,8 +1,12 @@
+﻿import { Component, OnInit } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
-import { FadadaService } from '../../../providers/fadada.service';
-import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { FadadaSignTask } from 'src/app/interfaces/fadada-sign-task';
-import { MemberPage } from '../../tabs/member/member.page';
+import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
+import { FadadaService } from '../../../providers/fadada.service';
+
+type ContractTab = '0' | '1' | '2';
+type ContractActionType = -1 | 0 | 1 | 2 | 3 | 5;
 
 @Component({
   selector: 'app-sign-the-contract',
@@ -10,95 +14,189 @@ import { MemberPage } from '../../tabs/member/member.page';
   styleUrls: ['./sign-the-contract.page.scss']
 })
 export class SignTheContractComponent implements OnInit {
+  readonly tabs: Array<{ value: ContractTab; label: string; icon: string }> = [
+    { value: '0', label: '待处理', icon: 'time-outline' },
+    { value: '1', label: '已完成', icon: 'checkmark-done-outline' },
+    { value: '2', label: '其他', icon: 'albums-outline' }
+  ];
 
-  constructor(public faDaDaService: FadadaService, public navCtrl: NavController, private loadingCtrl: LoadingController) {
-  }
-
-  list1: Array<FadadaSignTask> = []; // 待签署合同列表
-  list2: Array<FadadaSignTask> = []; // 已签署合同列表
-  list3: Array<FadadaSignTask> = []; // 其他合同列表
-  showType = '0'; // 0:待签署 1:已签署 2:其他
+  list1: FadadaSignTask[] = [];
+  list2: FadadaSignTask[] = [];
+  list3: FadadaSignTask[] = [];
+  showType: ContractTab = '0';
   isLoading = true;
+  isLoaded = false;
+  loadError = false;
+
+  constructor(
+    public faDaDaService: FadadaService,
+    public navCtrl: NavController,
+    private readonly loadingCtrl: LoadingController,
+    private readonly uiFeedbackService: UiFeedbackService
+  ) {
+  }
 
   ngOnInit(): void {
-    console.log(this.navCtrl);
-    this.isLoading = true;
-    this.faDaDaService.getSignTasks().subscribe(res => {
-      this.isLoading = false;
-      console.log(res);
-      this.list1 = res.filter(item => item.StatusIndex < 6);
-      this.list2 = res.filter(item => item.StatusIndex == 6);
-      this.list3 = res.filter(item => item.StatusIndex > 6);
-    });
-  }
-  segmentChanged(event) {
-    console.log('Segment changed', event.detail.value);
-    this.showType = event.detail.value;
+    this.loadTasks();
   }
 
-  get showList(): Array<FadadaSignTask> {
-    if(this.showType == '0') {
-      return this.list1;
-    } else if(this.showType=='1') {
-      return this.list2;
-    } else {
-      return this.list3;
+  loadTasks(event?: CustomEvent): void {
+    this.isLoading = true;
+    this.loadError = false;
+
+    this.faDaDaService.getSignTasks().pipe(
+      finalize(() => {
+        this.isLoading = false;
+        this.isLoaded = true;
+        this.completeEvent(event);
+      })
+    ).subscribe({
+      next: res => {
+        this.applyTasks(res || []);
+      },
+      error: () => {
+        this.applyTasks([]);
+        this.loadError = true;
+        this.uiFeedbackService.presentToast('合同列表加载失败，请稍后重试', 2200, 'middle', undefined, 'danger');
+      }
+    });
+  }
+
+  segmentChanged(event: CustomEvent): void {
+    const value = String(event.detail.value) as ContractTab;
+    if (this.tabs.some(tab => tab.value === value)) {
+      this.showType = value;
     }
   }
 
-  getShowButtonType(row: FadadaSignTask): number {
-    let buttonType = -1; //-1:不显示按钮 0:填写按钮 1:签署按钮 2:查看按钮 3:等待其他人完成填写 4:等待发起方定稿 5:等待其他人完成签署
-    if (this.showType == '0') {
-      if (row.StatusIndex == 2) {//合同状态是填写进行中
-        if (row.ActorStatus == "待填写") {
+  get showList(): FadadaSignTask[] {
+    if (this.showType === '0') {
+      return this.list1;
+    }
+    if (this.showType === '1') {
+      return this.list2;
+    }
+    return this.list3;
+  }
+
+  get currentEmptyTitle(): string {
+    return this.showType === '0' ? '暂无待处理合同' : this.showType === '1' ? '暂无已完成合同' : '暂无其他合同';
+  }
+
+  get currentEmptyText(): string {
+    return this.showType === '0' ? '需要填写或签署的合同会显示在这里。' : '合同状态更新后会自动同步。';
+  }
+
+  get totalCount(): number {
+    return this.list1.length + this.list2.length + this.list3.length;
+  }
+
+  getShowButtonType(row: FadadaSignTask): ContractActionType {
+    let buttonType: ContractActionType = -1;
+    if (this.showType === '0') {
+      if (row.StatusIndex === 2) {
+        if (row.ActorStatus === '待填写') {
           buttonType = 0;
         } else {
           buttonType = 3;
         }
-      } else if (row.StatusIndex == 3 || row.StatusIndex == 4) {//合同状态是填写完成 或者 签署进行中
-        if (row.ActorStatus == "待签署") {
+      } else if (row.StatusIndex === 3 || row.StatusIndex === 4) {
+        if (row.ActorStatus === '待签署') {
           buttonType = 1;
         } else {
           buttonType = 5;
         }
       }
-    }else if(this.showType=='1') {
+    } else if (this.showType === '1') {
       buttonType = 2;
-    }
-    else {
-      buttonType = -1;
     }
     return buttonType;
   }
 
-  goToSignTask(item: FadadaSignTask) {
-    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
-      loading.present();
-      this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe({
-        next: (res) => {
-          loading.dismiss();
-          window.location.href = res;
-        },
-        error: () => {
-          loading.dismiss();
-        },
-      });
+  getActionLabel(actionType: ContractActionType): string {
+    if (actionType === 0) {
+      return '填写合同';
+    }
+    if (actionType === 1) {
+      return '签署合同';
+    }
+    if (actionType === 3) {
+      return '等待填写';
+    }
+    if (actionType === 5) {
+      return '等待签署';
+    }
+    return '查看合同';
+  }
+
+  getStatusColor(item: FadadaSignTask): string {
+    if (item.StatusIndex < 6) {
+      return 'primary';
+    }
+    if (item.StatusIndex === 6) {
+      return 'success';
+    }
+    return 'medium';
+  }
+
+  getTabCount(tabValue: ContractTab): number {
+    if (tabValue === '0') {
+      return this.list1.length;
+    }
+    if (tabValue === '1') {
+      return this.list2.length;
+    }
+    return this.list3.length;
+  }
+
+  trackBySignTaskId(_index: number, item: FadadaSignTask): string {
+    return item.SignTaskId || `${item.ObjectId}-${item.ActorId}`;
+  }
+
+  async goToSignTask(item: FadadaSignTask): Promise<void> {
+    await this.openSignUrl(item, false);
+  }
+
+  async goToPreview(item: FadadaSignTask): Promise<void> {
+    await this.openSignUrl(item, true);
+  }
+
+  private applyTasks(items: FadadaSignTask[]): void {
+    this.list1 = items.filter(item => item.StatusIndex < 6);
+    this.list2 = items.filter(item => item.StatusIndex === 6);
+    this.list3 = items.filter(item => item.StatusIndex > 6);
+  }
+
+  private async openSignUrl(item: FadadaSignTask, openInNewWindow: boolean): Promise<void> {
+    const loading = await this.loadingCtrl.create({ message: '请稍候...' });
+    await loading.present();
+
+    this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).pipe(
+      finalize(() => {
+        loading.dismiss();
+      })
+    ).subscribe({
+      next: res => {
+        if (!res) {
+          this.uiFeedbackService.presentToast('未获取到合同链接，请稍后重试', 2200, 'middle', undefined, 'warning');
+          return;
+        }
+        if (openInNewWindow) {
+          window.open(res, '_blank');
+          return;
+        }
+        window.location.href = res;
+      },
+      error: () => {
+        this.uiFeedbackService.presentToast('合同链接获取失败，请稍后重试', 2200, 'middle', undefined, 'danger');
+      }
     });
   }
 
-  goToPreview(item: FadadaSignTask) {
-    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
-      loading.present();
-      this.faDaDaService.getSignTaskUrl(item.SignTaskId, item.ActorId).subscribe({
-        next: (res) => {
-          loading.dismiss();
-          window.open(res, '_blank');
-        },
-        error: () => {
-          loading.dismiss();
-        },
-      });
-    });
+  private completeEvent(event?: CustomEvent): void {
+    const target = event?.target as HTMLIonRefresherElement;
+    if (target && typeof target.complete === 'function') {
+      target.complete();
+    }
   }
-  
 }

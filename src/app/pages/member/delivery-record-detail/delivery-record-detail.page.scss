@@ -1,4 +1,4 @@
-ion-content.detail-content {
+﻿ion-content.detail-content {
     --background:
         radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
         radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
@@ -116,7 +116,6 @@ ion-content.detail-content {
 
 /* make loading-card content padding tighter for skeletons */
 .loading-card ion-card-content {
-    padding: 0 4px;
 }
 
 .section-card,
@@ -297,7 +296,6 @@ ion-content.detail-content {
 }
 
 .empty-card ion-card-content {
-    padding: 18px 14px;
     text-align: center;
     color: #6f8199;
     font-size: 13px;

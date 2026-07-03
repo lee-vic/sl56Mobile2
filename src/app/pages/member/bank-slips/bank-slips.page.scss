@@ -1,12 +1,202 @@
-ion-content{
-    --background: #f7f7f7;
+﻿.bank-slips-page {
+    --background: linear-gradient(180deg, #eef5ff 0%, #f7fbff 42%, #ffffff 100%);
 }
-ion-thumbnail{
-    --size:10px;
+
+.page-intro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid #d8e7f8;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
 }
-.thumbnail-img-size{
-    width: auto;
-	height: auto;
-	max-width: 100%;
-	max-height: 100%;	
+
+.intro-icon,
+.file-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: var(--ion-color-primary);
+    background: #edf5ff;
+}
+
+.intro-icon {
+    width: 44px;
+    height: 44px;
+}
+
+.file-icon {
+    width: 38px;
+    height: 38px;
+}
+
+.intro-icon ion-icon {
+    font-size: 23px;
+}
+
+.file-icon ion-icon {
+    font-size: 20px;
+}
+
+.page-intro h1,
+.page-intro p {
+    margin: 0;
+}
+
+.page-intro h1 {
+    color: #132743;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.page-intro p {
+    margin-top: 5px;
+    color: #60718a;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.slip-list,
+.skeleton-list {
+    display: grid;
+    gap: 12px;
+}
+
+.slip-card {
+    border: 1px solid #d8e7f8;
+    border-radius: 14px;
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.slip-card ion-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.slip-card ion-card-title {
+    margin-top: 5px;
+    color: #132743;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.slip-card ion-card-subtitle {
+    color: #60718a;
+    font-size: 12px;
+    letter-spacing: 0;
+}
+
+.slip-card ion-card-content {
+}
+
+.slip-card ion-item {
+    --background: #f8fbff;
+    --border-radius: 12px;
+    --padding-start: 10px;
+    --inner-padding-end: 10px;
+    --min-height: 60px;
+    border: 1px solid #e5eef9;
+    border-radius: 12px;
+}
+
+.slip-card ion-label p {
+    margin-bottom: 4px;
+    color: #71829b;
+    font-size: 12px;
+}
+
+.slip-card ion-label h2 {
+    margin: 0;
+    color: #132743;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.slip-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.slip-actions ion-button {
+    --border-radius: 10px;
+    font-weight: 700;
+}
+
+.state-wrap {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    margin-top: 42px;
+    padding: 18px;
+    color: #60718a;
+    text-align: center;
+}
+
+.state-wrap ion-icon {
+    padding: 12px;
+    border-radius: 16px;
+    color: var(--ion-color-primary);
+    background: #edf5ff;
+    font-size: 30px;
+}
+
+.state-wrap h2,
+.state-wrap p {
+    margin: 0;
+}
+
+.state-wrap h2 {
+    color: #132743;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.state-wrap p {
+    font-size: 13px;
+}
+
+.skeleton-title {
+    width: 58%;
+    height: 18px;
+    border-radius: 6px;
+}
+
+.skeleton-badge {
+    width: 58px;
+    height: 22px;
+    border-radius: 999px;
+}
+
+.skeleton-line {
+    width: 82%;
+    height: 16px;
+    border-radius: 6px;
+}
+
+.skeleton-line.short {
+    width: 46%;
+    margin-top: 10px;
+}
+
+ion-footer ion-toolbar {
+    --background: rgba(255, 255, 255, 0.96);
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+}
+
+ion-footer ion-button {
+    --border-radius: 12px;
+    font-weight: 800;
 }

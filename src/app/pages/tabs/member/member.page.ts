@@ -1,15 +1,37 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Menu, MenuRow, Menus } from '../../../interfaces/menu';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
-import { User } from 'src/app/interfaces/user';
+import { CurrencyAmount, User } from 'src/app/interfaces/user';
 import { NoticeService } from 'src/app/providers/notice.service';
 import { Subject, Subscription } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 import { LoadingController } from '@ionic/angular';
+
+interface LoginFormValue {
+  username: string;
+  password: string;
+  clientType: number | string;
+  userType: number;
+  rememberMe: boolean;
+  isBind: boolean;
+  openId: string;
+  unionId: string;
+}
+
+interface AuthResult {
+  Success: boolean;
+  ErrMsg?: string;
+}
+
+interface ReorderDetail {
+  from: number;
+  to: number;
+  complete: (data?: Array<string>) => void;
+}
 
 @Component({
   selector: 'app-member',
@@ -20,38 +42,44 @@ export class MemberPage implements OnInit, OnDestroy {
   readonly quickMenuMin = 3;
   readonly quickMenuLimit = 6;
   private readonly quickMenuStoragePrefix = 'member_quick_menu_custom_v2_';
-  private readonly quickMenuStorageVersion = 2;
+  private readonly quickMenuStorageVersion = 6;
   private readonly quickMenuTitles = [
     '价格查询',
+    '业务公告',
+    '快速预报',
+    '交货记录',
+    '退货管理',
+    '偏远查询',
+  ];
+  private readonly promotedMenuTitleSet = new Set([
     '交货清单确认',
     '问题跟进',
-    '交货记录',
-    '偏远查询',
+    '合同签署',
     '微信支付',
-  ];
+  ]);
 
   allMenus: Array<Menu> = [
-    { title: "价格查询", image: "assets/imgs/member-2.png", type: [0, 1], url: "/member/calculation" },
-    { title: "业务公告", image: "assets/imgs/member-19.png", type: [0, 1], url: "/member/notice-list" },
-    { title: "偏远查询", image: "assets/imgs/member-3.png", type: [0, 1], url: "/member/remote" },
-    { title: "交货清单确认", image: "assets/imgs/member-5.png", type: [0, 1], url: "/member/confirmation" },
-    { title: "交货记录", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/delivery-record/list" },
-    { title: "快速预报", image: "assets/imgs/member-4.png", type: [0, 1], url: "/member/import-manifest/list" },
-    { title: "问题跟进", image: "assets/imgs/member-18.png", type: [0, 1], url: "/member/problem-list" },
-    { title: "退货管理", image: "assets/imgs/member-20.png", type: [0, 1], url: "/member/return-list" },
-    { title: "微信支付", image: "assets/imgs/member-8.png", type: [0, 1], url: "/member/wechat-pay/0?cid=1" },
-    { title: "银行账号", image: "assets/imgs/member-23.png", type: [0, 1], url: "/member/bank" },
-    { title: "消息订阅", image: "assets/imgs/member-22.png", type: [0, 1], url: "/member/message-subscription/list" },
-    { title: "联系客服", image: "assets/imgs/member-6.png", type: [0, 1], url: "/member/chat/0" },
-    { title: "修改登录密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-password" },
-    { title: "修改交货密码", image: "assets/imgs/member-11.png", type: [0], url: "/member/modify-deliverypassword" },
-    { title: "子账号管理", image: "assets/imgs/member-12.png", type: [0], url: "/member/sub-account" },
-    { title: "微信绑定", image: "assets/imgs/member-13.png", type: [0, 1], url: "/member/wechat-binding" },
-    { title: "银行水单上传(优先放货)", image: "assets/imgs/member-17.png", type: [0, 1], url: "/member/bank-slips" },
-    { title: "模板下载", image: "assets/imgs/member-7.png", type: [0, 1], url: "/member/template-list" },
-    { title: "查看报价", image: "assets/imgs/member-10.png", type: [0], url: "/member/price-list" },
-    { title: "合同签署", image: "assets/imgs/member-24.png", type: [0, 1], url: "/member/sign-the-contract" },
-    { title: "香港入仓申请", image: "assets/imgs/member-26.png", type: [0, 1], url: "/member/warehouse-application" }
+    { title: '价格查询', image: 'assets/imgs/member-2.png', icon: 'calculator-outline', tone: 'blue', summary: '测算运输报价', type: [0, 1], url: '/member/calculation' },
+    { title: '业务公告', image: 'assets/imgs/member-19.png', icon: 'megaphone-outline', tone: 'amber', summary: '服务和渠道通知', type: [0, 1], url: '/member/notice-list' },
+    { title: '偏远查询', image: 'assets/imgs/member-3.png', icon: 'location-outline', tone: 'cyan', summary: '查询偏远附加', type: [0, 1], url: '/member/remote' },
+    { title: '交货清单确认', image: 'assets/imgs/member-5.png', icon: 'checkbox-outline', tone: 'blue', summary: '核对待交货清单', type: [0, 1], url: '/member/confirmation' },
+    { title: '交货记录', image: 'assets/imgs/member-6.png', icon: 'cube-outline', tone: 'green', summary: '查看历史交货', type: [0, 1], url: '/member/delivery-record/list' },
+    { title: '快速预报', image: 'assets/imgs/member-4.png', icon: 'paper-plane-outline', tone: 'blue', summary: '快速创建预报', type: [0, 1], url: '/member/import-manifest/list' },
+    { title: '问题跟进', image: 'assets/imgs/member-18.png', icon: 'alert-circle-outline', tone: 'amber', summary: '处理异常问题件', type: [0, 1], url: '/member/problem-list' },
+    { title: '退货管理', image: 'assets/imgs/member-20.png', icon: 'refresh-circle-outline', tone: 'cyan', summary: '管理退货申请', type: [0, 1], url: '/member/return-list' },
+    { title: '微信支付', image: 'assets/imgs/member-8.png', icon: 'wallet-outline', tone: 'green', summary: '支付运费欠款', type: [0, 1], url: '/member/wechat-pay/0?cid=1' },
+    { title: '银行账号', image: 'assets/imgs/member-23.png', icon: 'card-outline', tone: 'slate', summary: '查看收款账户', type: [0, 1], url: '/member/bank' },
+    { title: '消息订阅', image: 'assets/imgs/member-22.png', icon: 'notifications-outline', tone: 'blue', summary: '配置业务提醒', type: [0, 1], url: '/member/message-subscription/list' },
+    { title: '联系客服', image: 'assets/imgs/member-6.png', icon: 'headset-outline', tone: 'cyan', summary: '联系专属客服', type: [0, 1], url: '/member/chat/0' },
+    { title: '修改登录密码', image: 'assets/imgs/member-11.png', icon: 'lock-closed-outline', tone: 'slate', summary: '保护账号安全', type: [0], url: '/member/modify-password' },
+    { title: '修改交货密码', image: 'assets/imgs/member-11.png', icon: 'key-outline', tone: 'slate', summary: '更新交货口令', type: [0], url: '/member/modify-deliverypassword' },
+    { title: '子账号管理', image: 'assets/imgs/member-12.png', icon: 'people-outline', tone: 'blue', summary: '管理团队账号', type: [0], url: '/member/sub-account' },
+    { title: '微信绑定', image: 'assets/imgs/member-13.png', icon: 'chatbubble-ellipses-outline', tone: 'green', summary: '绑定微信服务', type: [0, 1], url: '/member/wechat-binding' },
+    { title: '银行水单上传(优先放货)', image: 'assets/imgs/member-17.png', icon: 'receipt-outline', tone: 'amber', summary: '上传付款凭证', type: [0, 1], url: '/member/bank-slips' },
+    { title: '模板下载', image: 'assets/imgs/member-7.png', icon: 'download-outline', tone: 'cyan', summary: '下载业务模板', type: [0, 1], url: '/member/template-list' },
+    { title: '查看报价', image: 'assets/imgs/member-10.png', icon: 'pricetags-outline', tone: 'green', summary: '查看报价文件', type: [0], url: '/member/price-list' },
+    { title: '合同签署', image: 'assets/imgs/member-24.png', icon: 'document-text-outline', tone: 'blue', summary: '处理电子合同', type: [0, 1], url: '/member/sign-the-contract' },
+    { title: '香港入仓申请', image: 'assets/imgs/member-26.png', icon: 'business-outline', tone: 'cyan', summary: '申请香港仓入仓', type: [0, 1], url: '/member/warehouse-application' }
   ];
   menus: Menus;
   quickMenuRows: Array<MenuRow> = [];
@@ -65,15 +93,13 @@ export class MemberPage implements OnInit, OnDestroy {
   isLogin: boolean = false;
   isDashboardLoading: boolean = false;
   public authForm: FormGroup;
-  public loading: any;
   userInfo: User;
-  username: string = "";
+  username: string = '';
   customerType: number;
-  currencyAmount: any;
+  currencyAmount: Array<CurrencyAmount> = [];
   unreadNoticeCount: number = 0;
   waitToSignTaskCount: number = 0;
   visibleMenuCount: number = 0;
-  noticeIsClicked: boolean = false;
   routerSub: Subscription;
   private readonly destroy$ = new Subject<void>();
   constructor(private userService: UserService,
@@ -105,7 +131,7 @@ export class MemberPage implements OnInit, OnDestroy {
           this.loginSuccess();
         },
         error: (err) => {
-          if (err.status == 401) {
+          if (err.status === 401) {
             this.isLogin = false;
           }
         }
@@ -139,19 +165,21 @@ export class MemberPage implements OnInit, OnDestroy {
     this.router.navigateByUrl("/member/reset-password");
   }
 
-  async doLogin(formValue) {
+  async doLogin(formValue: LoginFormValue) {
     this.releaseFocus();
     const loading = await this.loadingCtrl.create({ message: '登录中...' });
     await loading.present();
-    // Web application - always set clientType to web
-    formValue.clientType = 1;
-    formValue.openId = this.cookieService.get('OpenId');
-    formValue.unionId = this.cookieService.get('UnionId');
-    this.userService.auth(formValue).subscribe({
-      next: (res: any) => {
+    const loginFormValue: LoginFormValue = {
+      ...formValue,
+      clientType: 1,
+      openId: this.cookieService.get('OpenId'),
+      unionId: this.cookieService.get('UnionId'),
+    };
+    this.userService.auth(loginFormValue).subscribe({
+      next: (res: AuthResult) => {
         loading.dismiss();
         this.isLogin = res.Success;
-        if (this.isLogin == true) {
+        if (this.isLogin === true) {
           this.loginSuccess();
         }
         if (!this.isLogin) {
@@ -178,17 +206,15 @@ export class MemberPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
-          console.log(res);
           this.isDashboardLoading = false;
           this.userInfo = res;
           this.username = res.CustomerNo;
           this.customerType = res.Classify;
-          this.currencyAmount = res.CurrencyAmount;
+          this.currencyAmount = Array.isArray(res.CurrencyAmount) ? res.CurrencyAmount : [];
           this.waitToSignTaskCount = res.WaitToSignTaskCount;
-          let tempMenus = this.allMenus.filter(p => {
-            return p.type.indexOf(this.customerType) > -1;
-          });
-          this.visibleMenuCount = tempMenus.length;
+          const customerMenus = this.getCustomerMenus(this.customerType);
+          const tempMenus = this.getVisibleMenuOptions(this.customerType);
+          this.visibleMenuCount = customerMenus.length;
           this.visibleMenuOptions = tempMenus;
           this.applyQuickMenuCustomization(tempMenus, this.getStoredQuickMenuTitles(tempMenus));
           this.refreshUnreadCount();
@@ -229,6 +255,15 @@ export class MemberPage implements OnInit, OnDestroy {
       return 4;
     }
     return 3;
+  }
+
+  private getCustomerMenus(customerType: number): Array<Menu> {
+    return this.allMenus.filter(menu => menu.type.indexOf(customerType) > -1);
+  }
+
+  private getVisibleMenuOptions(customerType: number): Array<Menu> {
+    return this.getCustomerMenus(customerType)
+      .filter(menu => !this.promotedMenuTitleSet.has(menu.title));
   }
 
   private rebuildMenuRows() {
@@ -343,7 +378,20 @@ export class MemberPage implements OnInit, OnDestroy {
         return this.getDefaultQuickMenuTitles(tempMenus);
       }
 
+      if (parsed.version !== this.quickMenuStorageVersion) {
+        const defaults = this.getDefaultQuickMenuTitles(tempMenus);
+        this.quickMenuCustomTitles = defaults;
+        this.saveQuickMenuCustomization(defaults);
+        return defaults;
+      }
+
       const parsedTitles = Array.isArray(parsed.titles) ? parsed.titles : [];
+      if (parsedTitles.some(title => typeof title === 'string' && this.promotedMenuTitleSet.has(title))) {
+        const defaults = this.getDefaultQuickMenuTitles(tempMenus);
+        this.quickMenuCustomTitles = defaults;
+        this.saveQuickMenuCustomization(defaults);
+        return defaults;
+      }
       const normalizedTitles = this.ensureQuickMenuMinimum(
         tempMenus,
         this.normalizeQuickMenuTitles(parsedTitles, tempMenus)
@@ -420,7 +468,7 @@ export class MemberPage implements OnInit, OnDestroy {
   }
 
   onDraftReorder(event: CustomEvent) {
-    const detail = event.detail as { from: number; to: number; complete: (data?: any) => void };
+    const detail = event.detail as ReorderDetail;
     const item = this.draftQuickMenuTitles.splice(detail.from, 1)[0];
     this.draftQuickMenuTitles.splice(detail.to, 0, item);
     detail.complete();
@@ -487,30 +535,20 @@ export class MemberPage implements OnInit, OnDestroy {
     this.showToast('已恢复默认常用功能');
   }
 
-  menuClick(item) {
+  menuClick(item: Menu) {
     this.releaseFocus();
 
 
-    if (item.url == "") {
+    if (item.url === '') {
       this.showToast('功能升级中...');
     }
     else {
-      if (item.title == "业务公告") {
-        this.noticeIsClicked = true;
-
-      }
       this.router.navigateByUrl(item.url);
     }
 
   }
   IsMicroMessenger(): boolean {
-    let ua = navigator.userAgent.toLowerCase();
-    let m = ua.match(/MicroMessenger/i);
-
-    if (m != null && m.toString() == "micromessenger") {
-      return true;
-    }
-    return false;
+    return /micromessenger/i.test(navigator.userAgent);
   }
   logOff() {
     this.userService.logOff().pipe(takeUntil(this.destroy$)).subscribe(_res => {
@@ -532,7 +570,7 @@ export class MemberPage implements OnInit, OnDestroy {
   openChat() {
     this.releaseFocus();
     //this.router.navigateByUrl("/member/chat/0");
-    this.router.navigate(["/member", "chat", 0])
+    this.router.navigate(['/member', 'chat', 0]);
   }
 
   goToConfirmation() {
@@ -545,9 +583,14 @@ export class MemberPage implements OnInit, OnDestroy {
     this.router.navigateByUrl('/member/problem-list');
   }
 
-  wechatPay(id) {
+  goToSignTasks() {
     this.releaseFocus();
-    this.router.navigateByUrl("/member/wechat-pay/0?cid=" + id);
+    this.router.navigateByUrl('/member/sign-the-contract');
+  }
+
+  wechatPay(id: number | string) {
+    this.releaseFocus();
+    this.router.navigateByUrl('/member/wechat-pay/0?cid=' + id);
   }
   goToTest() {
     this.releaseFocus();
@@ -559,5 +602,21 @@ export class MemberPage implements OnInit, OnDestroy {
     if (activeElement && typeof activeElement.blur === 'function') {
       activeElement.blur();
     }
+  }
+
+  getMemberInitial(): string {
+    return (this.username || '会').slice(0, 1).toUpperCase();
+  }
+
+  getCurrencyAmounts(): Array<CurrencyAmount> {
+    return Array.isArray(this.currencyAmount) ? this.currencyAmount : [];
+  }
+
+  trackByMenuTitle(_index: number, item: Menu): string {
+    return item.title;
+  }
+
+  trackByCurrencyId(_index: number, item: CurrencyAmount): number {
+    return item.Id;
   }
 }

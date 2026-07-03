@@ -1,3 +1,153 @@
-ion-avatar{
-    --border-radius:3px;
+﻿.template-page {
+    --background: linear-gradient(180deg, #eef5ff 0%, #f7fbff 42%, #ffffff 100%);
+}
+
+.page-intro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid #d8e7f8;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.intro-icon,
+.template-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: var(--ion-color-primary);
+    background: #edf5ff;
+}
+
+.intro-icon {
+    width: 44px;
+    height: 44px;
+}
+
+.template-icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+}
+
+.intro-icon ion-icon {
+    font-size: 23px;
+}
+
+.template-icon ion-icon {
+    font-size: 21px;
+}
+
+.page-intro h1,
+.page-intro p {
+    margin: 0;
+}
+
+.page-intro h1 {
+    color: #132743;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.page-intro p {
+    margin-top: 5px;
+    color: #60718a;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.template-list {
+    display: grid;
+    gap: 10px;
+}
+
+.template-card {
+    border: 1px solid #d8e7f8;
+    border-radius: 14px;
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.template-card ion-card-content {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.template-card ion-label h2 {
+    margin: 0;
+    color: #132743;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.template-card ion-label p {
+    margin: 5px 0 0;
+    color: #60718a;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.template-card ion-button {
+    --border-radius: 10px;
+    color: var(--ion-color-primary);
+}
+
+.state-wrap {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    margin-top: 42px;
+    padding: 18px;
+    color: #60718a;
+    text-align: center;
+}
+
+.state-wrap ion-icon {
+    padding: 12px;
+    border-radius: 16px;
+    color: var(--ion-color-primary);
+    background: #edf5ff;
+    font-size: 30px;
+}
+
+.state-wrap h2,
+.state-wrap p {
+    margin: 0;
+}
+
+.state-wrap h2 {
+    color: #132743;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.state-wrap p {
+    font-size: 13px;
+}
+
+.skeleton-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+}
+
+.skeleton-title {
+    width: 64%;
+    height: 16px;
+    border-radius: 6px;
+}
+
+.skeleton-line {
+    width: 88%;
+    height: 13px;
+    margin-top: 10px;
+    border-radius: 6px;
 }

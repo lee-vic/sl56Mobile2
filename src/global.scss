@@ -1,4 +1,4 @@
-/*
+﻿/*
  * App Global CSS
  * ----------------------------------------------------------------------------
  * Put style rules here that you want to apply globally. These styles are for
@@ -25,6 +25,8 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+@import "./theme/app-foundation";
+@import "./theme/member-center";
 
 ion-content {
     -webkit-user-select: text !important;
@@ -155,7 +157,6 @@ ion-toast.member-theme-toast::part(message) {
 
 /* --- Skeleton page shell (full page padding wrapper) --- */
 .skeleton-page {
-  padding: var(--member-spacing-lg, 16px);
   display: flex;
   flex-direction: column;
   gap: var(--member-spacing-md, 12px);

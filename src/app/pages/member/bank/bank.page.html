@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -6,25 +6,56 @@
     <ion-title>银行账户</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>中国银行</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>户名:深圳市升蓝物流有限公司</p>
-      <p>开户行:中国银行股份有限公司深圳机场支行</p>
-      <p>账号:764057955149</p>
-    </ion-card-content>
-  </ion-card>
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>招商银行</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>户名:深圳市升蓝物流有限公司</p>
-      <p>开户行:招商银行股份有限公司深圳深南中路支行</p>
-      <p>账号:755919924510101</p>
-    </ion-card-content>
-  </ion-card>
+<ion-content class="bank-account-page">
+  <section class="page-intro">
+    <div class="intro-icon">
+      <ion-icon name="card-outline"></ion-icon>
+    </div>
+    <div>
+      <h1>对公收款账户</h1>
+      <p>转账时请核对户名和开户行，付款完成后可前往银行水单上传凭证。</p>
+    </div>
+  </section>
+
+  <section class="account-list">
+    <ion-card class="account-card ion-no-margin" *ngFor="let account of accounts; trackBy: trackByAccountNo">
+      <ion-card-header>
+        <div>
+          <ion-card-subtitle>收款银行</ion-card-subtitle>
+          <ion-card-title>{{account.bankName}}</ion-card-title>
+        </div>
+        <ion-badge color="primary">对公账户</ion-badge>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item>
+            <ion-label>
+              <p>户名</p>
+              <h2>{{account.accountName}}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              <p>开户行</p>
+              <h2>{{account.branchName}}</h2>
+            </ion-label>
+          </ion-item>
+          <ion-item class="account-no-item">
+            <ion-label>
+              <p>银行账号</p>
+              <h2>{{account.accountNo}}</h2>
+            </ion-label>
+            <ion-button
+              slot="end"
+              fill="clear"
+              aria-label="复制银行账号"
+              (click)="copyAccountNo(account)">
+              <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </section>
 </ion-content>

@@ -1,0 +1,120 @@
+﻿.bank-account-page {
+    --background: linear-gradient(180deg, #eef5ff 0%, #f7fbff 42%, #ffffff 100%);
+}
+
+.page-intro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid #d8e7f8;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.intro-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    color: var(--ion-color-primary);
+    background: #edf5ff;
+}
+
+.intro-icon ion-icon {
+    font-size: 23px;
+}
+
+.page-intro h1,
+.page-intro p {
+    margin: 0;
+}
+
+.page-intro h1 {
+    color: #132743;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.page-intro p {
+    margin-top: 5px;
+    color: #60718a;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.account-list {
+    display: grid;
+    gap: 12px;
+}
+
+.account-card {
+    border: 1px solid #d8e7f8;
+    border-radius: 14px;
+    box-shadow: 0 6px 12px rgba(20, 49, 90, 0.06);
+}
+
+.account-card ion-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.account-card ion-card-title {
+    margin-top: 4px;
+    color: #132743;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.account-card ion-card-subtitle {
+    color: #60718a;
+    font-size: 12px;
+    letter-spacing: 0;
+}
+
+.account-card ion-card-content {
+}
+
+.account-card ion-list {
+    overflow: hidden;
+    border: 1px solid #e5eef9;
+    border-radius: 12px;
+    padding: 0;
+    background: #ffffff;
+}
+
+.account-card ion-item {
+    --padding-start: 12px;
+    --inner-padding-end: 8px;
+    --min-height: 62px;
+}
+
+.account-card ion-label p {
+    margin-bottom: 4px;
+    color: #71829b;
+    font-size: 12px;
+}
+
+.account-card ion-label h2 {
+    margin: 0;
+    color: #132743;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.account-no-item ion-label h2 {
+    font-size: 20px;
+    letter-spacing: 0;
+}
+
+.account-no-item ion-button {
+    --border-radius: 10px;
+    color: var(--ion-color-primary);
+}

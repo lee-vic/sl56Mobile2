@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
 }
 
@@ -395,11 +395,9 @@
 }
 
 .shipment-card ion-card-header {
-    padding: 10px 12px 2px;
 }
 
 .shipment-card ion-card-content {
-    padding: 4px 12px 8px;
 }
 
 .card-action {
@@ -443,7 +441,6 @@
 
 .empty-state ion-card-content,
 .error-card ion-card-content {
-    padding: 22px 16px;
     display: flex;
     flex-direction: column;
     align-items: center;

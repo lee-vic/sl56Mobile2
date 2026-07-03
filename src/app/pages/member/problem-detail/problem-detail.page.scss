@@ -190,7 +190,7 @@
   font-weight: 700;
   color: #7a91ae;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
 }
 
 .form-list {
@@ -410,13 +410,11 @@ ion-button[expand="block"] {
 .summary-card ion-card-header,
 .guide-card ion-card-header,
 .step-card ion-card-header {
-    padding: 14px 16px 8px;
 }
 
 .summary-card ion-card-content,
 .guide-card ion-card-content,
 .step-card ion-card-content {
-    padding: 8px 16px 14px;
 }
 
 .summary-card ion-card-title {

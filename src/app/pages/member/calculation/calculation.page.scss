@@ -39,7 +39,6 @@ ion-content.calc-content {
 }
 
 .mode-card ion-card-content {
-    padding: 12px;
 }
 
 .mode-header {
@@ -53,7 +52,7 @@ ion-content.calc-content {
 .mode-header h2 {
     margin: 0;
     font-size: 19px;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     color: var(--calc-title);
 }
 
@@ -139,7 +138,6 @@ ion-content.calc-content {
 }
 
 .panel-card ion-card-header {
-    padding-bottom: 0;
 }
 
 .panel-card ion-card-title {
@@ -206,8 +204,6 @@ ion-content.calc-content {
 }
 
 .bottom-info-card ion-card-content {
-    padding-top: 10px;
-    padding-bottom: 10px;
 }
 
 .bottom-info-card ion-note {
@@ -236,7 +232,7 @@ ion-content.calc-content {
     color: var(--calc-title);
     text-align: left;
     font: inherit;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
     transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
 }

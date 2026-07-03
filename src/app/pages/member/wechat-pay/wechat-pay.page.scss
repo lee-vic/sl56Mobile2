@@ -32,7 +32,6 @@
   box-shadow: none;
 
   ion-card-content {
-    padding: 12px 16px;
   }
 
   .banner-row {
@@ -64,15 +63,16 @@
 
 .hero-card {
   margin: 10px 12px 0;
-  border-radius: 14px;
-  border: 1px solid rgba(120, 176, 238, 0.45);
-  background: linear-gradient(138deg, var(--wx-brand-soft) 0%, #4a87cf 38%, var(--member-brand-500, #0b61bd) 74%, var(--wx-brand-strong) 100%) !important;
-  box-shadow: 0 10px 24px rgba(21, 84, 159, 0.28);
-  color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(161, 203, 248, 0.72);
+  background:
+    radial-gradient(circle at 14% 0%, rgba(76, 160, 255, 0.16), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(242, 248, 255, 0.94) 100%);
+  box-shadow: 0 10px 24px rgba(8, 63, 122, 0.1);
+  color: var(--member-text-900, #12213a);
   overflow: hidden;
 
   ion-card-content {
-    padding: 14px 16px 12px;
     text-align: center;
   }
 
@@ -80,18 +80,18 @@
     margin-bottom: 8px;
 
     .customer-chip {
-      --background: rgba(255, 255, 255, 0.14);
-      --color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.3);
+      --background: rgba(231, 242, 255, 0.86);
+      --color: var(--member-brand-600, #084f9b);
+      border-color: rgba(161, 203, 248, 0.72);
       font-size: 12px;
       height: 28px;
 
       ion-icon {
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--member-brand-600, #084f9b);
       }
 
       ion-label {
-        color: #ffffff;
+        color: var(--member-brand-600, #084f9b);
       }
     }
   }
@@ -99,16 +99,16 @@
   .hero-amount {
     font-size: 2.2rem;
     font-weight: 700;
-    letter-spacing: -0.3px;
+    letter-spacing: 0;
     line-height: 1.1;
-    color: #ffffff;
+    color: var(--member-brand-700, #083f7a);
     margin-bottom: 2px;
   }
 
   .hero-label {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.88);
-    letter-spacing: 0.4px;
+    color: var(--member-text-500, #5f759a);
+    letter-spacing: 0;
     margin-bottom: 10px;
   }
 
@@ -116,9 +116,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid rgba(207, 229, 255, 0.9);
+    border-radius: 8px;
     padding: 7px 0;
 
     .breakdown-item {
@@ -128,12 +128,12 @@
       .breakdown-value {
         font-size: 1.2rem;
         font-weight: 600;
-        color: #ffffff;
+        color: var(--member-text-900, #12213a);
       }
 
       .breakdown-key {
         font-size: 10px;
-        color: rgba(255, 255, 255, 0.82);
+        color: var(--member-text-500, #5f759a);
         margin-top: 1px;
       }
     }
@@ -141,7 +141,7 @@
     .breakdown-divider {
       width: 1px;
       height: 24px;
-      background: rgba(255, 255, 255, 0.28);
+      background: rgba(161, 203, 248, 0.72);
     }
   }
 }
@@ -153,7 +153,6 @@
   box-shadow: none;
 
   ion-card-content {
-    padding: 12px 16px;
   }
 
   .danger-row {
@@ -201,13 +200,12 @@
   backdrop-filter: blur(8px);
 
   ion-card-header {
-    padding: 14px 16px 0;
   }
 
   ion-card-subtitle {
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0;
     text-transform: uppercase;
     color: #5f7b99;
   }
@@ -327,7 +325,7 @@
       margin: 0 2px 0 6px;
       font-size: 11px;
       color: #7f94af;
-      letter-spacing: 0.2px;
+      letter-spacing: 0;
       white-space: nowrap;
     }
 
@@ -371,7 +369,6 @@
   backdrop-filter: blur(8px);
 
   ion-card-header {
-    padding: 14px 16px 0;
   }
 
   .selection-header {
@@ -383,7 +380,7 @@
   ion-card-subtitle {
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0;
     text-transform: uppercase;
     color: var(--ion-color-medium, #92949c);
   }
@@ -395,7 +392,6 @@
   }
 
   .selection-card-content {
-    padding: 4px 0;
   }
 
   ion-list {
@@ -448,7 +444,7 @@
     --background-activated: var(--member-brand-600, #084f9b);
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
     height: 52px;
   }
 }
@@ -470,7 +466,7 @@ ion-select:focus-visible {
 
 /* ── Skeleton loading ── */
 .skeleton-page {
-  padding: 12px 12px 20px;
+  padding: 0 0 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
