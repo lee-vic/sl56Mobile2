@@ -7,15 +7,13 @@
 		radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
 		radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
 		#f2f7ff;
-	--padding-start: 0;
-	--padding-end: 0;
 	--padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
 .remote-shell {
 	max-width: 900px;
 	margin: 0 auto;
-	padding: 10px 16px 20px;
+	padding: 0 0 20px;
 	display: grid;
 	gap: 10px;
 }

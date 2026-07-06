@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -35,9 +35,8 @@ describe('UnreadMessageListPage', () => {
       { NoticeId: 4, Title: '公告4', Summary: '摘要4', CreateAt: '2026-05-25', IsRead: true }
     ];
 
-    instantMessageService.getUnReadMessage.and.returnValue(of({ Count1: 3, Count2: 2 }));
-    instantMessageService.getUnReadMessage1.and.returnValue(of({ Count1: 1, Count2: 0 }));
-    noticeService.getUnreadCount.and.returnValue(of(4));
+    instantMessageService.getUnReadMessage.and.returnValue(of({ WaybillMessageCount: 3, ConsultMessageCount: 2, NoticeUnreadCount: 4 }));
+    instantMessageService.getUnReadMessage1.and.returnValue(of({ WaybillMessageCount: 1, ConsultMessageCount: 0 }));
     noticeService.getNoticeList.and.returnValue(of(notices));
     toastController.create.and.returnValue(Promise.resolve({
       present: jasmine.createSpy('present')
@@ -68,9 +67,8 @@ describe('UnreadMessageListPage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('loads instant message counts, notice unread count, and recent notices on init', () => {
+  it('loads instant message counts and recent notices on init', () => {
     expect(instantMessageService.getUnReadMessage).toHaveBeenCalled();
-    expect(noticeService.getUnreadCount).toHaveBeenCalled();
     expect(noticeService.getNoticeList).toHaveBeenCalledWith(1);
     expect(component.getConsultUnreadCount()).toBe(2);
     expect(component.getWaybillUnreadCount()).toBe(3);
@@ -82,7 +80,7 @@ describe('UnreadMessageListPage', () => {
 
   it('opens consultation chat when consultation has no unread messages', () => {
     spyOn(router, 'navigate');
-    component.data = { Count1: 1, Count2: 0 };
+    component.msgData = { WaybillMessageCount: 1, ConsultMessageCount: 0 };
 
     component.detail(0);
 
@@ -91,7 +89,7 @@ describe('UnreadMessageListPage', () => {
   });
 
   it('shows a toast when waybill messages have no unread messages', () => {
-    component.data = { Count1: 0, Count2: 1 };
+    component.msgData = { WaybillMessageCount: 0, ConsultMessageCount: 1 };
 
     component.detail(1);
 
@@ -131,7 +129,6 @@ describe('UnreadMessageListPage', () => {
     component.refresh(event);
 
     expect(instantMessageService.getUnReadMessage).toHaveBeenCalledTimes(2);
-    expect(noticeService.getUnreadCount).toHaveBeenCalledTimes(2);
     expect(noticeService.getNoticeList).toHaveBeenCalledTimes(2);
     expect(complete).toHaveBeenCalled();
     expect(component.isRefreshing).toBe(false);

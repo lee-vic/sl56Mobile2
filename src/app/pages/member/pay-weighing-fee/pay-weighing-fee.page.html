@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-title>开始称重</ion-title>
     <ion-buttons slot="end">
@@ -10,9 +10,9 @@
 </ion-header>
 
 
-<ion-content>
+<ion-content class="weighing-content">
   <div *ngIf="isMiniProgram==false">
-    <ion-card>
+    <ion-card class="weighing-card">
       <ion-card-header>
         <ion-card-title>系统已迁移到小程序</ion-card-title>
       </ion-card-header>
@@ -22,8 +22,8 @@
       </ion-card-content>
     </ion-card>
   </div>
-  <div *ngIf="isMiniProgram==true">
-    <ion-segment [(ngModel)]="data.WeighingMode">
+  <div class="weighing-page" *ngIf="isMiniProgram==true">
+    <ion-segment class="weighing-mode" [(ngModel)]="data.WeighingMode">
       <ion-segment-button [value]="0">
         称净重
       </ion-segment-button>
@@ -39,7 +39,7 @@
     </ion-segment>
     <div class="ion-padding-top">
       <form [formGroup]="weightBillForm1" novalidate>
-        <ion-card>
+        <ion-card class="weighing-card form-card">
 
           <ion-list lines="none">
             <ion-item>
@@ -67,7 +67,7 @@
             </ion-item>
           </ion-list>
         </ion-card>
-        <ion-card>
+        <ion-card class="weighing-card form-card">
           <ion-list lines="none">
 
 
@@ -105,7 +105,7 @@
 
           </ion-list>
         </ion-card>
-        <ion-card [ngClass]="(data.WeighingMode==0 ||data.WeighingMode==1 ||data.WeighingMode==2) ? 'ion-hide' : ''">
+        <ion-card class="weighing-card form-card" [ngClass]="(data.WeighingMode==0 ||data.WeighingMode==1 ||data.WeighingMode==2) ? 'ion-hide' : ''">
 
           <ion-list lines="none">
             <ion-radio-group formControlName="isReturn" [(ngModel)]="data.IsReturn">
@@ -125,7 +125,7 @@
     </div>
 
 
-    <ion-card>
+    <ion-card class="weighing-card tip-card">
       <ion-card-header>
         <ion-card-title>温馨提示</ion-card-title>
       </ion-card-header>
@@ -139,6 +139,6 @@
   </div>
 
 </ion-content>
-<ion-footer *ngIf="isMiniProgram">
-  <ion-button expand="full" (click)="start()" [disabled]="!signalRConnected">开始称重</ion-button>
+<ion-footer class="weighing-footer" *ngIf="isMiniProgram">
+  <ion-button expand="block" (click)="start()" [disabled]="!signalRConnected">开始称重</ion-button>
 </ion-footer>

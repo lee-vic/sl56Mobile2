@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
@@ -43,7 +43,7 @@ export class WeightBillListPage implements OnInit {
       error: () => {
         this.isLoading = false;
         this.hasLoadError = true;
-        this.showMsg = "加载失败，请重试";
+        this.showMsg = "称重记录没有加载出来，请点“重试”再试一次";
       }
     });
   }
@@ -53,15 +53,15 @@ export class WeightBillListPage implements OnInit {
     );
   }
   print(objectId) {
-    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+    this.loadingCtrl.create({ message: '正在发送打印请求...' }).then((loading) => {
       loading.present();
       this.weightBillService.printWeightBill(objectId).subscribe({
         next: (p) => {
           loading.dismiss();
           if (p.Success==true) {
             this.alertController.create({
-              header: '打印成功',
-              message: "请到门卫室领取磅单",
+              header: '已发送打印',
+              message: "纸质磅单已发送至打印机，请到门卫室领取。",
               backdropDismiss: false,
               keyboardClose: false,
               buttons: [
@@ -74,8 +74,8 @@ export class WeightBillListPage implements OnInit {
           }
           else{
             this.alertController.create({
-              header: '打印失败',
-              message: p.ErrorMessage,
+              header: '没有打印成功',
+              message: p.ErrorMessage ? "打印机提示：" + p.ErrorMessage + "。请稍后再试一次。" : "打印请求没有发送成功，请重新点击“打印磅单”再试一次。",
               backdropDismiss: false,
               keyboardClose: false,
               buttons: [
@@ -90,8 +90,8 @@ export class WeightBillListPage implements OnInit {
         error: () => {
           loading.dismiss();
           this.alertController.create({
-            header: '打印失败',
-            message: '网络异常，请稍后重试',
+            header: '没有打印成功',
+            message: '网络异常，打印请求暂时没有发送成功，请检查网络后再试。',
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [

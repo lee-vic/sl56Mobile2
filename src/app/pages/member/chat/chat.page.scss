@@ -1,4 +1,4 @@
-:host {
+﻿:host {
     --chat-brand: var(--member-brand-600);
     --chat-brand-strong: var(--member-brand-700);
     --chat-bg: #ecf2fb;
@@ -14,6 +14,8 @@ ion-content.chat-content {
         radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),
         radial-gradient(circle at 100% 24%, rgba(0, 178, 169, 0.16), transparent 45%),
         #f2f7ff;
+    --padding-start: 0;
+    --padding-end: 0;
 }
 
 .scroll-bottom-btn {

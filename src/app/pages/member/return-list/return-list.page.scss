@@ -21,10 +21,7 @@
   --background: var(--member-surface-100, #f1f5fb);
   --border-radius: 12px;
   --box-shadow: none;
-  --padding-top: 0;
-  --padding-bottom: 0;
   height: 42px;
-  padding-inline: 12px;
 }
 
 .return-list-content,
@@ -38,7 +35,7 @@
 .return-overview {
   max-width: 940px;
   margin: 0 auto;
-  padding: 12px 12px 4px;
+  padding: 0 0 4px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
@@ -132,7 +129,7 @@
 .segment-shell {
   max-width: 940px;
   margin: 0 auto;
-  padding: 8px 12px 6px;
+  padding: 8px 0 6px;
 }
 
 .segment-shell ion-segment {
@@ -175,7 +172,7 @@
 .list-shell {
   max-width: 900px;
   margin: 0 auto;
-  padding: 8px 12px 22px;
+  padding: 8px 0 22px;
   display: grid;
   gap: 10px;
 }
@@ -834,11 +831,6 @@
     font-size: 20px;
   }
 
-  .list-shell,
-  .segment-shell {
-    padding-left: 10px;
-    padding-right: 10px;
-  }
 }
 
 @media (min-width: 768px) {

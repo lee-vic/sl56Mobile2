@@ -45,9 +45,6 @@
     --background: var(--delivery-surface-soft);
     --border-radius: 12px;
     --box-shadow: none;
-    --padding-top: 0;
-    --padding-bottom: 0;
-    padding-inline: 12px;
     height: 42px;
 }
 
@@ -65,7 +62,7 @@
 
 
 .list-wrap {
-    padding: 10px 16px 20px;
+    padding: 10px 0 20px;
     display: grid;
     gap: 10px;
 }

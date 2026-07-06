@@ -1,25 +1,85 @@
-﻿h1 {
-    margin: 10px;
+﻿.weighing-content {
+    --background: linear-gradient(180deg, #eef7ff 0%, #f7fbff 42%, #f5f8fc 100%);
 }
 
-h2 {
-    text-align: center;
+.weighing-page {
+    max-width: 420px;
+    margin: 0 auto;
 }
 
-a {
-    text-decoration: underline;
+.weighing-mode {
+    margin-bottom: 16px;
+    padding: 3px;
+    border: 1px solid rgba(0, 89, 166, 0.18);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 10px 24px rgba(0, 67, 131, 0.08);
+
+    ion-segment-button {
+        --border-radius: 8px;
+        --indicator-color: #ffffff;
+        --color: #49678b;
+        --color-checked: #0059a6;
+        min-height: 36px;
+        font-weight: 600;
+    }
+}
+
+.weighing-card {
+    width: 100%;
+    margin: 0 0 16px;
+    border: 1px solid rgba(0, 89, 166, 0.16);
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0, 67, 131, 0.08);
+}
+
+.form-card {
+    overflow: hidden;
 }
 
 ion-list {
-    margin-bottom: 10px;
+    margin: 0;
+    padding: 4px 0;
+    background: transparent;
+}
+
+ion-item {
+    --background: transparent;
+    --padding-start: 16px;
+    --inner-padding-end: 14px;
+    --min-height: 52px;
+    color: var(--member-text-900, #12213a);
 }
 
 ion-item > ion-label:not(.label-stacked) {
-    flex: 0 0 clamp(8.5em, 36vw, 11em);
-    max-width: clamp(8.5em, 36vw, 11em);
-    min-width: clamp(8.5em, 36vw, 11em);
+    flex: 0 0 clamp(6.4em, 28vw, 8.5em);
+    max-width: clamp(6.4em, 28vw, 8.5em);
+    min-width: clamp(6.4em, 28vw, 8.5em);
     white-space: normal;
     word-break: keep-all;
+}
+
+ion-button[fill="clear"] {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    font-weight: 600;
+}
+
+.tip-card {
+    ion-card-header {
+        padding-bottom: 6px;
+    }
+
+    ion-card-title {
+        color: var(--member-text-900, #12213a);
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    ion-card-content {
+        color: #3f5878;
+        line-height: 1.65;
+    }
 }
 
 .paid {
@@ -35,20 +95,39 @@ ion-item > ion-label:not(.label-stacked) {
 }
 
 .error-message {
-    color: red;
+    color: #eb445a;
+    font-size: 13px;
+    line-height: 1.5;
 }
 
 .validation-errors {
-    background-color: white;
+    background-color: transparent;
 }
 
 .button-small {
     margin-inline: 1px !important;
 }
 
-ion-input[myborder]{
-    border: solid 1px #85c1e9;
-    --padding-top: 5px;
-    --padding-bottom: 5px;
-    --padding-start: 5px;
+ion-input[myborder] {
+    border: 1px solid rgba(0, 89, 166, 0.26);
+    border-radius: 6px;
+    --padding-top: 7px;
+    --padding-bottom: 7px;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    background: #ffffff;
+}
+
+.weighing-footer {
+    padding: 10px 16px calc(10px + var(--ion-safe-area-bottom, 0px));
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 -8px 20px rgba(0, 67, 131, 0.10);
+
+    ion-button {
+        --border-radius: 8px;
+        height: 46px;
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+    }
 }

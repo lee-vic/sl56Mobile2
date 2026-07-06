@@ -18,7 +18,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 6px 12px 0;
+  padding: 6px 0 0;
   background: rgba(247, 251, 255, 0.95);
   backdrop-filter: blur(4px);
 }
@@ -31,7 +31,7 @@
 
 .result-list {
   margin: 4px 0 0;
-  padding: 0 12px;
+  padding: 0;
   background: transparent;
 }
 
@@ -172,7 +172,7 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin: 32px 12px 0;
+  margin: 32px 0 0;
   padding: 24px 16px;
   border-radius: var(--calc-radius);
   border: 1px dashed rgba(148, 163, 184, 0.5);

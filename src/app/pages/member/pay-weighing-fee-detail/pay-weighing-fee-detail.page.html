@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -6,7 +6,7 @@
     <ion-title>支付结算</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
+<ion-content class="payment-content">
   <!-- Skeleton loading -->
   <ng-container *ngIf="isLoading">
     <div class="skeleton-page">
@@ -24,39 +24,43 @@
 
   <!-- Content -->
   <ng-container *ngIf="!isLoading">
-  <div>
-    <ion-row>
-      <ion-label class="feeLabel">
-        费用(￥)：{{weightBill.Amount}}
-      </ion-label>
-    </ion-row>
-  </div>
+  <section class="payment-summary">
+    <div class="summary-label">待支付费用</div>
+    <div class="summary-amount">
+      <span>￥</span>
+      <strong>{{weightBill.Amount}}</strong>
+    </div>
+    <p>请核对车辆与费用信息后继续支付</p>
+  </section>
 
-  <ion-list>
-    <ion-item>
-      <ion-label>车牌号码</ion-label>
-      <ion-note slot="end">{{weightBill?.VehicleNo}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>皮重(车重)</ion-label>
-      <ion-note slot="end">{{weightBill?.TareWeight}}KG</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>过磅费</ion-label>
-      <ion-note slot="end">{{weightBill?.WeighingFee}}元</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>月卡用户</ion-label>
-      <ion-note slot="end">{{weightBill?.IsMonthly}}</ion-note>
-    </ion-item>
-    <ion-item>
-      <ion-label>企业账号</ion-label>
-      <ion-note slot="end">{{weightBill?.CorporateAccount}}</ion-note>
-    </ion-item>
-  </ion-list>
+  <section class="payment-card">
+    <div class="payment-card-title">过磅信息</div>
+    <div class="detail-row highlight">
+      <span>车牌号码</span>
+      <strong>{{weightBill?.VehicleNo || '-'}}</strong>
+    </div>
+    <div class="detail-grid">
+      <div>
+        <span>皮重(车重)</span>
+        <strong>{{weightBill?.TareWeight}}KG</strong>
+      </div>
+      <div>
+        <span>过磅费</span>
+        <strong>{{weightBill?.WeighingFee}}元</strong>
+      </div>
+    </div>
+    <div class="detail-row">
+      <span>月卡用户</span>
+      <strong>{{weightBill?.IsMonthly || '-'}}</strong>
+    </div>
+    <div class="detail-row">
+      <span>企业账号</span>
+      <strong>{{weightBill?.CorporateAccount || '-'}}</strong>
+    </div>
+  </section>
   </ng-container>
 
 </ion-content>
-<ion-footer>
+<ion-footer class="payment-footer">
   <ion-button expand="block" (click)="payByJsApi()"  [disabled]="!signalRConnected">支付费用</ion-button>
 </ion-footer>

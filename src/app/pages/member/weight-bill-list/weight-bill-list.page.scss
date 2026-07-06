@@ -1,0 +1,142 @@
+﻿.weight-history-content {
+    --background: linear-gradient(180deg, #eef7ff 0%, #f7fbff 45%, #f5f8fc 100%);
+}
+
+.weight-record-card {
+    max-width: 420px;
+    margin: 0 auto 12px;
+    border: 1px solid rgba(0, 89, 166, 0.16);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(0, 67, 131, 0.08);
+    overflow: hidden;
+
+    ion-button {
+        --border-radius: 7px;
+        --padding-start: 10px;
+        --padding-end: 10px;
+        height: 32px;
+        margin: 0;
+        font-weight: 700;
+    }
+}
+
+.record-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px 10px;
+
+    p {
+        margin: 0 0 3px;
+        color: #6a82a6;
+        font-size: 12px;
+    }
+
+    h3 {
+        margin: 0;
+        color: var(--member-text-900, #12213a);
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.25;
+    }
+}
+
+.record-body {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0 42px 14px 16px;
+    border: 0;
+    border-top: 1px solid rgba(0, 89, 166, 0.10);
+    background: linear-gradient(180deg, rgba(247, 251, 255, 0.78) 0%, #ffffff 100%);
+    color: inherit;
+    text-align: left;
+
+    ion-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        color: #0067bd;
+        font-size: 22px;
+        transform: translateY(-50%);
+    }
+}
+
+.net-weight {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0 10px;
+
+    span {
+        color: #6a82a6;
+        font-size: 13px;
+    }
+
+    strong {
+        color: #0059a6;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+    }
+}
+
+.weight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 10px;
+
+    div {
+        position: relative;
+        padding-left: 10px;
+    }
+
+    div::before {
+        position: absolute;
+        left: 0;
+        top: 4px;
+        bottom: 4px;
+        width: 3px;
+        border-radius: 3px;
+        background: rgba(0, 89, 166, 0.22);
+        content: "";
+    }
+
+    span,
+    strong {
+        display: block;
+    }
+
+    span {
+        margin-bottom: 3px;
+        color: #6a82a6;
+        font-size: 12px;
+    }
+
+    strong {
+        color: #263f63;
+        font-size: 15px;
+        font-weight: 700;
+    }
+}
+
+.record-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #486389;
+    font-size: 13px;
+
+    span {
+        color: #6a82a6;
+    }
+
+    strong {
+        font-weight: 600;
+    }
+}

@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -6,10 +6,12 @@
     <ion-title>磅单</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content>
-  <ion-img src="{{imageUrl}}" class="ion-margin"></ion-img>
+<ion-content class="bill-content">
+  <div class="bill-preview">
+    <ion-img src="{{imageUrl}}"></ion-img>
+  </div>
 </ion-content>
-<ion-footer>
+<ion-footer class="bill-footer">
  
-  <ion-button expand="full"  (click)="print()">打印纸质磅单</ion-button>
+  <ion-button expand="block"  (click)="print()">打印纸质磅单</ion-button>
 </ion-footer>

@@ -1,4 +1,4 @@
-import { WeightBillService } from './../../../providers/weight-bill.service';
+﻿import { WeightBillService } from './../../../providers/weight-bill.service';
 import { ToastController, NavController, AlertController, LoadingController } from '@ionic/angular';
 import { WeightBill } from 'src/app/interfaces/weight-bill';
 import { Component, OnDestroy, OnInit } from '@angular/core';
@@ -60,7 +60,8 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
         if (obj.MsgContent == "True") {
           this.alertController.create({
             header: '称重已完成',
-            subHeader: "点击确定后,系统将显示电子磅单",
+            subHeader: "支付结果已确认",
+            message: "电子磅单已生成，点击确定后查看本次过磅结果。",
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [
@@ -110,7 +111,7 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
       error: (_err) => {
         this.isLoading = false;
         this.toastCtrl.create({
-          message: "获取数据出现错误",
+          message: "没有获取到支付信息，请返回后重试。",
           position: "middle",
           duration: 2000,
         }).then((p) => p.present());
@@ -135,10 +136,10 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
       (res) => {
         if (res.err_msg == "get_brand_wcpay_request:ok") {
           // this.loadingCtrl.create({
-          //   message: '正在检查支付结果,请稍后...'
+          //   message: '正在确认支付结果...'
           // }).then(p => p.present());
         } else {
-          alert(res.err_code + res.err_desc + res.err_msg);
+          alert("支付没有完成，请重新点击“支付费用”再试一次。");
         }
       }
     );
@@ -154,7 +155,7 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
       return;
     }
     this.weightBill.TradeType = "JSAPI";
-    this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
+    this.loadingCtrl.create({ message: '正在打开支付页面...' }).then((loading) => {
       loading.present();
       this.weightBillService.payWeighingFee(this.weightBill).subscribe({
         next: (res) => {
@@ -165,7 +166,7 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
           } else {
             this.toastCtrl
               .create({
-                message: res.ErrMsg,
+                message: res.ErrMsg || "支付页面没有打开，请重新点击“支付费用”再试一次。",
                 position: "middle",
                 duration: 3000,
               })
@@ -176,7 +177,7 @@ export class PayWeighingFeeDetailPage implements OnInit, OnDestroy {
           loading.dismiss();
           this.toastCtrl
             .create({
-              message: err.message,
+              message: err?.message || "网络异常，支付页面暂时打不开，请检查网络后再试。",
               position: "middle",
               duration: 3000,
             })

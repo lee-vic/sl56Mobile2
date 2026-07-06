@@ -31,8 +31,8 @@ async function setupImportManifestRoutes(page: any) {
           CurrencyAmount: [],
           WaitToSignTaskCount: 0,
           UnReadMessageCount: 0,
-          Quantity1: 0,
-          Quantity2: 0,
+          PendingConfirmationCount: 0,
+          ProblemShipmentCount: 0,
         }),
       });
       return;

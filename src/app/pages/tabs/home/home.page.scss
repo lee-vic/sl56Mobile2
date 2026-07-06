@@ -1,9 +1,9 @@
-.home-content {
+﻿.home-content {
   --background: linear-gradient(180deg, #f4f8fd 0%, #f9fbff 210px, #eef4fb 100%);
 }
 
 .hero-slider {
-  padding: 10px 10px 2px;
+  padding: 16px 16px 2px;
 }
 
 .hero-swiper {
@@ -69,7 +69,7 @@
 }
 
 .section-block {
-  margin: 10px 10px 0;
+  margin: 10px 16px 0;
   background: #ffffff;
   border: 1px solid #dde8f6;
   border-radius: 12px;
@@ -191,7 +191,7 @@
 
 @media (max-width: 430px) {
   .section-block {
-    margin: 9px 8px 0;
+    margin: 9px 16px 0;
   }
 
   .section-head {
@@ -223,7 +223,7 @@
 
 @media (max-width: 360px) {
   .hero-slider {
-    padding: 8px 8px 0;
+    padding: 16px 16px 0;
   }
 
   .quick-entry-grid {
@@ -234,4 +234,3 @@
     padding: 0 6px 8px;
   }
 }
-  

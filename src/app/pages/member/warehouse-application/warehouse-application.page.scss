@@ -239,12 +239,6 @@ ion-fab-button {
 }
 
 @media (min-width: 768px) {
-  .warehouse-page {
-    --padding-start: 24px;
-    --padding-end: 24px;
-    --padding-top: 16px;
-  }
-
   .application-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

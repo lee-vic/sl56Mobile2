@@ -133,13 +133,34 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
       ...form,
       IdList: this.ids
     };
+
     if (this.type === 0) {
-      this.doApply(payload);
+      this.confirmAndApply(payload);
     }
     else {
       this.doFill(payload);
     }
 
+  }
+
+  private async confirmAndApply(form: ReturnApplyModel): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: '退货提示',
+      message: '退货备货时间为<strong>半小时</strong>，非工作时间不审核退货，具体时间段为<strong>11:30至13:30</strong>。<br><br>请确认您已了解上述提示，是否继续提交？',
+      buttons: [
+        {
+          text: '取消',
+          role: 'cancel'
+        },
+        {
+          text: '确认提交',
+          handler: () => {
+            this.doApply(form);
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   doApply(form: ReturnApplyModel): void {

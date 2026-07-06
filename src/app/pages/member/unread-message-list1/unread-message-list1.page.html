@@ -29,20 +29,36 @@
     </section>
   </ng-container>
 
-  <section class="waybill-message-panel" *ngFor="let item of items" (click)="detail(item)">
-    <ion-list lines="none" class="waybill-message-list">
-      <ion-item>
-        <ion-label>{{ item.ObjectNo }}</ion-label>
-        <ion-note slot="end">{{ item.Time }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>{{ item.Content }}</ion-label>
-        <ion-badge slot="end" color="danger">{{ item.Count }}</ion-badge>
-      </ion-item>
-    </ion-list>
+  <section class="waybill-message-panel" *ngFor="let item of items">
+    <button type="button" class="message-card" (click)="detail(item)">
+      <span class="message-icon" [class.has-unread]="item.Count > 0" aria-hidden="true">
+        <ion-icon [name]="item.Count > 0 ? 'mail-unread-outline' : 'chatbubble-ellipses-outline'"></ion-icon>
+      </span>
+
+      <div class="message-title-wrap">
+        <h2>{{ item.ObjectNo }}</h2>
+        <div class="message-meta">
+          <span class="message-time">{{ item.Time || '最近联系' }}</span>
+          <span class="unread-pill" *ngIf="item.Count > 0">
+            <ion-badge color="danger">{{ item.Count }}</ion-badge>
+            条未读
+          </span>
+          <span class="recent-note" *ngIf="!item.Count">{{ item.IsRecent ? '最近' : '已读' }}</span>
+        </div>
+      </div>
+
+      <ion-icon name="chevron-forward-outline" class="message-chevron" aria-hidden="true"></ion-icon>
+
+      <p class="message-preview" [class.is-empty]="!item.Content">{{ item.Content || '暂无最近消息' }}</p>
+    </button>
   </section>
 
-  <section class="waybill-empty" *ngIf="!isLoading && items.length === 0">
-    <p>暂无单号消息</p>
+  <section class="waybill-empty" *ngIf="!isLoading && loadError">
+    <p>加载失败</p>
+    <ion-button fill="outline" size="small" (click)="getData()">重新加载</ion-button>
+  </section>
+
+  <section class="waybill-empty" *ngIf="!isLoading && !loadError && items.length === 0">
+    <p>暂无单号消息记录</p>
   </section>
 </ion-content>

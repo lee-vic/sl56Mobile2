@@ -1,7 +1,7 @@
 ﻿:host {
     --waybill-radius-soft: 12px;
-    --waybill-radius-card: 14px;
-    --waybill-shadow-card: 0 6px 12px rgba(20, 49, 90, 0.06);
+    --waybill-radius-card: 16px;
+    --waybill-shadow-card: 0 8px 18px rgba(20, 49, 90, 0.07);
 }
 
 ion-content {
@@ -13,12 +13,133 @@ ion-content {
 }
 
 .waybill-message-panel {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     border: 1px solid #dde8f6;
     border-radius: var(--waybill-radius-card);
-    background: var(--member-surface-0);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
     box-shadow: var(--waybill-shadow-card);
     overflow: hidden;
+}
+
+.message-card {
+    appearance: none;
+    display: grid;
+    grid-template-areas:
+        "icon title chevron"
+        "icon preview chevron";
+    grid-template-columns: 36px minmax(0, 1fr) 18px;
+    column-gap: 10px;
+    row-gap: 8px;
+    align-items: center;
+    width: 100%;
+    border: 0;
+    border-radius: inherit;
+    padding: 12px 10px 12px 12px;
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+}
+
+.message-card:active {
+    transform: scale(0.995);
+    background: #f8fbff;
+}
+
+.message-card:focus-visible {
+    outline: 2px solid var(--member-brand-500);
+    outline-offset: -3px;
+}
+
+.message-icon {
+    grid-area: icon;
+    align-self: start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    color: var(--member-brand-600);
+    background: #eef6ff;
+}
+
+.message-icon.has-unread {
+    color: #b42318;
+    background: #fff1f0;
+}
+
+.message-icon ion-icon {
+    font-size: 20px;
+}
+
+.message-title-wrap {
+    grid-area: title;
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.message-title-wrap h2 {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0;
+    color: var(--member-text-900);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.message-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 22px;
+}
+
+.message-time {
+    color: #5f76a0;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.message-preview {
+    grid-area: preview;
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0;
+    color: var(--member-text-800);
+    font-size: 14px;
+    line-height: 1.55;
+    word-break: break-word;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.message-preview.is-empty {
+    color: var(--member-text-500);
+}
+
+.unread-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #b42318;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.message-chevron {
+    grid-area: chevron;
+    flex: 0 0 auto;
+    align-self: center;
+    color: var(--member-brand-600);
+    font-size: 18px;
 }
 
 .waybill-message-list {
@@ -42,15 +163,6 @@ ion-item {
 .waybill-message-list ion-item:last-child {
     --min-height: 62px;
     --inner-border-width: 0;
-}
-
-.waybill-message-panel ion-item:active {
-    --background: #f8fbff;
-}
-
-.waybill-message-panel ion-item:focus-visible {
-    outline: 2px solid var(--member-brand-500);
-    outline-offset: -2px;
 }
 
 .loading-panel {
@@ -94,6 +206,19 @@ ion-badge {
     font-weight: 700;
 }
 
+.recent-note {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    border: 1px solid rgba(11, 97, 189, 0.18);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--member-brand-700);
+    background: #eef6ff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .waybill-empty {
     border: 1px solid #dde8f6;
     border-radius: var(--waybill-radius-card);
@@ -107,12 +232,4 @@ ion-badge {
 .waybill-empty p {
     margin: 0;
     font-size: 13px;
-}
-
-@media (min-width: 768px) {
-    .waybill-message-content {
-        --padding-start: 24px;
-        --padding-end: 24px;
-        --padding-top: 16px;
-    }
 }

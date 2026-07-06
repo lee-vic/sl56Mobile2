@@ -1,6 +1,32 @@
-ion-text{
-    text-align: center;
-    p{
-        color:#004ea2
+﻿.bill-content {
+    --background: #eef4fb;
+}
+
+.bill-preview {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 12px 0 20px;
+
+    ion-img {
+        overflow: hidden;
+        border: 1px solid rgba(0, 89, 166, 0.16);
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 12px 28px rgba(0, 67, 131, 0.10);
+    }
+}
+
+.bill-footer {
+    padding: 10px 16px calc(10px + var(--ion-safe-area-bottom, 0px));
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 -8px 20px rgba(0, 67, 131, 0.10);
+
+    ion-button {
+        --border-radius: 8px;
+        height: 46px;
+        margin: 0 auto;
+        max-width: 420px;
+        font-size: 16px;
+        font-weight: 700;
     }
 }

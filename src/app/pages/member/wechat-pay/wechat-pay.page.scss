@@ -25,7 +25,6 @@
 }
 
 .warning-banner {
-  margin: 12px 12px 0;
   border-radius: 12px;
   background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
   border-left: 4px solid var(--ion-color-warning, #ffc409);
@@ -62,7 +61,6 @@
 }
 
 .hero-card {
-  margin: 10px 12px 0;
   border-radius: 12px;
   border: 1px solid rgba(161, 203, 248, 0.72);
   background:
@@ -147,7 +145,6 @@
 }
 
 .danger-card {
-  margin: 10px 12px 0;
   border-radius: 12px;
   border: 1px solid rgba(235, 68, 90, 0.25);
   box-shadow: none;
@@ -192,7 +189,6 @@
 }
 
 .form-card {
-  margin: 10px 12px 0;
   border-radius: 12px;
   border: 1px solid var(--wx-glass-border);
   background: var(--wx-glass-surface);
@@ -361,7 +357,6 @@
 }
 
 .selection-card {
-  margin: 10px 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--wx-glass-border);
   background: var(--wx-glass-surface);

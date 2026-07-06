@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -296,6 +296,159 @@ describe('PayWeighingFeePage', () => {
 
     expect(loadingDismissSpy).toHaveBeenCalled();
     expect(alertCreateSpy).toHaveBeenCalled();
+  }));
+
+  it('should show local timeout alert when reading weight has no callback', fakeAsync(() => {
+    startSpy.and.returnValue(of(true));
+    component.data.WxOpenId = 'openid-local-timeout';
+    component.signalRConnection = mockSignalRConnection as any;
+
+    component.startRead();
+    tick();
+    alertCreateSpy.calls.reset();
+
+    tick((component as any).readWeightTimeoutMs);
+
+    expect(loadingDismissSpy).toHaveBeenCalled();
+    expect(alertCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      header: '称重没有响应',
+    }));
+    expect(mockSignalRConnection.invoke).toHaveBeenCalledWith(
+      'SendMessage2',
+      jasmine.objectContaining({
+        MsgContent: 'Stop',
+        InvokeClassName: 'openid-local-timeout',
+      })
+    );
+  }));
+
+  it('should clear local read timeout when signalr callback arrives', fakeAsync(() => {
+    startSpy.and.returnValue(of(true));
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    component.startRead();
+    tick();
+    alertCreateSpy.calls.reset();
+
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'Timeout',
+    }));
+    tick();
+    alertCreateSpy.calls.reset();
+    tick((component as any).readWeightTimeoutMs);
+
+    expect(alertCreateSpy).not.toHaveBeenCalled();
+  }));
+
+  it('should show no reading timeout message from signalr', fakeAsync(() => {
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'TimeoutNoReading',
+    }));
+    tick();
+
+    expect(alertCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      subHeader: '没有收到设备读数',
+      message: jasmine.stringMatching('设备未连接、读数程序异常或设备未发送数据'),
+    }));
+  }));
+
+  it('should show unstable weight timeout message from signalr', fakeAsync(() => {
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'TimeoutUnstable',
+    }));
+    tick();
+
+    expect(alertCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      subHeader: '没有读到稳定重量',
+      message: jasmine.stringMatching('重量一直在变化'),
+    }));
+  }));
+
+  it('should show device disconnected message from signalr', fakeAsync(() => {
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'DeviceDisconnected',
+    }));
+    tick();
+
+    expect(alertCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      subHeader: '称重设备未连接',
+      message: jasmine.stringMatching('无法连接称重设备'),
+    }));
+  }));
+
+  it('should show invalid weight data message from signalr', fakeAsync(() => {
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'InvalidWeightData',
+    }));
+    tick();
+
+    expect(alertCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      subHeader: '设备读数异常',
+      message: jasmine.stringMatching('读数异常'),
+    }));
+  }));
+
+  it('should show weight save failed message from signalr', fakeAsync(() => {
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'WeightSaveFailed',
+    }));
+    tick();
+
+    expect(alertCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      subHeader: '重量保存失败',
+      message: jasmine.stringMatching('系统保存失败'),
+    }));
+  }));
+
+  it('should ignore delayed signalr callback after local read timeout', fakeAsync(() => {
+    startSpy.and.returnValue(of(true));
+    component.isMiniProgram = true;
+    component.signalRConnection = mockSignalRConnection as any;
+
+    (component as any).initSignalRConnection();
+    tick();
+    component.startRead();
+    tick();
+    tick((component as any).readWeightTimeoutMs);
+    alertCreateSpy.calls.reset();
+
+    messageReceived$.next(JSON.stringify({
+      MsgContent: 'Complete',
+      InvokeClassName: '888',
+      InvokeMethodName: '0',
+    }));
+    tick();
+
+    expect(alertCreateSpy).not.toHaveBeenCalled();
+    expect(navNavigateForwardSpy).not.toHaveBeenCalled();
   }));
 
   it('should navigate to pay page when signalr reports completed bill with fee', fakeAsync(() => {

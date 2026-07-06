@@ -203,8 +203,6 @@ ion-list {
 
 ion-item {
   --min-height: 68px;
-  --padding-start: 14px;
-  --inner-padding-end: 14px;
   --background: transparent;
   --inner-border-width: 0 0 1px 0;
   --border-color: var(--member-border-200);
@@ -339,12 +337,6 @@ ion-note {
 }
 
 @media (min-width: 768px) {
-  .message-center-content {
-    --padding-start: 24px;
-    --padding-end: 24px;
-    --padding-top: 16px;
-  }
-
   .message-summary {
     grid-template-columns: 0.9fr 1.1fr;
     align-items: center;

@@ -5,7 +5,6 @@ import { NavigationEnd, Router } from '@angular/router';
 import { UserService } from '../../../providers/user.service';
 import { CookieService } from 'ngx-cookie-service';
 import { CurrencyAmount, User } from 'src/app/interfaces/user';
-import { NoticeService } from 'src/app/providers/notice.service';
 import { Subject, Subscription } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
@@ -98,6 +97,7 @@ export class MemberPage implements OnInit, OnDestroy {
   customerType: number;
   currencyAmount: Array<CurrencyAmount> = [];
   unreadNoticeCount: number = 0;
+  totalUnreadCount: number = 0;
   waitToSignTaskCount: number = 0;
   visibleMenuCount: number = 0;
   routerSub: Subscription;
@@ -105,7 +105,6 @@ export class MemberPage implements OnInit, OnDestroy {
   constructor(private userService: UserService,
     private router: Router,
     private cookieService: CookieService,
-    private noticeService: NoticeService,
     private uiFeedbackService: UiFeedbackService,
     private loadingCtrl: LoadingController) {
     this.authForm = new FormGroup({
@@ -147,7 +146,7 @@ export class MemberPage implements OnInit, OnDestroy {
           return;
         }
         if (this.router.url === '/app/tabs/member' || this.router.url.startsWith('/app/tabs/member')) {
-          this.refreshUnreadCount();
+          this.refreshSummary();
         }
       });
 
@@ -212,15 +211,17 @@ export class MemberPage implements OnInit, OnDestroy {
           this.customerType = res.Classify;
           this.currencyAmount = Array.isArray(res.CurrencyAmount) ? res.CurrencyAmount : [];
           this.waitToSignTaskCount = res.WaitToSignTaskCount;
+          this.unreadNoticeCount = res.NoticeUnreadCount || 0;
+          this.totalUnreadCount = res.UnReadMessageCount || 0;
           const customerMenus = this.getCustomerMenus(this.customerType);
           const tempMenus = this.getVisibleMenuOptions(this.customerType);
           this.visibleMenuCount = customerMenus.length;
           this.visibleMenuOptions = tempMenus;
           this.applyQuickMenuCustomization(tempMenus, this.getStoredQuickMenuTitles(tempMenus));
-          this.refreshUnreadCount();
         },
         error: () => {
           this.isDashboardLoading = false;
+          this.uiFeedbackService.presentToast('数据加载失败，请下拉刷新重试', 2200, 'middle', undefined, 'danger');
         },
       });
 
@@ -556,11 +557,17 @@ export class MemberPage implements OnInit, OnDestroy {
     });
   }
 
-  private refreshUnreadCount() {
-    this.noticeService.getUnreadCount()
+  private refreshSummary() {
+    this.userService.getHomeInfo()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(res => {
-        this.unreadNoticeCount = res;
+      .subscribe({
+        next: res => {
+          this.userInfo = res;
+          this.currencyAmount = Array.isArray(res.CurrencyAmount) ? res.CurrencyAmount : [];
+          this.waitToSignTaskCount = res.WaitToSignTaskCount;
+          this.unreadNoticeCount = res.NoticeUnreadCount || 0;
+          this.totalUnreadCount = res.UnReadMessageCount || 0;
+        }
       });
   }
   openMessage() {

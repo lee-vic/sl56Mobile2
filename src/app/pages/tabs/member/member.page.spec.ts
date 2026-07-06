@@ -204,9 +204,10 @@ describe('MemberPage', () => {
 function createUserInfo(): User {
   return {
     Amount: '120.00',
-    Quantity1: 3,
-    Quantity2: 1,
+    PendingConfirmationCount: 3,
+    ProblemShipmentCount: 1,
     UnReadMessageCount: 5,
+    NoticeUnreadCount: 0,
     CustomerId: 1001,
     CustomerNo: 'TEST001',
     Classify: 0,

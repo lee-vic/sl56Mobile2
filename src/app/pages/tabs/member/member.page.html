@@ -75,7 +75,7 @@
           </div>
           <button type="button" class="message-entry" (click)="openMessage()" *ngIf="customerType === 0" aria-label="打开消息中心">
             <ion-icon name="mail-outline"></ion-icon>
-            <span *ngIf="userInfo?.UnReadMessageCount > 0" class="my-badge" aria-live="polite">{{ formatBadgeCount(userInfo?.UnReadMessageCount) }}</span>
+            <span *ngIf="totalUnreadCount > 0" class="my-badge" aria-live="polite">{{ formatBadgeCount(totalUnreadCount) }}</span>
           </button>
         </div>
 
@@ -94,12 +94,12 @@
       <section *ngIf="customerType !== 3" class="overview-grid" aria-label="业务概览">
         <button type="button" class="overview-card" aria-label="待确认运单" (click)="goToConfirmation()">
           <span class="overview-icon" data-tone="blue"><ion-icon name="checkbox-outline"></ion-icon></span>
-          <strong>{{ userInfo?.Quantity1 || 0 }}</strong>
+          <strong>{{ userInfo?.PendingConfirmationCount || 0 }}</strong>
           <span>待确认运单</span>
         </button>
         <button type="button" class="overview-card" aria-label="问题件" (click)="goToProblemList()">
           <span class="overview-icon" data-tone="amber"><ion-icon name="alert-circle-outline"></ion-icon></span>
-          <strong>{{ userInfo?.Quantity2 || 0 }}</strong>
+          <strong>{{ userInfo?.ProblemShipmentCount || 0 }}</strong>
           <span>问题件</span>
         </button>
         <button type="button" class="overview-card" aria-label="待签署合同" (click)="goToSignTasks()">

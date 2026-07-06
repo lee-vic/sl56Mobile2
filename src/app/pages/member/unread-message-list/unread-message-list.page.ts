@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ToastController } from '@ionic/angular';
 import { NoticeService } from 'src/app/providers/notice.service';
 import { Notice } from 'src/app/interfaces/notice';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface MessageCenterEntry {
   title: string;
@@ -14,27 +14,36 @@ interface MessageCenterEntry {
   action: () => void;
 }
 
-interface MessageCenterCounts {
-  Count1?: number;
-  Count2?: number;
-}
 
 @Component({
   selector: 'app-unread-message-list',
   templateUrl: './unread-message-list.page.html',
   styleUrls: ['./unread-message-list.page.scss'],
 })
-export class UnreadMessageListPage implements OnInit {
+export class UnreadMessageListPage implements OnInit, OnDestroy {
   customerId: number;
-  data: MessageCenterCounts = {};
   noticeUnreadCount = 0;
   recentNotices: Array<Notice> = [];
   isLoading = false;
   isRefreshing = false;
   loadError = false;
 
+  private readonly destroy$ = new Subject<void>();
+
+  // 消息中心独立模型（InstantMessage/GetUnReadMessage 返回）
+  msgData: { WaybillMessageCount?: number; ConsultMessageCount?: number; NoticeUnreadCount?: number } = {};
+
   ngOnInit(): void {
     this.loadMessageCenter();
+  }
+
+  ionViewWillEnter(): void {
+    this.loadMessageCenter();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadMessageCenter(event?: CustomEvent) {
@@ -42,18 +51,17 @@ export class UnreadMessageListPage implements OnInit {
     this.isLoading = !event;
     this.loadError = false;
 
-    const unreadMessageRequest = this.customerId === undefined
+    const unreadMsg$ = this.customerId === undefined
       ? this.service.getUnReadMessage()
       : this.service.getUnReadMessage1(this.customerId);
 
     forkJoin({
-      unreadMessages: unreadMessageRequest,
-      noticeUnreadCount: this.noticeService.getUnreadCount(),
+      unreadMessages: unreadMsg$,
       notices: this.noticeService.getNoticeList(1)
-    }).subscribe({
+    }).pipe(takeUntil(this.destroy$)).subscribe({
       next: res => {
-        this.data = res.unreadMessages || {};
-        this.noticeUnreadCount = res.noticeUnreadCount || 0;
+        this.msgData = res.unreadMessages || {};
+        this.noticeUnreadCount = (res.unreadMessages && res.unreadMessages.NoticeUnreadCount) || 0;
         this.recentNotices = (res.notices || []).slice(0, 3);
         this.finishLoading(event);
       },
@@ -84,7 +92,8 @@ export class UnreadMessageListPage implements OnInit {
   getData() {
     if (this.customerId === undefined) {
       this.service.getUnReadMessage().subscribe(res => {
-        this.data = res;
+        this.msgData = res;
+        this.noticeUnreadCount = res.NoticeUnreadCount || 0;
       });
     } else {
       this.getData1();
@@ -93,7 +102,7 @@ export class UnreadMessageListPage implements OnInit {
 
   getData1() {
     this.service.getUnReadMessage1(this.customerId).subscribe(res => {
-      this.data = res;
+      this.msgData = res;
     });
   }
 
@@ -106,8 +115,7 @@ export class UnreadMessageListPage implements OnInit {
     public service: InstantMessageService,
     private noticeService: NoticeService,
     private router: Router,
-    private route: ActivatedRoute,
-    public toastCtrl: ToastController
+    private route: ActivatedRoute
   ) {
     this.route.queryParams.subscribe(params => {
       this.customerId = params.customerId;
@@ -119,16 +127,7 @@ export class UnreadMessageListPage implements OnInit {
       this.router.navigate(["/member", "chat", 0]);
     }
     else {
-      if (this.data.Count1 > 0) {
-        this.router.navigate(["/member", "unread-message-list1"])
-      }
-      else {
-        this.toastCtrl.create({
-          message: "暂无未读消息",
-          position: 'middle',
-          duration: 1500
-        }).then(p => p.present());
-      }
+      this.router.navigate(["/member", "unread-message-list1"])
     }
   }
 
@@ -179,11 +178,11 @@ export class UnreadMessageListPage implements OnInit {
   }
 
   getConsultUnreadCount(): number {
-    return this.data && this.data.Count2 ? this.data.Count2 : 0;
+    return this.msgData && this.msgData.ConsultMessageCount ? this.msgData.ConsultMessageCount : 0;
   }
 
   getWaybillUnreadCount(): number {
-    return this.data && this.data.Count1 ? this.data.Count1 : 0;
+    return this.msgData && this.msgData.WaybillMessageCount ? this.msgData.WaybillMessageCount : 0;
   }
 
   formatBadgeCount(count: number): string {

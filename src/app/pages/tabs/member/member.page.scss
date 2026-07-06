@@ -105,7 +105,7 @@ ion-modal ion-content {
 .member-dashboard {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 12px 12px 18px;
+    padding: 0 0 18px;
     font-family: 'Noto Sans SC', 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
 }
 
@@ -468,7 +468,8 @@ ion-modal ion-content {
 
 .menu-item-wrap {
     position: relative;
-    min-height: 118px;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
 }
 
 .menu-item {
@@ -477,7 +478,8 @@ ion-modal ion-content {
     justify-items: center;
     gap: 7px;
     width: 100%;
-    min-height: 118px;
+    height: 100%;
+    min-height: 0;
     padding: 12px 8px;
     border: 1px solid #d8e7f8;
     border-radius: 16px;
@@ -742,7 +744,8 @@ ion-modal ion-content {
     justify-items: center;
     align-content: center;
     gap: 9px;
-    min-height: 118px;
+    aspect-ratio: 1 / 1;
+    min-height: 0;
     border: 1px solid #d8e7f8;
     border-radius: 16px;
     background: #ffffff;
@@ -761,8 +764,8 @@ ion-modal ion-content {
 
 @media (max-width: 430px) {
     .member-dashboard {
-        padding-right: 10px;
-        padding-left: 10px;
+        padding-right: 0;
+        padding-left: 0;
     }
 
     .overview-grid {
@@ -785,7 +788,22 @@ ion-modal ion-content {
     .menu-item-wrap,
     .menu-item,
     .skeleton-menu-cell {
-        min-height: 116px;
+        min-height: 0;
+    }
+
+    .menu-item {
+        gap: 6px;
+        padding: 10px 7px;
+    }
+
+    .menu-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+    }
+
+    .menu-icon-wrap ion-icon {
+        font-size: 20px;
     }
 
     .menu-title {
@@ -833,7 +851,7 @@ ion-modal ion-content {
 
 @media (min-width: 768px) {
     .member-dashboard {
-        padding: 16px 20px 24px;
+        padding: 0 0 24px;
     }
 
     .account-summary {
@@ -848,7 +866,7 @@ ion-modal ion-content {
     .menu-item-wrap,
     .menu-item,
     .skeleton-menu-cell {
-        min-height: 126px;
+        min-height: 0;
     }
 
     .menu-title {

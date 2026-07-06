@@ -16,6 +16,9 @@ body.member-center-route ion-app {
 
 body.member-center-route ion-content {
   --background: var(--member-page-background);
+  --padding-start: var(--ion-padding, 16px);
+  --padding-end: var(--ion-padding, 16px);
+  --padding-top: var(--ion-padding, 16px);
   color: var(--member-text-900, #12213a);
 }
 
@@ -61,6 +64,12 @@ body.member-center-route ion-card {
   color: var(--member-text-900, #12213a);
 }
 
+body.member-center-route ion-content > ion-card,
+body.member-center-route ion-content > div > ion-card {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 body.member-center-route ion-card-title {
   color: var(--member-text-900, #12213a);
   font-size: 16px;
@@ -85,8 +94,6 @@ body.member-center-route ion-item {
   --background: transparent;
   --border-color: var(--member-border-100, #e3edf8);
   --color: var(--member-text-900, #12213a);
-  --inner-padding-end: 12px;
-  --padding-start: 12px;
   color: var(--member-text-900, #12213a);
 }
 
@@ -94,9 +101,19 @@ body.member-center-route ion-label {
   color: var(--member-text-800, #1e3356);
 }
 
-body.member-center-route ion-note,
-body.member-center-route .ion-color-medium {
+body.member-center-route ion-note {
   color: var(--member-text-500, #5f759a);
+}
+
+body.member-center-route ion-item[detail] ion-note[slot="end"],
+body.member-center-route ion-item[detail] ion-badge[slot="end"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 24px;
+  margin-inline-end: 8px;
+  line-height: 1;
 }
 
 body.member-center-route ion-searchbar {
@@ -108,14 +125,12 @@ body.member-center-route ion-searchbar {
   --icon-color: var(--member-text-500, #5f759a);
   --placeholder-color: var(--member-text-400, #7890b0);
   --placeholder-opacity: 1;
-  padding-inline: 12px;
 }
 
 body.member-center-route ion-segment {
   --background: rgba(232, 242, 254, 0.92);
   border: 1px solid rgba(202, 222, 246, 0.86);
   border-radius: var(--member-control-radius, 12px);
-  padding: 3px;
 }
 
 body.member-center-route ion-segment-button {
@@ -172,19 +187,6 @@ body.member-center-route ion-badge {
   font-weight: 800;
   letter-spacing: 0;
   text-transform: none;
-}
-
-body.member-center-route ion-badge[color="dark"],
-body.member-center-route ion-chip[color="dark"] {
-  --background: var(--member-brand-100, #e7f2ff);
-  --color: var(--member-brand-700, #083f7a);
-  background: var(--member-brand-100, #e7f2ff);
-  color: var(--member-brand-700, #083f7a);
-}
-
-body.member-center-route ion-badge[color="medium"] {
-  --background: var(--member-surface-200, #e8f1fe);
-  --color: var(--member-text-700, #304a70);
 }
 
 body.member-center-route ion-modal {

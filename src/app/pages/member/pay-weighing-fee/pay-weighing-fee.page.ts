@@ -1,4 +1,4 @@
-import { NavController, AlertController, ToastController, ActionSheetController, IonInput, LoadingController } from '@ionic/angular';
+﻿import { NavController, AlertController, ToastController, ActionSheetController, IonInput, LoadingController } from '@ionic/angular';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { WeightBill } from 'src/app/interfaces/weight-bill';
@@ -14,6 +14,9 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ["./pay-weighing-fee.page.scss"],
 })
 export class PayWeighingFeePage implements OnInit, OnDestroy {
+  private readonly readWeightTimeoutMs = 20 * 1000;
+  private readWeightTimeoutHandle: any;
+  private readWeightTimedOut = false;
   signalRConnection: SignalRConnection;
   signalRConnected: boolean = false;
   subscriber: Subscription;
@@ -25,18 +28,18 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
   autoShowInparkHistory: boolean = false;
   validation_messages = {
     "vehicleNo": [
-      { type: "required", message: "车牌号码必须输入" },
-      { type: "maxlength", message: "车牌号码的长度最多为8位" }
+      { type: "required", message: "请输入车牌号码" },
+      { type: "maxlength", message: "车牌号码最多 8 位" }
     ],
     "tareWeight": [
-      { type: "required", message: "皮重(车重)必须输入" },
-      { type: "min", message: "皮重(车重)必须大于1KG" }
+      { type: "required", message: "请输入皮重（车重）" },
+      { type: "min", message: "皮重（车重）需大于 1KG" }
     ],
     "pricePerTon": [
-      { type: "required", message: "过磅费选项不能为空" }
+      { type: "required", message: "请选择过磅费方式" }
     ],
     "corporateAccount": [
-      { type: "maxLength", message: "车牌号码的长度最多为32位" }
+      { type: "maxLength", message: "企业账号最多 32 位" }
     ],
     "isReturn": [
 
@@ -97,8 +100,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
       this.loadDefaultValue();
       this.initSignalRConnection();
       this.alertController.create({
-        header: '系统升级提示',
-        message: "尊贵的客户，微信下拉直接打开“丰树地磅”过磅，无需下车扫码！",
+        header: '过磅小程序已升级',
+        message: "您可以在微信下拉列表中快速打开“丰树地磅”，无需下车扫码即可办理过磅。",
         backdropDismiss: false,
         keyboardClose: false,
         buttons: [
@@ -111,8 +114,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
     // }
     // else {
     //   this.alertController.create({
-    //     header: '系统升级提示',
-    //     message: "当前系统已迁移至微信小程序，请在微信中搜索小程序:丰树地磅",
+    //     header: '过磅小程序已升级',
+    //     message: "请在微信中搜索“丰树地磅”小程序办理过磅。",
     //     backdropDismiss: false,
     //     keyboardClose: false,
     //     buttons: [
@@ -127,7 +130,7 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
 
   loadDefaultValue() {
     this.loadingCtrl.create({
-      message: '请稍后',
+      message: '正在读取车辆信息...',
     }).then(lc => {
       lc.present();
       this.weightBillService.getWeightBillDefaultValue(this.data.WxOpenId, "").subscribe({
@@ -156,8 +159,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
     this.weightBillService.getHistoryVehicleNo(this.data.WxOpenId).subscribe(vehicleNoList => {
       if (vehicleNoList.length == 0) {
         this.alertController.create({
-          header: '不存在历史记录',
-          message: "请尝试输入车牌号码或者选择车辆入场记录",
+          header: '暂无历史车牌',
+          message: "请手动输入车牌号码，或选择当前园区入场记录。",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
@@ -186,7 +189,7 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
         });
         this.actionSheetController.create({
           header: "车牌号码历史记录",
-          subHeader: "请选择",
+          subHeader: "请选择要使用的车牌号码",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: vehicleNoButtons
@@ -198,7 +201,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
     this.weightBillService.getHistoryCorporateAccount(this.data.WxOpenId).subscribe(corporateAccountList => {
       if (corporateAccountList.length == 0) {
         this.alertController.create({
-          header: '不存在历史记录',
+          header: '暂无企业账号记录',
+          message: "当前微信账号还没有可复用的企业账号，请按需手动填写。",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
@@ -227,7 +231,7 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
         });
         this.actionSheetController.create({
           header: "企业账号历史记录",
-          subHeader: "请选择",
+          subHeader: "请选择要使用的企业账号",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: vehicleNoButtons
@@ -242,8 +246,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
         //如果需要弹出不存在入场记录的提示（手动点击的才弹出，自动显示的不弹出）
         if (showNotExistsMessage) {
           this.alertController.create({
-            header: '不存在入场记录',
-            message: "请尝试输入车牌号码或者选择历史记录",
+            header: '暂无入场记录',
+            message: "未查询到当前园区入场车辆，请手动输入车牌号码，或从历史记录中选择。",
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [
@@ -276,7 +280,7 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
         });
         this.actionSheetController.create({
           header: "园区车辆入场记录",
-          subHeader: "请选择",
+          subHeader: "请选择当前入场车辆",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: vehicleNoButtons
@@ -295,6 +299,10 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
       if (this.subscriber != undefined)
         this.subscriber.unsubscribe();
       this.subscriber = listener.subscribe((msg: any) => {
+        if (this.readWeightTimedOut) {
+          return;
+        }
+        this.finishReadWeightWaiting();
         let obj = JSON.parse(msg);
         console.log(obj);
         if (obj.MsgContent == "Complete") {
@@ -325,7 +333,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
               this.loadingCtrl.dismiss();
               this.alertController.create({
                 header: '称重已完成',
-                subHeader: "点击确定后,系统将显示电子磅单",
+                subHeader: "电子磅单已生成",
+                message: "点击确定后查看本次过磅结果。",
                 backdropDismiss: false,
                 keyboardClose: false,
                 buttons: [
@@ -340,12 +349,13 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
             });
           }
         }
-        else if (obj.MsgContent == "Timeout") {
+        else if (this.isReadFailureMessage(obj.MsgContent)) {
+          const failureMessage = this.getReadFailureMessage(obj.MsgContent);
           this.loadingCtrl.dismiss();
           this.alertController.create({
-            header: '测量失败',
-            subHeader: "测量超时",
-            message: "请重试！如果重试仍然提示此信息，请联系系统管理员！",
+            header: '称重没有完成',
+            subHeader: failureMessage.subHeader,
+            message: failureMessage.message,
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [
@@ -373,9 +383,9 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
           this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
             this.loadingCtrl.dismiss();
             this.alertController.create({
-              header: '测量失败',
-              subHeader: "未找到第一次过磅记录",
-              message: "请核实车牌号码是否正确",
+              header: '找不到第一次过磅记录',
+              subHeader: "无法完成二次过磅",
+              message: "请确认车牌号码是否正确，或先完成第一次过磅。",
               backdropDismiss: false,
               keyboardClose: false,
               buttons: [
@@ -407,9 +417,9 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
           this.signalRConnection.invoke("SendMessage2", sendData).then((data: boolean) => {
             this.loadingCtrl.dismiss();
             this.alertController.create({
-              header: '测量失败',
-              subHeader: "重量不正确",
-              message: "第一次过磅重量和第二次过磅重量相同",
+              header: '两次重量没有变化',
+              subHeader: "两次重量相同",
+              message: "本次重量和第一次过磅相同。请确认车辆已装卸完成后，再重新称重。",
               backdropDismiss: false,
               keyboardClose: false,
               buttons: [
@@ -467,8 +477,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
     if (this.validateweightBillForm1()) {
       if (this.data.WeighingMode == 0 && (this.data.TareWeight == null || this.data.TareWeight == undefined || this.data.TareWeight == 0)) {
         this.alertController.create({
-          header: '信息不完整',
-          message: "重车模式必须输入皮重",
+          header: '还缺少皮重',
+          message: "称净重需要先填写皮重（车重）。请补充后再开始称重。",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
@@ -481,8 +491,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
       }
       else if (this.data.WeighingMode == 3 && (this.data.IsReturn == null || this.data.IsReturn == undefined)) {
         this.alertController.create({
-          header: '信息不完整',
-          message: "二次过磅模式必须选择是第几次过磅",
+          header: '请选择过磅次数',
+          message: "二次过磅前，请先选择这是第一次过磅还是第二次过磅。",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
@@ -503,8 +513,8 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
     }
     else {
       this.alertController.create({
-        header: '信息不完整',
-        message: "请根据系统的提示完整输入所需信息",
+        header: '信息还没填完整',
+        message: "请按页面提示补全必填内容，再开始称重。",
         backdropDismiss: false,
         keyboardClose: false,
         buttons: [
@@ -557,9 +567,111 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
   setCorporateAccount(val: string) {
     this.weightBillForm1.controls["corporateAccount"].setValue(val);
   }
+
+  private isReadFailureMessage(message: string) {
+    return [
+      "Timeout",
+      "TimeoutNoReading",
+      "TimeoutUnstable",
+      "DeviceDisconnected",
+      "InvalidWeightData",
+      "WeightSaveFailed"
+    ].indexOf(message) >= 0;
+  }
+
+  private getReadFailureMessage(message: string) {
+    switch (message) {
+      case "TimeoutNoReading":
+        return {
+          subHeader: "没有收到设备读数",
+          message: "读数设备暂时没有返回数据，可能是设备未连接、读数程序异常或设备未发送数据。请重新开始称重；仍不成功请联系园区门口保安室工作人员。"
+        };
+      case "TimeoutUnstable":
+      case "Timeout":
+        return {
+          subHeader: "没有读到稳定重量",
+          message: "重量一直在变化，暂时无法完成称重。请确认车辆已停稳后重新开始称重；仍不成功请联系园区门口保安室工作人员。"
+        };
+      case "DeviceDisconnected":
+        return {
+          subHeader: "称重设备未连接",
+          message: "当前无法连接称重设备，可能是设备未开机、连接中断或读数程序未运行。请重新开始称重；仍不成功请联系园区门口保安室工作人员。"
+        };
+      case "InvalidWeightData":
+        return {
+          subHeader: "设备读数异常",
+          message: "设备返回的读数异常，可能是数据格式错误、设备干扰或读数程序异常。请重新开始称重；仍不成功请联系园区门口保安室工作人员。"
+        };
+      case "WeightSaveFailed":
+        return {
+          subHeader: "重量保存失败",
+          message: "设备已读到重量，但系统保存失败。请稍后重新开始称重；仍不成功请联系园区门口保安室工作人员。"
+        };
+      default:
+        return {
+          subHeader: "称重暂时失败",
+          message: "本次称重没有完成，请重新开始称重。"
+        };
+    }
+  }
+
+  private startReadWeightTimeout() {
+    this.clearReadWeightTimeout();
+    this.readWeightTimedOut = false;
+    this.readWeightTimeoutHandle = setTimeout(() => {
+      this.readWeightTimeoutHandle = null;
+      this.readWeightTimedOut = true;
+      this.loadingCtrl.dismiss();
+      this.stopReadWeightDevice();
+      this.alertController.create({
+        header: '称重没有响应',
+        subHeader: "一直没有收到设备返回结果",
+        message: "请确认设备在线、网络正常后重新开始称重；仍不成功请联系园区门口保安室工作人员。",
+        backdropDismiss: false,
+        keyboardClose: false,
+        buttons: [
+          {
+            text: '确定',
+            role: 'cancel'
+          }
+        ]
+      }).then(p => p.present());
+    }, this.readWeightTimeoutMs);
+  }
+
+  private finishReadWeightWaiting() {
+    this.clearReadWeightTimeout();
+    this.readWeightTimedOut = false;
+  }
+
+  private clearReadWeightTimeout() {
+    if (this.readWeightTimeoutHandle) {
+      clearTimeout(this.readWeightTimeoutHandle);
+      this.readWeightTimeoutHandle = null;
+    }
+  }
+
+  private stopReadWeightDevice() {
+    if (!this.signalRConnection) {
+      return;
+    }
+    this.signalRConnection.invoke("SendMessage2", {
+      MsgFrom: 16075,
+      FromClientType: 1,
+      MsgFromType: 0,
+      MsgTo: 1,
+      ToClientType: 13,
+      MsgToType: 1,
+      MsgContent: "Stop",
+      InvokeClassName: this.data.WxOpenId,
+      InvokeMethodName: ""
+    });
+  }
+
+
   startRead() {
     this.loadingCtrl.create({
-      message: '正在启动设备,请稍后...'
+      message: '正在连接称重设备...'
     }).then(p => p.present());
     //通知读数端开始读数
     this.weightBillService.start(this.data)
@@ -570,15 +682,18 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
           console.log(started);
           if (started == true) {
             this.loadingCtrl.create({
-              message: '测量设备正在测量,请稍后...'
-            }).then(p => p.present());
+              message: '正在读取重量，请保持车辆停稳...'
+            }).then(p => {
+              p.present();
+              this.startReadWeightTimeout();
+            });
 
           }
           else {
             this.alertController.create({
-              header: '启动失败',
-              subHeader: "非常抱歉，系统遇到了问题",
-              message: "请联系系统管理员！",
+              header: '称重设备没有启动',
+              subHeader: "暂时无法连接设备",
+              message: "请稍后重新开始称重；仍不成功请联系园区门口保安室工作人员。",
               backdropDismiss: false,
               keyboardClose: false,
               buttons: [
@@ -595,9 +710,9 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
           this.loadingCtrl.dismiss();
           console.log(err);
           this.alertController.create({
-            header: '启动失败',
-            subHeader: "启动测量设备请求超时",
-            message: "请重试！如果重试仍然提示此信息，请联系系统管理员！",
+            header: '设备响应超时',
+            subHeader: "暂时没有收到设备回复",
+            message: "请检查网络、设备连接和读数程序后重新开始称重；仍不成功请联系园区门口保安室工作人员。",
             backdropDismiss: false,
             keyboardClose: false,
             buttons: [
@@ -612,6 +727,7 @@ export class PayWeighingFeePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearReadWeightTimeout();
     if (this.signalRConnection) {
       this.signalRConnection.stop();
     }

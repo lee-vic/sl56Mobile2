@@ -1,47 +1,63 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { InstantMessageService } from 'src/app/providers/instant-message.service';
 import { Router, NavigationExtras, ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-unread-message-list1',
   templateUrl: './unread-message-list1.page.html',
   styleUrls: ['./unread-message-list1.page.scss'],
 })
-export class UnreadMessageList1Page implements OnInit {
+export class UnreadMessageList1Page implements OnInit, OnDestroy {
   items: Array<any> = [];
-  isLoading: boolean = true;
+  isLoading = true;
+  loadError = false;
   readonly loadingPlaceholders = [1, 2, 3];
-  constructor(public service: InstantMessageService, private router: Router, private route: ActivatedRoute) {
+  private readonly destroy$ = new Subject<void>();
 
-  }
+  constructor(
+    public service: InstantMessageService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.getData();
   }
-  getData() {
-    this.isLoading = true;
-    this.service.getMessages1().subscribe({
-      next: res => {
-        this.items = res || [];
-      },
-      error: () => {
-        this.items = [];
-      },
-      complete: () => {
-        this.isLoading = false;
-      }
-    });
-  }
-  getData1() {
+
+  ionViewWillEnter() {
     this.getData();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  getData() {
+    this.isLoading = this.items.length === 0;
+    this.loadError = false;
+    this.service.getMessages1()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.items = res || [];
+          this.isLoading = false;
+        },
+        error: () => {
+          this.loadError = true;
+          this.isLoading = false;
+        }
+      });
+  }
+
   detail(data) {
-    let extras: NavigationExtras = {
+    const extras: NavigationExtras = {
       state: {
         receiveGoodsDetailId: data.ReceiveGoodsDetailId
       }
-    }
-    this.router.navigate(["/member/chat/1"], extras)
+    };
+    this.router.navigate(['/member/chat/1'], extras);
   }
 }

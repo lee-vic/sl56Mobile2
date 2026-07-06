@@ -106,21 +106,9 @@ ion-content {
 
 .notice-card-badge {
 	flex: 0 0 auto;
-	min-width: 38px;
-	text-align: center;
 }
 
-/* 已读状态：浅灰底 + 深灰文字，确保可读 */
-.notice-card-badge[color="medium"] {
-	--background: #e9ecf2;
-	--color: #5f759a;
-}
-
-/* 未读状态额外留白，确保与已读标签栏位对齐 */
-.notice-card-badge[color="primary"] {
-	--background: var(--member-brand-500);
-	--color: #ffffff;
-}
+/* badge 颜色使用 Ionic 原生 color 属性：已读=medium，未读=primary */
 
 .notice-card-body {
 	margin-top: 4px;
@@ -257,12 +245,6 @@ ion-infinite-scroll {
 }
 
 @media (min-width: 768px) {
-	.notice-list-content {
-		--padding-start: 24px;
-		--padding-end: 24px;
-		--padding-top: 16px;
-	}
-
 	.notice-list-stack {
 		gap: 10px;
 	}

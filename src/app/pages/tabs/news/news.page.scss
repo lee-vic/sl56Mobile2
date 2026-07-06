@@ -6,7 +6,7 @@
 	position: sticky;
 	top: 0;
 	z-index: 9;
-	padding: 8px 8px 4px;
+	padding: 16px 16px 4px;
 	background: linear-gradient(180deg, rgba(244, 248, 253, 0.96) 0%, rgba(248, 251, 255, 0.92) 100%);
 	backdrop-filter: blur(4px);
 }
@@ -35,7 +35,8 @@
 }
 
 .news-panel {
-	padding: 8px;
+	margin: 8px 16px 0;
+	padding: 0;
 }
 
 .news-list {
@@ -143,7 +144,7 @@
 
 @media (max-width: 430px) {
 	.news-segment-wrap {
-		padding: 6px 6px 4px;
+		padding: 16px 16px 4px;
 	}
 }
 
@@ -164,7 +165,8 @@
 
 @media (max-width: 360px) {
 	.news-panel {
-		padding: 8px;
+		margin: 8px 16px 0;
+		padding: 0;
 	}
 
 	.news-list ion-item {

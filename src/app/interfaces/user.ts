@@ -6,9 +6,10 @@
 
 export interface User {
     Amount:string;
-    Quantity1:string | number;
-    Quantity2:string | number;
+    PendingConfirmationCount:number;
+    ProblemShipmentCount:number;
     UnReadMessageCount:number;
+    NoticeUnreadCount:number;
     CustomerId:number;
     CustomerNo:string;
     Classify:number;

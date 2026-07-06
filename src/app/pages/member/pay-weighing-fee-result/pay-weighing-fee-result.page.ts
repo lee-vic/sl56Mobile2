@@ -1,4 +1,4 @@
-import { WeightBillService } from 'src/app/providers/weight-bill.service';
+﻿import { WeightBillService } from 'src/app/providers/weight-bill.service';
 import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { apiUrl } from 'src/app/global';
@@ -29,8 +29,8 @@ export class PayWeighingFeeResultPage implements OnInit {
     this.imageUrl = apiUrl + "/Measure/GetWeightBillFile?objectId=" + this.id;
     if (this.shouldAskPrint()) {
       this.alertController.create({
-        header: '是否打印纸质磅单？',
-        message: "10秒内未选择，系统将默认<strong>打印</strong>",
+        header: '需要打印纸质磅单吗？',
+        message: "如果 10 秒内没有选择，系统会自动打印纸质磅单。",
         backdropDismiss: false,
         keyboardClose: false,
         buttons: [
@@ -63,15 +63,15 @@ export class PayWeighingFeeResultPage implements OnInit {
 
   print() {
     this.loadingCtrl.create({
-      message: '正在打印纸质磅单',
+      message: '正在发送打印请求...',
     }).then(loading => {
       loading.present();
       this.service.printWeightBill(this.id).subscribe((p) => {
         loading.dismiss();
         if (p.Success == true) {
         this.alertController.create({
-          header: '打印成功',
-          message: "请到门卫室领取磅单",
+          header: '已发送打印',
+          message: "纸质磅单已发送至打印机，请到门卫室领取。",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
@@ -84,8 +84,8 @@ export class PayWeighingFeeResultPage implements OnInit {
       }
       else {
         this.alertController.create({
-          header: '打印失败',
-          message: p.ErrorMessage,
+          header: '没有打印成功',
+          message: p.ErrorMessage ? "打印机提示：" + p.ErrorMessage + "。请稍后再试一次。" : "打印请求没有发送成功，请重新点击“打印纸质磅单”再试一次。",
           backdropDismiss: false,
           keyboardClose: false,
           buttons: [
