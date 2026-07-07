@@ -58,16 +58,16 @@ body.member-center-route ion-footer ion-toolbar {
 
 body.member-center-route ion-card {
   --background: var(--member-card-background);
+  margin-left: 0;
+  margin-right: 0;
   border: 1px solid var(--member-card-border);
   border-radius: var(--member-card-radius, 8px);
   box-shadow: var(--member-shadow-soft, 0 8px 20px rgba(8, 63, 122, 0.08));
   color: var(--member-text-900, #12213a);
 }
 
-body.member-center-route ion-content > ion-card,
-body.member-center-route ion-content > div > ion-card {
-  margin-left: 0;
-  margin-right: 0;
+body.member-center-route ion-card.ion-no-margin {
+  margin: 0;
 }
 
 body.member-center-route ion-card-title {
@@ -129,6 +129,9 @@ body.member-center-route ion-searchbar {
 
 body.member-center-route ion-segment {
   --background: rgba(232, 242, 254, 0.92);
+  --app-segment-checked-background: var(--member-surface-0, #ffffff);
+  --app-segment-checked-border: rgba(185, 211, 240, 0.7);
+  --app-segment-checked-shadow: 0 2px 8px rgba(8, 83, 164, 0.08);
   border: 1px solid rgba(202, 222, 246, 0.86);
   border-radius: var(--member-control-radius, 12px);
 }
@@ -137,11 +140,13 @@ body.member-center-route ion-segment-button {
   --border-radius: 10px;
   --color: var(--member-text-500, #5f759a);
   --color-checked: var(--member-brand-600, #084f9b);
-  --indicator-color: var(--member-surface-0, #ffffff);
-  --indicator-box-shadow: 0 5px 14px rgba(8, 83, 164, 0.14);
   font-weight: 800;
   letter-spacing: 0;
   min-height: 40px;
+}
+
+body.member-center-route ion-segment-button.segment-button-checked {
+  color: var(--member-brand-600, #084f9b);
 }
 
 body.member-center-route ion-button {

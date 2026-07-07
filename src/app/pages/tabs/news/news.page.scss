@@ -20,18 +20,9 @@
 }
 
 .news-segment ion-segment-button {
-	--indicator-color: #e6f0ff;
-	--color: var(--member-text-500);
-	--color-checked: var(--member-brand-600);
 	min-height: 38px;
 	font-weight: 600;
 	font-size: 0.82rem;
-	transition: transform 0.16s ease, letter-spacing 0.16s ease;
-}
-
-.news-segment ion-segment-button.segment-button-checked {
-	transform: translateY(-1px);
-	letter-spacing: 0.01em;
 }
 
 .news-panel {

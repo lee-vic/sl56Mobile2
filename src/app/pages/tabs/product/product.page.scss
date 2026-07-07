@@ -16,19 +16,9 @@
 
 .segment-main ion-segment-button,
 .segment-sub ion-segment-button {
-    --indicator-color: #e4efff;
-    --color: var(--member-text-500);
-    --color-checked: var(--member-brand-600);
     min-height: 38px;
     font-size: 0.82rem;
     font-weight: 600;
-    transition: transform 0.16s ease, letter-spacing 0.16s ease;
-}
-
-.segment-main ion-segment-button.segment-button-checked,
-.segment-sub ion-segment-button.segment-button-checked {
-    transform: translateY(-1px);
-    letter-spacing: 0.01em;
 }
 
 .segment-main {

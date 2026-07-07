@@ -1,9 +1,19 @@
-.login-content {
+﻿.login-content {
 	--background: linear-gradient(180deg, #eef4ff 0%, #f7faff 100%);
+	--padding-start: var(--ion-padding, 16px);
+	--padding-end: var(--ion-padding, 16px);
+	--padding-top: var(--ion-padding, 16px);
 }
 
 .login-shell {
 	min-height: 100%;
+	padding-right: 0;
+	padding-left: 0;
+}
+
+.login-shell ion-col {
+	padding-right: 0;
+	padding-left: 0;
 }
 
 .login-card {

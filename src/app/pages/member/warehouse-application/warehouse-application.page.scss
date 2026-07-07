@@ -6,10 +6,10 @@
 .warehouse-intro {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 14px;
+  margin-bottom: 10px;
+  padding: 12px 14px;
   border: 1px solid #d8e7f8;
   border-radius: 14px;
   background: #ffffff;
@@ -20,8 +20,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
   color: var(--ion-color-primary);
   background: #edf5ff;
@@ -51,7 +51,7 @@
 
 .application-list {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .application-card,
@@ -74,7 +74,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  padding: 14px 14px 8px;
 }
 
 .application-card ion-card-subtitle {
@@ -98,15 +99,16 @@
 }
 
 .application-card ion-card-content {
+  padding: 0 14px 12px;
 }
 
 .application-meta {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr 1fr;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 8px 10px;
   border: 1px solid #e5eef9;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f8fbff;
 }
 
@@ -116,7 +118,7 @@
 }
 
 .application-meta span {
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   color: #71829b;
   font-size: 12px;
 }
@@ -131,13 +133,16 @@
 .application-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
 .application-actions ion-button {
-  --border-radius: 10px;
+  --border-radius: 8px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  min-height: 32px;
   margin: 0;
   font-weight: 800;
 }

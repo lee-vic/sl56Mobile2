@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-title>账号注册</ion-title>
     <ion-buttons slot="end">
@@ -11,7 +11,7 @@
 
 
 <ion-content>
-  <form (ngSubmit)="doNext(myForm.value)" [formGroup]="myForm" novalidate class="ion-margin-top ion-padding-top">
+  <form (ngSubmit)="doNext(myForm.value)" [formGroup]="myForm" novalidate>
     <ion-item>
       <ion-label class="label-stacked" color="dark">手机号码</ion-label>
       <ion-input aria-label="手机号码" type="tel" formControlName="mobilePhone" placeholder="请输入手机号码"></ion-input>

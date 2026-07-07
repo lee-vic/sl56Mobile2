@@ -88,14 +88,13 @@ describe('UnreadMessageListPage', () => {
     expect(toastController.create).not.toHaveBeenCalled();
   });
 
-  it('shows a toast when waybill messages have no unread messages', () => {
+  it('navigates to waybill message list when waybill messages entry is selected', () => {
+    spyOn(router, 'navigate');
     component.msgData = { WaybillMessageCount: 0, ConsultMessageCount: 1 };
 
     component.detail(1);
 
-    expect(toastController.create).toHaveBeenCalledWith(jasmine.objectContaining({
-      message: '暂无未读消息'
-    }));
+    expect(router.navigate).toHaveBeenCalledWith(['/member', 'unread-message-list1']);
   });
 
   it('opens notice list from the business notice entry', () => {

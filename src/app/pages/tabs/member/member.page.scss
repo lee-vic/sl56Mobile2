@@ -8,7 +8,7 @@ ion-modal ion-content {
     display: grid;
     align-content: center;
     min-height: 100%;
-    padding: 24px 14px 32px;
+    padding: 24px 0 32px;
 }
 
 .login-brand {
@@ -463,6 +463,9 @@ ion-modal ion-content {
 
 .menu-grid ion-col.col {
     position: relative;
+    flex: 0 0 33.3333%;
+    width: 33.3333%;
+    max-width: 33.3333%;
     padding: 4px;
 }
 

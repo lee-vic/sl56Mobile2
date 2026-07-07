@@ -17,7 +17,18 @@ describe('ReturnApplyPage', () => {
 
   const navBackSpy = jasmine.createSpy('navBack');
   const navNavigateBackSpy = jasmine.createSpy('navigateBack');
-  const alertCreateSpy = jasmine.createSpy('alertCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
+  const alertCreateSpy = jasmine.createSpy('alertCreate').and.callFake((opts: { buttons?: Array<{ text?: string; role?: string; handler?: () => void }> }) => {
+    return Promise.resolve({
+      present: () => {
+        // 自动触发"确认提交"按钮的 handler，模拟用户点击确认
+        const confirmButton = (opts.buttons || []).find(b => b.text === '确认提交');
+        if (confirmButton?.handler) {
+          confirmButton.handler();
+        }
+        return Promise.resolve();
+      }
+    });
+  });
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
   const mockLoading = {
     present: jasmine.createSpy('loadingPresent').and.returnValue(Promise.resolve()),

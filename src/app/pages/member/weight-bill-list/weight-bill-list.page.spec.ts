@@ -139,7 +139,8 @@ describe('WeightBillListPage', () => {
     expect(loadingDismissSpy).toHaveBeenCalled();
     expect(alertCreateSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        message: 'printer error',
+        header: '没有打印成功',
+        message: '打印机提示：printer error。请稍后再试一次。',
         backdropDismiss: false,
         keyboardClose: false,
       })

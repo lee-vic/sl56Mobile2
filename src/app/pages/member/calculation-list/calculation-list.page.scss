@@ -1,36 +1,40 @@
 ﻿:host {
   --calc-radius: 16px;
   --calc-soft-radius: 12px;
-  --calc-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
-  --calc-card-bg: rgba(255, 255, 255, 0.92);
-  --calc-border: rgba(148, 163, 184, 0.26);
+  --calc-shadow: 0 4px 12px rgba(8, 63, 122, 0.05);
+  --calc-card-bg: rgba(255, 255, 255, 0.98);
+  --calc-border: rgba(190, 213, 239, 0.82);
   --calc-title: #0f172a;
   --calc-subtitle: #475569;
   --calc-note: #64748b;
 }
 
 .result-content {
-    --background: linear-gradient(180deg, #f7fbff 0%, #f3f7fc 100%);
-    --padding-bottom: 92px;
+  --background: var(--member-page-background, linear-gradient(180deg, #f8fbff 0%, #eef6ff 46%, #f9fbfe 100%));
+  --padding-bottom: 92px;
+}
+
+.result-content::part(background) {
+  background: var(--member-page-background, linear-gradient(180deg, #f8fbff 0%, #eef6ff 46%, #f9fbfe 100%));
 }
 
 .segment-wrap {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding: 6px 0 0;
-  background: rgba(247, 251, 255, 0.95);
-  backdrop-filter: blur(4px);
+  position: static;
+  padding: 0 0 10px;
 }
 
 .result-segment {
-  --background: #e8edf5;
-  border: 1px solid var(--calc-border);
-  border-radius: var(--calc-soft-radius);
+  margin: 0;
+}
+
+.result-segment ion-segment-button {
+  --color-checked: var(--member-brand-700, #083f7a);
+  min-height: 42px;
+  font-weight: 800;
 }
 
 .result-list {
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
   background: transparent;
 }
@@ -40,7 +44,7 @@
   border: 1px solid var(--calc-border);
   border-radius: var(--calc-radius);
   box-shadow: var(--calc-shadow);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 
