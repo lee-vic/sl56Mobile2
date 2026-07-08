@@ -83,6 +83,13 @@
           </ion-card-content>
         </ion-card>
 
+        <ion-card class="return-warning-card ion-no-margin" *ngIf="canShowForm && type === 0">
+          <ion-card-content>
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <p [innerHTML]="noticeMessage"></p>
+          </ion-card-content>
+        </ion-card>
+
         <ion-card class="return-card ion-no-margin" *ngIf="canShowForm">
           <ion-card-header>
             <ion-card-title>退货申请信息</ion-card-title>

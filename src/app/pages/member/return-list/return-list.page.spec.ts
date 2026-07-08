@@ -112,7 +112,7 @@ describe('ReturnListPage', () => {
 
   it('should load and normalize ongoing reference numbers', () => {
     getList2Spy.and.returnValue(of([
-      { ObjectId: 10, ReferenceNumber: '1_REF-100,2_REF-200', ApplyType: 0 },
+      { ObjectId: 10, ReferenceNumber: '1_REF-100,2_REF-200' },
     ]));
 
     fixture.detectChanges();
@@ -201,8 +201,8 @@ describe('ReturnListPage', () => {
 
   it('should filter ongoing records by pickup code', () => {
     getList2Spy.and.returnValue(of([
-      { ObjectId: 10, ReferenceNumber: '1_REF-100', ApplyType: 0, MobilePhone: '13900000000' },
-      { ObjectId: 11, ReferenceNumber: '2_REF-200', ApplyType: 1, MobilePhone: '13811112222', PickupCode: 'PICK-8' },
+      { ObjectId: 10, ReferenceNumber: '1_REF-100', MobilePhone: '13900000000' },
+      { ObjectId: 11, ReferenceNumber: '2_REF-200', MobilePhone: '13811112222', PickupCode: 'PICK-8' },
     ]));
 
     fixture.detectChanges();
@@ -217,8 +217,8 @@ describe('ReturnListPage', () => {
 
   it('should filter ongoing records by mobile phone', () => {
     getList2Spy.and.returnValue(of([
-      { ObjectId: 10, ReferenceNumber: '1_REF-100', ApplyType: 0, MobilePhone: '13900000000' },
-      { ObjectId: 11, ReferenceNumber: '2_REF-200', ApplyType: 1, MobilePhone: '13811112222', PickupCode: 'PICK-8' },
+      { ObjectId: 10, ReferenceNumber: '1_REF-100', MobilePhone: '13900000000' },
+      { ObjectId: 11, ReferenceNumber: '2_REF-200', MobilePhone: '13811112222', PickupCode: 'PICK-8' },
     ]));
 
     fixture.detectChanges();
@@ -230,7 +230,7 @@ describe('ReturnListPage', () => {
   });
 
   it('should validate mobile number before saving', () => {
-    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' });
+    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753' });
     component.mobileDraft = '123';
 
     component.submitMobilePhone();
@@ -240,7 +240,7 @@ describe('ReturnListPage', () => {
   });
 
   it('should show mobile validation while editing', () => {
-    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' });
+    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753' });
 
     component.onMobileDraftInput({ detail: { value: '123' } } as CustomEvent);
 
@@ -249,7 +249,7 @@ describe('ReturnListPage', () => {
   });
 
   it('should reject mobile number with country code before saving', () => {
-    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' });
+    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753' });
     component.mobileDraft = '+8613811112222';
 
     component.submitMobilePhone();
@@ -258,8 +258,16 @@ describe('ReturnListPage', () => {
     expect(updateMobilePhoneSpy).not.toHaveBeenCalled();
   });
 
+  it('should allow mobile edit before pickup code is generated', () => {
+    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' });
+
+    expect(component.isMobileEditOpen).toBe(true);
+    expect(component.mobileDraft).toBe('13900000000');
+    expect(toastSpy).not.toHaveBeenCalled();
+  });
+
   it('should update mobile phone when save succeeds', () => {
-    const item = { ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' };
+    const item = { ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753', ExpiredTime: '2999-01-01 00:00:00', PickupCodeResendRequired: false, CanResetPickupCode: false };
     component.openMobileEdit(item);
     component.mobileDraft = '13811112222';
 
@@ -267,12 +275,15 @@ describe('ReturnListPage', () => {
 
     expect(updateMobilePhoneSpy).toHaveBeenCalledWith(9, '13811112222');
     expect(item.MobilePhone).toBe('13811112222');
+    expect(item.ExpiredTime).toBe('2999-01-01 00:00:00');
+    expect(item.PickupCodeResendRequired).toBe(true);
+    expect(item.CanResetPickupCode).toBe(true);
     expect(component.isMobileEditOpen).toBe(false);
   });
 
   it('should surface server validation message when mobile update fails logically', () => {
     updateMobilePhoneSpy.and.returnValue(of('手机号已被占用'));
-    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' });
+    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753' });
     component.mobileDraft = '13811112222';
 
     component.submitMobilePhone();
@@ -283,7 +294,7 @@ describe('ReturnListPage', () => {
 
   it('should surface server validation message from action result object', () => {
     updateMobilePhoneSpy.and.returnValue(of({ Success: false, ErrMsg: '手机号码格式不对' }));
-    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' });
+    component.openMobileEdit({ ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753' });
     component.mobileDraft = '13811112222';
 
     component.submitMobilePhone();
@@ -293,7 +304,7 @@ describe('ReturnListPage', () => {
   });
 
   it('should treat successful action result object as saved', () => {
-    const item = { ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000' };
+    const item = { ObjectId: 9, ReferenceNumber: 'REF-9', MobilePhone: '13900000000', PickupCode: '388753' };
     updateMobilePhoneSpy.and.returnValue(of({ Success: true }));
     component.openMobileEdit(item);
     component.mobileDraft = '13811112222';
@@ -315,7 +326,6 @@ describe('ReturnListPage', () => {
       await component.copyPickupCode({
         ObjectId: 9,
         ReferenceNumber: 'REF-9',
-        ApplyType: 0,
         PickupCode: ' 388753 ',
       });
     } finally {
@@ -330,7 +340,6 @@ describe('ReturnListPage', () => {
     await component.copyPickupCode({
       ObjectId: 9,
       ReferenceNumber: 'REF-9',
-      ApplyType: 0,
       PickupCode: ' ',
     });
 
@@ -348,7 +357,6 @@ describe('ReturnListPage', () => {
       await component.copyPickupCode({
         ObjectId: 9,
         ReferenceNumber: 'REF-9',
-        ApplyType: 0,
         PickupCode: '388753',
       });
     } finally {
@@ -358,11 +366,10 @@ describe('ReturnListPage', () => {
     expect(toastSpy).toHaveBeenCalledWith('复制失败，请长按取件码复制', 1800, 'middle', undefined, 'danger');
   });
 
-  it('should reset expired pickup code and reload ongoing list', () => {
+  it('should resend pickup code and reload ongoing list when pickup code is expired', () => {
     const item = {
       ObjectId: 9,
       ReferenceNumber: 'REF-9',
-      ApplyType: 0,
       PickupCode: '388753',
       ExpiredTime: '2000-01-01 00:00:00'
     };
@@ -376,20 +383,50 @@ describe('ReturnListPage', () => {
     expect(component.mutatingObjectId).toBeNull();
   });
 
-  it('should skip reset pickup code when code is still valid', () => {
+  it('should resend pickup code after mobile phone is changed', () => {
+    const item = {
+      ObjectId: 9,
+      ReferenceNumber: 'REF-9',
+      PickupCode: '388753',
+      ExpiredTime: '2999-01-01 00:00:00',
+      PickupCodeResendRequired: true,
+      CanResetPickupCode: true
+    };
+    fixture.detectChanges();
+    getList2Spy.calls.reset();
+
+    component.resetPickupCode(item);
+
+    expect(resetPickupCodeSpy).toHaveBeenCalledWith(9);
+    expect(getList2Spy).toHaveBeenCalled();
+  });
+
+  it('should block reset pickup code while pickup code is still valid', () => {
     component.resetPickupCode({
       ObjectId: 9,
       ReferenceNumber: 'REF-9',
-      ApplyType: 0,
       PickupCode: '388753',
-      ExpiredTime: '2999-01-01 00:00:00'
+      ExpiredTime: '2999-01-01 00:00:00',
+      CanResetPickupCode: false,
+      ResetPickupCodeMessage: '当前取件码仍在有效期内。'
+    });
+
+    expect(resetPickupCodeSpy).not.toHaveBeenCalled();
+    expect(alertCreateSpy).toHaveBeenCalled();
+  });
+
+  it('should skip reset pickup code before pickup code is generated', () => {
+    component.resetPickupCode({
+      ObjectId: 9,
+      ReferenceNumber: 'REF-9',
+      ExpiredTime: '2000-01-01 00:00:00'
     });
 
     expect(resetPickupCodeSpy).not.toHaveBeenCalled();
   });
 
   it('should cancel apply after confirmation', async () => {
-    const item = { ObjectId: 9, ReferenceNumber: 'REF-9', ApplyType: 0 };
+    const item = { ObjectId: 9, ReferenceNumber: 'REF-9' };
 
     await component.cancelApply(item);
     const alertConfig = alertCreateSpy.calls.mostRecent().args[0];

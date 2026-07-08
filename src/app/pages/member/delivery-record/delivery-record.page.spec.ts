@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -162,6 +162,49 @@ describe('DeliveryRecordPage', () => {
     component.onRecordClick(item);
 
     expect(router.navigate).toHaveBeenCalledWith(['/member/delivery-record/detail', 8]);
+  });
+
+  it('should identify record numbers that can be copied', () => {
+    expect(component.hasRecordNumber('FCN20260622')).toBe(true);
+    expect(component.hasRecordNumber(0)).toBe(true);
+    expect(component.hasRecordNumber('')).toBe(false);
+    expect(component.hasRecordNumber('   ')).toBe(false);
+    expect(component.hasRecordNumber(null)).toBe(false);
+    expect(component.hasRecordNumber(undefined)).toBe(false);
+  });
+
+  it('should copy record number and stop card navigation', async () => {
+    const writeText = jasmine.createSpy('writeText').and.returnValue(Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    const event = {
+      preventDefault: jasmine.createSpy('preventDefault'),
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as any;
+
+    try {
+      await component.copyRecordNumber(event, 'FCN20260622', '原单号');
+    } finally {
+      delete (navigator as any).clipboard;
+    }
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(writeText).toHaveBeenCalledWith('FCN20260622');
+    expect(presentToastSpy).toHaveBeenCalledWith('原单号已复制', 1600, 'middle', undefined, 'success');
+  });
+
+  it('should show medium toast when record number is empty', async () => {
+    const event = {
+      preventDefault: jasmine.createSpy('preventDefault'),
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as any;
+
+    await component.copyRecordNumber(event, '', '转单号');
+
+    expect(presentToastSpy).toHaveBeenCalledWith('暂无可复制转单号', 1800, 'middle', undefined, 'medium');
   });
 
   it('should clear selected state when canceling batch mode', () => {

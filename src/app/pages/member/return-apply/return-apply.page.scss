@@ -17,6 +17,10 @@
 	padding: 0;
 }
 
+.return-shell ion-card + ion-card {
+	margin-top: 12px !important;
+}
+
 .return-card {
 	margin: 0;
 	border: 1px solid rgba(169, 203, 240, 0.58);

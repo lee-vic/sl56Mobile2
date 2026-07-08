@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DeliveryRecord } from 'src/app/interfaces/delivery-record';
 import { IonSearchbar,IonInfiniteScroll } from '@ionic/angular';
 import { DeliveryRecordService } from 'src/app/providers/delivery-record.service';
@@ -208,8 +208,30 @@ export class DeliveryRecordPage implements OnInit, OnDestroy {
    
   }
 
-    detail(item: DeliveryRecord) {
+  detail(item: DeliveryRecord) {
     this.router.navigate(["/member/delivery-record/detail",item.Id]);
+  }
+
+  hasRecordNumber(value: any): boolean {
+    return value !== null && value !== undefined && value.toString().trim() !== '';
+  }
+
+  async copyRecordNumber(event: Event, value: any, label: string): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const text = (value || '').trim();
+    if (!text) {
+      await this.uiFeedbackService.presentToast(`暂无可复制${label}`, 1800, 'middle', undefined, 'medium');
+      return;
+    }
+
+    try {
+      await this.copyTextToClipboard(text);
+      await this.uiFeedbackService.presentToast(`${label}已复制`, 1600, 'middle', undefined, 'success');
+    } catch {
+      await this.uiFeedbackService.presentToast(`复制失败，请长按${label}手动复制`, 2200, 'middle', undefined, 'danger');
+    }
   }
 
   onBatchEntryClick(): void {
@@ -336,6 +358,37 @@ export class DeliveryRecordPage implements OnInit, OnDestroy {
 
   private presentWaitingActionToast(message: string): void {
     this.uiFeedbackService.presentToast(message, 2200, 'middle');
+  }
+
+  private async copyTextToClipboard(text: string): Promise<void> {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch {
+        // Continue to the textarea fallback for mobile WebViews without clipboard permission.
+      }
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+
+    try {
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      if (!document.execCommand('copy')) {
+        throw new Error('copy failed');
+      }
+    } finally {
+      document.body.removeChild(textarea);
+    }
   }
 
   private completeRefreshArtifacts(isScroll: boolean, refresherEvent?: CustomEvent): void {

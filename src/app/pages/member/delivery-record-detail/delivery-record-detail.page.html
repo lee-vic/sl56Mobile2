@@ -1,4 +1,4 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -153,7 +153,18 @@
           <ion-list lines="full">
             <ion-item>
               <ion-label>原单号</ion-label>
-              <ion-note slot="end">{{ displayValue(data?.ObjectNo) }}</ion-note>
+              <ion-note slot="end" class="copyable-note">
+                <span>{{ displayValue(data?.ObjectNo) }}</span>
+                <ion-button
+                  *ngIf="hasDisplayValue(data?.ObjectNo)"
+                  fill="clear"
+                  size="small"
+                  class="detail-copy-btn"
+                  aria-label="复制原单号"
+                  (click)="copyDetailNumber($event, data?.ObjectNo, '原单号')">
+                  <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+                </ion-button>
+              </ion-note>
             </ion-item>
             <ion-item>
               <ion-label>目的地</ion-label>
@@ -169,7 +180,18 @@
             </ion-item>
             <ion-item>
               <ion-label>转单号</ion-label>
-              <ion-note slot="end">{{ displayValue(data?.TrackNumber) }}</ion-note>
+              <ion-note slot="end" class="copyable-note">
+                <span>{{ displayValue(data?.TrackNumber) }}</span>
+                <ion-button
+                  *ngIf="hasDisplayValue(data?.TrackNumber)"
+                  fill="clear"
+                  size="small"
+                  class="detail-copy-btn"
+                  aria-label="复制转单号"
+                  (click)="copyDetailNumber($event, data?.TrackNumber, '转单号')">
+                  <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+                </ion-button>
+              </ion-note>
             </ion-item>
             <ion-item *ngIf="hasLabel">
               <ion-label>托运标签</ion-label>

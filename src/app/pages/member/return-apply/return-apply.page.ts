@@ -9,6 +9,8 @@ import { MAINLAND_CHINA_MOBILE_PATTERN } from 'src/app/validators/mobile-phone';
 import { Observable, Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
+const RETURN_APPLY_NOTICE_MESSAGE = '退货流程：备货→审核→安排提货。退货提货前需先完成备货及审核流程，备货通常需约<strong>半小时</strong>；每日 <strong>11:30 至 13:30</strong> 暂不进行退货审核，其他非工作时间提交的申请也将顺延至后续工作时间处理。请在收到取件码后再安排提货，感谢您的理解与配合。';
+
 @Component({
   selector: 'app-return-apply',
   templateUrl: './return-apply.page.html',
@@ -27,6 +29,7 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
   warningMessage = '';
   submitSuccess = false;
   submitSuccessMessage = '';
+  noticeMessage = RETURN_APPLY_NOTICE_MESSAGE;
   public applyForm: FormGroup;
 
   private readonly destroy$ = new Subject<void>();
@@ -135,7 +138,7 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
     };
 
     if (this.type === 0) {
-      this.confirmAndApply(payload);
+      this.doApply(payload);
     }
     else {
       this.doFill(payload);
@@ -143,30 +146,10 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
 
   }
 
-  private async confirmAndApply(form: ReturnApplyModel): Promise<void> {
-    const alert = await this.alertCtrl.create({
-      header: '退货提示',
-      message: '退货备货时间为<strong>半小时</strong>，非工作时间不审核退货，具体时间段为<strong>11:30至13:30</strong>。<br><br>请确认您已了解上述提示，是否继续提交？',
-      buttons: [
-        {
-          text: '取消',
-          role: 'cancel'
-        },
-        {
-          text: '确认提交',
-          handler: () => {
-            this.doApply(form);
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
-
   doApply(form: ReturnApplyModel): void {
     this.submitWithLoading(
       () => this.service.apply1(form),
-      '退货申请已提交，客服将尽快处理',
+      '退货申请已提交',
       res => res.IsSuccess === false ? (res.ErrorMessage || '提交失败') : ''
     );
   }
@@ -272,12 +255,14 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
     this.isApplyBlocked = false;
     this.blockedMessage = '';
     this.warningMessage = '';
+    this.noticeMessage = RETURN_APPLY_NOTICE_MESSAGE;
     this.submitSuccess = false;
     this.submitSuccessMessage = '';
   }
 
   private applyInitResponse(res: ReturnApplyModel): void {
     this.warningMessage = res.WarningMessage || '';
+    this.noticeMessage = res.NoticeMessage || RETURN_APPLY_NOTICE_MESSAGE;
     this.applyForm.controls['RequiredDate'].setValue(res.RequiredDate);
     this.applyForm.controls['ReferenceNumber'].setValue(res.ReferenceNumber);
     this.isInitialLoading = false;

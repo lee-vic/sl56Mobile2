@@ -36,6 +36,7 @@ export interface ReturnApplyModel {
   AllowApply?: boolean;
   ErrorMessage?: string;
   Message?: string;
+  NoticeMessage?: string;
   WarningMessage?: string;
   Remark?: string;
   RequiredDate?: string;
@@ -43,11 +44,13 @@ export interface ReturnApplyModel {
   CreateAt?: string;
   ReferenceNumber?: string;
   ObjectId?: number;
-  ApplyType?: number;
   IsSuccess?: boolean;
   MobilePhone?: string;
   PickupCode?: string;
   ExpiredTime?: string;
+  PickupCodeResendRequired?: boolean;
+  CanResetPickupCode?: boolean;
+  ResetPickupCodeMessage?: string;
 }
 
 export interface ReturnInProgressItem extends ReturnApplyModel {

@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -16,6 +16,8 @@ describe('DeliveryRecordDetailPage', () => {
   let component: DeliveryRecordDetailPage;
   let fixture: ComponentFixture<DeliveryRecordDetailPage>;
   let router: Router;
+  let toastCreateSpy: jasmine.Spy;
+  let toastPresentSpy: jasmine.Spy;
 
   const detailPayload = {
     IsShowPackageTracks: true,
@@ -47,6 +49,8 @@ describe('DeliveryRecordDetailPage', () => {
 
   beforeEach(async(() => {
     mockRoute.queryParams = queryParams$.asObservable();
+    toastPresentSpy = jasmine.createSpy('toastPresent');
+    toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: toastPresentSpy }));
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule, FormsModule, ReactiveFormsModule, IonicModule.forRoot()],
@@ -56,7 +60,7 @@ describe('DeliveryRecordDetailPage', () => {
         { provide: DeliveryRecordDetailService, useValue: { getDetail: getDetailSpy } },
         { provide: ProblemService, useValue: { addProblem: addProblemSpy } },
         { provide: AlertController, useValue: { create: jasmine.createSpy('alertCreate') } },
-        { provide: ToastController, useValue: { create: jasmine.createSpy('toastCreate') } },
+        { provide: ToastController, useValue: { create: toastCreateSpy } },
         { provide: ActionSheetController, useValue: { create: jasmine.createSpy('sheetCreate') } },
         { provide: NavController, useValue: { navigateForward: jasmine.createSpy('navigateForward') } }
       ],
@@ -169,6 +173,41 @@ describe('DeliveryRecordDetailPage', () => {
     expect(component.displayValue('Hello')).toBe('Hello');
     expect(component.displayValue(123)).toBe('123');
     expect(component.displayValue(0)).toBe('0');
+  });
+
+  it('should identify display values that can be copied', () => {
+    expect(component.hasDisplayValue('FCN20260622')).toBe(true);
+    expect(component.hasDisplayValue(0)).toBe(true);
+    expect(component.hasDisplayValue('')).toBe(false);
+    expect(component.hasDisplayValue('   ')).toBe(false);
+    expect(component.hasDisplayValue(null)).toBe(false);
+    expect(component.hasDisplayValue(undefined)).toBe(false);
+  });
+
+  it('should copy detail number and stop row click', async () => {
+    const writeText = jasmine.createSpy('writeText').and.returnValue(Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+    const event = {
+      preventDefault: jasmine.createSpy('preventDefault'),
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as any;
+
+    try {
+      await component.copyDetailNumber(event, '9664439105', '转单号');
+    } finally {
+      delete (navigator as any).clipboard;
+    }
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.stopPropagation).toHaveBeenCalled();
+    expect(writeText).toHaveBeenCalledWith('9664439105');
+    expect(toastCreateSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      message: '转单号已复制',
+      color: 'success',
+    }));
   });
 
   it('should format currency with ¥ prefix and two decimals', () => {

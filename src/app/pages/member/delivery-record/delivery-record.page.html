@@ -61,10 +61,28 @@
             <div class="no-row">
               <span class="no-label">原单号</span>
               <span class="no-value">{{ item.ReferenceNumber || '-' }}</span>
+              <ion-button
+                *ngIf="hasRecordNumber(item.ReferenceNumber)"
+                fill="clear"
+                size="small"
+                class="number-copy-btn"
+                aria-label="复制原单号"
+                (click)="copyRecordNumber($event, item.ReferenceNumber, '原单号')">
+                <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+              </ion-button>
             </div>
             <div class="no-row">
               <span class="no-label">转单号</span>
               <span class="no-value muted">{{ item.TrackNumber || '-' }}</span>
+              <ion-button
+                *ngIf="hasRecordNumber(item.TrackNumber)"
+                fill="clear"
+                size="small"
+                class="number-copy-btn"
+                aria-label="复制转单号"
+                (click)="copyRecordNumber($event, item.TrackNumber, '转单号')">
+                <ion-icon slot="icon-only" name="copy-outline"></ion-icon>
+              </ion-button>
             </div>
           </div>
         </ion-label>

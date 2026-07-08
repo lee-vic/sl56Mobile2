@@ -128,6 +128,23 @@
     font-weight: 600;
 }
 
+.number-copy-btn {
+    --color: var(--delivery-brand);
+    --background: rgba(11, 97, 189, 0.08);
+    --border-radius: 8px;
+    --padding-start: 4px;
+    --padding-end: 4px;
+    width: 22px;
+    height: 22px;
+    min-height: 22px;
+    margin: 0 0 0 1px;
+    flex: 0 0 22px;
+}
+
+.number-copy-btn ion-icon {
+    font-size: 13px;
+}
+
 .country-badge {
     --background: #eef6ff;
     --color: var(--member-brand-600, #084f9b);

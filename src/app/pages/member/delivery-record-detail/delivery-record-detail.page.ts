@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from "@angular/core";
+﻿import { AfterViewInit, Component, OnInit, ViewChild } from "@angular/core";
 import { DeliveryRecordDetailService } from "src/app/providers/delivery-record-detail.service";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import {
@@ -317,6 +317,10 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
     return value.toString();
   }
 
+  hasDisplayValue(value: any): boolean {
+    return value !== null && value !== undefined && value.toString().trim() !== "";
+  }
+
   setProblemFilter(filter: "all" | "processing" | "done") {
     this.problemFilter = filter;
     this.persistProblemFilter();
@@ -336,6 +340,12 @@ export class DeliveryRecordDetailPage implements OnInit, AfterViewInit {
 
   get doneProblemCount(): number {
     return (this.data?.Problems || []).filter((item) => this.problemCategory(item?.StatusName) === "done").length;
+  }
+
+  async copyDetailNumber(event: Event, value: any, label: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    await this.copyTrackText(value, label);
   }
 
   async copyTrackText(value: any, label: string) {

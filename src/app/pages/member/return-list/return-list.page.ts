@@ -199,10 +199,6 @@ export class ReturnListPage implements OnInit, OnDestroy {
     return name || '未标注国家';
   }
 
-  getApplyTypeText(item: ReturnInProgressItem): string {
-    return item.ApplyType === 0 ? '退货申请' : '提货资料';
-  }
-
   hasPickupCode(item: ReturnInProgressItem): boolean {
     return !!(item.PickupCode || '').trim();
   }
@@ -210,6 +206,30 @@ export class ReturnListPage implements OnInit, OnDestroy {
   isPickupCodeExpired(item: ReturnInProgressItem): boolean {
     const expiredAt = Date.parse(item.ExpiredTime || '');
     return Number.isFinite(expiredAt) && expiredAt < Date.now();
+  }
+
+  isPickupCodePendingResend(item: ReturnInProgressItem): boolean {
+    return this.hasPickupCode(item) && item.PickupCodeResendRequired === true;
+  }
+
+  canResetPickupCode(item: ReturnInProgressItem): boolean {
+    if (!this.hasPickupCode(item)) {
+      return false;
+    }
+    if (typeof item.CanResetPickupCode === 'boolean') {
+      return item.CanResetPickupCode;
+    }
+    return this.isPickupCodePendingResend(item) || this.isPickupCodeExpired(item);
+  }
+
+  getResetPickupCodeMessage(item: ReturnInProgressItem): string {
+    if (!this.hasPickupCode(item)) {
+      return '取件码生成后才可以重新发送。';
+    }
+    if (this.canResetPickupCode(item)) {
+      return '';
+    }
+    return item.ResetPickupCodeMessage || '当前取件码仍在有效期内。如需更换接收手机，请先修改接收手机后再重新发送。';
   }
 
   isMutating(item: ReturnInProgressItem): boolean {
@@ -281,8 +301,13 @@ export class ReturnListPage implements OnInit, OnDestroy {
             return;
           }
           item.MobilePhone = this.mobileDraft;
+          if (this.hasPickupCode(item)) {
+            item.PickupCodeResendRequired = true;
+            item.CanResetPickupCode = true;
+            item.ResetPickupCodeMessage = '';
+          }
           this.closeMobileEdit(true);
-          this.presentToast('手机号码已更新');
+          this.presentToast(this.hasPickupCode(item) ? '接收手机已更新，如需将取件码发送到新手机，请点击重新发送取件码。' : '接收手机已更新');
         },
         error: () => {
           this.mobileEditError = '保存失败，请稍后重试';
@@ -291,7 +316,11 @@ export class ReturnListPage implements OnInit, OnDestroy {
   }
 
   resetPickupCode(item: ReturnInProgressItem): void {
-    if (!this.isPickupCodeExpired(item) || this.isMutating(item)) {
+    if (this.isMutating(item)) {
+      return;
+    }
+    if (!this.canResetPickupCode(item)) {
+      this.presentAlert('暂不能重新发送', this.getResetPickupCodeMessage(item));
       return;
     }
     this.mutatingObjectId = item.ObjectId;
@@ -308,7 +337,7 @@ export class ReturnListPage implements OnInit, OnDestroy {
             this.presentAlert('重新获取失败', message);
             return;
           }
-          this.presentToast('已重新获取取件码，请稍后留意短信');
+          this.presentToast('已重新发送取件码，请稍后留意短信');
           this.loadOngoingList();
         },
         error: () => {
@@ -318,7 +347,7 @@ export class ReturnListPage implements OnInit, OnDestroy {
   }
 
   async cancelApply(item: ReturnInProgressItem): Promise<void> {
-    if (item.ApplyType !== 0 || this.isMutating(item)) {
+    if (this.isMutating(item)) {
       return;
     }
     const alert = await this.alertCtrl.create({

@@ -17,16 +17,9 @@ describe('ReturnApplyPage', () => {
 
   const navBackSpy = jasmine.createSpy('navBack');
   const navNavigateBackSpy = jasmine.createSpy('navigateBack');
-  const alertCreateSpy = jasmine.createSpy('alertCreate').and.callFake((opts: { buttons?: Array<{ text?: string; role?: string; handler?: () => void }> }) => {
+  const alertCreateSpy = jasmine.createSpy('alertCreate').and.callFake(() => {
     return Promise.resolve({
-      present: () => {
-        // 自动触发"确认提交"按钮的 handler，模拟用户点击确认
-        const confirmButton = (opts.buttons || []).find(b => b.text === '确认提交');
-        if (confirmButton?.handler) {
-          confirmButton.handler();
-        }
-        return Promise.resolve();
-      }
+      present: () => Promise.resolve()
     });
   });
   const toastCreateSpy = jasmine.createSpy('toastCreate').and.returnValue(Promise.resolve({ present: () => Promise.resolve() }));
@@ -136,7 +129,21 @@ describe('ReturnApplyPage', () => {
     expect(component.warningMessage).toBe('请提前准备取件资料');
   });
 
+  it('should use backend notice message from apply defaults', () => {
+    applySpy.and.returnValue(of({
+      AllowApply: true,
+      RequiredDate: '2026-05-23',
+      ReferenceNumber: 'RGD-001',
+      NoticeMessage: '后端申请页提示'
+    }));
+
+    component.ngOnInit();
+
+    expect(component.noticeMessage).toBe('后端申请页提示');
+  });
+
   it('should mark success state after successful apply submit', fakeAsync(() => {
+    apply1Spy.and.returnValue(of({ IsSuccess: true }));
     const form = component.applyForm.value;
 
     component.doApply(form);
@@ -146,6 +153,7 @@ describe('ReturnApplyPage', () => {
     expect(mockLoading.dismiss).toHaveBeenCalled();
     expect(apply1Spy).toHaveBeenCalled();
     expect(component.submitSuccess).toBe(true);
+    expect(component.submitSuccessMessage).toBe('退货申请已提交');
   }));
 
   it('should re-enable submit and show alert when apply submit fails', fakeAsync(() => {

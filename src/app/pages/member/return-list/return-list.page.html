@@ -156,11 +156,11 @@
         <ion-card class="return-progress-card" *ngFor="let item of ongoingItems; trackBy: trackOngoing">
           <section class="progress-summary">
             <div class="progress-copy">
-              <div class="progress-kicker">{{getApplyTypeText(item)}}</div>
+              <div class="progress-kicker">退货申请</div>
               <h2>{{item.displayReferenceNumber || item.ReferenceNumber || '--'}}</h2>
               <p>提交时间 {{item.CreateAt || '--'}}</p>
             </div>
-            <ion-badge class="progress-status" [class.progress-status-pickup]="item.ApplyType !== 0">
+            <ion-badge class="progress-status">
               {{item.Remark || '处理中'}}
             </ion-badge>
           </section>
@@ -180,7 +180,7 @@
                 </span>
               </div>
               <ion-badge class="validity-badge" *ngIf="hasPickupCode(item)" [class.expired]="isPickupCodeExpired(item)">
-                {{isPickupCodeExpired(item) ? '已过期' : '有效中'}}
+                {{isPickupCodePendingResend(item) ? '待重发' : (isPickupCodeExpired(item) ? '已过期' : '有效中')}}
               </ion-badge>
               <ion-badge class="validity-badge pending" *ngIf="!hasPickupCode(item)">等待生成</ion-badge>
             </div>
@@ -213,12 +213,17 @@
             </div>
 
             <div class="pickup-action-row">
-              <ion-button fill="clear" size="small" class="pickup-action" (click)="openMobileEdit(item)" [disabled]="isMutating(item)">
+              <ion-button
+                fill="clear"
+                size="small"
+                class="pickup-action"
+                (click)="openMobileEdit(item)"
+                [disabled]="isMutating(item)">
                 <ion-icon slot="start" name="call-outline"></ion-icon>
                 修改接收手机
               </ion-button>
               <ion-button
-                *ngIf="hasPickupCode(item) && isPickupCodeExpired(item)"
+                *ngIf="hasPickupCode(item)"
                 fill="clear"
                 color="medium"
                 class="pickup-action quiet-warning-action"
@@ -226,12 +231,12 @@
                 (click)="resetPickupCode(item)"
                 [disabled]="isMutating(item)">
                 <ion-icon slot="start" name="refresh-outline"></ion-icon>
-                重新获取取件码
+                重新发送取件码
               </ion-button>
             </div>
           </section>
 
-          <section class="application-actions" *ngIf="item.ApplyType === 0">
+          <section class="application-actions">
             <ion-button
               fill="clear"
               color="medium"
