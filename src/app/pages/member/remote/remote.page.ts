@@ -1,18 +1,22 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { forkJoin, Subject } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize, takeUntil } from 'rxjs/operators';
 import { Country } from 'src/app/interfaces/country';
 import { CountryService } from 'src/app/providers/country.service';
 import { RemoteService } from 'src/app/providers/remote.service';
 import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
-interface ModeOfTransportType {
-  Id: number;
-  Name: string;
+interface RemoteQueryResponse {
+  Status: number;
+  IsRemote: boolean;
+  Message: string;
+  Results?: Array<RemoteQueryItemResponse>;
 }
 
-interface RemoteQueryResponse {
+interface RemoteQueryItemResponse {
+  ModeOfTransportTypeId: number;
+  ModeOfTransportTypeName: string;
   Status: number;
   IsRemote: boolean;
   Message: string;
@@ -23,6 +27,23 @@ interface RemoteQueryResultView {
   message: string;
   success: boolean;
   isRemote: boolean;
+  items: Array<RemoteQueryItemView>;
+}
+
+interface RemoteQueryItemView {
+  name: string;
+  statusText: string;
+  message: string;
+  success: boolean;
+  isRemote: boolean;
+}
+
+interface RemoteEsdOption {
+  ObjectId: number;
+  City: string;
+  PostcodeLow: string;
+  PostcodeHigh: string;
+  DisplayText: string;
 }
 
 @Component({
@@ -31,13 +52,16 @@ interface RemoteQueryResultView {
   styleUrls: ['./remote.page.scss'],
 })
 export class RemotePage implements OnInit, OnDestroy {
-  modeOfTransportTypeList: Array<ModeOfTransportType> = [];
   countryList: Array<Country> = [];
   countrySearch: Array<Country> = [];
 
   myForm: FormGroup;
   selectedCountry: Country | null = null;
   showCountryList = false;
+  postcodeEnabled = false;
+  isCheckingPostcode = false;
+  esdOptions: Array<RemoteEsdOption> = [];
+  esdLookupMode: 'postalCode' | 'city' | '' = '';
 
   isInitializing = false;
   isLoaded = false;
@@ -56,7 +80,6 @@ export class RemotePage implements OnInit, OnDestroy {
     private readonly uiFeedback: UiFeedbackService,
   ) {
     this.myForm = this.formBuilder.group({
-      ModeOfTransportTypeId: ['', Validators.required],
       countryId: ['', Validators.required],
       postalCode: [''],
       city: [''],
@@ -65,6 +88,7 @@ export class RemotePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadInitialOptions();
+    this.bindEsdLookup();
   }
 
   ngOnDestroy(): void {
@@ -81,13 +105,7 @@ export class RemotePage implements OnInit, OnDestroy {
   }
 
   get shouldShowPostalCode(): boolean {
-    const usePostalCodeRaw = (this.selectedCountry as any)?.UsePostalcode;
-    if (!this.selectedCountry || usePostalCodeRaw === undefined || usePostalCodeRaw === null) {
-      return true;
-    }
-
-    const value = usePostalCodeRaw;
-    return value === true || value === 1 || value === '1';
+    return this.postcodeEnabled;
   }
 
   get canSubmit(): boolean {
@@ -98,10 +116,7 @@ export class RemotePage implements OnInit, OnDestroy {
     this.isInitializing = true;
     this.hasLoadError = false;
 
-    forkJoin({
-      modeList: this.service.getModeOfTransportTypeList(),
-      countryList: this.countryService.getCoutryList(),
-    })
+    this.countryService.getCoutryList()
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
@@ -113,18 +128,12 @@ export class RemotePage implements OnInit, OnDestroy {
         })
       )
       .subscribe({
-        next: ({ modeList, countryList }) => {
-          this.modeOfTransportTypeList = Array.isArray(modeList) ? modeList : [];
+        next: (countryList) => {
           this.countryList = Array.isArray(countryList) ? countryList : [];
           this.countrySearch = this.countryList.slice(0, 20);
-
-          if (!this.myForm.get('ModeOfTransportTypeId')?.value && this.modeOfTransportTypeList.length > 0) {
-            this.myForm.get('ModeOfTransportTypeId')?.setValue(this.modeOfTransportTypeList[0].Id);
-          }
         },
         error: () => {
           this.hasLoadError = true;
-          this.modeOfTransportTypeList = [];
           this.countryList = [];
           this.countrySearch = [];
         },
@@ -165,10 +174,9 @@ export class RemotePage implements OnInit, OnDestroy {
     this.showCountryList = false;
     this.myForm.get('countryId')?.setValue(item.Name, { emitEvent: false });
     this.selectedCountry = item;
-
-    if (!this.shouldShowPostalCode) {
-      this.myForm.get('postalCode')?.setValue('');
-    }
+    this.myForm.get('city')?.setValue('', { emitEvent: false });
+    this.clearAllEsdOptions();
+    this.refreshPostcodeAvailability(item.Id);
   }
 
   onCountryKeyup(event: KeyboardEvent): void {
@@ -189,6 +197,10 @@ export class RemotePage implements OnInit, OnDestroy {
   onCountryClear(): void {
     this.selectedCountry = null;
     this.countrySearch = this.countryList.slice(0, 20);
+    this.postcodeEnabled = false;
+    this.clearAllEsdOptions();
+    this.myForm.get('postalCode')?.setValue('', { emitEvent: false });
+    this.myForm.get('city')?.setValue('', { emitEvent: false });
   }
 
   selectCountry(): void {
@@ -230,11 +242,19 @@ export class RemotePage implements OnInit, OnDestroy {
       return;
     }
 
+    const postalCode = this.postcodeEnabled ? (formValue?.postalCode || '').trim() : '';
+    const city = (formValue?.city || '').trim();
+
+    if (!postalCode && !city) {
+      this.showValidationToast('请输入邮编或城市后再查询');
+      return;
+    }
+
     const requestBody = {
       ...formValue,
       countryId: this.selectedCountry?.Id,
-      postalCode: (formValue?.postalCode || '').trim(),
-      city: (formValue?.city || '').trim(),
+      postalCode,
+      city,
     };
 
     this.queryErrorMessage = '';
@@ -253,12 +273,14 @@ export class RemotePage implements OnInit, OnDestroy {
         )
         .subscribe({
           next: (res: RemoteQueryResponse) => {
-            if (res?.Status === 0) {
+            const items = this.mapResultItems(res?.Results || []);
+            if (items.length > 0) {
               this.queryResult = {
-                title: res.IsRemote ? '偏远' : '不偏远',
+                title: items.some(item => item.success && item.isRemote) ? '存在偏远运输方式' : '各运输方式结果',
                 message: '当前查询仅供参考',
                 success: true,
-                isRemote: !!res.IsRemote,
+                isRemote: items.some(item => item.success && item.isRemote),
+                items,
               };
               return;
             }
@@ -268,6 +290,7 @@ export class RemotePage implements OnInit, OnDestroy {
               message: res?.Message || '系统繁忙，请稍后重试。',
               success: false,
               isRemote: false,
+              items: [],
             };
           },
           error: () => {
@@ -275,6 +298,167 @@ export class RemotePage implements OnInit, OnDestroy {
           },
         });
     });
+  }
+
+  selectEsdOption(item: RemoteEsdOption): void {
+    if (!item) {
+      return;
+    }
+
+    if (item.City) {
+      this.myForm.get('city')?.setValue(item.City, { emitEvent: false });
+    }
+
+    const currentPostcode = ((this.myForm.get('postalCode')?.value || '') as string).trim();
+    if (this.postcodeEnabled && !currentPostcode && item.PostcodeLow) {
+      this.myForm.get('postalCode')?.setValue(item.PostcodeLow, { emitEvent: false });
+    }
+
+    this.esdOptions = [];
+    this.esdLookupMode = '';
+  }
+
+  private mapResultItems(results: Array<RemoteQueryItemResponse>): Array<RemoteQueryItemView> {
+    return results.map((item) => {
+      if (item.Status === 0 && item.IsRemote) {
+        return {
+          name: item.ModeOfTransportTypeName,
+          statusText: '偏远',
+          message: item.Message || '当前查询仅供参考',
+          success: true,
+          isRemote: true,
+        };
+      }
+
+      if (item.Status === 0) {
+        return {
+          name: item.ModeOfTransportTypeName,
+          statusText: '不偏远',
+          message: item.Message || '当前查询仅供参考',
+          success: true,
+          isRemote: false,
+        };
+      }
+
+      return {
+        name: item.ModeOfTransportTypeName,
+        statusText: '查询失败',
+        message: item.Message || '系统繁忙，请稍后重试。',
+        success: false,
+        isRemote: false,
+      };
+    });
+  }
+
+  private bindEsdLookup(): void {
+    this.myForm.get('postalCode')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((value) => {
+        this.lookupEsdByPostcode(value);
+      });
+
+    this.myForm.get('city')?.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((value) => {
+        this.lookupEsdByCity(value);
+      });
+  }
+
+  private refreshPostcodeAvailability(countryId: number): void {
+    this.postcodeEnabled = false;
+    this.isCheckingPostcode = true;
+    this.myForm.get('postalCode')?.setValue('', { emitEvent: false });
+
+    this.service.CountryHasPostcode(countryId)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isCheckingPostcode = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.postcodeEnabled = !!(res && res.hasPostcode);
+          if (!this.postcodeEnabled) {
+            this.myForm.get('postalCode')?.setValue('', { emitEvent: false });
+          }
+        },
+        error: () => {
+          this.postcodeEnabled = true;
+        },
+      });
+  }
+
+  private lookupEsdByPostcode(value: string): void {
+    const postcode = ((value || '') as string).trim();
+    if (!this.selectedCountry || !this.postcodeEnabled || postcode.length < 3) {
+      this.clearEsdOptions('postalCode');
+      return;
+    }
+
+    this.service.GetESD({ CountryId: this.selectedCountry.Id, Postcode: postcode, City: '' })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          const options = this.normalizeEsdOptions(res);
+          this.esdLookupMode = 'postalCode';
+          this.esdOptions = options;
+          const cityList = Array.from(new Set(options.map(item => item.City).filter(city => !!city)));
+          const currentCity = ((this.myForm.get('city')?.value || '') as string).trim();
+          if (!currentCity && cityList.length === 1) {
+            this.myForm.get('city')?.setValue(cityList[0], { emitEvent: false });
+          }
+        },
+        error: () => {
+          this.clearEsdOptions('postalCode');
+        },
+      });
+  }
+
+  private lookupEsdByCity(value: string): void {
+    const city = ((value || '') as string).trim();
+    if (!this.selectedCountry || city.length < 3) {
+      this.clearEsdOptions('city');
+      return;
+    }
+
+    const currentPostcode = this.postcodeEnabled ? ((this.myForm.get('postalCode')?.value || '') as string).trim() : '';
+    const postcode = currentPostcode.length >= 3 ? currentPostcode : '';
+    this.service.GetESD({ CountryId: this.selectedCountry.Id, City: city, Postcode: postcode })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.esdLookupMode = 'city';
+          this.esdOptions = this.normalizeEsdOptions(res);
+        },
+        error: () => {
+          this.clearEsdOptions('city');
+        },
+      });
+  }
+
+  private normalizeEsdOptions(res: any): Array<RemoteEsdOption> {
+    return Array.isArray(res?.data) ? res.data.slice(0, 50) : [];
+  }
+
+  private clearEsdOptions(mode: 'postalCode' | 'city'): void {
+    if (this.esdLookupMode === mode) {
+      this.esdOptions = [];
+      this.esdLookupMode = '';
+    }
+  }
+
+  private clearAllEsdOptions(): void {
+    this.esdOptions = [];
+    this.esdLookupMode = '';
   }
 
   private async showValidationToast(msg: string): Promise<void> {

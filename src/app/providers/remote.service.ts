@@ -10,12 +10,16 @@ export class RemoteService {
   constructor(private http: HttpClient) {
    
   }
-  getModeOfTransportTypeList(){
-    let seq= this.http.get(apiUrl + "/common/GetModeOfTransportTypeList",{ withCredentials:true});
-    return seq;
-  }
   Query(formValue){
     let seq= this.http.post<any>(apiUrl + "/Remote/Query", formValue,{ withCredentials:true});
+    return seq;
+  }
+  GetESD(formValue){
+    let seq = this.http.post<any>(apiUrl + "/Remote/GetESD", formValue, { withCredentials:true });
+    return seq;
+  }
+  CountryHasPostcode(countryId: number){
+    let seq = this.http.post<any>(apiUrl + "/Remote/CountryHasPostcode", { CountryId: countryId }, { withCredentials:true });
     return seq;
   }
 }

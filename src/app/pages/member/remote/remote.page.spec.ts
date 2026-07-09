@@ -1,5 +1,5 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { async, ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -17,17 +17,15 @@ describe('RemotePage', () => {
   let uiFeedbackSpy: jasmine.SpyObj<UiFeedbackService>;
 
   beforeEach(async(() => {
-    remoteServiceSpy = jasmine.createSpyObj('RemoteService', ['getModeOfTransportTypeList', 'Query']);
+    remoteServiceSpy = jasmine.createSpyObj('RemoteService', ['Query', 'GetESD', 'CountryHasPostcode']);
     countryServiceSpy = jasmine.createSpyObj('CountryService', ['getCoutryList']);
     uiFeedbackSpy = jasmine.createSpyObj('UiFeedbackService', ['presentToast', 'presentLoading', 'dismissLoading']);
     uiFeedbackSpy.presentToast.and.returnValue(Promise.resolve());
     uiFeedbackSpy.presentLoading.and.returnValue(Promise.resolve({ dismiss: jasmine.createSpy('dismiss') } as any));
     uiFeedbackSpy.dismissLoading.and.returnValue(Promise.resolve());
+    remoteServiceSpy.CountryHasPostcode.and.returnValue(of({ success: true, hasPostcode: true }));
+    remoteServiceSpy.GetESD.and.returnValue(of({ success: true, data: [] }));
 
-    remoteServiceSpy.getModeOfTransportTypeList.and.returnValue(of([
-      { Id: 1, Name: '空运' },
-      { Id: 2, Name: '海运' },
-    ]));
     countryServiceSpy.getCoutryList.and.returnValue(of([
       { Id: 100, Name: '中国', UsePostalcode: true },
       { Id: 200, Name: '美国', UsePostalcode: true },
@@ -65,16 +63,13 @@ describe('RemotePage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load mode and country options on init', () => {
-    expect(component.modeOfTransportTypeList.length).toBe(2);
+  it('should load country options on init', () => {
     expect(component.countryList.length).toBe(2);
-    expect(component.myForm.get('ModeOfTransportTypeId')?.value).toBe(1);
   });
 
   it('should stop query when selected country is invalid', () => {
     remoteServiceSpy.Query.and.returnValue(of({ Status: 0, IsRemote: false, Message: '' }));
     component.myForm.patchValue({
-      ModeOfTransportTypeId: 1,
       countryId: '不存在国家',
       postalCode: '',
       city: '',
@@ -88,10 +83,17 @@ describe('RemotePage', () => {
   });
 
   it('should map remote result after query', fakeAsync(() => {
-    remoteServiceSpy.Query.and.returnValue(of({ Status: 0, IsRemote: true, Message: '' }));
+    remoteServiceSpy.Query.and.returnValue(of({
+      Status: 0,
+      IsRemote: true,
+      Message: '',
+      Results: [
+        { ModeOfTransportTypeId: 1, ModeOfTransportTypeName: 'DHL', Status: 0, IsRemote: true, Message: '' },
+        { ModeOfTransportTypeId: 2, ModeOfTransportTypeName: 'UPS', Status: 0, IsRemote: false, Message: '' },
+      ],
+    }));
     component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
     component.myForm.patchValue({
-      ModeOfTransportTypeId: 1,
       postalCode: '10001',
       city: 'New York',
     });
@@ -100,16 +102,96 @@ describe('RemotePage', () => {
     tick();
 
     expect(remoteServiceSpy.Query).toHaveBeenCalled();
-    expect(component.queryResult?.title).toBe('偏远');
+    expect(component.queryResult?.title).toBe('存在偏远运输方式');
     expect(component.queryResult?.success).toBe(true);
     expect(component.queryResult?.isRemote).toBe(true);
+    expect(component.queryResult?.items.length).toBe(2);
+    expect(component.queryResult?.items[0].statusText).toBe('偏远');
+    discardPeriodicTasks();
+  }));
+
+  it('should refresh postcode availability when country is selected', fakeAsync(() => {
+    remoteServiceSpy.CountryHasPostcode.and.returnValue(of({ success: true, hasPostcode: false }));
+
+    component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
+    tick();
+
+    expect(remoteServiceSpy.CountryHasPostcode).toHaveBeenCalledWith(200);
+    expect(component.postcodeEnabled).toBe(false);
+    expect(component.shouldShowPostalCode).toBe(false);
+    discardPeriodicTasks();
+  }));
+
+  it('should clear location inputs and ESD options when country changes', fakeAsync(() => {
+    component.esdOptions = [
+      { ObjectId: 1, City: 'REDMOND', PostcodeLow: '98052', PostcodeHigh: '98052', DisplayText: 'REDMOND / 98052' },
+    ];
+    component.esdLookupMode = 'postalCode';
+    component.myForm.patchValue({
+      postalCode: '98052',
+      city: 'REDMOND',
+    }, { emitEvent: false });
+
+    component.countryItemClick({ Id: 100, Name: '中国', UsePostalcode: true });
+    tick();
+
+    expect(component.myForm.get('postalCode')?.value).toBe('');
+    expect(component.myForm.get('city')?.value).toBe('');
+    expect(component.esdOptions.length).toBe(0);
+    expect(component.esdLookupMode).toBe('');
+    discardPeriodicTasks();
+  }));
+
+  it('should ignore stale postal code when selected country has no postcode data', fakeAsync(() => {
+    remoteServiceSpy.CountryHasPostcode.and.returnValue(of({ success: true, hasPostcode: false }));
+    remoteServiceSpy.Query.and.returnValue(of({
+      Status: 0,
+      IsRemote: false,
+      Message: '',
+      Results: [
+        { ModeOfTransportTypeId: 1, ModeOfTransportTypeName: 'DHL', Status: 0, IsRemote: false, Message: '' },
+      ],
+    }));
+
+    component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
+    tick();
+    component.myForm.patchValue({
+      postalCode: '98052',
+      city: 'REDMOND',
+    }, { emitEvent: false });
+
+    component.doQuery(component.myForm.value);
+    tick();
+
+    expect(remoteServiceSpy.Query).toHaveBeenCalledWith(jasmine.objectContaining({
+      postalCode: '',
+      city: 'REDMOND',
+    }));
+    discardPeriodicTasks();
+  }));
+
+  it('should fill city when postcode has a unique ESD city', fakeAsync(() => {
+    remoteServiceSpy.GetESD.and.returnValue(of({
+      success: true,
+      data: [
+        { ObjectId: 1, City: 'REDMOND', PostcodeLow: '98052', PostcodeHigh: '98052', DisplayText: 'REDMOND / 98052' },
+      ],
+    }));
+    component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
+    tick();
+
+    component.myForm.get('postalCode')?.setValue('980');
+    tick(300);
+
+    expect(remoteServiceSpy.GetESD).toHaveBeenCalled();
+    expect(component.myForm.get('city')?.value).toBe('REDMOND');
+    discardPeriodicTasks();
   }));
 
   it('should set query error state when request fails', fakeAsync(() => {
     remoteServiceSpy.Query.and.returnValue(throwError(() => new Error('network')));
     component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
     component.myForm.patchValue({
-      ModeOfTransportTypeId: 1,
       postalCode: '10001',
       city: 'New York',
     });
@@ -120,6 +202,7 @@ describe('RemotePage', () => {
     expect(component.queryErrorMessage).toBe('网络异常，暂时无法完成查询，请稍后重试。');
     expect(component.queryResult).toBeNull();
     expect(component.isQuerying).toBe(false);
+    discardPeriodicTasks();
   }));
 
   it('should stop query subscription on destroy', fakeAsync(() => {
@@ -127,7 +210,6 @@ describe('RemotePage', () => {
     remoteServiceSpy.Query.and.returnValue(querySubject.asObservable());
     component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
     component.myForm.patchValue({
-      ModeOfTransportTypeId: 1,
       postalCode: '10001',
       city: 'New York',
     });
@@ -141,5 +223,6 @@ describe('RemotePage', () => {
 
     expect(component.queryResult).toBeNull();
     expect(component.isQuerying).toBe(false);
+    discardPeriodicTasks();
   }));
 });
