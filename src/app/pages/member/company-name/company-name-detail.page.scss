@@ -1,0 +1,63 @@
+﻿:host {
+  --page-bg: #eef4fb;
+  --card-border: rgba(35, 77, 125, 0.12);
+}
+
+ion-content {
+  --background: var(--page-bg);
+}
+
+.company-page {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 10px 0 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+ion-card {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 14px 28px rgba(15, 45, 78, 0.08);
+  overflow: hidden;
+}
+
+ion-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f243d;
+}
+
+ion-card-subtitle {
+  color: #607895;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-image {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+
+ion-note {
+  max-width: 60%;
+  color: #243b56;
+  white-space: normal;
+  text-align: right;
+}
+
+ion-button {
+  margin-top: 12px;
+}

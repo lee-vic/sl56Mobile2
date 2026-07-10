@@ -1,4 +1,4 @@
-<ion-header translucent="true">
+﻿<ion-header translucent="true">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -36,7 +36,7 @@
     <ion-card class="query-card" *ngIf="!isInitializing">
       <ion-card-header>
         <ion-card-title>查询条件</ion-card-title>
-        <ion-card-subtitle>填写国家和邮编或城市后，将并行查询各运输方式</ion-card-subtitle>
+        <ion-card-subtitle>填写国家和城市后，将并行查询各运输方式；邮编可辅助查询</ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <form [formGroup]="myForm" (ngSubmit)="doQuery(myForm.value)" novalidate [attr.aria-busy]="isQuerying">
@@ -79,10 +79,13 @@
               <ion-label color="medium">正在判断邮编是否可用...</ion-label>
             </ion-item>
 
-            <ion-item>
-              <ion-label position="stacked">城市</ion-label>
-              <ion-input aria-label="城市" type="text" formControlName="city" clearInput placeholder="可选"></ion-input>
+            <ion-item [class.invalid-item]="isCityInvalid">
+              <ion-label position="stacked">城市 *</ion-label>
+              <ion-input aria-label="城市" type="text" formControlName="city" clearInput placeholder="必填"></ion-input>
             </ion-item>
+            <div class="validation-errors" *ngIf="isCityInvalid">
+              <span>请输入城市</span>
+            </div>
             <ion-list *ngIf="esdOptions.length > 0" class="esd-list" lines="none">
               <ion-item button detail="false" *ngFor="let item of esdOptions" (click)="selectEsdOption(item)">
                 <ion-label>

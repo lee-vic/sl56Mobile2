@@ -1,4 +1,4 @@
-import { NgModule } from "@angular/core";
+﻿import { NgModule } from "@angular/core";
 import { Routes, RouterModule } from "@angular/router";
 
 const routes: Routes = [
@@ -78,6 +78,13 @@ const routes: Routes = [
     loadChildren: () =>
       import("./confirmation/confirmation.module").then(
         (m) => m.ConfirmationPageModule
+      ),
+  },
+  {
+    path: "company-name",
+    loadChildren: () =>
+      import("./company-name/company-name.module").then(
+        (m) => m.CompanyNamePageModule
       ),
   },
   {

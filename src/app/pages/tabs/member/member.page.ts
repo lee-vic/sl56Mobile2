@@ -61,6 +61,7 @@ export class MemberPage implements OnInit, OnDestroy {
     { title: '价格查询', image: 'assets/imgs/member-2.png', icon: 'calculator-outline', tone: 'blue', summary: '测算运输报价', type: [0, 1], url: '/member/calculation' },
     { title: '业务公告', image: 'assets/imgs/member-19.png', icon: 'megaphone-outline', tone: 'amber', summary: '服务和渠道通知', type: [0, 1], url: '/member/notice-list' },
     { title: '偏远查询', image: 'assets/imgs/member-3.png', icon: 'location-outline', tone: 'cyan', summary: '查询偏远附加', type: [0, 1], url: '/member/remote' },
+    { title: '备案查询', image: 'assets/imgs/member-10.png', icon: 'document-attach-outline', tone: 'blue', summary: '公司名备案管理', type: [0, 1], url: '/member/company-name' },
     { title: '交货清单确认', image: 'assets/imgs/member-5.png', icon: 'checkbox-outline', tone: 'blue', summary: '核对待交货清单', type: [0, 1], url: '/member/confirmation' },
     { title: '交货记录', image: 'assets/imgs/member-6.png', icon: 'cube-outline', tone: 'green', summary: '查看历史交货', type: [0, 1], url: '/member/delivery-record/list' },
     { title: '快速预报', image: 'assets/imgs/member-4.png', icon: 'paper-plane-outline', tone: 'blue', summary: '快速创建预报', type: [0, 1], url: '/member/import-manifest/list' },

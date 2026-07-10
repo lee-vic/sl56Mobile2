@@ -1,0 +1,43 @@
+﻿<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/member/company-name"></ion-back-button>
+    </ion-buttons>
+    <ion-title>备案详情</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <section class="company-page">
+    <ion-card *ngIf="isLoading">
+      <ion-card-content>
+        <ion-spinner name="crescent"></ion-spinner>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!isLoading && currentDetail">
+      <ion-card-header>
+        <div class="card-title-row">
+          <ion-card-title>备案详情</ion-card-title>
+          <ion-badge [color]="getStatusColor(currentDetail)">{{ currentDetail.FilingStatusString }}</ion-badge>
+        </div>
+        <ion-card-subtitle>{{ currentDetail.CompanyName }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="full">
+          <ion-item><ion-label>类型</ion-label><ion-note slot="end">{{ currentDetail.NameTypeString }}</ion-note></ion-item>
+          <ion-item><ion-label>中文公司名</ion-label><ion-note slot="end">{{ currentDetail.ChineseCompanyName }}</ion-note></ion-item>
+          <ion-item><ion-label>统一社会信用代码</ion-label><ion-note slot="end">{{ currentDetail.SocialCreditCode }}</ion-note></ion-item>
+          <ion-item><ion-label>联系人</ion-label><ion-note slot="end">{{ currentDetail.PersonName }}</ion-note></ion-item>
+          <ion-item><ion-label>联系电话</ion-label><ion-note slot="end">{{ currentDetail.Phone }}</ion-note></ion-item>
+          <ion-item><ion-label>地址1</ion-label><ion-note slot="end">{{ currentDetail.Address1 }}</ion-note></ion-item>
+          <ion-item><ion-label>地址2</ion-label><ion-note slot="end">{{ currentDetail.Address2 || '暂无' }}</ion-note></ion-item>
+          <ion-item><ion-label>地址3</ion-label><ion-note slot="end">{{ currentDetail.Address3 || '暂无' }}</ion-note></ion-item>
+          <ion-item><ion-label>备注</ion-label><ion-note slot="end">{{ currentDetail.Remark || '暂无' }}</ion-note></ion-item>
+        </ion-list>
+        <img [src]="getImageUrl(currentDetail.ObjectId)" class="detail-image" alt="资料截图" />
+        <ion-button expand="block" *ngIf="currentDetail.CanEdit" (click)="openEdit(currentDetail)">编辑</ion-button>
+      </ion-card-content>
+    </ion-card>
+  </section>
+</ion-content>

@@ -82,6 +82,23 @@ describe('RemotePage', () => {
     expect(uiFeedbackSpy.presentToast).toHaveBeenCalled();
   });
 
+  it('should require city before query', fakeAsync(() => {
+    remoteServiceSpy.Query.and.returnValue(of({ Status: 0, IsRemote: false, Message: '' }));
+    component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
+    tick();
+    component.myForm.patchValue({
+      postalCode: '10001',
+      city: '',
+    });
+
+    component.doQuery(component.myForm.value);
+
+    expect(remoteServiceSpy.Query).not.toHaveBeenCalled();
+    expect(component.isCityInvalid).toBe(true);
+    expect(uiFeedbackSpy.presentToast).toHaveBeenCalled();
+    discardPeriodicTasks();
+  }));
+
   it('should map remote result after query', fakeAsync(() => {
     remoteServiceSpy.Query.and.returnValue(of({
       Status: 0,
@@ -139,6 +156,21 @@ describe('RemotePage', () => {
     expect(component.myForm.get('city')?.value).toBe('');
     expect(component.esdOptions.length).toBe(0);
     expect(component.esdLookupMode).toBe('');
+    discardPeriodicTasks();
+  }));
+
+  it('should keep location inputs when confirming the same country before query', fakeAsync(() => {
+    component.countryItemClick({ Id: 200, Name: '美国', UsePostalcode: true });
+    tick();
+    component.myForm.patchValue({
+      postalCode: '98052',
+      city: 'REDMOND',
+    }, { emitEvent: false });
+
+    component.selectCountry();
+
+    expect(component.myForm.get('postalCode')?.value).toBe('98052');
+    expect(component.myForm.get('city')?.value).toBe('REDMOND');
     discardPeriodicTasks();
   }));
 

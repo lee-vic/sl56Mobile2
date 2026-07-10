@@ -1,0 +1,105 @@
+﻿<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/member"></ion-back-button>
+    </ion-buttons>
+    <ion-title>备案查询</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <section class="company-page">
+    <ion-segment [(ngModel)]="activeSegment">
+      <ion-segment-button value="query">
+        <ion-label>备案查询</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="list">
+        <ion-label>我的申请</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <ion-card *ngIf="activeSegment === 'query'">
+      <ion-card-header>
+        <ion-card-title>备案状态查询</ion-card-title>
+        <ion-card-subtitle>根据备案库记录和黑名单进行判断</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="queryForm" (ngSubmit)="doQuery()">
+          <ion-item lines="full">
+            <ion-label position="stacked">英文公司名</ion-label>
+            <ion-input formControlName="CompanyName" placeholder="例如 ABC CO LTD"></ion-input>
+          </ion-item>
+          <ion-button expand="block" type="submit" [disabled]="queryForm.invalid || isQuerying">
+            {{ isQuerying ? '查询中...' : '立即查询' }}
+          </ion-button>
+        </form>
+
+        <div class="query-result" *ngIf="queryResult">
+          <div class="result-title">{{ queryResult.CompanyName || '查询结果' }}</div>
+          <ion-chip [color]="queryResult.IsFiling ? 'success' : 'medium'">
+            <ion-label>{{ queryResult.IsFiling ? '已备案' : '未备案' }}</ion-label>
+          </ion-chip>
+          <ion-chip [color]="queryResult.IsBlacklist ? 'danger' : 'success'">
+            <ion-label>{{ queryResult.IsBlacklist ? '黑名单' : '非黑名单' }}</ion-label>
+          </ion-chip>
+          <p>本查询仅供参考，最终以业务审核结果为准。</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <section *ngIf="activeSegment === 'list'">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>我的备案申请</ion-card-title>
+          <ion-card-subtitle>展示您通过本账号提交的备案申请</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-searchbar placeholder="搜索英文或中文公司名" (ionInput)="onSearchChange($event)"></ion-searchbar>
+          <ion-segment [(ngModel)]="statusFilter" (ionChange)="onStatusFilterChange()" class="status-segment">
+            <ion-segment-button value="all">
+              <ion-label>全部</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="0">
+              <ion-label>待处理</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="2">
+              <ion-label>成功</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="3">
+              <ion-label>失败</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+          <ion-button expand="block" (click)="openCreate()">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            新增备案
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="!isLoadingList && filteredList.length === 0" class="empty-card">
+        <ion-card-content>暂无备案申请</ion-card-content>
+      </ion-card>
+
+      <ion-card *ngFor="let item of filteredList" class="filing-card">
+        <ion-card-header>
+          <div class="card-title-row">
+            <ion-card-title>{{ item.CompanyName }}</ion-card-title>
+            <ion-badge [color]="getStatusColor(item)">{{ item.FilingStatusString }}</ion-badge>
+          </div>
+          <ion-card-subtitle>{{ item.ChineseCompanyName }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <p>{{ item.Remark || '暂无备注' }}</p>
+          <p class="muted">{{ item.CreateAt | date:'yyyy-MM-dd HH:mm' }}</p>
+          <ion-button size="small" fill="outline" (click)="openDetail(item)">查看</ion-button>
+          <ion-button size="small" *ngIf="item.CanEdit" (click)="openEdit(item)">编辑</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </section>
+  </section>
+
+</ion-content>

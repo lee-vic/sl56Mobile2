@@ -1,0 +1,75 @@
+﻿<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/member/company-name"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? '编辑备案信息' : '新增备案信息' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <section class="company-page">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ isEditMode ? '编辑备案信息' : '新增备案信息' }}</ion-card-title>
+        <ion-card-subtitle>{{ isEditMode ? '保存后会重新进入待处理状态' : '请完整填写主体、联系人、地址和资料截图' }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="isInitializing" name="crescent"></ion-spinner>
+        <form [formGroup]="filingForm" (ngSubmit)="saveFiling()" *ngIf="!isInitializing">
+          <ion-list>
+            <ion-item>
+              <ion-label>类型</ion-label>
+              <ion-select formControlName="NameType" interface="popover">
+                <ion-select-option [value]="0">公司名义</ion-select-option>
+                <ion-select-option [value]="1">个人名义</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">英文公司名</ion-label>
+              <ion-input formControlName="CompanyName"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">中文公司名</ion-label>
+              <ion-input formControlName="ChineseCompanyName"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">统一社会信用代码</ion-label>
+              <ion-input formControlName="SocialCreditCode"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">联系人</ion-label>
+              <ion-input formControlName="PersonName"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">联系电话</ion-label>
+              <ion-input formControlName="Phone"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">地址1</ion-label>
+              <ion-input formControlName="Address1"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">地址2</ion-label>
+              <ion-input formControlName="Address2"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">地址3</ion-label>
+              <ion-input formControlName="Address3"></ion-input>
+            </ion-item>
+          </ion-list>
+
+          <div class="upload-box">
+            <label>资料截图</label>
+            <input type="file" accept="image/png,image/jpeg" (change)="onFileChange($event)" />
+            <p>{{ selectedFileName || (isEditMode ? '不选择文件则保留当前截图' : '请选择 JPG/JPEG/PNG，最大 1MB') }}</p>
+          </div>
+
+          <ion-button expand="block" type="submit" [disabled]="filingForm.invalid || isSubmitting">
+            {{ isSubmitting ? '保存中...' : '保存' }}
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </section>
+</ion-content>

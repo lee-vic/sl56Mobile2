@@ -82,7 +82,7 @@ export class RemotePage implements OnInit, OnDestroy {
     this.myForm = this.formBuilder.group({
       countryId: ['', Validators.required],
       postalCode: [''],
-      city: [''],
+      city: ['', Validators.required],
     });
   }
 
@@ -106,6 +106,11 @@ export class RemotePage implements OnInit, OnDestroy {
 
   get shouldShowPostalCode(): boolean {
     return this.postcodeEnabled;
+  }
+
+  get isCityInvalid(): boolean {
+    const cityControl = this.myForm.get('city');
+    return (this.hasSubmitted || !!cityControl?.touched) && !!cityControl?.invalid;
   }
 
   get canSubmit(): boolean {
@@ -171,12 +176,15 @@ export class RemotePage implements OnInit, OnDestroy {
       return;
     }
 
+    const isCountryChanged = this.selectedCountry?.Id !== item.Id;
     this.showCountryList = false;
     this.myForm.get('countryId')?.setValue(item.Name, { emitEvent: false });
     this.selectedCountry = item;
-    this.myForm.get('city')?.setValue('', { emitEvent: false });
-    this.clearAllEsdOptions();
-    this.refreshPostcodeAvailability(item.Id);
+    if (isCountryChanged) {
+      this.myForm.get('city')?.setValue('', { emitEvent: false });
+      this.clearAllEsdOptions();
+      this.refreshPostcodeAvailability(item.Id);
+    }
   }
 
   onCountryKeyup(event: KeyboardEvent): void {
@@ -245,8 +253,8 @@ export class RemotePage implements OnInit, OnDestroy {
     const postalCode = this.postcodeEnabled ? (formValue?.postalCode || '').trim() : '';
     const city = (formValue?.city || '').trim();
 
-    if (!postalCode && !city) {
-      this.showValidationToast('请输入邮编或城市后再查询');
+    if (!city) {
+      this.showValidationToast('请输入城市后再查询');
       return;
     }
 
