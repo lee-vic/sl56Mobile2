@@ -167,6 +167,10 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
     successMessage: string,
     getFailureMessage: (res: ReturnApplyModel) => string
   ): void {
+    // 在创建异步加载框前加锁，避免快速连点；成功后也不能再次发起同一申请。
+    if (this.isSubmitting || this.submitSuccess) {
+      return;
+    }
     this.isSubmitting = true;
     this.loadingController.create({ message: '请稍候...' }).then(loader => {
       loader.present();
@@ -193,6 +197,9 @@ export class ReturnApplyPage implements OnInit, OnDestroy {
             this.presentAlert('提交失败', '网络或服务暂不可用，请稍后重试。');
           }
         });
+    }, () => {
+      this.isSubmitting = false;
+      this.presentAlert('提交失败', '加载提示未能打开，请稍后重试。');
     });
   }
 

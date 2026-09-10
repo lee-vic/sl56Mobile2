@@ -6,7 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AlertController, IonicModule, LoadingController, ModalController, NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ReturnApplyPage } from './return-apply.page';
 import { ReturnService } from 'src/app/providers/return.service';
@@ -106,6 +106,40 @@ describe('ReturnApplyPage', () => {
     mockLoading.present.calls.reset();
     mockLoading.dismiss.calls.reset();
   });
+
+  it('should submit only once during loading and after success', fakeAsync(() => {
+    const response = new Subject<{ IsSuccess: boolean }>();
+    apply1Spy.and.returnValue(response);
+    const form = component.applyForm.value;
+
+    component.doApply(form);
+    component.doApply(form);
+    expect(loadingCreateSpy.calls.count()).toBe(1);
+    tick();
+    component.doApply(form);
+    expect(apply1Spy.calls.count()).toBe(1);
+
+    response.next({ IsSuccess: true });
+    response.complete();
+    tick();
+    component.doApply(form);
+    tick();
+    expect(apply1Spy.calls.count()).toBe(1);
+    expect(component.submitSuccess).toBe(true);
+  }));
+
+  it('should allow retry after a rejected application', fakeAsync(() => {
+    apply1Spy.and.returnValue(of({ IsSuccess: false, ErrorMessage: '提交失败' }));
+    component.doApply(component.applyForm.value);
+    tick();
+    expect(component.isSubmitting).toBe(false);
+
+    apply1Spy.and.returnValue(of({ IsSuccess: true }));
+    component.doApply(component.applyForm.value);
+    tick();
+    expect(apply1Spy.calls.count()).toBe(2);
+    expect(component.submitSuccess).toBe(true);
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
