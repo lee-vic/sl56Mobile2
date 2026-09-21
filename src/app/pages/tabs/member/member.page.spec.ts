@@ -55,7 +55,7 @@ describe('MemberPage', () => {
     componentInternals().applyQuickMenuCustomization(visibleMenus, ['偏远查询', '价格查询', '业务公告']);
 
     expect(component.quickMenuList.map(m => m.title)).toEqual(['偏远查询', '价格查询', '业务公告']);
-    expect(component.otherMenuList.map(m => m.title)).toEqual(['交货记录']);
+    expect(component.otherMenuList.map(m => m.title)).toEqual(['备案查询']);
   });
 
   it('should keep promoted shortcuts out of menu grid options', () => {

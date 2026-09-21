@@ -1,4 +1,4 @@
-<ion-header translucent="true" class="problem-detail-header">
+﻿<ion-header translucent="true" class="problem-detail-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -152,7 +152,14 @@
               <ion-text color="danger" *ngIf="fileFailMessage">
                 <p class="error-msg">文件处理失败：{{fileFailMessage}}</p>
               </ion-text>
-              <div id="wxOpenLaunchWeApp" class="weapp-entry"></div>
+              <div
+                #wxOpenLaunchWeApp
+                id="wxOpenLaunchWeApp"
+                class="weapp-entry"
+                (click)="showWeAppUploadPrompt()"></div>
+              <ion-text color="danger" *ngIf="weAppLaunchErrorMessage">
+                <p class="error-msg">{{weAppLaunchErrorMessage}}</p>
+              </ion-text>
             </div>
           </div>
 

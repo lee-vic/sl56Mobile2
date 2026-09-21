@@ -38,7 +38,7 @@ describe('CompanyNamePage', () => {
       providers: [
         { provide: CompanyNameService, useValue: serviceSpy },
         { provide: UiFeedbackService, useValue: { presentToast: jasmine.createSpy('presentToast').and.returnValue(Promise.resolve()) } },
-        { provide: Router, useValue: { navigateByUrl: jasmine.createSpy('navigateByUrl'), navigate: jasmine.createSpy('navigate') } },
+        { provide: Router, useValue: { navigateByUrl: jasmine.createSpy('navigateByUrl'), navigate: jasmine.createSpy('navigate'), events: of({}) } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();

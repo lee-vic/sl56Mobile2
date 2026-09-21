@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+﻿import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
 import {
   AlertController,
@@ -39,8 +39,19 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   hasNotFound = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
+  weAppLaunchErrorMessage: string;
   @ViewChild('page1Form') formRef: NgForm;
+  private weAppLaunchContainer?: ElementRef<HTMLElement>;
+  private isWeAppConfigLoading = false;
+  private isWeAppSdkReady = false;
   private readonly destroy$ = new Subject<void>();
+
+  @ViewChild('wxOpenLaunchWeApp')
+  set weAppLaunchContainerRef(container: ElementRef<HTMLElement> | undefined) {
+    this.weAppLaunchContainer = container;
+    // 上传区域由 *ngIf 延迟创建；容器真正出现时再初始化，避免首次进入页面时入口永久缺失。
+    this.renderWeAppButtonIfNeeded();
+  }
 
   ngOnInit(): void {
     this.loadProblemDetail();
@@ -169,14 +180,26 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   private renderWeAppButtonIfNeeded(): void {
-    const openAppDiv = document.getElementById("wxOpenLaunchWeApp") as Element;
+    const openAppDiv = this.weAppLaunchContainer?.nativeElement;
     if (!openAppDiv) {
       return;
     }
-    if (!this.isFormOption() || !this.hasProcessType(3) || wx == null) {
-      openAppDiv.innerHTML = "";
+    if (!this.isFormOption() || !this.hasProcessType(3) || typeof wx === "undefined" || wx == null) {
+      this.renderer.setProperty(openAppDiv, "innerHTML", "");
       return;
     }
+
+    if (this.isWeAppSdkReady) {
+      this.renderWeAppLaunchButton(openAppDiv);
+      return;
+    }
+
+    if (this.isWeAppConfigLoading) {
+      return;
+    }
+
+    this.isWeAppConfigLoading = true;
+    this.weAppLaunchErrorMessage = null;
 
     this.commonService
       .getJsSdkConfig(
@@ -185,35 +208,64 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         "wx-open-launch-weapp"
       )
       .pipe(takeUntil(this.destroy$))
-      .subscribe((res) => {
-        let config = JSON.parse(res);
-        wx.config(config);
-        openAppDiv.innerHTML =
-          '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
-          this.problemId +
-          '"><template><style>.btn { padding: 6px 10px;font-size:12px;border-radius:8px;background:#0b61bd;color:#fff;border:0; }</style><button class="btn">打开微信小程序上传</button></template></wx-open-launch-weapp>';
+      .subscribe({
+        next: (res) => {
+          let config;
+          try {
+            config = JSON.parse(res);
+          } catch {
+            this.handleWeAppLaunchError(openAppDiv);
+            return;
+          }
 
-        const weOpenLaunchWeappBtn = document.getElementById("launch-btn") as Element;
-        if (!weOpenLaunchWeappBtn) {
-          return;
-        }
-        weOpenLaunchWeappBtn.addEventListener("click", () => {
-          this.alertCtrl
-            .create({
-              header: "上传提示",
-              message: "上传完成后请返回当前页面继续处理。",
-              buttons: [
-                {
-                  text: "我已完成上传",
-                  handler: () => {
-                    this.getWeAppFileStatus(false);
-                  },
-                },
-              ],
-            })
-            .then((p) => p.present());
-        });
+          wx.ready(() => {
+            this.isWeAppConfigLoading = false;
+            this.isWeAppSdkReady = true;
+            this.renderWeAppButtonIfNeeded();
+          });
+          wx.error(() => {
+            this.handleWeAppLaunchError(openAppDiv);
+          });
+          wx.config(config);
+        },
+        error: () => {
+          this.handleWeAppLaunchError(openAppDiv);
+        },
       });
+  }
+
+  private renderWeAppLaunchButton(openAppDiv: HTMLElement): void {
+    this.renderer.setProperty(
+      openAppDiv,
+      "innerHTML",
+      '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
+        this.problemId +
+        '"><template><style>.btn { padding: 6px 10px;font-size:12px;border-radius:8px;background:#0b61bd;color:#fff;border:0; }</style><button class="btn">打开微信小程序上传</button></template></wx-open-launch-weapp>'
+    );
+  }
+
+  private handleWeAppLaunchError(openAppDiv: HTMLElement): void {
+    this.isWeAppConfigLoading = false;
+    this.isWeAppSdkReady = false;
+    this.renderer.setProperty(openAppDiv, "innerHTML", "");
+    this.weAppLaunchErrorMessage = "微信小程序上传入口加载失败，请刷新页面后重试或使用选择文件。";
+  }
+
+  showWeAppUploadPrompt(): void {
+    this.alertCtrl
+      .create({
+        header: "上传提示",
+        message: "上传完成后请返回当前页面继续处理。",
+        buttons: [
+          {
+            text: "我已完成上传",
+            handler: () => {
+              this.getWeAppFileStatus(false);
+            },
+          },
+        ],
+      })
+      .then((p) => p.present());
   }
 
   constructor(
@@ -224,6 +276,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     private commonService: CommonService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
+    private renderer: Renderer2,
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(

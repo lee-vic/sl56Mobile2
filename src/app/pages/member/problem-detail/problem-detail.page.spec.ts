@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
 import { async, ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -17,6 +17,9 @@ describe('ProblemDetailPage', () => {
   let component: ProblemDetailPage;
   let fixture: ComponentFixture<ProblemDetailPage>;
   let queryParams$: Subject<any>;
+  const mockCommonService = {
+    getJsSdkConfig: jasmine.createSpy('getJsSdkConfig').and.returnValue(of('{}'))
+  };
   const mockProblemService = {
     getProblemDetail: jasmine.createSpy('getProblemDetail').and.returnValue(of({
       Problem: { ProcessTypeList: [], ProcessSetting4: [], Pages: [], Status: 0 },
@@ -36,7 +39,7 @@ describe('ProblemDetailPage', () => {
       providers: [
         CookieService,
         { provide: ProblemService, useValue: mockProblemService },
-        { provide: CommonService, useValue: { getJsSdkConfig: () => of('{}') } },
+        { provide: CommonService, useValue: mockCommonService },
         { provide: NavController, useValue: { navigateForward: jasmine.createSpy('navigateForward') } },
         { provide: AlertController, useValue: { create: () => Promise.resolve({ present: () => Promise.resolve() }) } },
         { provide: LoadingController, useValue: { create: () => Promise.resolve({ present: () => Promise.resolve(), dismiss: () => Promise.resolve() }) } },
@@ -61,6 +64,10 @@ describe('ProblemDetailPage', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProblemDetailPage);
     component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    delete (globalThis as any).wx;
   });
 
   it('should create', () => {
@@ -94,6 +101,25 @@ describe('ProblemDetailPage', () => {
     const result = component.canSubmit({ valid: false } as any);
 
     expect(result).toBe(true);
+  });
+
+  it('should render the weapp upload button when its delayed container becomes available', () => {
+    const wxMock = {
+      config: jasmine.createSpy('config'),
+      ready: jasmine.createSpy('ready').and.callFake((callback: () => void) => callback()),
+      error: jasmine.createSpy('error')
+    };
+    (globalThis as any).wx = wxMock;
+    component.data = { Problem: { ProcessTypeList: [3] } } as any;
+    component.processType = 'Page1';
+    (component as any).processActionMap.Page1 = 'form';
+    const container = document.createElement('div');
+
+    (component as any).weAppLaunchContainerRef = new ElementRef(container);
+
+    expect(mockCommonService.getJsSdkConfig).toHaveBeenCalled();
+    expect(wxMock.config).toHaveBeenCalled();
+    expect(container.innerHTML).toContain('打开微信小程序上传');
   });
 
   it('should clear failure messages when process type changes', () => {
