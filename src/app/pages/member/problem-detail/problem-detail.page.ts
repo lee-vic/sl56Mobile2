@@ -240,7 +240,11 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       "innerHTML",
       '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
         this.problemId +
-        '"><template><style>.btn { padding: 6px 10px;font-size:12px;border-radius:8px;background:#0b61bd;color:#fff;border:0; }</style><button class="btn">打开微信小程序上传</button></template></wx-open-launch-weapp>'
+        '"><template><style>' +
+        '.btn{width:100%;min-height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 16px;border:1px solid #07a956;border-radius:10px;background:#f2fff8;color:#078544;font-size:14px;font-weight:600;line-height:1.4;box-shadow:0 3px 10px rgba(7,169,86,.10);}' +
+        '.wechat-icon{position:relative;width:19px;height:16px;box-sizing:border-box;border:2px solid currentColor;border-radius:9px;flex:0 0 auto;}' +
+        '.wechat-icon:after{content:"";position:absolute;left:1px;bottom:-4px;width:6px;height:6px;box-sizing:border-box;border-left:2px solid currentColor;transform:skew(-28deg);background:#f2fff8;}' +
+        '</style><button class="btn" type="button" aria-label="从微信聊天记录选择文件"><span class="wechat-icon" aria-hidden="true"></span><span>从微信聊天记录选择文件</span></button></template></wx-open-launch-weapp>'
     );
   }
 

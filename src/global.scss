@@ -28,6 +28,12 @@
 @import "./theme/app-foundation";
 @import "./theme/member-center";
 
+/* 微信开放标签由 JSSDK 运行时插入，不会带 Angular 组件的样式作用域属性。 */
+.weapp-entry > wx-open-launch-weapp {
+    display: block;
+    width: 100%;
+}
+
 ion-content {
     -webkit-user-select: text !important;
     -khtml-user-select: text !important;

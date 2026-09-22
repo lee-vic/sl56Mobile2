@@ -119,7 +119,8 @@ describe('ProblemDetailPage', () => {
 
     expect(mockCommonService.getJsSdkConfig).toHaveBeenCalled();
     expect(wxMock.config).toHaveBeenCalled();
-    expect(container.innerHTML).toContain('打开微信小程序上传');
+    expect(container.innerHTML).toContain('从微信聊天记录选择文件');
+    expect(container.innerHTML).toContain('width:100%');
   });
 
   it('should clear failure messages when process type changes', () => {
