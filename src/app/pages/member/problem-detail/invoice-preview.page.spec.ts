@@ -1,4 +1,4 @@
-/* tslint:disable:no-unused-variable */
+﻿/* tslint:disable:no-unused-variable */
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -36,7 +36,7 @@ describe('InvoicePreviewPage (ng2-pdf-viewer migration)', () => {
   }));
 
   beforeEach(() => {
-    spyOn(console, 'log').and.stub(); // suppress URL log from constructor
+    spyOn(console, 'log').and.stub();
     fixture   = TestBed.createComponent(InvoicePreviewPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -94,6 +94,14 @@ describe('InvoicePreviewPage (ng2-pdf-viewer migration)', () => {
   });
 
   // ── 7. reSelect navigates back with confirmFile=false ─────────────
+  it('reSelect preserves signed problemId without logging credentials', () => {
+    const token = 'v2.test_signed_problem_token';
+    queryParamsSubject.next({ ...defaultParams, problemId: token });
+    component.reSelect();
+    expect(mockNavCtrl.navigateBack.calls.mostRecent().args[1].queryParams.problemid).toBe(token);
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
   it('reSelect() calls navigateBack with the correct path and confirmFile=false', () => {
     component.reSelect();
     expect(mockNavCtrl.navigateBack).toHaveBeenCalledWith(

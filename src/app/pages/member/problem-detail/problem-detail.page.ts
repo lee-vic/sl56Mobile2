@@ -23,7 +23,8 @@ declare var wx: any;
 })
 export class ProblemDetailPage implements OnInit, OnDestroy {
   receiveGoodsDetailId: Number;
-  problemId: Number;
+  // 通知参数可为旧数字 ID 或新签名载荷；发送 API 时保留原值，不在客户端解码。
+  problemId: number | string;
   data: any;
   processType: string;
   processOptions: Array<{ key: string; title: string }> = [];
@@ -76,6 +77,10 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         this.isLoading = false;
       })
     ).subscribe((res) => {
+      if (res && (res as { Success?: boolean }).Success === false) {
+        this.hasInitError = true;
+        return;
+      }
       if (!res) {
         this.hasNotFound = true;
         return;

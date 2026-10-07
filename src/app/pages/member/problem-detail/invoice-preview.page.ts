@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
 import { apiUrl } from '../../../global';
 import { NavController } from '@ionic/angular';
@@ -12,7 +12,7 @@ export class InvoicePreviewPage implements OnInit {
 
   invoiceSrc: any;
   rgdId: number;
-  problemId: number;
+  problemId: number | string;
   isWeAppFile: boolean;
   currentPage: number = 1;
   totalPages: number = 0;
@@ -30,7 +30,6 @@ export class InvoicePreviewPage implements OnInit {
         withCredentials: true
       };
       this.loadFailed = false;
-      console.log(previewPath);
     });
   }
 
@@ -71,7 +70,7 @@ export class InvoicePreviewPage implements OnInit {
         refresh: Date.now()
       }
     }
-    console.log("confirm:false.goto:", '/member/problem-detail/' + this.rgdId, params);
+    // problemid 可能是完整客户登录凭据，导航参数不能输出到日志。
     this.navCtrl.navigateBack('/member/problem-detail/' + this.rgdId, params)
   }
   confirm() {
