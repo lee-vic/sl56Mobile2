@@ -243,6 +243,14 @@
   margin-top: 4px;
 }
 
+.workspace-nav {
+  background: var(--member-surface-0, #fff);
+  border-radius: var(--member-radius-md, 16px);
+  padding: 16px;
+  h2 { font-size: 17px; margin-top: 0; }
+  ion-button { white-space: normal; height: auto; min-height: 44px; max-width: 100%; }
+}
+
 /* ─── Action notes ─── */
 .action-note {
   display: flex;

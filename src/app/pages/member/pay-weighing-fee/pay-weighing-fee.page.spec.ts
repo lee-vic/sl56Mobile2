@@ -106,6 +106,8 @@ describe('PayWeighingFeePage', () => {
     actionSheetPresentSpy.calls.reset();
     navNavigateForwardSpy.calls.reset();
     startSpy.calls.reset();
+    // 调用记录和返回行为分别重置，避免超时用例污染后续随机顺序执行的用例。
+    startSpy.and.returnValue(of(true));
     getWeightBillDefaultValueSpy.calls.reset();
     getHistoryVehicleNoSpy.calls.reset();
     getHistoryCorporateAccountSpy.calls.reset();
@@ -289,13 +291,17 @@ describe('PayWeighingFeePage', () => {
   }));
 
   it('should show alert when start read request errors', fakeAsync(() => {
-    startSpy.and.returnValue(throwError(() => new Error('timeout')));
+    const expectedError = new Error('timeout');
+    // 此用例故意模拟超时：验证异常仍被记录，但不向测试输出打印预期异常堆栈。
+    const logSpy = spyOn(console, 'log');
+    startSpy.and.returnValue(throwError(() => expectedError));
 
     component.startRead();
     tick();
 
     expect(loadingDismissSpy).toHaveBeenCalled();
     expect(alertCreateSpy).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(expectedError);
   }));
 
   it('should show local timeout alert when reading weight has no callback', fakeAsync(() => {

@@ -9,6 +9,23 @@
 
 <ion-content [fullscreen]="true" class="problem-detail-content">
   <div class="detail-shell">
+    <ion-text color="success" *ngIf="successMessage"><p role="status">{{successMessage}}</p></ion-text>
+    <ion-button fill="clear" (click)="viewAllProblems()">查看全部问题</ion-button>
+    <div class="done-state" *ngIf="!isLoading && hasInitError">
+      <h2 class="done-title">暂时无法加载问题件</h2>
+      <p>请重新加载获取最新状态，避免重复提交。</p>
+      <ion-button (click)="retryInit()">重新加载</ion-button>
+    </div>
+    <section class="workspace-nav" *ngIf="!isLoading && !hasInitError && workspace?.ProblemList?.length">
+      <h2>本单还有 {{workspace.ProblemList.length}} 个待处理问题</h2>
+      <p *ngIf="sourceProblemCompleted">原链接的问题已处理，已为您打开本单其他待处理问题。</p>
+      <ion-button *ngFor="let problem of workspace.ProblemList"
+        [fill]="problem.ObjectId === data?.Problem?.ObjectId ? 'solid' : 'outline'"
+        [disabled]="isSubmitting || isFileProcessing || isCheckingWeAppFile"
+        (click)="selectProblem(problem.ObjectId)">
+        {{problem.ObjectName}}<span *ngIf="problem.EndDate && problem.EndDate !== '(无)'">（{{problem.EndDate}}）</span>
+      </ion-button>
+    </section>
 
     <!-- Skeleton loading -->
     <ng-container *ngIf="isLoading">
@@ -34,14 +51,17 @@
     </div>
 
     <!-- Done state -->
-    <div class="done-state" *ngIf="!isLoading && !hasNotFound && isProblemDone">
+    <div class="done-state" *ngIf="!isLoading && !hasInitError && !hasNotFound && isProblemDone">
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
-      <h2 class="done-title">问题已完成处理</h2>
-      <p class="done-sub">如仍有疑问，可联系在线客服继续沟通。</p>
+      <h2 class="done-title">当前单号已处理完成</h2>
+      <p class="done-sub" *ngIf="workspace?.OtherWaybillCount > 0">您还有 {{workspace.OtherWaybillCount}} 个单号、{{workspace.OtherProblemCount}} 个问题待处理。</p>
+      <p class="done-sub" *ngIf="workspace?.OtherWaybillCount === 0">所有问题件均已处理完成。</p>
+      <ion-button *ngIf="workspace?.OtherWaybillCount > 0 && workspace?.NextProblemId" (click)="continueNextWaybill()">继续处理下一单</ion-button>
+      <ion-button fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
     </div>
 
     <!-- Main content -->
-    <ng-container *ngIf="!isLoading && !hasNotFound && !isProblemDone">
+    <ng-container *ngIf="!isLoading && !hasInitError && !hasNotFound && !isProblemDone">
 
       <!-- Hero info card -->
       <div class="hero-problem-card">
@@ -145,9 +165,9 @@
                 (change)="changeFile($event, page1Form.form)"
                 accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 class="file-input-hidden" />
-              <div class="file-processing" *ngIf="isFileProcessing">
+              <div class="file-processing" *ngIf="isFileProcessing || isCheckingWeAppFile">
                 <ion-spinner name="crescent" color="primary"></ion-spinner>
-                <span>文件处理中，请稍候...</span>
+                <span>{{isCheckingWeAppFile ? '正在检查上传结果，请稍候...' : '文件处理中，请稍候...'}}</span>
               </div>
               <ion-text color="danger" *ngIf="fileFailMessage">
                 <p class="error-msg">文件处理失败：{{fileFailMessage}}</p>
@@ -183,6 +203,7 @@
           <!-- Inline submit error -->
           <ion-text color="danger" *ngIf="submitFailMessage">
             <p class="error-msg" role="alert">{{submitFailMessage}}</p>
+            <ion-button fill="outline" (click)="retryInit()">刷新最新状态</ion-button>
           </ion-text>
 
         </form>
@@ -221,7 +242,7 @@
 </ion-content>
 
 <!-- Footer action bar -->
-<ion-footer translucent="true" class="problem-detail-footer" *ngIf="!isLoading && !hasNotFound">
+<ion-footer translucent="true" class="problem-detail-footer" *ngIf="!isLoading && !hasInitError && !hasNotFound && !isProblemDone">
   <ion-toolbar>
     <div class="footer-inner">
 
@@ -270,7 +291,7 @@
 
       <!-- Active: confirm -->
       <ng-container *ngIf="!isProblemDone && hasSelfService && getCurrentAction() === 'confirm'">
-        <ion-button expand="block" color="success" (click)="confirm()">
+        <ion-button expand="block" color="success" [disabled]="isSubmitting" (click)="confirm()">
           <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
           确认并完成
         </ion-button>

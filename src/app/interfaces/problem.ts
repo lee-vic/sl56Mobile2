@@ -1,4 +1,4 @@
-export interface Problem{
+﻿export interface Problem{
     Id:Number;
     No:string;
     ProblemList:Array<ProblemDetail>;
@@ -52,4 +52,15 @@ export interface ProblemCompleteResponse {
     message?: string;
     Messages?: string[];
     ErrorId?: string;
+}
+
+export interface ProblemWorkspace {
+    ProblemList: Array<{ ObjectId: number; ObjectName: string; EndDate?: string }>;
+    OtherWaybillCount: number;
+    OtherProblemCount: number;
+    NextReceiveGoodsDetailId?: number;
+    NextProblemId?: number;
+    DefaultProblemId?: number;
+    IsCurrentWaybillCompleted: boolean;
+    SourceProblemId: number;
 }

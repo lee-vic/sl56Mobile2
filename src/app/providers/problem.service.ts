@@ -17,8 +17,9 @@ export class ProblemService {
     });
     return seq;
   }
-  getProblemDetail(problemId) {
+  getProblemDetail(problemId, workspaceMode = false) {
     let paras = new HttpParams().set("problemId", problemId);
+    if (workspaceMode) paras = paras.set("workspaceMode", "true");
     let seq = this.http.get(apiUrl + "/Problem/GetProblemDetail", {
       withCredentials: true,
       params: paras,

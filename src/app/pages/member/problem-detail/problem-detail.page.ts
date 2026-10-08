@@ -1,5 +1,6 @@
-﻿import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from "@angular/core";
+﻿import { Component, ElementRef, HostListener, Inject, OnDestroy, OnInit, Renderer2, ViewChild } from "@angular/core";
 import { ProblemService } from "src/app/providers/problem.service";
+import { DOCUMENT } from '@angular/common';
 import {
   AlertController,
   LoadingController,
@@ -9,6 +10,7 @@ import { ActivatedRoute, Router, NavigationExtras } from "@angular/router";
 import {
   ProblemProcessResultModel,
   ProblemProcessType2ItemResultModel,
+  ProblemWorkspace,
 } from "src/app/interfaces/problem";
 import { CommonService } from "src/app/providers/common.service";
 import { NgForm } from "@angular/forms";
@@ -40,12 +42,21 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   hasNotFound = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
+  isCheckingWeAppFile = false;
+  private isPageActive = false;
+  private shouldCheckOnReturn = false;
   weAppLaunchErrorMessage: string;
   @ViewChild('page1Form') formRef: NgForm;
   private weAppLaunchContainer?: ElementRef<HTMLElement>;
   private isWeAppConfigLoading = false;
   private isWeAppSdkReady = false;
   private readonly destroy$ = new Subject<void>();
+  private readonly problemChange$ = new Subject<void>();
+  isSubmitting = false;
+  successMessage: string;
+  sourceProblemCompleted = false;
+  private hasLoaded = false;
+  private hasEntered = false;
 
   @ViewChild('wxOpenLaunchWeApp')
   set weAppLaunchContainerRef(container: ElementRef<HTMLElement> | undefined) {
@@ -59,20 +70,92 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.isPageActive = false;
     this.destroy$.next();
     this.destroy$.complete();
+    this.problemChange$.next();
+    this.problemChange$.complete();
+  }
+
+  ionViewDidEnter(): void {
+    this.isPageActive = true;
+    const id = this.route.snapshot.queryParams.problemid;
+    const receiptId = Number(this.route.snapshot.paramMap.get('id'));
+    if (receiptId !== Number(this.receiveGoodsDetailId)) {
+      this.receiveGoodsDetailId = receiptId;
+      this.problemId = id;
+      this.loadProblemDetail();
+    } else if (this.hasEntered && !this.isLoading) {
+      this.validateOnReturn();
+    }
+    this.hasEntered = true;
+  }
+
+  private validateOnReturn(): void {
+    // 发票预览等子流程返回时仅验证状态；问题仍待处理则保留客户已经选择的文件和填写内容。
+    this.service.getProblemDetail(this.problemId, true).pipe(takeUntil(this.destroy$), takeUntil(this.problemChange$))
+      .subscribe({ next: (res) => {
+        if (!this.isPageActive || this.isSubmitting || this.isLoading) return;
+        const latest = res as ProblemWorkspace & { Problem?: { ObjectId: number; Status: number }; Success?: boolean };
+        if (!latest || latest.Success === false) { this.hasInitError = true; return; }
+        if (latest.IsCurrentWaybillCompleted || latest.Problem?.ObjectId !== this.data?.Problem?.ObjectId || latest.Problem?.Status !== 0) {
+          this.successMessage = '问题状态已变化，已重新加载最新待处理问题。';
+          this.loadProblemDetail();
+        } else {
+          this.data.ProblemList = latest.ProblemList;
+          this.data.OtherWaybillCount = latest.OtherWaybillCount;
+          this.data.OtherProblemCount = latest.OtherProblemCount;
+          this.data.NextProblemId = latest.NextProblemId;
+          this.data.NextReceiveGoodsDetailId = latest.NextReceiveGoodsDetailId;
+        }
+      }, error: () => { if (this.isPageActive) this.hasInitError = true; } });
+  }
+
+  ionViewWillLeave(): void {
+    // Ionic 会缓存页面；离开后不能由全局可见性事件再次检查或弹出提示。
+    this.isPageActive = false;
+    this.shouldCheckOnReturn = false;
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (!this.isPageActive || !this.hasSelfService || !this.isFormOption() || !this.hasProcessType(3)) return;
+    if (this.pageDocument.hidden) {
+      this.shouldCheckOnReturn = true;
+    } else if (this.shouldCheckOnReturn) {
+      this.shouldCheckOnReturn = false;
+      // 小程序返回不会重建网页：仅重新读取附件状态，保留客户已填资料和现有预览流程。
+      if (!this.isFileProcessing) this.getWeAppFileStatus(true);
+      // 附件回执不能代表问题仍待处理；同时核实工作区，避免其他设备已处理后继续提交旧表单。
+      if (this.data?.Problem && !this.isSubmitting && !this.isLoading) this.validateOnReturn();
+    }
   }
 
   retryInit(): void {
-    this.loadProblemDetail();
+    if (!this.isSubmitting && !this.isFileProcessing) this.loadProblemDetail();
   }
 
   private loadProblemDetail(): void {
+    this.problemChange$.next();
+    this.processOptions = [];
+    this.processActionMap = {};
+    this.processType = null;
+    this.processModel = null;
+    this.checkListValue = [];
+    this.isWeAppUploadFile = false;
+    this.isCheckingWeAppFile = false;
+    this.isFileProcessing = false;
+    this.submitFailMessage = null;
+    this.fileFailMessage = null;
+    this.confirmFailMessage = null;
+    this.weAppLaunchErrorMessage = null;
+    this.shouldCheckOnReturn = false;
     this.isLoading = true;
     this.hasInitError = false;
     this.hasNotFound = false;
-    this.service.getProblemDetail(this.problemId).pipe(
+    this.service.getProblemDetail(this.problemId, true).pipe(
       takeUntil(this.destroy$),
+      takeUntil(this.problemChange$),
       finalize(() => {
         this.isLoading = false;
       })
@@ -86,6 +169,17 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         return;
       }
       this.data = res;
+      if (this.successMessage?.startsWith('本问题已处理')) {
+        this.successMessage = this.data.IsCurrentWaybillCompleted ? '本问题已处理。'
+          : '本问题已处理，本单仍有 ' + (this.data.ProblemList?.length || 0) + ' 个问题待处理。';
+      }
+      this.hasLoaded = true;
+      this.sourceProblemCompleted = this.data.SourceProblemId != null && this.data.Problem?.ObjectId !== this.data.SourceProblemId;
+      // 表单及附件操作使用服务器返回的真实问题；仅来源仍为当前问题时保留签名给旧小程序。
+      if (this.data.Problem?.ObjectId != null &&
+          !(typeof this.problemId === 'string' && this.problemId.startsWith('v2.') && !this.sourceProblemCompleted)) {
+        this.problemId = this.data.Problem.ObjectId;
+      }
       this.processModel = this.data.ProcessResult;
       this.ensureProcessModel();
 
@@ -103,7 +197,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       );
 
       this.buildOptions();
-      this.getWeAppFileStatus(true);
+      if (!this.isProblemDone && this.hasProcessType(3)) this.getWeAppFileStatus(true);
       this.renderWeAppButtonIfNeeded();
     }, _ => {
       this.hasInitError = true;
@@ -155,11 +249,46 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   get isProblemDone(): boolean {
-    return this.data?.Problem?.Status === 1;
+    return this.data?.IsCurrentWaybillCompleted === true ||
+      (this.data?.IsCurrentWaybillCompleted == null && this.data?.Problem?.Status === 1);
+  }
+
+  get workspace(): ProblemWorkspace { return this.data; }
+
+  async selectProblem(id: number): Promise<void> {
+    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || id === this.data?.Problem?.ObjectId) return;
+    const change = () => {
+      this.successMessage = null;
+      this.problemId = id;
+      this.loadProblemDetail();
+    };
+    if (this.formRef?.dirty || this.processModel?.Type3Result?.Value || this.checkListValue?.some(v => v)) {
+      const alert = await this.alertCtrl.create({
+        header: '切换问题', message: '当前内容尚未提交，切换后将不保留本次填写内容。',
+        buttons: [{ text: '继续填写', role: 'cancel' }, { text: '切换问题', handler: change }]
+      });
+      await alert.present();
+    } else change();
+  }
+
+  viewAllProblems(): void {
+    if (!this.isLoading && !this.isSubmitting) this.router.navigate(['/member/problem-list']);
+  }
+
+  continueNextWaybill(): void {
+    if (this.isSubmitting || this.isLoading || !this.workspace?.NextProblemId || !this.workspace?.NextReceiveGoodsDetailId) return;
+    this.successMessage = null;
+    this.router.navigate(['/member/problem-detail', this.workspace.NextReceiveGoodsDetailId],
+      { queryParams: { problemid: this.workspace.NextProblemId } });
+  }
+
+  private refreshAfterSuccess(): void {
+    this.successMessage = '本问题已处理，正在更新待处理问题。';
+    this.loadProblemDetail();
   }
 
   get hasSelfService(): boolean {
-    return this.data?.Problem?.Status === 0 && this.processOptions.length > 0;
+    return !this.isProblemDone && this.data?.Problem?.Status === 0 && this.processOptions.length > 0;
   }
 
   hasProcessType(type: number): boolean {
@@ -175,7 +304,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   canSubmit(form: NgForm): boolean {
-    if (this.isFileProcessing) {
+    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile) {
       return false;
     }
     if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) === -1) {
@@ -286,12 +415,18 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private renderer: Renderer2,
+    @Inject(DOCUMENT) private pageDocument: Document,
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
     this.receiveGoodsDetailId = new Number(
       this.route.snapshot.paramMap.get("id")
     );
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((_res) => {
+      if (this.hasLoaded && _res.problemid != null && String(_res.problemid) !== String(this.problemId)) {
+        this.problemId = _res.problemid;
+        this.receiveGoodsDetailId = Number(this.route.snapshot.paramMap.get('id'));
+        this.loadProblemDetail();
+      }
       const nav = this.router.getCurrentNavigation();
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
@@ -346,16 +481,18 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   confirm() {
+    if (this.isSubmitting || this.isLoading) return;
+    this.isSubmitting = true;
     this.confirmFailMessage = null;
     this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
       loading.present();
-      this.service.confirm(this.processModel.Id).pipe(takeUntil(this.destroy$)).subscribe({
+      this.service.confirm(this.processModel.Id).pipe(takeUntil(this.destroy$), finalize(() => { this.isSubmitting = false; })).subscribe({
         next: (res) => {
           loading.dismiss();
           if (!res.IsSuccess) {
             this.confirmFailMessage = res.Message;
           } else {
-            this.data.Problem.Status = 1;
+            this.refreshAfterSuccess();
           }
         },
         error: () => {
@@ -383,6 +520,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     if (file != null) {
       let fileReader = new FileReader();
       fileReader.addEventListener("load", (res) => {
+        if (!this.processModel || this.processModel.Id !== fileProblemId) return;
         //文件名
         //base64字符串
         let fileString = (res.target as FileReader).result.toString();
@@ -395,7 +533,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
             loading.present();
             this.service
               .invoicePretreatment(this.processModel)
-              .pipe(takeUntil(this.destroy$))
+              .pipe(takeUntil(this.destroy$), takeUntil(this.problemChange$))
               .subscribe({
                 next: (res) => {
                   loading.dismiss();
@@ -426,6 +564,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
           });
         }
       });
+      const fileProblemId = this.processModel.Id;
       fileReader.readAsDataURL(file);
     } else {
       this.processModel.Type3Result.FileName = null;
@@ -433,7 +572,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     }
   }
   submit(formGroup) {
-    if (!this.isFormOption()) {
+    if (!this.isFormOption() || this.isSubmitting || this.isLoading || this.isFileProcessing || this.isCheckingWeAppFile) {
       return;
     }
     this.submitFailMessage = null;
@@ -466,15 +605,16 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         }
       });
     }
+    this.isSubmitting = true;
     this.loadingCtrl.create({ message: '请稍候...' }).then((loading) => {
       loading.present();
-      this.service.complete(this.processModel).pipe(takeUntil(this.destroy$)).subscribe({
+      this.service.complete(this.processModel).pipe(takeUntil(this.destroy$), finalize(() => { this.isSubmitting = false; })).subscribe({
         next: (res) => {
           loading.dismiss();
           if (res.Success === false || res.Result === false) {
             this.submitFailMessage = res.Message || res.message || '提交失败，请稍后重试';
           } else {
-            this.data.Problem.Status = 1;
+            this.refreshAfterSuccess();
           }
         },
         error: () => {
@@ -486,8 +626,14 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   getWeAppFileStatus(isInitPage) {
+    if (this.isCheckingWeAppFile || this.isFileProcessing) return;
+    this.isCheckingWeAppFile = true;
     const runStatusCheck = (loading?: any) => {
-      this.service.isWeAppUploadFile(this.problemId).pipe(takeUntil(this.destroy$)).subscribe({
+      this.service.isWeAppUploadFile(this.problemId).pipe(
+        takeUntil(this.destroy$),
+        takeUntil(this.problemChange$),
+        finalize(() => { this.isCheckingWeAppFile = false; })
+      ).subscribe({
         next: (res) => {
           this.isWeAppUploadFile = res;
           if (isInitPage) return;
@@ -496,7 +642,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
               this.isFileProcessing = true;
               this.service
                 .invoicePretreatment(this.processModel)
-                .pipe(takeUntil(this.destroy$))
+                .pipe(takeUntil(this.destroy$), takeUntil(this.problemChange$))
                 .subscribe({
                   next: (res) => {
                     loading?.dismiss();

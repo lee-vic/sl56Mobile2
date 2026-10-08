@@ -51,8 +51,18 @@ describe('ProblemService', () => {
       const request = TestBed.inject(HttpTestingController).expectOne(req =>
         req.url === apiUrl + '/Problem/GetProblemDetail');
       expect(request.request.params.get('problemId')).toBe(String(problemId));
+      expect(request.request.params.has('workspaceMode')).toBe(false);
       expect(request.request.withCredentials).toBe(true);
       request.flush({});
     });
+  });
+
+  it('opts into workspace selection without changing the link payload', () => {
+    TestBed.inject(ProblemService).getProblemDetail('v2.ABC_def-123', true).subscribe();
+    const request = TestBed.inject(HttpTestingController).expectOne(req =>
+      req.url === apiUrl + '/Problem/GetProblemDetail');
+    expect(request.request.params.get('problemId')).toBe('v2.ABC_def-123');
+    expect(request.request.params.get('workspaceMode')).toBe('true');
+    request.flush({});
   });
 });

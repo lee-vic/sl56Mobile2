@@ -62,6 +62,13 @@ describe('ProblemDetailPage', () => {
   }));
 
   beforeEach(() => {
+    mockProblemService.getProblemDetail.and.returnValue(of({
+      Problem: { ProcessTypeList: [], ProcessSetting4: [], Pages: [], Status: 0 }, ProcessResult: {}
+    }));
+    mockProblemService.isWeAppUploadFile.and.returnValue(of(false));
+    mockProblemService.complete.and.returnValue(of({ Result: true }));
+    mockProblemService.confirm.and.returnValue(of({ IsSuccess: true }));
+    Object.values(mockProblemService).forEach(spy => spy.calls.reset());
     fixture = TestBed.createComponent(ProblemDetailPage);
     component = fixture.componentInstance;
   });
@@ -72,6 +79,83 @@ describe('ProblemDetailPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  function workspace(id: number, completed = false) {
+    return {
+      Id: 20, SourceProblemId: 10, DefaultProblemId: completed ? null : id,
+      IsCurrentWaybillCompleted: completed, OtherWaybillCount: 2, OtherProblemCount: 3,
+      NextReceiveGoodsDetailId: 30, NextProblemId: 40,
+      ProblemList: completed ? [] : [{ ObjectId: id, ObjectName: '待处理问题' }],
+      Problem: { ObjectId: id, Status: completed ? 1 : 0, ProcessTypeList: [2], ProcessSetting2: [], ProcessSetting4: [], Pages: [{ Item1: 'Page1', Item2: '填写资料' }] },
+      ProcessResult: { Id: id }
+    };
+  }
+
+  it('uses the server-selected default problem and keeps submission identity aligned', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(11)));
+    component.ngOnInit();
+    expect(mockProblemService.getProblemDetail).toHaveBeenCalledWith(10, true);
+    expect(component.problemId).toBe(11);
+    expect(component.processModel.Id).toBe(11);
+    expect(component.sourceProblemCompleted).toBe(true);
+  });
+
+  it('clears previous form, file, checklist and errors before switching problems', async () => {
+    component.data = workspace(10);
+    component.processModel = { Id: 10 } as any;
+    component.isWeAppUploadFile = true;
+    component.fileFailMessage = 'previous';
+    const response$ = new Subject<any>();
+    mockProblemService.getProblemDetail.and.returnValue(response$);
+    await component.selectProblem(11);
+    expect(component.processModel).toBeNull();
+    expect(component.checkListValue).toEqual([]);
+    expect(component.isWeAppUploadFile).toBe(false);
+    expect(component.fileFailMessage).toBeNull();
+    response$.next(workspace(11)); response$.complete();
+    expect(component.processModel.Id).toBe(11);
+  });
+
+  it('does not switch a dirty form until the customer confirms', async () => {
+    component.data = workspace(10);
+    component.formRef = { dirty: true } as any;
+    const create = spyOn(TestBed.inject(AlertController), 'create').and.returnValue(Promise.resolve({ present: () => Promise.resolve() } as any));
+    await component.selectProblem(11);
+    expect(mockProblemService.getProblemDetail).not.toHaveBeenCalled();
+    const options = create.calls.mostRecent().args[0];
+    const button = options.buttons[1];
+    if (typeof button === 'string') throw new Error('Expected a confirmation handler');
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(11)));
+    button.handler(undefined);
+    expect(component.processModel.Id).toBe(11);
+  });
+
+  it('locks duplicate submission and refreshes remaining work after success', fakeAsync(() => {
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(10)));
+    component.ngOnInit();
+    const result$ = new Subject<any>();
+    mockProblemService.complete.and.returnValue(result$);
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(11)));
+    const form = { form: { value: {}, valid: true } } as any;
+    component.submit(form); component.submit(form); flush();
+    expect(mockProblemService.complete.calls.count()).toBe(1);
+    expect(component.isSubmitting).toBe(true);
+    result$.next({ Result: true }); result$.complete(); flush();
+    expect(component.processModel.Id).toBe(11);
+    expect(component.successMessage).toContain('本问题已处理');
+    expect(component.isSubmitting).toBe(false);
+  }));
+
+  it('shows completion without automatically navigating to another waybill', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(10, true)));
+    component.ngOnInit();
+    expect(component.isProblemDone).toBe(true);
+    expect(component.hasSelfService).toBe(false);
+    const router = TestBed.inject(Router);
+    expect(router.navigate).not.toHaveBeenCalled();
+    component.continueNextWaybill();
+    expect(router.navigate).toHaveBeenCalledWith(['/member/problem-detail', 30], { queryParams: { problemid: 40 } });
   });
 
   it('should detect available process types', () => {
@@ -121,6 +205,55 @@ describe('ProblemDetailPage', () => {
     expect(wxMock.config).toHaveBeenCalled();
     expect(container.innerHTML).toContain('从微信聊天记录选择文件');
     expect(container.innerHTML).toContain('width:100%');
+  });
+
+  it('should refresh uploaded file state automatically when returning to the visible page', () => {
+    component.data = { Problem: { ProcessTypeList: [3], Status: 0 } } as any;
+    component.processOptions = [{ key: 'Page1', title: '更新信息' }];
+    component.checkListValue = [];
+    component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true);
+    component.ionViewDidEnter();
+    const hidden = spyOnProperty(document, 'hidden', 'get').and.returnValue(true);
+    mockProblemService.isWeAppUploadFile.calls.reset();
+    mockProblemService.isWeAppUploadFile.and.returnValue(of(true));
+
+    component.onVisibilityChange();
+    hidden.and.returnValue(false);
+    component.onVisibilityChange();
+    component.onVisibilityChange();
+
+    expect(mockProblemService.isWeAppUploadFile).toHaveBeenCalledTimes(1);
+    expect(component.isWeAppUploadFile).toBe(true);
+    expect(component.canSubmit({ valid: false } as any)).toBe(true);
+    expect(component.isCheckingWeAppFile).toBe(false);
+  });
+
+  it('should not refresh a cached page after navigating away', () => {
+    component.data = { Problem: { ProcessTypeList: [3], Status: 0 } } as any;
+    component.processOptions = [{ key: 'Page1', title: '更新信息' }];
+    component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true);
+    component.ionViewDidEnter();
+    const hidden = spyOnProperty(document, 'hidden', 'get').and.returnValue(true);
+    const check = spyOn(component, 'getWeAppFileStatus');
+    component.onVisibilityChange();
+    component.ionViewWillLeave();
+    hidden.and.returnValue(false);
+    component.onVisibilityChange();
+    expect(check).not.toHaveBeenCalled();
+  });
+
+  it('should deduplicate file checks and block submit until the result arrives', () => {
+    const response = new Subject<boolean>();
+    mockProblemService.isWeAppUploadFile.calls.reset();
+    mockProblemService.isWeAppUploadFile.and.returnValue(response);
+    component.getWeAppFileStatus(true);
+    component.getWeAppFileStatus(true);
+    expect(mockProblemService.isWeAppUploadFile).toHaveBeenCalledTimes(1);
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+    response.next(true);
+    response.complete();
+    expect(component.isCheckingWeAppFile).toBe(false);
+    mockProblemService.isWeAppUploadFile.and.returnValue(of(false));
   });
 
   it('should clear failure messages when process type changes', () => {
