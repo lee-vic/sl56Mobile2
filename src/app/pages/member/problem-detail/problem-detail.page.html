@@ -13,8 +13,9 @@
     <ion-button fill="clear" (click)="viewAllProblems()">查看全部问题</ion-button>
     <div class="done-state" *ngIf="!isLoading && hasInitError">
       <h2 class="done-title">暂时无法加载问题件</h2>
-      <p>请重新加载获取最新状态，避免重复提交。</p>
-      <ion-button (click)="retryInit()">重新加载</ion-button>
+      <p>{{initFailMessage || '请重新加载获取最新状态，避免重复提交。'}}</p>
+      <ion-button *ngIf="requiresLogin" (click)="loginForProblemList()">登录或切换客户账户</ion-button>
+      <ion-button *ngIf="!requiresLogin" (click)="retryInit()">重新加载</ion-button>
     </div>
     <section class="workspace-nav" *ngIf="!isLoading && !hasInitError && workspace?.ProblemList?.length">
       <h2>本单还有 {{workspace.ProblemList.length}} 个待处理问题</h2>

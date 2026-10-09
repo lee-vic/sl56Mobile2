@@ -309,6 +309,29 @@ describe('ProblemDetailPage', () => {
     expect(mockProblemService.complete).toHaveBeenCalled();
   }));
 
+  it('shows business rejection and offers login without loading a stale form', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of({ Success: false, RequiresLogin: true, Message: '请登录后查看本人问题件列表。' }));
+    component.ngOnInit();
+    expect(component.hasInitError).toBe(true);
+    expect(component.requiresLogin).toBe(true);
+    expect(component.initFailMessage).toBe('请登录后查看本人问题件列表。');
+    expect(component.processModel).toBeNull();
+    component.loginForProblemList();
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/login']);
+    expect(TestBed.inject(CookieService).get('State')).toBe('/member/problem-list');
+    TestBed.inject(CookieService).delete('State', '/');
+  });
+
+  it('launches the mini program with the selected problem token instead of source or numeric ID', () => {
+    const token = 'v2.' + 'A'.repeat(50);
+    component.problemId = 11;
+    component.data = { WeAppUploadToken: token };
+    const container = document.createElement('div');
+    (component as unknown as { renderWeAppLaunchButton(element: HTMLElement): void }).renderWeAppLaunchButton(container);
+    expect(container.innerHTML).toContain('rgdProblemId=' + token);
+    expect(container.innerHTML).not.toContain('rgdProblemId=11');
+  });
+
   it('should handle old Result=false format for backward compatibility', fakeAsync(() => {
     mockProblemService.complete.and.returnValue(of({ Result: false, Message: '当前问题已处理完毕' }));
 

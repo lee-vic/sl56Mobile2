@@ -63,4 +63,5 @@ export interface ProblemWorkspace {
     DefaultProblemId?: number;
     IsCurrentWaybillCompleted: boolean;
     SourceProblemId: number;
+    WeAppUploadToken?: string;
 }

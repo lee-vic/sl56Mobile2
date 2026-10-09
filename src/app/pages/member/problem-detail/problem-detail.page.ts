@@ -16,6 +16,7 @@ import { CommonService } from "src/app/providers/common.service";
 import { NgForm } from "@angular/forms";
 import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
+import { CookieService } from 'ngx-cookie-service';
 
 declare var wx: any;
 @Component({
@@ -39,6 +40,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   isFileProcessing: boolean = false;
   isLoading = false;
   hasInitError = false;
+  initFailMessage: string;
+  requiresLogin = false;
   hasNotFound = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
@@ -96,8 +99,13 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     this.service.getProblemDetail(this.problemId, true).pipe(takeUntil(this.destroy$), takeUntil(this.problemChange$))
       .subscribe({ next: (res) => {
         if (!this.isPageActive || this.isSubmitting || this.isLoading) return;
-        const latest = res as ProblemWorkspace & { Problem?: { ObjectId: number; Status: number }; Success?: boolean };
-        if (!latest || latest.Success === false) { this.hasInitError = true; return; }
+        const latest = res as ProblemWorkspace & { Problem?: { ObjectId: number; Status: number }; Success?: boolean; Message?: string; RequiresLogin?: boolean };
+        if (!latest || latest.Success === false) {
+          this.hasInitError = true;
+          this.initFailMessage = latest?.Message;
+          this.requiresLogin = latest?.RequiresLogin === true;
+          return;
+        }
         if (latest.IsCurrentWaybillCompleted || latest.Problem?.ObjectId !== this.data?.Problem?.ObjectId || latest.Problem?.Status !== 0) {
           this.successMessage = '问题状态已变化，已重新加载最新待处理问题。';
           this.loadProblemDetail();
@@ -135,6 +143,12 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     if (!this.isSubmitting && !this.isFileProcessing) this.loadProblemDetail();
   }
 
+  loginForProblemList(): void {
+    // 不把失效 token 放进登录回跳；登录后只能查看本人待处理列表。
+    this.cookieService.set('State', '/member/problem-list', undefined, '/');
+    this.router.navigate(['/login']);
+  }
+
   private loadProblemDetail(): void {
     this.problemChange$.next();
     this.processOptions = [];
@@ -152,6 +166,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     this.shouldCheckOnReturn = false;
     this.isLoading = true;
     this.hasInitError = false;
+    this.initFailMessage = null;
+    this.requiresLogin = false;
     this.hasNotFound = false;
     this.service.getProblemDetail(this.problemId, true).pipe(
       takeUntil(this.destroy$),
@@ -161,7 +177,10 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       })
     ).subscribe((res) => {
       if (res && (res as { Success?: boolean }).Success === false) {
+        const failure = res as { Message?: string; RequiresLogin?: boolean };
         this.hasInitError = true;
+        this.initFailMessage = failure.Message || '请重新加载获取最新状态，避免重复提交。';
+        this.requiresLogin = failure.RequiresLogin === true;
         return;
       }
       if (!res) {
@@ -373,7 +392,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       openAppDiv,
       "innerHTML",
       '<wx-open-launch-weapp id="launch-btn" appid="wx7e62e243bc29cc8a" path="pages/select-wechat-record-file/index?rgdProblemId=' +
-        this.problemId +
+        (this.data?.WeAppUploadToken || this.problemId) +
         '"><template><style>' +
         '.btn{width:100%;min-height:44px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 16px;border:1px solid #07a956;border-radius:10px;background:#f2fff8;color:#078544;font-size:14px;font-weight:600;line-height:1.4;box-shadow:0 3px 10px rgba(7,169,86,.10);}' +
         '.wechat-icon{position:relative;width:19px;height:16px;box-sizing:border-box;border:2px solid currentColor;border-radius:9px;flex:0 0 auto;}' +
@@ -415,6 +434,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private renderer: Renderer2,
+    private cookieService: CookieService,
     @Inject(DOCUMENT) private pageDocument: Document,
   ) {
     this.problemId = this.route.snapshot.queryParams.problemid;
