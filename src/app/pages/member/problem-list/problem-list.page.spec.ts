@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -6,7 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ProblemListPage } from './problem-list.page';
 import { ProblemService } from 'src/app/providers/problem.service';
@@ -16,6 +16,7 @@ describe('ProblemListPage', () => {
   let component: ProblemListPage;
   let fixture: ComponentFixture<ProblemListPage>;
   const getListSpy = jasmine.createSpy('getList').and.returnValue(of([]));
+  const countsSpy = jasmine.createSpy('getListCounts');
   const mockNavCtrl = jasmine.createSpyObj('NavController', ['navigateForward']);
 
   beforeEach(async(() => {
@@ -23,7 +24,7 @@ describe('ProblemListPage', () => {
       imports: [HttpClientTestingModule, RouterTestingModule, FormsModule, ReactiveFormsModule, IonicModule.forRoot()],
       providers: [
         CookieService,
-        { provide: ProblemService, useValue: { getList: getListSpy } },
+        { provide: ProblemService, useValue: { getList: getListSpy, getListCounts: countsSpy } },
         { provide: NavController, useValue: mockNavCtrl },
         {
           provide: ActivatedRoute,
@@ -40,16 +41,73 @@ describe('ProblemListPage', () => {
     fixture = TestBed.createComponent(ProblemListPage);
     component = fixture.componentInstance;
     getListSpy.calls.reset();
+    getListSpy.and.returnValue(of([]));
+    countsSpy.calls.reset();
+    countsSpy.and.returnValue(of({ Before: 12, InTransit: 3, Confirmable: 5 }));
     fixture.detectChanges();
+    component.ionViewWillEnter();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows server totals for the first three tabs, not the loaded page length', () => {
+    fixture.detectChanges();
+    expect(component.items.length).toBe(0);
+    expect(component.categoryCounts).toEqual([12, 3, 5]);
+    const badges = Array.from(fixture.nativeElement.querySelectorAll('ion-segment ion-badge')) as HTMLElement[];
+    expect(badges.map(badge => badge.textContent?.trim())).toEqual(['12', '3', '5']);
+  });
+
+  it('refreshes counts on return and does not show zero when the count request fails', () => {
+    countsSpy.and.returnValue(throwError(() => new Error('offline')));
+    component.ionViewWillEnter();
+    fixture.detectChanges();
+    expect(component.categoryCounts).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('ion-segment ion-badge').length).toBe(0);
+  });
+
+  it('hides unknown category totals without hiding other valid badges', () => {
+    countsSpy.and.returnValue(of({ Before: 0, InTransit: 3, Confirmable: null }));
+    component.ionViewWillEnter();
+    fixture.detectChanges();
+    const badges = Array.from(fixture.nativeElement.querySelectorAll('ion-segment ion-badge')) as HTMLElement[];
+    expect(badges.map(badge => badge.textContent?.trim())).toEqual(['0', '3']);
+  });
+
   it('should load first page on init', () => {
-    expect(getListSpy).toHaveBeenCalledWith(1, '');
+    expect(getListSpy).toHaveBeenCalledWith(1, '', 0);
     expect(component.isLoaded).toBe(true);
+  });
+
+  it('reloads the unfiltered list when returning to a cached page', () => {
+    component.searchKeyword = 'old-order';
+    component.items = [{ Id: 1 } as any];
+    component.ionViewWillEnter();
+    expect(component.searchKeyword).toBe('');
+    expect(component.items).toEqual([]);
+    expect(getListSpy).toHaveBeenCalledWith(1, '', 0);
+  });
+
+  it('cancels an earlier response when a new list load starts', () => {
+    const oldResponse = new Subject<any[]>();
+    getListSpy.and.returnValue(oldResponse);
+    component.loadFirstPage('old');
+    getListSpy.and.returnValue(of([{ Id: 2 }]));
+    component.loadFirstPage('new');
+    oldResponse.next([{ Id: 1 }]);
+    expect(component.items.map(item => item.Id)).toEqual([2] as any);
+    expect(component.isBusy).toBe(false);
+  });
+
+  [0, 1, 2, 3].forEach(type => {
+    it('queries the selected PC-aligned category ' + type, () => {
+      component.problemType = type === 0 ? 1 : 0;
+      component.changeProblemType({ detail: { value: type } } as CustomEvent);
+      expect(component.problemType).toBe(type);
+      expect(getListSpy).toHaveBeenCalledWith(1, '', type);
+    });
   });
 
   it('should debounce search input and trim keyword', fakeAsync(() => {

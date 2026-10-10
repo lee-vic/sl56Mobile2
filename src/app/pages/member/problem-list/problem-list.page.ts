@@ -1,8 +1,10 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, IonSearchbar, NavController } from '@ionic/angular';
 import { Problem } from 'src/app/interfaces/problem';
 import { ProblemService } from 'src/app/providers/problem.service';
 import { ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 
 @Component({
@@ -19,22 +21,50 @@ export class ProblemListPage implements OnInit {
   hasLoadError = false;
   isLoading: boolean = false;
   searchKeyword = '';
+  // 0：发运前；1：运输中；2：快速确认；3：已处理，与 PC 分类参数一致。
+  problemType = 0;
+  categoryCounts: (number | null)[] | null = null;
+  private readonly cancelCounts$ = new Subject<void>();
   problemId:number;
   receiveGoodsDetailId:number;
   private searchDebounceTimer?: ReturnType<typeof setTimeout>;
+  private readonly cancelLoad$ = new Subject<void>();
   @ViewChild(IonInfiniteScroll,{ static: false }) infiniteScroll: IonInfiniteScroll;
   @ViewChild(IonSearchbar,{ static: false }) searchbar: IonSearchbar;
 
   ngOnInit(): void {
-    this.loadFirstPage('');
     if(this.problemId !== undefined){
         this.problemDetail(this.receiveGoodsDetailId,this.problemId);
     }
   }
 
+  ionViewWillEnter(): void {
+    // Ionic 会缓存列表页；从完成页返回必须清除旧搜索并刷新，不能只依赖首次 ngOnInit。
+    this.clearPendingSearch();
+    this.searchKeyword = '';
+    this.loadFirstPage('');
+    this.refreshCategoryCounts();
+  }
+
+  ionViewWillLeave(): void {
+    this.cancelCounts$.next();
+    this.clearPendingSearch();
+    this.cancelLoad$.next();
+    this.isBusy = false;
+  }
+
   ngOnDestroy(): void {
+    this.cancelCounts$.next();
+    this.cancelCounts$.complete();
+    this.clearPendingSearch();
+    this.cancelLoad$.next();
+    this.cancelLoad$.complete();
+  }
+
+  private clearPendingSearch(): void {
     if (this.searchDebounceTimer) {
       clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = undefined;
     }
   }
 
@@ -66,13 +96,32 @@ export class ProblemListPage implements OnInit {
     }, 280);
   }
 
+  changeProblemType(event: CustomEvent): void {
+    const type = Number((event.detail as { value?: string | number }).value);
+    if (![0, 1, 2, 3].includes(type) || type === this.problemType) return;
+    this.clearPendingSearch();
+    this.problemType = type;
+    this.loadFirstPage(this.searchKeyword);
+  }
+
   clearSearch(): void {
     this.searchKeyword = '';
     this.loadFirstPage('');
   }
 
   refreshItems(event: CustomEvent): void {
+    this.refreshCategoryCounts();
     this.loadFirstPage(this.searchKeyword, event);
+  }
+
+  private refreshCategoryCounts(): void {
+    // 角标为未搜索的分类总数，返回详情/下拉刷新时更新；失败不冒充零待办。
+    this.cancelCounts$.next();
+    this.categoryCounts = null;
+    this.service.getListCounts().pipe(takeUntil(this.cancelCounts$)).subscribe({
+      next: counts => this.categoryCounts = [counts.Before, counts.InTransit, counts.Confirmable],
+      error: () => this.categoryCounts = null
+    });
   }
 
   get totalProblemCount(): number {
@@ -84,6 +133,9 @@ export class ProblemListPage implements OnInit {
   }
 
   loadFirstPage(keyword: string, refresherEvent?: CustomEvent): void {
+    // 新筛选/返回刷新取消旧响应，防止上一页的数据覆盖本次列表或被 isBusy 跳过。
+    this.cancelLoad$.next();
+    this.isBusy = false;
     this.currentPageIndex = 1;
     this.items = [];
     this.isLoading = true;
@@ -116,7 +168,7 @@ export class ProblemListPage implements OnInit {
       return;
     this.isBusy = true;
     this.hasLoadError = false;
-    this.service.getList(this.currentPageIndex, key).subscribe(res => {
+    this.service.getList(this.currentPageIndex, key, this.problemType).pipe(takeUntil(this.cancelLoad$)).subscribe(res => {
       this.isLoaded = true;
       let flag = res.length < 10;
       if(flag){

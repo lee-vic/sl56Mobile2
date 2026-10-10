@@ -304,6 +304,17 @@
   color: var(--problem-text-main);
 }
 
+/* 全部完成是最终结果，提升标题层级，区别于当前单号完成后仍有待办的状态。 */
+.all-completed .done-title {
+  font-size: 24px;
+  color: var(--member-accent-success, #2f9e44);
+  line-height: 1.4;
+}
+
+.all-completed .done-sub {
+  font-size: 16px;
+}
+
 .done-sub {
   margin: 0;
   font-size: 13px;

@@ -92,6 +92,22 @@ describe('ProblemDetailPage', () => {
     };
   }
 
+  it('labels the pending total without implying an additional problem', () => {
+    const response = new Subject<any>();
+    mockProblemService.getProblemDetail.and.returnValue(response);
+    fixture.detectChanges();
+    const detail = workspace(10);
+    // 本用例只检查工作区标题，不创建会异步更新有效性的处理表单。
+    detail.Problem.Pages = [];
+    detail.Problem.ProcessTypeList = [];
+    response.next(detail);
+    response.complete();
+    fixture.detectChanges();
+    const text = fixture.nativeElement.querySelector('.workspace-nav h2')?.textContent;
+    expect(text).toContain('本单待处理问题（共 1 个）');
+    expect(text).not.toContain('还有');
+  });
+
   it('uses the server-selected default problem and keeps submission identity aligned', () => {
     mockProblemService.getProblemDetail.and.returnValue(of(workspace(11)));
     component.ngOnInit();
@@ -156,6 +172,25 @@ describe('ProblemDetailPage', () => {
     expect(router.navigate).not.toHaveBeenCalled();
     component.continueNextWaybill();
     expect(router.navigate).toHaveBeenCalledWith(['/member/problem-detail', 30], { queryParams: { problemid: 40 } });
+  });
+
+  [0, 2, undefined].forEach(count => {
+    it(`only hides list links when completion has an explicit zero count (${count})`, () => {
+      const response = new Subject<any>();
+      mockProblemService.getProblemDetail.and.returnValue(response);
+      fixture.detectChanges();
+      response.next({ ...workspace(10, true), OtherWaybillCount: count });
+      response.complete();
+      fixture.detectChanges();
+      const element = fixture.nativeElement;
+      const buttons = Array.from(element.querySelectorAll('ion-button')) as HTMLElement[];
+      const listButtons = buttons.filter(button => button.textContent?.includes('查看全部问题'));
+      expect(component.allProblemsCompleted).toBe(count === 0);
+      expect(listButtons.length).toBe(count === 0 ? 0 : 2);
+      expect(element.querySelector('.done-title').textContent).toContain(
+        count === 0 ? '所有问题件已处理完成' : '当前单号已处理完成');
+      expect(element.querySelector('.all-completed') != null).toBe(count === 0);
+    });
   });
 
   it('should detect available process types', () => {

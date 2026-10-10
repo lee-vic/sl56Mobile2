@@ -10,7 +10,7 @@
 <ion-content [fullscreen]="true" class="problem-detail-content">
   <div class="detail-shell">
     <ion-text color="success" *ngIf="successMessage"><p role="status">{{successMessage}}</p></ion-text>
-    <ion-button fill="clear" (click)="viewAllProblems()">查看全部问题</ion-button>
+    <ion-button *ngIf="!allProblemsCompleted" fill="clear" (click)="viewAllProblems()">查看全部问题</ion-button>
     <div class="done-state" *ngIf="!isLoading && hasInitError">
       <h2 class="done-title">暂时无法加载问题件</h2>
       <p>{{initFailMessage || '请重新加载获取最新状态，避免重复提交。'}}</p>
@@ -18,7 +18,7 @@
       <ion-button *ngIf="!requiresLogin" (click)="retryInit()">重新加载</ion-button>
     </div>
     <section class="workspace-nav" *ngIf="!isLoading && !hasInitError && workspace?.ProblemList?.length">
-      <h2>本单还有 {{workspace.ProblemList.length}} 个待处理问题</h2>
+      <h2>本单待处理问题（共 {{workspace.ProblemList.length}} 个）</h2>
       <p *ngIf="sourceProblemCompleted">原链接的问题已处理，已为您打开本单其他待处理问题。</p>
       <ion-button *ngFor="let problem of workspace.ProblemList"
         [fill]="problem.ObjectId === data?.Problem?.ObjectId ? 'solid' : 'outline'"
@@ -52,13 +52,13 @@
     </div>
 
     <!-- Done state -->
-    <div class="done-state" *ngIf="!isLoading && !hasInitError && !hasNotFound && isProblemDone">
+    <div class="done-state" [class.all-completed]="allProblemsCompleted" role="status" *ngIf="!isLoading && !hasInitError && !hasNotFound && isProblemDone">
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
-      <h2 class="done-title">当前单号已处理完成</h2>
+      <h2 class="done-title">{{allProblemsCompleted ? '所有问题件已处理完成' : '当前单号已处理完成'}}</h2>
       <p class="done-sub" *ngIf="workspace?.OtherWaybillCount > 0">您还有 {{workspace.OtherWaybillCount}} 个单号、{{workspace.OtherProblemCount}} 个问题待处理。</p>
-      <p class="done-sub" *ngIf="workspace?.OtherWaybillCount === 0">所有问题件均已处理完成。</p>
+      <p class="done-sub" *ngIf="allProblemsCompleted">当前没有待处理问题，无需继续操作。</p>
       <ion-button *ngIf="workspace?.OtherWaybillCount > 0 && workspace?.NextProblemId" (click)="continueNextWaybill()">继续处理下一单</ion-button>
-      <ion-button fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
+      <ion-button *ngIf="!allProblemsCompleted" fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
     </div>
 
     <!-- Main content -->

@@ -274,6 +274,12 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
 
   get workspace(): ProblemWorkspace { return this.data; }
 
+  get allProblemsCompleted(): boolean {
+    // 只有成功加载且服务端明确返回零待处理单号时，才能展示全部完成，不能把缺失统计当作零。
+    return !this.isLoading && !this.hasInitError && !this.hasNotFound &&
+      this.isProblemDone && this.workspace?.OtherWaybillCount === 0;
+  }
+
   async selectProblem(id: number): Promise<void> {
     if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || id === this.data?.Problem?.ObjectId) return;
     const change = () => {

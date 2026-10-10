@@ -19,6 +19,23 @@ describe('ProblemService', () => {
 
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
+  it('loads category totals with customer credentials', () => {
+    TestBed.inject(ProblemService).getListCounts().subscribe(counts => expect(counts.Before).toBe(12));
+    const request = TestBed.inject(HttpTestingController).expectOne(apiUrl + '/Problem/GetListCounts');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush({ Before: 12, InTransit: 3, Confirmable: 5 });
+  });
+
+  [0, 1, 2, 3].forEach(type => {
+    it('sends the PC-aligned problem category ' + type, () => {
+      TestBed.inject(ProblemService).getList(1, '', type).subscribe();
+      const request = TestBed.inject(HttpTestingController).expectOne(req => req.url === apiUrl + '/Problem/GetList');
+      expect(request.request.params.get('type')).toBe(String(type));
+      expect(request.request.withCredentials).toBe(true);
+      request.flush([]);
+    });
+  });
+
   ['confirm', 'complete', 'invoicePretreatment'].forEach(action => {
     it('normalizes Messages failures for ' + action, () => {
       const service = TestBed.inject(ProblemService);

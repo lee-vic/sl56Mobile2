@@ -9,8 +9,12 @@ import { map } from 'rxjs/operators';
 })
 export class ProblemService {
   constructor(public http: HttpClient) {}
-  getList(pageIndex, key) {
-    let paras = new HttpParams().set("pageIndex", pageIndex).set("key", key);
+  getListCounts() {
+    return this.http.get<{ Before: number | null; InTransit: number | null; Confirmable: number | null }>(
+      apiUrl + '/Problem/GetListCounts', { withCredentials: true });
+  }
+  getList(pageIndex, key, type = 0) {
+    const paras = new HttpParams().set("pageIndex", pageIndex).set("key", key).set("type", type);
     let seq = this.http.get<Array<Problem>>(apiUrl + "/Problem/GetList", {
       withCredentials: true,
       params: paras,

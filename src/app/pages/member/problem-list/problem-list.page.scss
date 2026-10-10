@@ -22,6 +22,22 @@
 }
 
 /* ─── Content ─── */
+.problem-list-header ion-segment-button {
+  min-width: 0;
+  --padding-start: 2px;
+  --padding-end: 2px;
+}
+
+.problem-list-header ion-segment ion-label {
+  white-space: normal;
+}
+
+.problem-list-header ion-badge {
+  padding: 2px 4px;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
 .problem-list-content {
   --background:
     radial-gradient(circle at 10% 0%, rgba(124, 187, 255, 0.28), transparent 38%),

@@ -1,4 +1,4 @@
-<ion-header translucent="true" class="problem-list-header">
+﻿<ion-header translucent="true" class="problem-list-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
@@ -16,6 +16,14 @@
       (ionClear)="clearSearch()">
     </ion-searchbar>
   </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="problemType" (ionChange)="changeProblemType($event)" aria-label="问题分类">
+      <ion-segment-button [value]="0"><ion-label>发运前 <ion-badge *ngIf="categoryCounts && categoryCounts[0] !== null" color="danger">{{categoryCounts[0]}}</ion-badge></ion-label></ion-segment-button>
+      <ion-segment-button [value]="1"><ion-label>运输中 <ion-badge *ngIf="categoryCounts && categoryCounts[1] !== null" color="danger">{{categoryCounts[1]}}</ion-badge></ion-label></ion-segment-button>
+      <ion-segment-button [value]="2"><ion-label>快速确认 <ion-badge *ngIf="categoryCounts && categoryCounts[2] !== null" color="danger">{{categoryCounts[2]}}</ion-badge></ion-label></ion-segment-button>
+      <ion-segment-button [value]="3"><ion-label>已处理</ion-label></ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="problem-list-content">
@@ -32,7 +40,7 @@
     <div class="summary-divider"></div>
     <div class="summary-stat">
       <span class="summary-value" [class.accent]="totalProblemCount > 0">{{totalProblemCount}}</span>
-      <span class="summary-label">待处理问题</span>
+      <span class="summary-label">{{problemType === 3 ? '已处理问题' : '待处理问题'}}</span>
     </div>
   </div>
 
@@ -97,10 +105,10 @@
 
     <!-- Empty state -->
     <div class="empty-wrap" *ngIf="isLoaded && !isLoading && items.length === 0 && !hasLoadError">
-      <img src="assets/imgs/empty.png" alt="暂无待处理问题">
-      <p class="empty-title">{{searchKeyword ? '没有匹配结果' : '没有待处理问题'}}</p>
+      <img src="assets/imgs/empty.png" alt="暂无问题记录">
+      <p class="empty-title">{{searchKeyword ? '没有匹配结果' : (problemType === 3 ? '暂无已处理问题' : '当前分类暂无待处理问题')}}</p>
       <p class="empty-subtitle">
-        {{searchKeyword ? '没有找到相关运单，可以清空关键词后重试。' : '当前没有需要跟进的问题，一切正常！'}}
+        {{searchKeyword ? '当前分类没有找到相关运单，可以清空关键词后重试。' : '您可以切换其他分类，查看是否还有待处理问题。'}}
       </p>
       <ion-button *ngIf="searchKeyword" fill="outline" size="small" (click)="clearSearch()">清空搜索</ion-button>
     </div>
