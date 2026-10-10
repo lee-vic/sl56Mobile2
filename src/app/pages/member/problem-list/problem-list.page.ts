@@ -128,6 +128,11 @@ export class ProblemListPage implements OnInit {
     return this.items.reduce((sum, item) => sum + (item.ProblemList?.length || 0), 0);
   }
 
+  get loadedWaybillCount(): number {
+    // 快速确认按问题分页，同一运单可能出现多行；运单汇总必须按收货 ID 去重。
+    return new Set(this.items.map(item => Number(item.Id))).size;
+  }
+
   trackByProblem(_index: number, item: Problem): number {
     return Number(item.Id);
   }

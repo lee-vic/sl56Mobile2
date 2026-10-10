@@ -142,6 +142,24 @@ describe('ProblemListPage', () => {
     expect(component.totalProblemCount).toBe(3);
   });
 
+  it('counts unique loaded waybills when quick confirmation repeats a waybill across problem rows', () => {
+    component.problemType = 2;
+    component.items = [
+      { Id: 20, ProblemList: [{}] } as any,
+      { Id: 20, ProblemList: [{}] } as any,
+      { Id: 21, ProblemList: [{}] } as any
+    ];
+    fixture.detectChanges();
+    expect(component.loadedWaybillCount).toBe(2);
+    expect(component.totalProblemCount).toBe(3);
+    const values = fixture.nativeElement.querySelectorAll('.summary-value');
+    expect(values[0].textContent.trim()).toBe('2');
+    expect(values[1].textContent.trim()).toBe('3');
+    expect(fixture.nativeElement.querySelector('.summary-label').textContent).toContain('已加载运单');
+    component.items = [];
+    expect(component.loadedWaybillCount).toBe(0);
+  });
+
   it('should mark load error and complete scroll handlers on getItems failure', () => {
     getListSpy.and.returnValue(throwError(() => new Error('network')));
     const completeSpy = jasmine.createSpy('complete');

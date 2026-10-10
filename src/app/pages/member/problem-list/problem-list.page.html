@@ -34,13 +34,13 @@
   <!-- Summary bar -->
   <div class="summary-bar" *ngIf="isLoaded">
     <div class="summary-stat">
-      <span class="summary-value">{{items.length}}</span>
-      <span class="summary-label">运单</span>
+      <span class="summary-value">{{loadedWaybillCount}}</span>
+      <span class="summary-label">已加载运单</span>
     </div>
     <div class="summary-divider"></div>
     <div class="summary-stat">
       <span class="summary-value" [class.accent]="totalProblemCount > 0">{{totalProblemCount}}</span>
-      <span class="summary-label">{{problemType === 3 ? '已处理问题' : '待处理问题'}}</span>
+      <span class="summary-label">{{problemType === 3 ? '已处理问题（已加载）' : '待处理问题（已加载）'}}</span>
     </div>
   </div>
 

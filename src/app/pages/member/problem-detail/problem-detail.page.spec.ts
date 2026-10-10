@@ -190,6 +190,55 @@ describe('ProblemDetailPage', () => {
       expect(element.querySelector('.done-title').textContent).toContain(
         count === 0 ? '所有问题件已处理完成' : '当前单号已处理完成');
       expect(element.querySelector('.all-completed') != null).toBe(count === 0);
+      expect(element.textContent.includes('截至')).toBe(count === 0);
+      const homeButton = buttons.find(button => button.textContent?.includes('返回首页'));
+      expect(!!homeButton).toBe(count === 0);
+      if (homeButton) {
+        homeButton.click();
+        expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/app/tabs/home']);
+      }
+    });
+  });
+
+  it('renders the completion query time in Beijing time and updates it on a successful refresh', () => {
+    const response = new Subject<any>();
+    mockProblemService.getProblemDetail.and.returnValue(response);
+    fixture.detectChanges();
+    response.next({ ...workspace(10, true), OtherWaybillCount: 0 });
+    response.complete();
+    expect(component.statusCheckedAt instanceof Date).toBe(true);
+    component.statusCheckedAt = new Date('2026-10-10T02:50:00Z');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.done-sub').textContent).toContain('截至 2026-10-10 10:50');
+    const previousTime = component.statusCheckedAt;
+    mockProblemService.getProblemDetail.and.returnValue(of({ ...workspace(10, true), OtherWaybillCount: 0 }));
+    component.retryInit();
+    expect(component.statusCheckedAt).not.toBe(previousTime);
+  });
+
+  [0, 2].forEach(count => {
+    it(`retains completed problem and waybill information without processing controls (${count})`, () => {
+      const response = new Subject<any>();
+      mockProblemService.getProblemDetail.and.returnValue(response);
+      fixture.detectChanges();
+      response.next({
+        ...workspace(10, true), OtherWaybillCount: count,
+        No: 'F20260928', CreateAt: '2026/9/28 10:23:32', CountryName: '日本', PriceName: '测试报价',
+        Problem: { ...workspace(10, true).Problem, ObjectName: '提供发票', Remark: '问题备注',
+          Remark1: '旧处理指引', EndDate: '2026/10/12', AttachmentTypeName: '发票' }
+      });
+      response.complete();
+      fixture.detectChanges();
+      const element = fixture.nativeElement;
+      const card = element.querySelector('.hero-problem-card');
+      expect(card).not.toBeNull();
+      ['提供发票', 'F20260928', '日本', '测试报价', '已处理', '问题备注', '2026/10/12', '发票']
+        .forEach(text => expect(card.textContent).toContain(text));
+      expect(element.querySelector('form')).toBeNull();
+      expect(element.querySelector('.step-shell')).toBeNull();
+      expect(element.querySelector('.no-service-hint')).toBeNull();
+      expect(element.querySelector('.guide-banner')).toBeNull();
+      expect(element.querySelector('ion-footer')).toBeNull();
     });
   });
 
@@ -304,14 +353,14 @@ describe('ProblemDetailPage', () => {
     expect((component as any).renderWeAppButtonIfNeeded).toHaveBeenCalled();
   });
 
-  it('should mark not found when problem detail API returns null', () => {
+  it('does not claim a missing record when the API returns no detail', () => {
     mockProblemService.getProblemDetail.and.returnValue(of(null));
 
     component.ngOnInit();
 
     expect(component.isLoading).toBe(false);
-    expect(component.hasNotFound).toBe(true);
-    expect(component.hasInitError).toBe(false);
+    expect(component.hasNotFound).toBe(false);
+    expect(component.hasInitError).toBe(true);
   });
 
   it('should mark init error when loading problem detail fails', () => {
@@ -355,6 +404,93 @@ describe('ProblemDetailPage', () => {
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/login']);
     expect(TestBed.inject(CookieService).get('State')).toBe('/member/problem-list');
     TestBed.inject(CookieService).delete('State', '/');
+  });
+
+  ['NotFound', 'AccountMismatch', 'InvalidLink', 'Unavailable'].forEach(reason => {
+    it('uses the same failure reason after returning to the cached page (' + reason + ')', () => {
+      mockProblemService.getProblemDetail.and.returnValue(of(workspace(10)));
+      component.ngOnInit();
+      component.ionViewDidEnter();
+      mockProblemService.getProblemDetail.and.returnValue(of({
+        Success: false, Reason: reason, RequiresLogin: reason === 'AccountMismatch', Message: '返回时的业务提示'
+      }));
+      component.ionViewDidEnter();
+      expect(component.hasNotFound).toBe(reason === 'NotFound');
+      expect(component.hasInitError).toBe(reason !== 'NotFound');
+      expect(component.requiresLogin).toBe(reason === 'AccountMismatch');
+      expect(component.initFailMessage).toBe('返回时的业务提示');
+    });
+
+    it('separates missing records from identity failures (' + reason + ')', () => {
+      const response = new Subject<any>();
+      mockProblemService.getProblemDetail.and.returnValue(response);
+      fixture.detectChanges();
+      response.next({ Success: false, Reason: reason, RequiresLogin: reason === 'AccountMismatch', Message: '业务原因提示' });
+      response.complete();
+      fixture.detectChanges();
+      expect(component.hasNotFound).toBe(reason === 'NotFound');
+      expect(component.hasInitError).toBe(reason !== 'NotFound');
+      expect(component.requiresLogin).toBe(reason === 'AccountMismatch');
+      const text = fixture.nativeElement.textContent;
+      expect(text.includes('问题件不存在')).toBe(reason === 'NotFound');
+      expect(text.includes('登录或切换客户账户')).toBe(reason === 'AccountMismatch');
+      expect(text).toContain('业务原因提示');
+    });
+  });
+
+  it('preserves global API messages and error IDs on both detail loading paths', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of({
+      Success: false, Messages: ['服务暂时不可用', '请联系客服'], ErrorId: 'TEST123'
+    }));
+    component.ngOnInit();
+    expect(component.initFailMessage).toBe('服务暂时不可用；请联系客服（错误编号：TEST123）');
+    component.ionViewDidEnter();
+    component.ionViewDidEnter();
+    expect(component.initFailMessage).toBe('服务暂时不可用；请联系客服（错误编号：TEST123）');
+  });
+
+  it('clears a previous return error after successfully validating the same pending problem', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(10)));
+    component.ngOnInit();
+    component.ionViewDidEnter();
+    component.hasInitError = true;
+    component.requiresLogin = true;
+    component.initFailMessage = '旧提示';
+    component.ionViewDidEnter();
+    expect(component.hasInitError).toBe(false);
+    expect(component.requiresLogin).toBe(false);
+    expect(component.initFailMessage).toBeNull();
+  });
+
+  it('does not retain a missing-record state when a later return check has a network failure', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(10)));
+    component.ngOnInit();
+    component.ionViewDidEnter();
+    component.hasNotFound = true;
+    mockProblemService.getProblemDetail.and.returnValue(throwError(() => new Error('offline')));
+    component.ionViewDidEnter();
+    expect(component.hasNotFound).toBe(false);
+    expect(component.hasInitError).toBe(true);
+    expect(component.requiresLogin).toBe(false);
+  });
+
+  it('discards both the old file payload and form value when reselecting after preview', () => {
+    mockProblemService.getProblemDetail.and.returnValue(of(workspace(10)));
+    component.ngOnInit();
+    component.processModel.Type3Result.Value = 'data:application/pdf;base64,OLD';
+    component.processModel.Type3Result.FileName = 'old.pdf';
+    component.fileFailMessage = '旧预览错误';
+    const reset = jasmine.createSpy('reset');
+    component.formRef = { controls: { type3Result: { reset } } } as any;
+    spyOn(TestBed.inject(Router), 'getCurrentNavigation').and.returnValue({
+      extras: { state: { confirmFile: false, isWeAppFile: false } }
+    } as any);
+    queryParams$.next({ problemid: 10 });
+    expect(component.processModel.Type3Result.Value).toBeNull();
+    expect(component.processModel.Type3Result.FileName).toBeNull();
+    expect(component.fileFailMessage).toBeNull();
+    expect(reset).toHaveBeenCalled();
+    expect(mockProblemService.deleteProblemTempFile).not.toHaveBeenCalled();
   });
 
   it('launches the mini program with the selected problem token instead of source or numeric ID', () => {

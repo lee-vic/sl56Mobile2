@@ -19,6 +19,15 @@ import { finalize, takeUntil } from 'rxjs/operators';
 import { CookieService } from 'ngx-cookie-service';
 
 declare var wx: any;
+interface ProblemDetailFailure {
+  Success?: boolean;
+  Reason?: string;
+  RequiresLogin?: boolean;
+  Message?: string;
+  message?: string;
+  Messages?: string[];
+  ErrorId?: string;
+}
 @Component({
   selector: "app-problem-detail",
   templateUrl: "./problem-detail.page.html",
@@ -29,6 +38,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   // 通知参数可为旧数字 ID 或新签名载荷；发送 API 时保留原值，不在客户端解码。
   problemId: number | string;
   data: any;
+  // 完成提示标记最近一次成功查询时点，不用持续变化的时钟替代查询结果时间。
+  statusCheckedAt: Date | null = null;
   processType: string;
   processOptions: Array<{ key: string; title: string }> = [];
   private processActionMap: { [key: string]: "form" | "chat" | "return" | "confirm" } = {};
@@ -99,24 +110,27 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     this.service.getProblemDetail(this.problemId, true).pipe(takeUntil(this.destroy$), takeUntil(this.problemChange$))
       .subscribe({ next: (res) => {
         if (!this.isPageActive || this.isSubmitting || this.isLoading) return;
-        const latest = res as ProblemWorkspace & { Problem?: { ObjectId: number; Status: number }; Success?: boolean; Message?: string; RequiresLogin?: boolean };
+        const latest = res as ProblemWorkspace & ProblemDetailFailure & { Problem?: { ObjectId: number; Status: number } };
         if (!latest || latest.Success === false) {
-          this.hasInitError = true;
-          this.initFailMessage = latest?.Message;
-          this.requiresLogin = latest?.RequiresLogin === true;
+          this.applyDetailFailure(latest);
           return;
         }
         if (latest.IsCurrentWaybillCompleted || latest.Problem?.ObjectId !== this.data?.Problem?.ObjectId || latest.Problem?.Status !== 0) {
           this.successMessage = '问题状态已变化，已重新加载最新待处理问题。';
           this.loadProblemDetail();
         } else {
+          this.hasInitError = false;
+          this.hasNotFound = false;
+          this.initFailMessage = null;
+          this.requiresLogin = false;
           this.data.ProblemList = latest.ProblemList;
           this.data.OtherWaybillCount = latest.OtherWaybillCount;
           this.data.OtherProblemCount = latest.OtherProblemCount;
           this.data.NextProblemId = latest.NextProblemId;
           this.data.NextReceiveGoodsDetailId = latest.NextReceiveGoodsDetailId;
+          this.statusCheckedAt = new Date();
         }
-      }, error: () => { if (this.isPageActive) this.hasInitError = true; } });
+      }, error: () => { if (this.isPageActive) this.applyDetailFailure(); } });
   }
 
   ionViewWillLeave(): void {
@@ -149,6 +163,18 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
+  private applyDetailFailure(failure?: ProblemDetailFailure): void {
+    // 首次加载和子流程返回共用原因分流；未知失败不能冒充记录不存在。
+    this.hasNotFound = failure?.Reason === 'NotFound';
+    this.hasInitError = !this.hasNotFound;
+    this.requiresLogin = failure?.RequiresLogin === true;
+    this.initFailMessage = failure?.Message || failure?.message || failure?.Messages?.join('；') ||
+      '未能获取问题件信息，请从问题件列表查看最新状态或联系客服。';
+    if (failure?.ErrorId && !this.initFailMessage.includes(failure.ErrorId)) {
+      this.initFailMessage += '（错误编号：' + failure.ErrorId + '）';
+    }
+  }
+
   private loadProblemDetail(): void {
     this.problemChange$.next();
     this.processOptions = [];
@@ -177,17 +203,15 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       })
     ).subscribe((res) => {
       if (res && (res as { Success?: boolean }).Success === false) {
-        const failure = res as { Message?: string; RequiresLogin?: boolean };
-        this.hasInitError = true;
-        this.initFailMessage = failure.Message || '请重新加载获取最新状态，避免重复提交。';
-        this.requiresLogin = failure.RequiresLogin === true;
+        this.applyDetailFailure(res as ProblemDetailFailure);
         return;
       }
       if (!res) {
-        this.hasNotFound = true;
+        this.applyDetailFailure();
         return;
       }
       this.data = res;
+      this.statusCheckedAt = new Date();
       if (this.successMessage?.startsWith('本问题已处理')) {
         this.successMessage = this.data.IsCurrentWaybillCompleted ? '本问题已处理。'
           : '本问题已处理，本单仍有 ' + (this.data.ProblemList?.length || 0) + ' 个问题待处理。';
@@ -218,9 +242,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       this.buildOptions();
       if (!this.isProblemDone && this.hasProcessType(3)) this.getWeAppFileStatus(true);
       this.renderWeAppButtonIfNeeded();
-    }, _ => {
-      this.hasInitError = true;
-    });
+    }, _ => this.applyDetailFailure());
   }
 
   private ensureProcessModel(): void {
@@ -298,6 +320,10 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
 
   viewAllProblems(): void {
     if (!this.isLoading && !this.isSubmitting) this.router.navigate(['/member/problem-list']);
+  }
+
+  returnHome(): void {
+    this.router.navigate(['/app/tabs/home']);
   }
 
   continueNextWaybill(): void {
@@ -457,6 +483,13 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
         if (data.confirmFile === false) {
+          // 取消预览必须同时清除提交载荷及表单值，不能只清空文件框而继续提交旧文件。
+          if (this.processModel?.Type3Result) {
+            this.processModel.Type3Result.Value = null;
+            this.processModel.Type3Result.FileName = null;
+          }
+          this.formRef?.controls['type3Result']?.reset();
+          this.fileFailMessage = null;
           //如果是微信小程序上传的文件，则需要删除
           if (data.isWeAppFile) {
             this.service
@@ -464,11 +497,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
               .pipe(takeUntil(this.destroy$))
               .subscribe();
             this.isWeAppUploadFile = false;
-          } else {
-            let fileInputs: any = document.getElementsByName("type3Result");
-            if (fileInputs.length > 0) {
-              fileInputs[0].value = null;
-            }
           }
         }
       }

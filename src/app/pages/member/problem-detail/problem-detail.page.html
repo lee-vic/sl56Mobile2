@@ -47,8 +47,8 @@
     <!-- Not-found state -->
     <div class="done-state" *ngIf="!isLoading && hasNotFound">
       <ion-icon name="alert-circle-outline" color="warning"></ion-icon>
-      <h2 class="done-title">问题不存在</h2>
-      <p class="done-sub">该问题可能已被删除或链接已过期，请返回问题列表查看。</p>
+      <h2 class="done-title">问题件不存在</h2>
+      <p class="done-sub">{{initFailMessage || '该问题件不存在，请返回问题件列表查看其他问题。'}}</p>
     </div>
 
     <!-- Done state -->
@@ -56,21 +56,31 @@
       <ion-icon name="checkmark-circle" color="success"></ion-icon>
       <h2 class="done-title">{{allProblemsCompleted ? '所有问题件已处理完成' : '当前单号已处理完成'}}</h2>
       <p class="done-sub" *ngIf="workspace?.OtherWaybillCount > 0">您还有 {{workspace.OtherWaybillCount}} 个单号、{{workspace.OtherProblemCount}} 个问题待处理。</p>
-      <p class="done-sub" *ngIf="allProblemsCompleted">当前没有待处理问题，无需继续操作。</p>
+      <p class="done-sub" *ngIf="allProblemsCompleted">截至 {{statusCheckedAt | date:'yyyy-MM-dd HH:mm':'+0800'}}，当前没有待处理问题，无需继续操作。</p>
       <ion-button *ngIf="workspace?.OtherWaybillCount > 0 && workspace?.NextProblemId" (click)="continueNextWaybill()">继续处理下一单</ion-button>
       <ion-button *ngIf="!allProblemsCompleted" fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
+      <ion-button *ngIf="allProblemsCompleted" (click)="returnHome()">返回首页</ion-button>
     </div>
 
     <!-- Main content -->
-    <ng-container *ngIf="!isLoading && !hasInitError && !hasNotFound && !isProblemDone">
+    <!-- 与 PC 一致：单号完成只关闭处理操作，不隐藏当前问题和运单信息。 -->
+    <ng-container *ngIf="!isLoading && !hasInitError && !hasNotFound && data?.Problem">
 
       <!-- Hero info card -->
       <div class="hero-problem-card">
         <div class="hero-top-row">
           <h2 class="hero-name">{{data?.Problem?.ObjectName || '问题详情'}}</h2>
-          <ion-badge color="warning" class="status-badge">待处理</ion-badge>
+          <ion-badge [color]="data.Problem.Status === 0 ? 'warning' : 'success'" class="status-badge">{{data.Problem.Status === 0 ? '待处理' : '已处理'}}</ion-badge>
         </div>
         <div class="hero-meta-list">
+          <div class="meta-row" *ngIf="data?.No">
+            <span class="meta-key">交货单号</span>
+            <span class="meta-val">{{data.No}}</span>
+          </div>
+          <div class="meta-row" *ngIf="data?.CreateAt">
+            <span class="meta-key">建单时间</span>
+            <span class="meta-val">{{data.CreateAt}}</span>
+          </div>
           <div class="meta-row" *ngIf="data?.CountryName">
             <span class="meta-key">目的地</span>
             <span class="meta-val">{{data.CountryName}}</span>
@@ -78,6 +88,18 @@
           <div class="meta-row" *ngIf="data?.PriceName">
             <span class="meta-key">价格</span>
             <span class="meta-val">{{data.PriceName}}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">处理方式</span>
+            <span class="meta-val">{{data.Problem.Status === 1 ? '已处理' : (hasSelfService ? '自助提交' : '联系服务专员')}}</span>
+          </div>
+          <div class="meta-row" *ngIf="data.Problem.EndDate && data.Problem.EndDate !== '(无)'">
+            <span class="meta-key">最后处理期限</span>
+            <span class="meta-val">{{data.Problem.EndDate}}</span>
+          </div>
+          <div class="meta-row" *ngIf="data.Problem.AttachmentTypeName">
+            <span class="meta-key">所需资料</span>
+            <span class="meta-val">{{data.Problem.AttachmentTypeName}}</span>
           </div>
         </div>
         <div class="charge-callout" *ngIf="data?.Problem?.Amount > 0">
@@ -90,11 +112,13 @@
       </div>
 
       <!-- Guide banner -->
-      <div class="guide-banner" *ngIf="data?.Problem?.Remark1">
+      <div class="guide-banner" *ngIf="data.Problem.Status === 0 && data?.Problem?.Remark1">
         <ion-icon name="information-circle-outline" class="guide-icon"></ion-icon>
         <p class="guide-text">{{data.Problem.Remark1}}</p>
       </div>
 
+      <!-- 完成后仍可查看详情，但不能重复填写、提交或显示无需自助处理的提示。 -->
+      <ng-container *ngIf="!isProblemDone">
       <!-- Process steps -->
       <div class="step-shell" *ngIf="hasSelfService">
         <ion-segment
@@ -237,6 +261,7 @@
         <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
         <p>当前问题不支持自助处理，请联系客服协助。</p>
       </div>
+      </ng-container>
 
     </ng-container>
   </div>
