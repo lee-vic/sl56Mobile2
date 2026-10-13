@@ -57,6 +57,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   isFileRequired = true;
   isWeAppUploadFile = false;
   isCheckingWeAppFile = false;
+  isDeletingTempFile = false;
+  pendingTempFileDeletion: number | string | null = null;
   private isPageActive = false;
   private shouldCheckOnReturn = false;
   weAppLaunchErrorMessage: string;
@@ -303,7 +305,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   async selectProblem(id: number): Promise<void> {
-    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || id === this.data?.Problem?.ObjectId) return;
+    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || this.pendingTempFileDeletion != null || id === this.data?.Problem?.ObjectId) return;
     const change = () => {
       this.successMessage = null;
       this.problemId = id;
@@ -355,13 +357,16 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   canSubmit(form: NgForm): boolean {
-    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile) {
+    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || this.pendingTempFileDeletion != null || this.fileFailMessage) {
       return false;
     }
     if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) === -1) {
       return false;
     }
-    return (form?.valid || this.isWeAppUploadFile) === true;
+    if (form?.valid) return true;
+    // 已上传的临时附件只豁免文件控件，不能放行仍无效的文本、单选等必填项。
+    return !!form && this.isWeAppUploadFile && Object.entries(form.controls || {})
+      .every(([name, control]) => name === 'type3Result' || control.valid);
   }
 
   private renderWeAppButtonIfNeeded(): void {
@@ -492,11 +497,9 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
           this.fileFailMessage = null;
           //如果是微信小程序上传的文件，则需要删除
           if (data.isWeAppFile) {
-            this.service
-              .deleteProblemTempFile(this.problemId)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe();
             this.isWeAppUploadFile = false;
+            this.pendingTempFileDeletion = this.problemId;
+            this.retryTempFileDeletion();
           }
         }
       }
@@ -513,6 +516,25 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     };
 
     this.router.navigate(["/member/chat/1"], params);
+  }
+
+  retryTempFileDeletion(): void {
+    if (this.isDeletingTempFile || this.pendingTempFileDeletion == null) return;
+    this.isDeletingTempFile = true;
+    // 删除成功前保留待删除标识并禁止提交，不能让刷新重新接受客户已取消的附件。
+    this.service.deleteProblemTempFile(this.pendingTempFileDeletion).pipe(
+      takeUntil(this.destroy$), finalize(() => { this.isDeletingTempFile = false; })
+    ).subscribe({
+      next: res => {
+        if (res?.Result === false || res?.Success === false) {
+          this.fileFailMessage = res.Message || res.Messages?.join('；') || '取消附件失败，请重试取消。';
+          return;
+        }
+        this.pendingTempFileDeletion = null;
+        this.fileFailMessage = null;
+      },
+      error: () => { this.fileFailMessage = '取消附件失败，请重试取消；成功后再选择文件。'; }
+    });
   }
 
   processTypeChanged(event) {
@@ -563,6 +585,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     }
   }
   changeFile(event, form) {
+    if (this.isSubmitting || this.isFileProcessing || this.pendingTempFileDeletion != null) return;
     let file = null;
     const target = event?.target as HTMLInputElement | null;
     if (target?.files && target.files.length > 0) {
@@ -572,9 +595,15 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       file = (target.firstChild as any).files[0];
     }
     if (file != null) {
+      // 从读取开始即锁定提交并清除旧文件，防止新文件尚未读取时提交上一份附件。
+      this.isFileProcessing = true;
+      this.fileFailMessage = null;
+      this.processModel.Type3Result.FileName = null;
+      this.processModel.Type3Result.Value = null;
       let fileReader = new FileReader();
+      const fileModel = this.processModel;
       fileReader.addEventListener("load", (res) => {
-        if (!this.processModel || this.processModel.Id !== fileProblemId) return;
+        if (this.processModel !== fileModel) return;
         //文件名
         //base64字符串
         let fileString = (res.target as FileReader).result.toString();
@@ -584,6 +613,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         if (this.processModel.Type3Result.AttachmentTypeId == "1") {
           this.isFileProcessing = true;
           this.loadingCtrl.create({ message: '文件处理中...' }).then((loading) => {
+            if (this.processModel !== fileModel) return;
             loading.present();
             this.service
               .invoicePretreatment(this.processModel)
@@ -604,9 +634,9 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
                     });
                   } else {
                     this.fileFailMessage = res.Message;
-                    let fileInputs: any = document.getElementsByName("type3Result");
-                    fileInputs[0].value = null;
-                    // fileInputs[1].value=null;
+                    this.processModel.Type3Result.Value = null;
+                    this.processModel.Type3Result.FileName = null;
+                    form?.get('type3Result')?.reset();
                   }
                 },
                 error: () => {
@@ -616,17 +646,29 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
                 },
               });
           });
+        } else {
+          this.isFileProcessing = false;
         }
       });
-      const fileProblemId = this.processModel.Id;
-      fileReader.readAsDataURL(file);
+      const readFailed = () => {
+        if (this.processModel !== fileModel) return;
+        this.isFileProcessing = false;
+        this.fileFailMessage = '文件读取失败，请重新选择文件。';
+        this.processModel.Type3Result.Value = null;
+        this.processModel.Type3Result.FileName = null;
+        form?.get('type3Result')?.reset();
+      };
+      fileReader.addEventListener('error', readFailed);
+      fileReader.addEventListener('abort', readFailed);
+      try { fileReader.readAsDataURL(file); } catch { readFailed(); }
     } else {
+      this.fileFailMessage = null;
       this.processModel.Type3Result.FileName = null;
       this.processModel.Type3Result.Value = null;
     }
   }
   submit(formGroup) {
-    if (!this.isFormOption() || this.isSubmitting || this.isLoading || this.isFileProcessing || this.isCheckingWeAppFile) {
+    if (!this.isFormOption() || !this.canSubmit(formGroup) || this.isSubmitting || this.isLoading || this.isFileProcessing || this.isCheckingWeAppFile) {
       return;
     }
     this.submitFailMessage = null;
@@ -680,7 +722,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   getWeAppFileStatus(isInitPage) {
-    if (this.isCheckingWeAppFile || this.isFileProcessing) return;
+    if (this.isCheckingWeAppFile || this.isFileProcessing || this.pendingTempFileDeletion != null) return;
     this.isCheckingWeAppFile = true;
     const runStatusCheck = (loading?: any) => {
       this.service.isWeAppUploadFile(this.problemId).pipe(

@@ -115,6 +115,7 @@ describe('InvoicePreviewPage (ng2-pdf-viewer migration)', () => {
 
   // ── 8. confirm navigates back with confirmFile=true ───────────────
   it('confirm() calls navigateBack with the correct path and confirmFile=true', () => {
+    component.onPdfLoaded({ numPages: 1 });
     component.confirm();
     expect(mockNavCtrl.navigateBack).toHaveBeenCalledWith(
       '/member/problem-detail/1',
@@ -122,5 +123,15 @@ describe('InvoicePreviewPage (ng2-pdf-viewer migration)', () => {
         state: jasmine.objectContaining({ confirmFile: true })
       })
     );
+  });
+  it('does not confirm before PDF loading or after loading fails', () => {
+    component.confirm();
+    expect(mockNavCtrl.navigateBack).not.toHaveBeenCalled();
+    component.onPdfLoaded({ numPages: 1 });
+    component.onPdfError('offline');
+    component.confirm();
+    expect(mockNavCtrl.navigateBack).not.toHaveBeenCalled();
+    queryParamsSubject.next({ ...defaultParams, filePath: 'next.pdf' });
+    expect(component.totalPages).toBe(0);
   });
 });

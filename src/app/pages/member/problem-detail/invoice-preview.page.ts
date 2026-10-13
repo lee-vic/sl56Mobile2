@@ -30,6 +30,8 @@ export class InvoicePreviewPage implements OnInit {
         withCredentials: true
       };
       this.loadFailed = false;
+      this.totalPages = 0;
+      this.currentPage = 1;
     });
   }
 
@@ -74,6 +76,8 @@ export class InvoicePreviewPage implements OnInit {
     this.navCtrl.navigateBack('/member/problem-detail/' + this.rgdId, params)
   }
   confirm() {
+    // 未成功加载不能确认内容无误，避免空白或失败预览被误当作已核对。
+    if (this.loadFailed || this.totalPages <= 0) return;
     let params: NavigationExtras = {
       queryParams: {
         problemid: this.problemId

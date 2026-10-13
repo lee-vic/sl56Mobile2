@@ -51,17 +51,6 @@
       <p class="done-sub">{{initFailMessage || '该问题件不存在，请返回问题件列表查看其他问题。'}}</p>
     </div>
 
-    <!-- Done state -->
-    <div class="done-state" [class.all-completed]="allProblemsCompleted" role="status" *ngIf="!isLoading && !hasInitError && !hasNotFound && isProblemDone">
-      <ion-icon name="checkmark-circle" color="success"></ion-icon>
-      <h2 class="done-title">{{allProblemsCompleted ? '所有问题件已处理完成' : '当前单号已处理完成'}}</h2>
-      <p class="done-sub" *ngIf="workspace?.OtherWaybillCount > 0">您还有 {{workspace.OtherWaybillCount}} 个单号、{{workspace.OtherProblemCount}} 个问题待处理。</p>
-      <p class="done-sub" *ngIf="allProblemsCompleted">截至 {{statusCheckedAt | date:'yyyy-MM-dd HH:mm':'+0800'}}，当前没有待处理问题，无需继续操作。</p>
-      <ion-button *ngIf="workspace?.OtherWaybillCount > 0 && workspace?.NextProblemId" (click)="continueNextWaybill()">继续处理下一单</ion-button>
-      <ion-button *ngIf="!allProblemsCompleted" fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
-      <ion-button *ngIf="allProblemsCompleted" (click)="returnHome()">返回首页</ion-button>
-    </div>
-
     <!-- Main content -->
     <!-- 与 PC 一致：单号完成只关闭处理操作，不隐藏当前问题和运单信息。 -->
     <ng-container *ngIf="!isLoading && !hasInitError && !hasNotFound && data?.Problem">
@@ -197,6 +186,10 @@
               <ion-text color="danger" *ngIf="fileFailMessage">
                 <p class="error-msg">文件处理失败：{{fileFailMessage}}</p>
               </ion-text>
+              <ion-button *ngIf="pendingTempFileDeletion != null" fill="outline"
+                [disabled]="isDeletingTempFile" (click)="retryTempFileDeletion()">
+                {{isDeletingTempFile ? '正在取消附件...' : '重试取消附件'}}
+              </ion-button>
               <div
                 #wxOpenLaunchWeApp
                 id="wxOpenLaunchWeApp"
@@ -264,6 +257,17 @@
       </ng-container>
 
     </ng-container>
+
+    <!-- 先保留当前问题的处理详情，再展示完成结论和后续操作入口。 -->
+    <div class="done-state" [class.all-completed]="allProblemsCompleted" role="status" *ngIf="!isLoading && !hasInitError && !hasNotFound && isProblemDone">
+      <ion-icon name="checkmark-circle" color="success"></ion-icon>
+      <h2 class="done-title">{{allProblemsCompleted ? '所有问题件已处理完成' : '当前单号已处理完成'}}</h2>
+      <p class="done-sub" *ngIf="workspace?.OtherWaybillCount > 0">您还有 {{workspace.OtherWaybillCount}} 个单号、{{workspace.OtherProblemCount}} 个问题待处理。</p>
+      <p class="done-sub" *ngIf="allProblemsCompleted">截至 {{statusCheckedAt | date:'yyyy-MM-dd HH:mm':'+0800'}}，当前没有待处理问题，无需继续操作。</p>
+      <ion-button *ngIf="workspace?.OtherWaybillCount > 0 && workspace?.NextProblemId" (click)="continueNextWaybill()">继续处理下一单</ion-button>
+      <ion-button *ngIf="!allProblemsCompleted" fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
+      <ion-button *ngIf="allProblemsCompleted" (click)="returnHome()">返回首页</ion-button>
+    </div>
   </div>
 </ion-content>
 

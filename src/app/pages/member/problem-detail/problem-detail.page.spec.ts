@@ -81,6 +81,54 @@ describe('ProblemDetailPage', () => {
     expect(component).toBeTruthy();
   });
 
+  it('only exempts the file control when a mini-program attachment exists', () => {
+    component.isWeAppUploadFile = true;
+    component.checkListValue = [];
+    expect(component.canSubmit({ valid: false, controls: {
+      type3Result: { valid: false }, type2Result0: { valid: false }
+    } } as any)).toBe(false);
+    expect(component.canSubmit({ valid: false, controls: {
+      type3Result: { valid: false }, type2Result0: { valid: true }
+    } } as any)).toBe(true);
+  });
+
+  it('blocks submission from file-read start and clears a failed read', () => {
+    const events: { [name: string]: (event?: unknown) => void } = {};
+    const reader = {
+      addEventListener: (name: string, callback: (event?: unknown) => void) => { events[name] = callback; },
+      readAsDataURL: jasmine.createSpy('readAsDataURL')
+    };
+    spyOn(window, 'FileReader').and.returnValue(reader as unknown as FileReader);
+    component.processModel = { Id: 10, Type3Result: { Value: 'OLD', FileName: 'old.pdf' } } as any;
+    component.checkListValue = [];
+    component.changeFile({ target: { files: [{ name: 'new.pdf' }] } }, null);
+    expect(component.isFileProcessing).toBe(true);
+    expect(component.processModel.Type3Result.Value).toBeNull();
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+    events.error();
+    expect(component.isFileProcessing).toBe(false);
+    expect(component.fileFailMessage).toContain('文件读取失败');
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+  });
+
+  it('keeps cancelled mini-program files blocked until deletion succeeds', () => {
+    component.pendingTempFileDeletion = 10;
+    component.checkListValue = [];
+    mockProblemService.deleteProblemTempFile.and.returnValue(of({ Result: false, Message: '删除冲突' }));
+    component.retryTempFileDeletion();
+    expect(component.pendingTempFileDeletion).toBe(10);
+    expect(component.fileFailMessage).toBe('删除冲突');
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+    mockProblemService.deleteProblemTempFile.and.returnValue(throwError(() => new Error('offline')));
+    component.retryTempFileDeletion();
+    expect(component.pendingTempFileDeletion).toBe(10);
+    expect(component.isDeletingTempFile).toBe(false);
+    mockProblemService.deleteProblemTempFile.and.returnValue(of(null));
+    component.retryTempFileDeletion();
+    expect(component.pendingTempFileDeletion).toBeNull();
+    expect(component.fileFailMessage).toBeNull();
+  });
+
   function workspace(id: number, completed = false) {
     return {
       Id: 20, SourceProblemId: 10, DefaultProblemId: completed ? null : id,
@@ -153,7 +201,7 @@ describe('ProblemDetailPage', () => {
     const result$ = new Subject<any>();
     mockProblemService.complete.and.returnValue(result$);
     mockProblemService.getProblemDetail.and.returnValue(of(workspace(11)));
-    const form = { form: { value: {}, valid: true } } as any;
+    const form = { valid: true, form: { value: {}, valid: true } } as any;
     component.submit(form); component.submit(form); flush();
     expect(mockProblemService.complete.calls.count()).toBe(1);
     expect(component.isSubmitting).toBe(true);
@@ -232,6 +280,9 @@ describe('ProblemDetailPage', () => {
       const element = fixture.nativeElement;
       const card = element.querySelector('.hero-problem-card');
       expect(card).not.toBeNull();
+      const contentBlocks = Array.from(element.querySelectorAll('.hero-problem-card, .done-state'));
+      expect(contentBlocks[0]).toBe(card);
+      expect(contentBlocks[1]).toBe(element.querySelector('.done-state'));
       ['提供发票', 'F20260928', '日本', '测试报价', '已处理', '问题备注', '2026/10/12', '发票']
         .forEach(text => expect(card.textContent).toContain(text));
       expect(element.querySelector('form')).toBeNull();
@@ -385,7 +436,7 @@ describe('ProblemDetailPage', () => {
     component.data = { Problem: { ProcessTypeList: [0] } } as any;
     component.processModel = {} as any;
     component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true) as any;
-    component.submit({ form: { valid: true } } as any);
+    component.submit({ valid: true, form: { valid: true } } as any);
 
     flush();
 
@@ -509,7 +560,7 @@ describe('ProblemDetailPage', () => {
     component.data = { Problem: { ProcessTypeList: [0] } } as any;
     component.processModel = {} as any;
     component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true) as any;
-    component.submit({ form: { valid: true } } as any);
+    component.submit({ valid: true, form: { valid: true } } as any);
 
     flush();
 
