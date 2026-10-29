@@ -68,6 +68,7 @@ describe('ProblemDetailPage', () => {
     mockProblemService.isWeAppUploadFile.and.returnValue(of(false));
     mockProblemService.complete.and.returnValue(of({ Result: true }));
     mockProblemService.confirm.and.returnValue(of({ IsSuccess: true }));
+    mockProblemService.invoicePretreatment.and.returnValue(of({ Result: true, Path: 'preview-ticket' }));
     Object.values(mockProblemService).forEach(spy => spy.calls.reset());
     fixture = TestBed.createComponent(ProblemDetailPage);
     component = fixture.componentInstance;
@@ -100,8 +101,10 @@ describe('ProblemDetailPage', () => {
     };
     spyOn(window, 'FileReader').and.returnValue(reader as unknown as FileReader);
     component.processModel = { Id: 10, Type3Result: { Value: 'OLD', FileName: 'old.pdf' } } as any;
+    component.isWeAppUploadFile = true;
     component.checkListValue = [];
     component.changeFile({ target: { files: [{ name: 'new.pdf' }] } }, null);
+    expect(component.isWeAppUploadFile).toBe(false);
     expect(component.isFileProcessing).toBe(true);
     expect(component.processModel.Type3Result.Value).toBeNull();
     expect(component.canSubmit({ valid: true } as any)).toBe(false);
@@ -239,11 +242,11 @@ describe('ProblemDetailPage', () => {
         count === 0 ? '所有问题件已处理完成' : '当前单号已处理完成');
       expect(element.querySelector('.all-completed') != null).toBe(count === 0);
       expect(element.textContent.includes('截至')).toBe(count === 0);
-      const homeButton = buttons.find(button => button.textContent?.includes('返回首页'));
+      const homeButton = buttons.find(button => button.textContent?.includes('返回会员首页'));
       expect(!!homeButton).toBe(count === 0);
       if (homeButton) {
         homeButton.click();
-        expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/app/tabs/home']);
+        expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/app/tabs/member']);
       }
     });
   });
@@ -389,6 +392,149 @@ describe('ProblemDetailPage', () => {
     response.complete();
     expect(component.isCheckingWeAppFile).toBe(false);
     mockProblemService.isWeAppUploadFile.and.returnValue(of(false));
+  });
+
+  function prepareWeAppInvoice(): void {
+    component.data = { Problem: { ProcessTypeList: [3], Status: 0 } } as any;
+    component.processOptions = [{ key: 'Page1', title: '更新信息' }];
+    component.processModel = { Id: 10, Type3Result: { AttachmentTypeId: '1', IsPrint: true } } as any;
+    component.checkListValue = [];
+    component.isFormOption = jasmine.createSpy('isFormOption').and.returnValue(true);
+    mockProblemService.isWeAppUploadFile.and.returnValue(of(true));
+  }
+
+  it('opens invoice preview automatically after returning from the mini program and blocks unconfirmed submission', () => {
+    prepareWeAppInvoice();
+    component.ionViewDidEnter();
+    const hidden = spyOnProperty(document, 'hidden', 'get').and.returnValue(true);
+    component.onVisibilityChange();
+    hidden.and.returnValue(false);
+    component.onVisibilityChange();
+    component.onVisibilityChange();
+    expect(mockProblemService.invoicePretreatment).toHaveBeenCalledTimes(1);
+    expect(TestBed.inject(NavController).navigateForward).toHaveBeenCalledWith('/member/invoice-preview', {
+      queryParams: { filePath: 'preview-ticket', rgdId: component.receiveGoodsDetailId, problemId: 10, isWeAppFile: true }
+    });
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+    component.submit({ valid: true, form: { value: {} } } as any);
+    expect(mockProblemService.complete).not.toHaveBeenCalled();
+  });
+
+  it('keeps submission blocked while invoice preprocessing is pending', () => {
+    prepareWeAppInvoice();
+    const response = new Subject<any>();
+    mockProblemService.invoicePretreatment.and.returnValue(response);
+    component.getWeAppFileStatus(true);
+    component.getWeAppFileStatus(true);
+    expect(mockProblemService.invoicePretreatment).toHaveBeenCalledTimes(1);
+    expect(component.isFileProcessing).toBe(true);
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+    response.next({ Result: true, Path: 'preview-ticket' });
+    response.complete();
+    expect(component.isFileProcessing).toBe(false);
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+  });
+
+  it('allows a confirmed invoice and does not reopen its preview on a status recheck', () => {
+    prepareWeAppInvoice();
+    component.getWeAppFileStatus(true);
+    spyOn(TestBed.inject(Router), 'getCurrentNavigation').and.returnValue({
+      extras: { state: { confirmFile: true, isWeAppFile: true } }
+    } as any);
+    queryParams$.next({ problemid: 10 });
+    component.getWeAppFileStatus(true);
+    expect(mockProblemService.invoicePretreatment).toHaveBeenCalledTimes(1);
+    expect(component.canSubmit({ valid: false, controls: { type3Result: { valid: false } } } as any)).toBe(true);
+  });
+
+  it('requires a new preview after leaving a confirmed invoice to replace the file', () => {
+    prepareWeAppInvoice();
+    spyOn(TestBed.inject(Router), 'getCurrentNavigation').and.returnValue({
+      extras: { state: { confirmFile: true, isWeAppFile: true } }
+    } as any);
+    queryParams$.next({ problemid: 10 });
+    component.ionViewDidEnter();
+    const hidden = spyOnProperty(document, 'hidden', 'get').and.returnValue(true);
+    component.onVisibilityChange();
+    hidden.and.returnValue(false);
+    component.onVisibilityChange();
+    expect(mockProblemService.invoicePretreatment).toHaveBeenCalledTimes(1);
+    expect(component.canSubmit({ valid: true } as any)).toBe(false);
+  });
+
+  [false, true].forEach(networkError => {
+    it('blocks an invoice preview failure and retries on the next automatic check: ' + networkError, () => {
+      prepareWeAppInvoice();
+      mockProblemService.invoicePretreatment.and.returnValue(networkError
+        ? throwError(() => new Error('offline')) : of({ Result: false, Message: '预处理失败' }));
+      component.getWeAppFileStatus(true);
+      expect(component.fileFailMessage).toBeTruthy();
+      expect(component.canSubmit({ valid: true } as any)).toBe(false);
+      mockProblemService.invoicePretreatment.and.returnValue(of({ Result: true, Path: 'retry-preview' }));
+      component.getWeAppFileStatus(true);
+      expect(component.fileFailMessage).toBeNull();
+      expect(TestBed.inject(NavController).navigateForward).toHaveBeenCalledTimes(1);
+      expect(component.canSubmit({ valid: true } as any)).toBe(false);
+    });
+  });
+
+  it('does not preview non-invoice attachments or prompt automatically when no file exists', () => {
+    prepareWeAppInvoice();
+    component.processModel.Type3Result.AttachmentTypeId = '2';
+    component.processModel.Type3Result.IsPrint = false;
+    component.getWeAppFileStatus(true);
+    expect(mockProblemService.invoicePretreatment).not.toHaveBeenCalled();
+    expect(component.canSubmit({ valid: false } as any)).toBe(true);
+    const alert = spyOn(TestBed.inject(AlertController), 'create').and.callThrough();
+    mockProblemService.isWeAppUploadFile.and.returnValue(of(false));
+    component.getWeAppFileStatus(true);
+    expect(alert).not.toHaveBeenCalled();
+    expect(component.isWeAppUploadFile).toBe(false);
+  });
+
+  [
+    { id: '2', print: true, preview: true },
+    { id: '1', print: false, preview: false },
+    { id: '1', print: undefined, preview: true },
+    { id: '2', print: undefined, preview: false }
+  ].forEach(testCase => {
+    it('uses the print flag for mini-program previews, with legacy API fallback: ' + JSON.stringify(testCase), () => {
+      prepareWeAppInvoice();
+      component.processModel.Type3Result.AttachmentTypeId = testCase.id;
+      component.processModel.Type3Result.IsPrint = testCase.print;
+      component.getWeAppFileStatus(true);
+      expect(mockProblemService.invoicePretreatment.calls.count()).toBe(testCase.preview ? 1 : 0);
+      expect(component.canSubmit({ valid: true } as any)).toBe(!testCase.preview);
+    });
+  });
+
+  [true, false].forEach(isPrint => {
+    it('uses the print flag when selecting a local file: ' + isPrint, fakeAsync(() => {
+      prepareWeAppInvoice();
+      component.processModel.Type3Result.AttachmentTypeId = isPrint ? '2' : '1';
+      component.processModel.Type3Result.IsPrint = isPrint;
+      const handlers: { [name: string]: (event: unknown) => void } = {};
+      spyOn(window, 'FileReader').and.returnValue({
+        addEventListener: (name: string, handler: (event: unknown) => void) => { handlers[name] = handler; },
+        readAsDataURL: () => handlers.load({ target: { result: 'data:application/pdf;base64,AA==' } })
+      } as unknown as FileReader);
+      component.changeFile({ target: { files: [{ name: 'test.pdf' }] } }, null);
+      flush();
+      expect(mockProblemService.invoicePretreatment.calls.count()).toBe(isPrint ? 1 : 0);
+      expect(TestBed.inject(NavController).navigateForward).toHaveBeenCalledTimes(isPrint ? 1 : 0);
+    }));
+  });
+
+  it('clears invoice confirmation and the temporary file when reselecting from preview', () => {
+    prepareWeAppInvoice();
+    component.getWeAppFileStatus(true);
+    spyOn(TestBed.inject(Router), 'getCurrentNavigation').and.returnValue({
+      extras: { state: { confirmFile: false, isWeAppFile: true } }
+    } as any);
+    queryParams$.next({ problemid: 10 });
+    expect(mockProblemService.deleteProblemTempFile).toHaveBeenCalledWith(10);
+    expect(component.isWeAppUploadFile).toBe(false);
+    expect(component.canSubmit({ valid: false } as any)).toBe(false);
   });
 
   it('should clear failure messages when process type changes', () => {

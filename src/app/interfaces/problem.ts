@@ -37,6 +37,8 @@ interface ProblemProcessType3ResultModel{
     Value:string;
     AttachmentTypeId:string;
     FileName:string
+    // 新接口按附件类型配置下发；缺失仅用于兼容旧 API。
+    IsPrint?:boolean;
 }
 
 //多选结果

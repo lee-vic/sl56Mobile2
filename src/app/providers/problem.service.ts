@@ -38,7 +38,6 @@ export class ProblemService {
     return seq;
   }
   upload(form) {
-    console.log(form);
     let seq = this.http.post<any>(
       apiUrl + "/DeliveryRecord/UploadAttachment",
       form,
@@ -47,7 +46,6 @@ export class ProblemService {
     return seq;
   }
   upload1(form) {
-    console.log(form);
     let seq = this.http.post<any>(
       apiUrl + "/DeliveryRecord/UploadChatFile",
       form,
@@ -65,7 +63,6 @@ export class ProblemService {
   }
   complete(model) {
     let data = JSON.stringify(model);
-    console.log(data);
     let seq = this.http.post<ProblemCompleteResponse>(apiUrl + "/Problem/Complete", data, {
       headers: {
         "content-type": "application/json",

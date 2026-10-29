@@ -44,8 +44,7 @@ export class InvoicePreviewPage implements OnInit {
     this.loadFailed = false;
   }
 
-  onPdfError(err: any) {
-    console.log('PDF load failed:', err);
+  onPdfError(_err: unknown) {
     this.loadFailed = true;
   }
 

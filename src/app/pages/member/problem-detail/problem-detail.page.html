@@ -266,7 +266,7 @@
       <p class="done-sub" *ngIf="allProblemsCompleted">截至 {{statusCheckedAt | date:'yyyy-MM-dd HH:mm':'+0800'}}，当前没有待处理问题，无需继续操作。</p>
       <ion-button *ngIf="workspace?.OtherWaybillCount > 0 && workspace?.NextProblemId" (click)="continueNextWaybill()">继续处理下一单</ion-button>
       <ion-button *ngIf="!allProblemsCompleted" fill="outline" (click)="viewAllProblems()">查看全部问题</ion-button>
-      <ion-button *ngIf="allProblemsCompleted" (click)="returnHome()">返回首页</ion-button>
+      <ion-button *ngIf="allProblemsCompleted" (click)="returnHome()">返回会员首页</ion-button>
     </div>
   </div>
 </ion-content>
@@ -275,14 +275,6 @@
 <ion-footer translucent="true" class="problem-detail-footer" *ngIf="!isLoading && !hasInitError && !hasNotFound && !isProblemDone">
   <ion-toolbar>
     <div class="footer-inner">
-
-      <!-- Done: contact CS -->
-      <ng-container *ngIf="isProblemDone">
-        <ion-button expand="block" fill="outline" color="primary" (click)="chat()">
-          <ion-icon slot="start" name="chatbubble-outline"></ion-icon>
-          联系客服
-        </ion-button>
-      </ng-container>
 
       <!-- Active: form submit -->
       <ng-container *ngIf="!isProblemDone && hasSelfService && isFormOption()">

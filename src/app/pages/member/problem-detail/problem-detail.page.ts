@@ -56,6 +56,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   hasNotFound = false;
   isFileRequired = true;
   isWeAppUploadFile = false;
+  private weAppAttachmentConfirmed = false;
   isCheckingWeAppFile = false;
   isDeletingTempFile = false;
   pendingTempFileDeletion: number | string | null = null;
@@ -146,9 +147,11 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     if (!this.isPageActive || !this.hasSelfService || !this.isFormOption() || !this.hasProcessType(3)) return;
     if (this.pageDocument.hidden) {
       this.shouldCheckOnReturn = true;
+      // 附件状态接口只有布尔值，离开后可能更换了文件，不能沿用上一份附件的确认。
+      this.weAppAttachmentConfirmed = false;
     } else if (this.shouldCheckOnReturn) {
       this.shouldCheckOnReturn = false;
-      // 小程序返回不会重建网页：仅重新读取附件状态，保留客户已填资料和现有预览流程。
+      // 小程序返回不会重建网页：保留表单，检测到需打印附件后仍须进入预览确认。
       if (!this.isFileProcessing) this.getWeAppFileStatus(true);
       // 附件回执不能代表问题仍待处理；同时核实工作区，避免其他设备已处理后继续提交旧表单。
       if (this.data?.Problem && !this.isSubmitting && !this.isLoading) this.validateOnReturn();
@@ -185,6 +188,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     this.processModel = null;
     this.checkListValue = [];
     this.isWeAppUploadFile = false;
+    this.weAppAttachmentConfirmed = false;
     this.isCheckingWeAppFile = false;
     this.isFileProcessing = false;
     this.submitFailMessage = null;
@@ -325,7 +329,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
   }
 
   returnHome(): void {
-    this.router.navigate(['/app/tabs/home']);
+    // 问题处理属于会员流程，完成后回到会员中心继续办理业务。
+    this.router.navigate(['/app/tabs/member']);
   }
 
   continueNextWaybill(): void {
@@ -356,10 +361,18 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
     return this.getCurrentAction() === "form";
   }
 
+  requiresAttachmentPreview(): boolean {
+    const attachment = this.processModel?.Type3Result;
+    // 先发布 API 再发布移动端；滚动期间旧 API 未下发标记时保留原发票预览。
+    return attachment?.IsPrint === true || (attachment?.IsPrint == null && String(attachment?.AttachmentTypeId) === '1');
+  }
+
   canSubmit(form: NgForm): boolean {
     if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || this.pendingTempFileDeletion != null || this.fileFailMessage) {
       return false;
     }
+    // 检测到临时附件只代表上传成功，不代表客户已核对内容。
+    if (this.isWeAppUploadFile && this.requiresAttachmentPreview() && !this.weAppAttachmentConfirmed) return false;
     if (this.hasProcessType(4) && this.checkListValue.length > 0 && this.checkListValue.indexOf(true) === -1) {
       return false;
     }
@@ -487,7 +500,11 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       const nav = this.router.getCurrentNavigation();
       const data = (nav && nav.extras && nav.extras.state) || window.history.state;
       if (data && (data.confirmFile != undefined || data.isWeAppFile != undefined)) {
+        if (data.isWeAppFile && data.confirmFile === true) {
+          this.weAppAttachmentConfirmed = true;
+        }
         if (data.confirmFile === false) {
+          this.weAppAttachmentConfirmed = false;
           // 取消预览必须同时清除提交载荷及表单值，不能只清空文件框而继续提交旧文件。
           if (this.processModel?.Type3Result) {
             this.processModel.Type3Result.Value = null;
@@ -595,6 +612,9 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       file = (target.firstChild as any).files[0];
     }
     if (file != null) {
+      // 改选本地文件后以本次文件预览为准，不沿用小程序临时附件的确认状态。
+      this.isWeAppUploadFile = false;
+      this.weAppAttachmentConfirmed = false;
       // 从读取开始即锁定提交并清除旧文件，防止新文件尚未读取时提交上一份附件。
       this.isFileProcessing = true;
       this.fileFailMessage = null;
@@ -609,8 +629,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         let fileString = (res.target as FileReader).result.toString();
         this.processModel.Type3Result.FileName = file.name;
         this.processModel.Type3Result.Value = fileString;
-        //发票，预览处理
-        if (this.processModel.Type3Result.AttachmentTypeId == "1") {
+        // 需要打印的资料先核对转换结果，不能只判断发票类型。
+        if (this.requiresAttachmentPreview()) {
           this.isFileProcessing = true;
           this.loadingCtrl.create({ message: '文件处理中...' }).then((loading) => {
             if (this.processModel !== fileModel) return;
@@ -688,9 +708,6 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
         this.processModel.Type2Result.Items.push(item);
       });
     }
-    //存在上传文件
-    if (this.data.Problem.ProcessTypeList.indexOf(3) !== -1) {
-    }
     //存在多选
     if (this.hasProcessType(4)) {
       this.processModel.Type4Result.Values = [];
@@ -723,6 +740,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
 
   getWeAppFileStatus(isInitPage) {
     if (this.isCheckingWeAppFile || this.isFileProcessing || this.pendingTempFileDeletion != null) return;
+    if (!isInitPage) this.weAppAttachmentConfirmed = false;
     this.isCheckingWeAppFile = true;
     const runStatusCheck = (loading?: any) => {
       this.service.isWeAppUploadFile(this.problemId).pipe(
@@ -732,9 +750,10 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       ).subscribe({
         next: (res) => {
           this.isWeAppUploadFile = res;
-          if (isInitPage) return;
+          if (!res) this.weAppAttachmentConfirmed = false;
           if (res) {
-            if (this.processModel.Type3Result.AttachmentTypeId === "1") {
+            if (this.requiresAttachmentPreview() && !this.weAppAttachmentConfirmed) {
+              this.fileFailMessage = null;
               this.isFileProcessing = true;
               this.service
                 .invoicePretreatment(this.processModel)
@@ -744,6 +763,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
                     loading?.dismiss();
                     this.isFileProcessing = false;
                     if (res.Result === true) {
+                      this.fileFailMessage = null;
                       this.navCtrl.navigateForward("/member/invoice-preview", {
                         queryParams: {
                           filePath: res.Path,
@@ -753,7 +773,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
                         },
                       });
                     } else {
-                      this.fileFailMessage = res.Message;
+                      this.fileFailMessage = res.Message || '获取附件预览失败，请稍后重试';
                       this.isWeAppUploadFile = false;
                     }
                   },
@@ -768,6 +788,8 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
             }
           } else {
             loading?.dismiss();
+            // 首次进入和自动返回时没检测到文件是正常状态，仅手动检查才提示。
+            if (isInitPage) return;
             this.alertCtrl
               .create({
                 header: "未检测到文件",
