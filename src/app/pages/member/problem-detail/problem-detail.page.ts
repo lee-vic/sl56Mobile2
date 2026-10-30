@@ -229,6 +229,11 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
           !(typeof this.problemId === 'string' && this.problemId.startsWith('v2.') && !this.sourceProblemCompleted)) {
         this.problemId = this.data.Problem.ObjectId;
       }
+      // 缺少打印标记时不能把附件当成无需预览，也不能按发票编号猜测。
+      if (!this.isProblemDone && this.hasProcessType(3) && typeof this.data.ProcessResult?.Type3Result?.IsPrint !== 'boolean') {
+        this.applyDetailFailure({ Message: '暂时无法确认附件的预览要求，请刷新重试；仍无法打开时请联系客服。' });
+        return;
+      }
       this.processModel = this.data.ProcessResult;
       this.ensureProcessModel();
 
@@ -262,7 +267,7 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
       this.processModel.Type2Result = { Items: [] } as any;
     }
     if (!this.processModel.Type3Result) {
-      this.processModel.Type3Result = { Value: null, AttachmentTypeId: "", FileName: null } as any;
+      this.processModel.Type3Result = { Value: null, AttachmentTypeId: "", FileName: null, IsPrint: false };
     }
     if (!this.processModel.Type4Result) {
       this.processModel.Type4Result = { Values: [] } as any;
@@ -363,12 +368,12 @@ export class ProblemDetailPage implements OnInit, OnDestroy {
 
   requiresAttachmentPreview(): boolean {
     const attachment = this.processModel?.Type3Result;
-    // 先发布 API 再发布移动端；滚动期间旧 API 未下发标记时保留原发票预览。
-    return attachment?.IsPrint === true || (attachment?.IsPrint == null && String(attachment?.AttachmentTypeId) === '1');
+    // 打印要求来自服务端附件类型配置，不依赖固定附件编号。
+    return attachment?.IsPrint === true;
   }
 
   canSubmit(form: NgForm): boolean {
-    if (this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || this.pendingTempFileDeletion != null || this.fileFailMessage) {
+    if (this.hasInitError || this.hasNotFound || this.isLoading || this.isSubmitting || this.isFileProcessing || this.isCheckingWeAppFile || this.pendingTempFileDeletion != null || this.fileFailMessage) {
       return false;
     }
     // 检测到临时附件只代表上传成功，不代表客户已核对内容。

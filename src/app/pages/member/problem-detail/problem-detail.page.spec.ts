@@ -494,17 +494,30 @@ describe('ProblemDetailPage', () => {
 
   [
     { id: '2', print: true, preview: true },
-    { id: '1', print: false, preview: false },
-    { id: '1', print: undefined, preview: true },
-    { id: '2', print: undefined, preview: false }
+    { id: '1', print: false, preview: false }
   ].forEach(testCase => {
-    it('uses the print flag for mini-program previews, with legacy API fallback: ' + JSON.stringify(testCase), () => {
+    it('uses the print flag for mini-program previews regardless of attachment ID: ' + JSON.stringify(testCase), () => {
       prepareWeAppInvoice();
       component.processModel.Type3Result.AttachmentTypeId = testCase.id;
       component.processModel.Type3Result.IsPrint = testCase.print;
       component.getWeAppFileStatus(true);
       expect(mockProblemService.invoicePretreatment.calls.count()).toBe(testCase.preview ? 1 : 0);
       expect(component.canSubmit({ valid: true } as any)).toBe(!testCase.preview);
+    });
+  });
+
+  [undefined, null, 'true', 1].forEach(printFlag => {
+    it('rejects an upload response without a boolean print flag: ' + printFlag, () => {
+      mockProblemService.getProblemDetail.and.returnValue(of({
+        Problem: { ProcessTypeList: [3], ProcessSetting4: [], Pages: [{ Item1: 'Page1' }], Status: 0 },
+        ProcessResult: { Type3Result: { AttachmentTypeId: '1', IsPrint: printFlag } }
+      }));
+      component.ngOnInit();
+      expect(component.hasInitError).toBe(true);
+      expect(component.initFailMessage).toContain('预览要求');
+      expect(component.canSubmit({ valid: true } as any)).toBe(false);
+      expect(mockProblemService.isWeAppUploadFile).not.toHaveBeenCalled();
+      expect(mockProblemService.invoicePretreatment).not.toHaveBeenCalled();
     });
   });
 
