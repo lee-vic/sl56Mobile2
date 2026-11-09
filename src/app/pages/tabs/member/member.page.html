@@ -129,118 +129,137 @@
           </button>
         </div>
       </section>
+      <section class="menu-section quick-section" *ngIf="quickMenuRows.length > 0">
+        <div class="menu-section-header">
+          <div class="section-heading">
+            <h2>常用功能</h2>
+            <p>{{ quickMenuList.length }} 项快速直达</p>
+          </div>
+          <div class="menu-section-meta">
+            <button type="button" class="quick-manage-btn" (click)="openQuickMenuManage()" aria-label="管理常用功能">
+              <ion-icon name="options-outline"></ion-icon>
+              管理
+            </button>
+            <button type="button" class="quick-reset-btn" (click)="resetQuickMenus()" aria-label="重置常用功能排序">
+              <ion-icon name="refresh-outline"></ion-icon>
+              重置
+            </button>
+          </div>
+        </div>
+        <ion-grid id="menu-grid" class="menu-grid quick-menu-grid">
+          <ion-row *ngFor="let row of quickMenuRows; let rowIndex = index" class="row">
+            <ion-col *ngFor="let item of row.items; let i = index; trackBy: trackByMenuTitle" class="col">
+              <div class="menu-item-wrap">
+                <div *ngIf="waitToSignTaskCount > 0 && item.title === '合同签署'" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(waitToSignTaskCount) }}</div>
+                <div *ngIf="item.title === '业务公告' && unreadNoticeCount > 0" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(unreadNoticeCount) }}</div>
+                <div
+                  class="menu-item ion-text-center"
+                  role="button"
+                  tabindex="0"
+                  [style.--menu-delay.ms]="(rowIndex * menuColumns + i) * 35"
+                  [attr.aria-label]="getMenuAriaLabel(item)"
+                  (click)="menuClick(item)"
+                  (keyup)="menuKeyup($event, item)">
+                  <div class="menu-icon-wrap" [attr.data-tone]="item.tone || 'blue'">
+                    <ion-icon [name]="item.icon || 'apps-outline'"></ion-icon>
+                  </div>
+                  <div class="menu-title">{{ item.title }}</div>
+                  <div class="menu-summary">{{ item.summary }}</div>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </section>
+
+      <section class="menu-section" *ngIf="menus.rows.length > 0">
+        <div class="menu-section-header">
+          <div class="section-heading">
+            <h2>全部功能</h2>
+            <p>{{ visibleMenuOptions.length }} 项服务</p>
+          </div>
+        </div>
+        <ion-grid id="menu-grid-all" class="menu-grid">
+          <ion-row *ngFor="let row of menus.rows; let rowIndex = index" class="row">
+            <ion-col *ngFor="let item of row.items; let i = index; trackBy: trackByMenuTitle" class="col">
+              <div class="menu-item-wrap">
+                <div *ngIf="waitToSignTaskCount > 0 && item.title === '合同签署'" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(waitToSignTaskCount) }}</div>
+                <div *ngIf="item.title === '业务公告' && unreadNoticeCount > 0" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(unreadNoticeCount) }}</div>
+                <div
+                  class="menu-item ion-text-center"
+                  role="button"
+                  tabindex="0"
+                  [style.--menu-delay.ms]="(rowIndex * menuColumns + i) * 35"
+                  [attr.aria-label]="getMenuAriaLabel(item)"
+                  (click)="menuClick(item)"
+                  (keyup)="menuKeyup($event, item)">
+                  <div class="menu-icon-wrap" [attr.data-tone]="item.tone || 'blue'">
+                    <ion-icon [name]="item.icon || 'apps-outline'"></ion-icon>
+                  </div>
+                  <div class="menu-title">{{ item.title }}</div>
+                  <div class="menu-summary">{{ item.summary }}</div>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </section>
+
     </ng-container>
 
     <ng-template #dashboardSkeleton>
-      <section class="account-summary skeleton-summary" aria-live="polite" aria-busy="true">
-        <div class="account-main">
+      <!-- 复用内容区布局，避免全局 skeleton-card 的间距影响概览卡片。 -->
+      <section class="account-summary skeleton-summary" aria-label="正在加载会员信息" aria-busy="true">
+        <div class="account-main" aria-hidden="true">
           <ion-skeleton-text animated class="skeleton-avatar"></ion-skeleton-text>
           <div class="account-copy">
-            <ion-skeleton-text animated class="skeleton-line tiny"></ion-skeleton-text>
-            <ion-skeleton-text animated class="skeleton-line title"></ion-skeleton-text>
-            <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+            <span class="account-eyebrow"><ion-skeleton-text animated class="skeleton-line tiny"></ion-skeleton-text></span>
+            <h1><ion-skeleton-text animated class="skeleton-line title"></ion-skeleton-text></h1>
+            <div class="account-tags"><ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text></div>
           </div>
-          <ion-skeleton-text animated class="skeleton-message"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-message message-entry" *ngIf="customerType == null || customerType === 0"></ion-skeleton-text>
+        </div>
+        <div class="account-actions" aria-hidden="true">
+          <ion-skeleton-text animated class="skeleton-action"></ion-skeleton-text>
+          <ion-skeleton-text animated class="skeleton-action" *ngIf="customerType == null || customerType === 0"></ion-skeleton-text>
         </div>
       </section>
 
-      <section class="overview-grid skeleton-overview" aria-live="polite" aria-busy="true">
-        <div class="overview-card skeleton-card" *ngFor="let item of [1,2,3]">
-          <ion-skeleton-text animated class="skeleton-icon"></ion-skeleton-text>
+      <section class="overview-grid skeleton-overview" *ngIf="customerType !== 3" aria-hidden="true">
+        <div class="overview-card" *ngFor="let item of [1,2,3]">
+          <ion-skeleton-text animated class="overview-icon"></ion-skeleton-text>
           <ion-skeleton-text animated class="skeleton-line number"></ion-skeleton-text>
-          <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+          <span><ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text></span>
         </div>
       </section>
 
-      <section class="menu-section skeleton-menu-section">
+      <!-- 权限返回前仅展示菜单结构占位，不提前展示或开放业务入口。 -->
+      <section class="menu-section skeleton-menu-section" *ngFor="let section of [0,1]" aria-hidden="true">
         <div class="menu-section-header">
-          <ion-skeleton-text animated class="skeleton-line title"></ion-skeleton-text>
-          <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
-        </div>
-        <div class="skeleton-menu-grid">
-          <div class="skeleton-menu-cell" *ngFor="let item of [1,2,3,4,5,6]">
-            <ion-skeleton-text animated class="skeleton-icon"></ion-skeleton-text>
-            <ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text>
+          <div class="section-heading">
+            <h2><ion-skeleton-text animated class="skeleton-line heading"></ion-skeleton-text></h2>
+            <p><ion-skeleton-text animated class="skeleton-line tiny"></ion-skeleton-text></p>
+          </div>
+          <div class="menu-section-meta" *ngIf="section === 0">
+            <ion-skeleton-text animated class="skeleton-control"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skeleton-control"></ion-skeleton-text>
           </div>
         </div>
+        <ion-grid class="menu-grid">
+          <ion-row *ngFor="let row of [1,2]">
+            <ion-col class="col" *ngFor="let item of [1,2,3]">
+              <div class="menu-item-wrap">
+                <div class="menu-item">
+                  <ion-skeleton-text animated class="menu-icon-wrap"></ion-skeleton-text>
+                  <div class="menu-title"><ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text></div>
+                  <div class="menu-summary"><ion-skeleton-text animated class="skeleton-line short"></ion-skeleton-text></div>
+                </div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </section>
     </ng-template>
-
-    <section class="menu-section quick-section" *ngIf="quickMenuRows.length > 0">
-      <div class="menu-section-header">
-        <div class="section-heading">
-          <h2>常用功能</h2>
-          <p>{{ quickMenuList.length }} 项快速直达</p>
-        </div>
-        <div class="menu-section-meta">
-          <button type="button" class="quick-manage-btn" (click)="openQuickMenuManage()" aria-label="管理常用功能">
-            <ion-icon name="options-outline"></ion-icon>
-            管理
-          </button>
-          <button type="button" class="quick-reset-btn" (click)="resetQuickMenus()" aria-label="重置常用功能排序">
-            <ion-icon name="refresh-outline"></ion-icon>
-            重置
-          </button>
-        </div>
-      </div>
-      <ion-grid id="menu-grid" class="menu-grid quick-menu-grid">
-        <ion-row *ngFor="let row of quickMenuRows; let rowIndex = index" class="row">
-          <ion-col *ngFor="let item of row.items; let i = index; trackBy: trackByMenuTitle" class="col">
-            <div class="menu-item-wrap">
-              <div *ngIf="waitToSignTaskCount > 0 && item.title === '合同签署'" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(waitToSignTaskCount) }}</div>
-              <div *ngIf="item.title === '业务公告' && unreadNoticeCount > 0" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(unreadNoticeCount) }}</div>
-              <div
-                class="menu-item ion-text-center"
-                role="button"
-                tabindex="0"
-                [style.--menu-delay.ms]="(rowIndex * menuColumns + i) * 35"
-                [attr.aria-label]="getMenuAriaLabel(item)"
-                (click)="menuClick(item)"
-                (keyup)="menuKeyup($event, item)">
-                <div class="menu-icon-wrap" [attr.data-tone]="item.tone || 'blue'">
-                  <ion-icon [name]="item.icon || 'apps-outline'"></ion-icon>
-                </div>
-                <div class="menu-title">{{ item.title }}</div>
-                <div class="menu-summary">{{ item.summary }}</div>
-              </div>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </section>
-
-    <section class="menu-section" *ngIf="menus.rows.length > 0">
-      <div class="menu-section-header">
-        <div class="section-heading">
-          <h2>全部功能</h2>
-          <p>{{ visibleMenuOptions.length }} 项服务</p>
-        </div>
-      </div>
-      <ion-grid id="menu-grid-all" class="menu-grid">
-        <ion-row *ngFor="let row of menus.rows; let rowIndex = index" class="row">
-          <ion-col *ngFor="let item of row.items; let i = index; trackBy: trackByMenuTitle" class="col">
-            <div class="menu-item-wrap">
-              <div *ngIf="waitToSignTaskCount > 0 && item.title === '合同签署'" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(waitToSignTaskCount) }}</div>
-              <div *ngIf="item.title === '业务公告' && unreadNoticeCount > 0" class="menu-corner-badge" aria-live="polite">{{ formatBadgeCount(unreadNoticeCount) }}</div>
-              <div
-                class="menu-item ion-text-center"
-                role="button"
-                tabindex="0"
-                [style.--menu-delay.ms]="(rowIndex * menuColumns + i) * 35"
-                [attr.aria-label]="getMenuAriaLabel(item)"
-                (click)="menuClick(item)"
-                (keyup)="menuKeyup($event, item)">
-                <div class="menu-icon-wrap" [attr.data-tone]="item.tone || 'blue'">
-                  <ion-icon [name]="item.icon || 'apps-outline'"></ion-icon>
-                </div>
-                <div class="menu-title">{{ item.title }}</div>
-                <div class="menu-summary">{{ item.summary }}</div>
-              </div>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </section>
 
     <ion-button expand="block" (click)="logOff()" *ngIf="isLogin" class="logout-button">
       <ion-icon slot="start" name="log-out-outline"></ion-icon>

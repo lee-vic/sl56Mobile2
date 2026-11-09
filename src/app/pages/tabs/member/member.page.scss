@@ -694,6 +694,14 @@ ion-modal ion-content {
     pointer-events: none;
 }
 
+/* Ionic 默认占位外边距会改变共享布局的高度，统一由容器控制间距。 */
+.skeleton-summary ion-skeleton-text,
+.skeleton-overview ion-skeleton-text,
+.skeleton-menu-section ion-skeleton-text {
+    margin: 0;
+    max-width: 100%;
+}
+
 .skeleton-avatar {
     width: 52px;
     height: 52px;
@@ -703,7 +711,21 @@ ion-modal ion-content {
 .skeleton-message {
     width: 42px;
     height: 42px;
+    border: 0;
     border-radius: 14px;
+}
+
+.skeleton-action {
+    width: 100px;
+    height: 2.1em;
+    font-size: 0.875rem;
+    border-radius: 10px;
+}
+
+.skeleton-control {
+    width: 58px;
+    height: 30px;
+    border-radius: 999px;
 }
 
 .skeleton-line {
@@ -713,11 +735,16 @@ ion-modal ion-content {
 
 .skeleton-line.tiny {
     width: 64px;
-    height: 12px;
+    height: 14px;
 }
 
 .skeleton-line.title {
     width: 132px;
+    height: 1.15em;
+}
+
+.skeleton-line.heading {
+    width: 80px;
     height: 20px;
 }
 
@@ -730,28 +757,25 @@ ion-modal ion-content {
     height: 24px;
 }
 
-.skeleton-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
+.skeleton-summary .account-eyebrow {
+    min-height: 17px;
 }
 
-.skeleton-menu-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+.skeleton-summary .account-tags {
+    min-height: 20px;
 }
 
-.skeleton-menu-cell {
-    display: grid;
-    justify-items: center;
-    align-content: center;
-    gap: 9px;
-    aspect-ratio: 1 / 1;
-    min-height: 0;
-    border: 1px solid #d8e7f8;
-    border-radius: 16px;
-    background: #ffffff;
+.skeleton-overview .skeleton-line.number {
+    height: 1em;
+    font-size: 24px;
+}
+
+.skeleton-overview span .skeleton-line {
+    height: 12px;
+}
+
+.skeleton-menu-section .menu-item {
+    animation: none;
 }
 
 @keyframes menuRiseIn {
@@ -780,7 +804,8 @@ ion-modal ion-content {
         padding: 10px;
     }
 
-    .overview-card strong {
+    .overview-card strong,
+    .skeleton-overview .skeleton-line.number {
         font-size: 22px;
     }
 
@@ -789,8 +814,7 @@ ion-modal ion-content {
     }
 
     .menu-item-wrap,
-    .menu-item,
-    .skeleton-menu-cell {
+    .menu-item {
         min-height: 0;
     }
 
@@ -867,8 +891,7 @@ ion-modal ion-content {
     }
 
     .menu-item-wrap,
-    .menu-item,
-    .skeleton-menu-cell {
+    .menu-item {
         min-height: 0;
     }
 
@@ -880,10 +903,6 @@ ion-modal ion-content {
 @media (min-width: 992px) {
     .overview-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .skeleton-menu-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
 
