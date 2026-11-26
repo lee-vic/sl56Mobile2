@@ -36,6 +36,7 @@
           <span class="price-amount">{{ item.TotalAmount | number:'1.2-2' }}</span>
         </div>
       </ion-item>
+      <ion-button *ngIf="item.PriceIEType !== 1" fill="clear" (click)="createForecast(item)">使用此报价快速预报</ion-button>
 
       <div *ngIf="item.ImportantTip" class="tip-row" [class.tip-row-danger]="isHighRiskTip(item.ImportantTip)" (click)="detail(item)">
         <ion-icon [name]="isHighRiskTip(item.ImportantTip) ? 'warning-outline' : 'information-circle-outline'"></ion-icon>

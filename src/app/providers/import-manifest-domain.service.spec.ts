@@ -141,4 +141,11 @@ describe('ImportManifestDomainService', () => {
     expect(result.row.HasError).toBe(true);
     expect(result.errors.some((e) => e.Code === 'BATTERY_MODEL_INVALID')).toBe(true);
   });
+  it('keeps an explicit PAK override and zero declaration when saving an imported row', () => {
+    const row = { DeclaredValue: 0, IsPAK: false } as ImportPreviewRow;
+    const model = service.toImportRowModel(row);
+    expect(model.IsPAK).toBe(false);
+    expect(model.DeclaredValue).toBe(0);
+    expect(service.toImportRowModel({...row, IsPAK: null}).IsPAK).toBeNull();
+  });
 });

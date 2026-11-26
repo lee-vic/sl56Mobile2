@@ -1,6 +1,6 @@
 ﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule, AlertController, NavController, ToastController } from '@ionic/angular';
 import { of, throwError } from 'rxjs';
 
@@ -54,6 +54,8 @@ describe('ImportManifestImportPage', () => {
 
   beforeEach(() => {
     const sSpy = jasmine.createSpyObj('ImportManifestService', [
+      'templates',
+      'saveTemplate',
       'getCountryOptions',
       'getCustomerPriceOptions',
       'getAvailableCustomerPrices',
@@ -69,7 +71,7 @@ describe('ImportManifestImportPage', () => {
     const tSpy = jasmine.createSpyObj('ToastController', ['create']);
 
     TestBed.configureTestingModule({
-      imports: [FormsModule, IonicModule.forRoot()],
+      imports: [ReactiveFormsModule, FormsModule, IonicModule.forRoot()],
       declarations: [ImportManifestImportPage],
       providers: [
         ImportManifestDomainService,
@@ -86,6 +88,7 @@ describe('ImportManifestImportPage', () => {
     navCtrlSpy = TestBed.inject(NavController) as jasmine.SpyObj<NavController>;
     toastCtrlSpy = TestBed.inject(ToastController) as jasmine.SpyObj<ToastController>;
 
+    serviceSpy.templates.and.returnValue(of({rows: []}));
     serviceSpy.getCountryOptions.and.returnValue(of(countryOptions));
     serviceSpy.getCustomerPriceOptions.and.returnValue(of(priceOptions));
     serviceSpy.getAvailableCustomerPrices.and.returnValue(of({ success: true, message: '', items: [{ value: 'PRICE01', text: 'PRICE01-报价一' }] }));
@@ -141,6 +144,21 @@ describe('ImportManifestImportPage', () => {
     expect(component.priceOptions).toEqual(priceOptions);
     expect(component.batteryModelOptions.length).toBe(1);
     expect(component.isReferenceLoading).toBe(false);
+  });
+
+  it('edits the chosen template while preserving its other column mappings', () => {
+    const template = { id: 27, name: '旧模板', objectNoCol: 3, countryCol: 2, priceCol: 1,
+      pieceCol: 4, weightCol: 5, contentTypeCol: 6, customerExpressNoCol: 10 };
+    serviceSpy.templates.and.returnValue(of({rows: [template]}));
+    serviceSpy.saveTemplate.and.returnValue(of({success: true, id: 27}));
+    fixture.detectChanges();
+    component.editTemplate(27);
+    component.templateForm.controls.Name.setValue('客户新版');
+    component.saveTemplate();
+    expect(serviceSpy.saveTemplate).toHaveBeenCalledWith(jasmine.objectContaining({
+      Id: 27, Name: '客户新版', NumberColumnIndex: 3, CustomerExpressNoColumnIndex: 10
+    }));
+    expect(component.templateId).toBe(27);
   });
 
   it('loadReferenceData should show alert when options fail to load', () => {
@@ -399,6 +417,16 @@ describe('ImportManifestImportPage', () => {
     expect(alertCtrlSpy.create).toHaveBeenCalledWith(jasmine.objectContaining({ header: '仍有行正在编辑' }));
   });
 
+  it('retries only the failed and unprocessed rows after a partial commit', () => {
+    component.previewRows = ['A', 'B', 'C'].map((ObjectNo, i) => mockRow({ObjectNo, RowIndex: i + 1})) as any;
+    serviceSpy.saveImport.and.returnValues(of({Success: false, ErrMsg: 'B 失败',
+      Data: {savedNumbers: ['A'], failedNumber: 'B', remaining: ['C']}}), of({Success: true, Data: {count: 2}}));
+    component.confirmImport();
+    expect(component.previewRows.map(row => row.ObjectNo)).toEqual(['B', 'C']);
+    component.confirmImport();
+    expect(serviceSpy.saveImport.calls.mostRecent().args[0].map(row => row.ObjectNo)).toEqual(['B', 'C']);
+  });
+
   it('confirmImport should show alert when save fails', () => {
     component.previewRows = [mockRow()] as any;
     serviceSpy.saveImport.and.returnValue(throwError(() => new Error('Network error')));
@@ -406,7 +434,7 @@ describe('ImportManifestImportPage', () => {
     component.confirmImport();
 
     expect(component.isSaving).toBe(false);
-    expect(alertCtrlSpy.create).toHaveBeenCalledWith(jasmine.objectContaining({ header: '导入失败' }));
+    expect(alertCtrlSpy.create).toHaveBeenCalledWith(jasmine.objectContaining({ header: '回执未收到' }));
   });
 
   it('resetImport should clear import state', () => {

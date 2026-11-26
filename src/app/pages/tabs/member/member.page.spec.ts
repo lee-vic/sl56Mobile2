@@ -1,12 +1,13 @@
 ﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CookieService } from 'ngx-cookie-service';
 import { Subscription } from 'rxjs';
 
+import { apiUrl } from 'src/app/global';
 import { CurrencyAmount, User } from 'src/app/interfaces/user';
 import { Menu } from 'src/app/interfaces/menu';
 import { MemberPage } from './member.page';
@@ -145,15 +146,25 @@ describe('MemberPage', () => {
     expect(index).toBeGreaterThan(-1);
   });
 
-  it('should render dashboard skeleton while member data is loading', () => {
-    component.isLogin = true;
-    component.isDashboardLoading = true;
-
+  it('should show account and menu placeholders until member data arrives', () => {
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(apiUrl + '/Account/IsAuthenticated').flush(true);
+    const homeInfo = http.expectOne(apiUrl + '/UserHome/Load');
     fixture.detectChanges();
 
-    const nativeElement = fixture.nativeElement as HTMLElement;
-    expect(nativeElement.querySelector('.skeleton-summary')).toBeTruthy();
-    expect(nativeElement.querySelectorAll('.skeleton-menu-cell').length).toBeGreaterThan(0);
+    const page = fixture.nativeElement as HTMLElement;
+    expect(page.querySelector('[aria-busy="true"] ion-skeleton-text')).not.toBeNull();
+    expect(page.querySelector('ion-grid ion-skeleton-text')).not.toBeNull();
+    expect(page.querySelector('ion-grid [role="button"]')).toBeNull();
+
+    const member = createUserInfo();
+    homeInfo.flush(member);
+    fixture.detectChanges();
+
+    expect(page.querySelector('ion-skeleton-text')).toBeNull();
+    expect(page.textContent).toContain(member.CustomerNo);
+    expect(page.querySelector('ion-grid [role="button"]')).not.toBeNull();
+    http.verify();
   });
 
   it('should render modern member dashboard content after data loads', () => {

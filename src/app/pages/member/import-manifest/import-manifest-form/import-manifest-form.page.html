@@ -194,6 +194,9 @@
         ></ion-input>
       </div>
 
+      <div class="form-field"><ion-select label="包装" formControlName="IsPAK" interface="action-sheet"><ion-select-option [value]="null">按报价自动判断</ion-select-option>
+          <ion-select-option [value]="true">使用 PAK 袋</ion-select-option>
+          <ion-select-option [value]="false">普通包装</ion-select-option></ion-select></div>
       <div class="form-field">
         <label class="field-label">电池型号 <span class="optional">(选填)</span></label>
         <ion-select

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 
 type CalculationRecord = Record<string, unknown>;
 
@@ -7,6 +7,7 @@ type CalculationRecord = Record<string, unknown>;
 })
 export class CalculationStateService {
   private calculationResults: Array<CalculationRecord> | null = null;
+  forecastParameters: Record<string, string | number> | null = null;
   private currentDetail: CalculationRecord | null = null;
 
   setCalculationResults(results: Array<CalculationRecord>): void {
@@ -31,6 +32,7 @@ export class CalculationStateService {
 
   clearAll(): void {
     this.calculationResults = null;
+    this.forecastParameters = null;
     this.currentDetail = null;
   }
 }

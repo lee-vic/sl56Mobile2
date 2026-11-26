@@ -32,6 +32,27 @@
 </ion-header>
 
 <ion-content class="import-manifest-content" fullscreen="true">
+  <ion-item><ion-toggle [checked]="onlyUnprinted" (ionChange)="onlyUnprinted = $event.detail.checked; loadFirstPage(searchKeyword)">仅看未打印</ion-toggle></ion-item>
+  <ion-button fill="clear" (click)="openBatchDocuments()">批量上传随货资料</ion-button>
+  <section *ngIf="showBatchDocuments">
+    <ion-select label="资料类型" [disabled]="batchBusy" [value]="documentType" (ionChange)="documentType = $event.detail.value; batch = undefined">
+      <ion-select-option *ngFor="let type of documentTypes" [value]="type.id">{{ type.name }}</ion-select-option>
+    </ion-select>
+    <p>将同类资料按入仓单号命名后压缩为 ZIP 或 RAR，最大 50 MB。</p>
+    <input type="file" accept=".zip,.rar" [disabled]="batchBusy" (change)="selectArchive($event)">
+    <ion-button [disabled]="!archive || !documentType || batchBusy" (click)="submitArchive('preview')">检查文件</ion-button>
+    <ion-button *ngIf="batch?.BatchId && batch.Status === 1" [disabled]="batchBusy" (click)="submitArchive('commit')">确认上传</ion-button>
+    <ion-button *ngIf="batch?.BatchId" [disabled]="batchBusy" (click)="submitArchive('status')">查询结果</ion-button>
+    <p *ngIf="batch?.Status === 3">预检已过期，请重新检查文件。</p>
+    <ion-item *ngFor="let row of batch?.Items">{{ row.FileName }} · {{ row.Error || (row.ForwardingDocumentId ? '已上传' : '检查通过') }}</ion-item>
+  </section>
+  <section *ngIf="isSelectionMode && getSelectedCount()">
+    <ion-button (click)="selectedFile('zip')">下载标签 ZIP</ion-button>
+    <ion-button *ngIf="!labelUrl" [disabled]="labelBusy" (click)="selectedFile('labels')">生成打印 PDF</ion-button>
+    <ion-button *ngIf="labelUrl" (click)="openPreparedLabels()">打开打印 PDF</ion-button>
+    <ion-button (click)="confirmPrinted()">登记已打印</ion-button>
+    <ion-button (click)="selectedFile('manifest')">交货清单</ion-button>
+  </section>
   <ion-refresher slot="fixed" (ionRefresh)="refreshItems($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -128,6 +149,7 @@
           </div>
 
           <div class="item-summary">
+            <span>{{ item.IsLabelPrinted ? '标签已打印' : '标签未打印' }}</span>
             <span>
               <ion-icon name="flag-outline"></ion-icon>
               {{ item.CountryName || '-' }}
@@ -154,7 +176,7 @@
             <span>{{ item.ModeOfTransportName || '-' }}</span>
             <span>{{ item.ContentTypeName || '-' }}</span>
             <span *ngIf="item.PostalCode">邮编 {{ item.PostalCode }}</span>
-            <span *ngIf="item.DeclaredValue">申报 ${{ item.DeclaredValue }}</span>
+            <span *ngIf="item.DeclaredValue != null && item.DeclaredValue !== ''">申报 ${{ item.DeclaredValue }}</span>
           </div>
           <div class="quote-row" *ngIf="item.CustomerExpressNo">
             快递单号：{{ item.CustomerExpressNo }}

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormBuilder, FormArray } from '@angular/forms';
 import { AlertController } from '@ionic/angular';
 import { CalculationService } from 'src/app/providers/calculation.service';
@@ -404,8 +404,9 @@ export class CalculationPage implements OnInit, OnDestroy {
 
     const loading = await this.uiFeedback.presentLoading('正在计算报价，请稍候...');
 
+    const payload = this.buildPayload();
     this.service
-      .calculate(this.buildPayload())
+      .calculate(payload)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
@@ -415,6 +416,14 @@ export class CalculationPage implements OnInit, OnDestroy {
       .subscribe({
         next: async (res) => {
           if (Array.isArray(res) && res.length > 0) {
+            const selectedRules = this.priceRuleTemplateInfoList.filter(rule => payload.SeletedTemplateRules.includes(rule.Id))
+              .map(rule => rule.Name as string);
+            this.calculationState.forecastParameters = { country: payload.countryId, type: payload.ProductContentType,
+              weight: payload.actualWeight || (payload.sizes || []).reduce((sum, row) => sum + Number(row.Piece) * Number(row.Weight), 0),
+              piece: payload.sizes?.length ? payload.sizes.reduce((sum, row) => sum + Number(row.Piece), 0) : payload.piece || 1, postal: payload.postalCode || '',
+              value: payload.declaredValue ?? '', prepaid: Number(selectedRules.includes('关税预付')),
+              separate: Number(selectedRules.includes('单独报关')), vat: Number(selectedRules.includes('开专票')),
+              battery: selectedRules.find(code => ['PI966', 'PI967', 'PI969', 'PI970'].includes(code)) || '' };
             this.calculationState.setCalculationResults(res);
             this.calculationState.clearCurrentDetail();
             this.router.navigateByUrl('/member/calculation/calculation-list');

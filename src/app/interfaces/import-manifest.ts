@@ -53,6 +53,7 @@ export interface ImportManifestDetail {
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
     BatteryModel?: string;
+    IsPAK?: boolean | null;
     WaybillCreationStatus: number;
     TrackNumber: string;
     LabelPath: string;
@@ -77,6 +78,7 @@ export interface ImportManifestSaveRequest {
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
     BatteryModel?: string;
+    IsPAK?: boolean | null;
     PendingDocumentsJson?: string | null;
     DeletedDocumentIds?: number[] | null;
     LastChanged?: any;
@@ -99,6 +101,7 @@ export interface ImportPreviewRow {
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
     BatteryModel?: string;
+    IsPAK?: boolean | null;
     Errors: ImportValidationError[];
     HasError: boolean;
 }
@@ -141,6 +144,7 @@ export interface ImportRowModel {
     RequiresDutiesAndTaxesPrepayment: boolean;
     RequiresSpecialVatInvoice: boolean;
     BatteryModel?: string;
+    IsPAK?: boolean | null;
 }
 
 export interface ImportSaveRowError {
@@ -240,4 +244,23 @@ export interface UploadTempDocumentResult {
 export interface ForwardingDocumentListResult {
     success: boolean;
     rows: ForwardingDocumentItem[];
+}
+export interface ForecastBatchResult {
+  BatchId: string;
+  Status: number;
+  Error?: string;
+  Items: { FileName: string; ObjectNo: string; Error?: string; ForwardingDocumentId?: number }[];
+}
+export interface ForecastTemplate {
+  id: number;
+  name: string;
+  objectNoCol: number;
+  countryCol: number;
+  priceCol: number;
+  pieceCol: number;
+  weightCol: number;
+  contentTypeCol: number;
+  postalCodeCol?: number;
+  declaredValueCol?: number;
+  customerExpressNoCol?: number;
 }

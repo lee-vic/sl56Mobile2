@@ -318,6 +318,7 @@ export class ImportManifestDomainService {
       RequiresSeparateCustomsDeclaration: requiresSeparateCustomsDeclaration,
       RequiresDutiesAndTaxesPrepayment: !!raw.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: requiresSpecialVatInvoice,
+      IsPAK: raw.IsPAK ?? null,
       BatteryModel: batteryModel,
       Errors: errors,
       HasError: errors.length > 0,
@@ -354,10 +355,11 @@ export class ImportManifestDomainService {
       ContentType: row.ContentType,
       PostalCode: row.PostalCode || '',
       CustomerExpressNo: row.CustomerExpressNo || '',
-      DeclaredValue: row.DeclaredValue || null,
+      DeclaredValue: row.DeclaredValue ?? null,
       RequiresSeparateCustomsDeclaration: !!row.RequiresSeparateCustomsDeclaration,
       RequiresDutiesAndTaxesPrepayment: !!row.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: !!row.RequiresSpecialVatInvoice,
+      IsPAK: row.IsPAK ?? null,
       BatteryModel: row.BatteryModel || '',
     };
   }

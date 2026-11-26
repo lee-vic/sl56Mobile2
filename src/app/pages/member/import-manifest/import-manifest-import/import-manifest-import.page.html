@@ -33,7 +33,20 @@
       <div class="upload-icon-wrap">
         <ion-icon name="cloud-upload-outline"></ion-icon>
       </div>
-      <h2>导入标准模板文件</h2>
+      <h2>导入预报文件</h2>
+      <ion-select label="导入模板" interface="action-sheet" [value]="templateId" (ionChange)="templateId = $event.detail.value">
+        <ion-select-option [value]="null">标准模板</ion-select-option>
+        <ion-select-option *ngFor="let t of templates" [value]="t.id">{{ t.name }}</ion-select-option>
+      </ion-select>
+      <ion-button fill="clear" (click)="editTemplate(null)">新建模板</ion-button>
+      <ion-button *ngIf="templateId" fill="clear" (click)="editTemplate(templateId)">编辑模板</ion-button>
+      <ion-button *ngIf="templateId" fill="clear" (click)="deleteTemplate()">删除模板</ion-button>
+      <form *ngIf="showTemplates" [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+        <ion-input label="模板名" formControlName="Name"></ion-input>
+        <ion-input *ngFor="let col of templateColumns" type="number" min="1" [label]="col.label + '列序号'" [formControlName]="col.request"></ion-input>
+        <ion-button type="submit" [disabled]="templateBusy">保存模板</ion-button>
+        <ion-button type="button" fill="clear" (click)="showTemplates = false">取消</ion-button>
+      </form>
       <p class="upload-desc">支持 .csv、.xls、.xlsx 格式，单次最多 500 行，文件不超过 5 MB</p>
 
       <button type="button" class="template-btn" (click)="downloadTemplate()">
@@ -184,7 +197,7 @@
           <div class="row-extra" *ngIf="row.IsExpanded">
             <span>重量：{{ row.Weight || '-' }} KG</span>
             <span>邮编：{{ row.PostalCode || '-' }}</span>
-            <span>申报价值：{{ row.DeclaredValue || '-' }}</span>
+            <span>申报价值：{{ row.DeclaredValue ?? '-' }}</span>
             <span>电池型号：{{ row.BatteryModel || '-' }}</span>
             <span>单独报关：{{ row.RequiresSeparateCustomsDeclaration ? '是' : '否' }}</span>
             <span>关税预付：{{ row.RequiresDutiesAndTaxesPrepayment ? '是' : '否' }}</span>
@@ -251,6 +264,9 @@
           <ion-input label="申报价值" labelPlacement="stacked" type="number" [(ngModel)]="editingRow.EditModel.DeclaredValue" (ionInput)="scheduleEditPriceReload()"></ion-input>
         </div>
         <ion-textarea label="快递单号" labelPlacement="stacked" rows="2" [(ngModel)]="editingRow.EditModel.CustomerExpressNo"></ion-textarea>
+        <ion-select label="包装" [(ngModel)]="editingRow.EditModel.IsPAK" (ionChange)="scheduleEditPriceReload()"><ion-select-option [value]="null">按报价自动判断</ion-select-option>
+          <ion-select-option [value]="true">使用 PAK 袋</ion-select-option>
+          <ion-select-option [value]="false">普通包装</ion-select-option></ion-select>
         <ion-select label="电池型号" labelPlacement="stacked" [(ngModel)]="editingRow.EditModel.BatteryModel" interface="action-sheet" (ionChange)="scheduleEditPriceReload()">
           <ion-select-option *ngFor="let opt of batteryModelOptions" [value]="opt.Value">{{ opt.Text }}</ion-select-option>
         </ion-select>

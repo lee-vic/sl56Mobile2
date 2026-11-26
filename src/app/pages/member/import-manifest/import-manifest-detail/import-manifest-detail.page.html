@@ -122,7 +122,7 @@
     </div>
 
     <!-- Info Card: Additional -->
-    <div class="detail-card" *ngIf="data.PostalCode || data.DeclaredValue || data.CustomerExpressNo || data.TrackNumber">
+    <div class="detail-card" *ngIf="data.PostalCode || data.DeclaredValue != null || data.CustomerExpressNo || data.TrackNumber">
       <div class="detail-card-header">
         <h3>附加信息</h3>
       </div>
@@ -131,7 +131,7 @@
           <span class="detail-label">邮编</span>
           <span class="detail-value">{{ data.PostalCode }}</span>
         </div>
-        <div class="detail-row" *ngIf="data.DeclaredValue">
+        <div class="detail-row" *ngIf="data.DeclaredValue != null">
           <span class="detail-label">申报价值</span>
           <span class="detail-value value-amount">${{ data.DeclaredValue }}</span>
         </div>

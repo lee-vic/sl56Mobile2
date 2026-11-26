@@ -11,6 +11,8 @@ import {
   ImportRowsValidationResult,
   ImportManifestActionResult,
   AvailableCustomerPricesResponse,
+  ForecastBatchResult,
+  ForecastTemplate,
   BulkDeleteRequest,
   BulkDeleteResult,
   DropdownOption,
@@ -47,9 +49,11 @@ export class ImportManifestService {
     pageIndex: number,
     search?: string,
     startDate?: string,
-    endDate?: string
+    endDate?: string,
+    onlyUnprinted = false
   ) {
     let params = new HttpParams().set('pageIndex', pageIndex.toString());
+    if (onlyUnprinted) params = params.set('onlyUnprinted', 'true');
     if (search && search.trim() !== '') {
       params = params.set('search', search.trim().toUpperCase());
     }
@@ -282,6 +286,47 @@ export class ImportManifestService {
   downloadLabel(detailId: number) {
     const url = this.getLabelDownloadUrl(detailId);
     this.openUrl(url);
+  }
+
+  getMergedLabels(ids: number[]) {
+    return this.http.get(this.baseUrl + '/GetDocumentsFile', { params: {ids: ids.join(','), kind: 'labels'},
+      withCredentials: true, responseType: 'blob', observe: 'response' });
+  }
+
+  openDocumentsFile(ids: number[], kind: 'zip' | 'labels' | 'manifest') {
+    this.openUrl(this.baseUrl + '/GetDocumentsFile?ids=' + ids.join(',') + '&kind=' + kind);
+  }
+
+  markPrinted(ids: number[]) {
+    return this.http.post<{Success: boolean; Message: string; UpdatedIds: number[]}>(
+      this.baseUrl + '/MarkPrinted', { Ids: ids }, { withCredentials: true });
+  }
+
+  batchDocuments(file: File, type: number, token?: string) {
+    const data = new FormData();
+    data.append('file', file);
+    const action = token ? '/CommitBatchDocuments?batchId=' + encodeURIComponent(token)
+      : '/PreviewBatchDocuments?attachmentTypeId=' + type;
+    return this.http.post<ForecastBatchResult>(this.baseUrl + action, data, { withCredentials: true });
+  }
+
+  batchStatus(token: string) {
+    return this.http.get<ForecastBatchResult>(this.baseUrl + '/GetBatchDocumentStatus', {
+      params: {batchId: token}, withCredentials: true });
+  }
+
+  templates() {
+    return this.http.get<{rows: ForecastTemplate[]}>(this.baseUrl + '/ListTemplates', {withCredentials: true});
+  }
+
+  saveTemplate(model: Record<string, string | number | null>) {
+    return this.http.post<{success: boolean; message?: string; id: number}>(
+      this.baseUrl + '/SaveTemplate', model, {withCredentials: true});
+  }
+
+  deleteTemplate(id: number) {
+    return this.http.post<{success: boolean; message?: string}>(this.baseUrl + '/DeleteTemplate?id=' + id,
+      null, {withCredentials: true});
   }
 
   private openUrl(url: string) {

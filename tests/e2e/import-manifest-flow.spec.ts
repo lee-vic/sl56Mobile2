@@ -162,6 +162,11 @@ async function setupImportManifestRoutes(page: any) {
       return;
     }
 
+    if (url.includes('/GetBatteryModelOptions')) {
+      await route.fulfill({ json: [] });
+      return;
+    }
+
     // Attachment types
     if (url.includes(`${importManifestBase}/GetAttachmentTypes`)) {
       await route.fulfill({
@@ -337,17 +342,36 @@ test.describe('import manifest list page', () => {
     await expect(page.locator('.state-panel h2')).toBeVisible();
   });
 
+  test('partial label PDF only registers included shipments', async ({ page }) => {
+    await setupImportManifestRoutes(page);
+    await page.route('**/GetDocumentsFile?**', route => route.fulfill({
+      contentType: 'application/pdf', headers: {'X-MergePrint-Included': '1,3',
+        'Access-Control-Expose-Headers': 'X-MergePrint-Included'}, body: '%PDF-1.4'
+    }));
+    await page.route('**/MarkPrinted', route => route.fulfill({json: {Success: true, UpdatedIds: [1,3], Message: ''}}));
+    await page.goto('/member/import-manifest/list');
+    await page.getByRole('button', {name: '批量选择'}).click();
+    await page.getByText('全选当前页', {exact: true}).click();
+    await page.getByText('生成打印 PDF', {exact: true}).click();
+    await expect(page.locator('ion-alert')).toContainText('TEST002');
+    await page.locator('ion-alert button').click();
+    await page.getByText('登记已打印', {exact: true}).click();
+    const submission = page.waitForRequest(req => req.url().endsWith('/MarkPrinted'));
+    await page.locator('ion-alert button').filter({hasText: '已打印'}).click();
+    expect((await submission).postDataJSON().Ids).toEqual([1,3]);
+  });
+
   test('can enter selection mode', async ({ page }) => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/list');
 
     // Enter selection mode via header button
-    const selectionBtn = page.locator('ion-header ion-buttons[slot="end"] ion-button');
+    const selectionBtn = page.getByRole('button', { name: '批量选择' });
     await selectionBtn.click();
 
     await expect(page.locator('.forecast-item ion-checkbox').first()).toBeVisible();
 
-    await selectionBtn.click();
+    await page.getByRole('button', { name: '退出选择' }).click();
     await expect(page.locator('.forecast-item ion-checkbox').first()).not.toBeVisible();
   });
 });
@@ -376,23 +400,25 @@ test.describe('import manifest form page', () => {
     await expect(page.locator('.attachment-empty')).toBeVisible();
 
     // Save button
-    await expect(page.locator('ion-buttons[slot="end"] ion-button')).toBeVisible();
+    await expect(page.locator('ion-footer ion-button')).toBeVisible();
+  });
+
+  test('calculated quote restores shipping conditions and zero declared value', async ({ page }) => {
+    await setupImportManifestRoutes(page);
+    await page.goto('/member/import-manifest/form?price=PRICE01&country=1&weight=2.5&piece=3&type=1&value=0&prepaid=1');
+    await expect(page.locator('ion-input[formControlName="Weight"] input')).toHaveValue('2.5');
+    await expect(page.locator('ion-input[formControlName="DeclaredValue"] input')).toHaveValue('0');
+    await expect(page.locator('input[formControlName="CustomerPriceCode"]')).toHaveValue('PRICE01');
   });
 
   test('content type card toggle works', async ({ page }) => {
     await setupImportManifestRoutes(page);
     await page.goto('/member/import-manifest/form');
 
-    // First card (DOC) should be active by default
+    await expect(page.locator('.ct-card').last()).toHaveClass(/ct-active/);
+    await page.locator('.ct-card').first().click();
     await expect(page.locator('.ct-card').first()).toHaveClass(/ct-active/);
     await expect(page.locator('.ct-card').last()).not.toHaveClass(/ct-active/);
-
-    // Click second card (WPX)
-    await page.locator('.ct-card').last().click();
-
-    // Second card should become active
-    await expect(page.locator('.ct-card').last()).toHaveClass(/ct-active/);
-    await expect(page.locator('.ct-card').first()).not.toHaveClass(/ct-active/);
   });
 
   test('can fill form and submit with new UI', async ({ page }) => {
@@ -412,6 +438,9 @@ test.describe('import manifest form page', () => {
     // Fill piece count
     await page.locator('ion-input[formControlName="Piece"] input').fill('5');
 
+    await page.locator('ion-input[formControlName="Weight"] input').fill('3.5');
+    await page.locator('ion-input[formControlName="DeclaredValue"] input').fill('0');
+
     // Select content type (WPX)
     await page.locator('.ct-card').last().click();
 
@@ -419,10 +448,17 @@ test.describe('import manifest form page', () => {
     const priceSearchbar = page.locator('ion-searchbar').last();
     await expect(priceSearchbar).not.toBeDisabled();
     await priceSearchbar.locator('input').fill('PRICE01');
-    await priceSearchbar.locator('input').press('Enter');
+    await page.locator('.autocomplete-result-list ion-item').filter({ hasText: 'PRICE01' }).first().click();
+    await expect(page.locator('input[formControlName="CustomerPriceCode"]')).toHaveValue('PRICE01');
 
     // Click save
-    await page.locator('ion-buttons[slot="end"] ion-button').click();
+    const submitting = page.waitForRequest(request => request.url().includes('/ImportManifest/Create'));
+    await page.locator('ion-footer ion-button').click();
+    const submitted = (await submitting).postDataJSON();
+    expect(submitted.ObjectNo).toBe('NEWTEST001');
+    expect(Number(submitted.Weight)).toBe(3.5);
+    expect(submitted.DeclaredValue).toBe(0);
+    expect(submitted.IsPAK).toBeNull();
   });
 });
 

@@ -1,11 +1,12 @@
 ﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ImportManifestListPage } from './import-manifest-list.page';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
@@ -52,6 +53,10 @@ describe('ImportManifestListPage', () => {
       'delete',
       'bulkDelete',
       'consumeListDirty',
+      'batchDocuments',
+      'batchStatus',
+      'getMergedLabels',
+      'markPrinted',
     ]);
 
     TestBed.configureTestingModule({
@@ -76,6 +81,70 @@ describe('ImportManifestListPage', () => {
     component = fixture.componentInstance;
   });
 
+  it('registers only the labels included in the returned partial PDF', async () => {
+    component.selectedIds = new Set([10, 20]);
+    serviceSpy.getMergedLabels.and.returnValue(of(new HttpResponse({body: new Blob(['pdf']),
+      headers: new HttpHeaders({'X-MergePrint-Included': '20'})})));
+    serviceSpy.markPrinted.and.returnValue(of({Success: true, UpdatedIds: [20], Message: ''}));
+    serviceSpy.getList.and.returnValue(of(mockListResponse([])));
+    spyOn(alertCtrl, 'create').and.callFake(async (options: any) => {
+      if (options.header === '登记打印') options.buttons[1].handler();
+      return {present: async () => {}} as any;
+    });
+    component.selectedFile('labels');
+    await component.confirmPrinted();
+    expect(serviceSpy.markPrinted).toHaveBeenCalledWith([20]);
+  });
+
+  it('rejects print registration when a PDF comes back without the included IDs', async () => {
+    component.selectedIds.add(10);
+    serviceSpy.getMergedLabels.and.returnValue(of(new HttpResponse({body: new Blob(['pdf'])})));
+    spyOn(alertCtrl, 'create').and.returnValue(Promise.resolve({present: async () => {}} as any));
+    component.selectedFile('labels');
+    await component.confirmPrinted();
+    expect(serviceSpy.markPrinted).not.toHaveBeenCalled();
+  });
+
+  it('replaces a pending list request when only-unprinted is enabled', () => {
+    const previous = new Subject<ReturnType<typeof mockListResponse>>();
+    const unprinted = mockItem({ Id: 4 });
+    serviceSpy.getList.and.returnValues(previous, of(mockListResponse([unprinted])));
+    fixture.detectChanges();
+    component.onlyUnprinted = true;
+    component.loadFirstPage('ABC');
+    previous.next(mockListResponse([mockItem({ IsLabelPrinted: true })]));
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'ABC', undefined, undefined, true);
+    expect(component.items).toEqual([unprinted]);
+  });
+
+  it('requires the inspection receipt before committing or querying a batch', () => {
+    component.archive = new File(['fixture'], 'invoice.zip');
+    component.documentType = 8;
+    component.submitArchive('commit');
+    component.submitArchive('status');
+    expect(serviceSpy.batchDocuments).not.toHaveBeenCalled();
+    expect(serviceSpy.batchStatus).not.toHaveBeenCalled();
+  });
+
+  it('confirms the inspected archive and recovers the same batch result', () => {
+    serviceSpy.getList.and.returnValue(of(mockListResponse([])));
+    fixture.detectChanges();
+    const file = new File(['fixture'], 'invoice.zip');
+    const checked = {BatchId: 'receipt', Status: 1, Items: [{FileName: 'Q1.pdf', ObjectNo: 'Q1'}]};
+    const committed = {...checked, Status: 2, Items: [{...checked.Items[0], ForwardingDocumentId: 42}]};
+    serviceSpy.batchDocuments.and.returnValues(of(checked), of(committed));
+    serviceSpy.batchStatus.and.returnValue(of(committed));
+    component.archive = file;
+    component.documentType = 8;
+    component.submitArchive('preview');
+    component.submitArchive('commit');
+    expect(serviceSpy.batchDocuments.calls.allArgs()).toEqual([[file, 8, undefined], [file, 8, 'receipt']]);
+    component.archive = undefined;
+    component.submitArchive('status');
+    expect(serviceSpy.batchStatus).toHaveBeenCalledWith('receipt');
+    expect(component.batch.Items[0].ForwardingDocumentId).toBe(42);
+  });
+
   // ── 1. Creation ──
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -88,7 +157,7 @@ describe('ImportManifestListPage', () => {
 
     fixture.detectChanges(); // triggers ngOnInit
 
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined);
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined, undefined, undefined, false);
     expect(component.items.length).toBe(2);
     expect(component.items[0].ObjectNo).toBe('TEST001');
     expect(component.isLoaded).toBe(true);
@@ -111,7 +180,7 @@ describe('ImportManifestListPage', () => {
     expect(serviceSpy.consumeListDirty).toHaveBeenCalledTimes(2);
     expect(component.isSelectionMode).toBe(false);
     expect(component.selectedIds.size).toBe(0);
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'ABC');
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'ABC', undefined, undefined, false);
   });
 
   // ── 3. Load error handling ──
@@ -158,7 +227,7 @@ describe('ImportManifestListPage', () => {
     expect(component.searchKeyword).toBe('TEST');
 
     setTimeout(() => {
-      expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'TEST');
+      expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'TEST', undefined, undefined, false);
       done();
     }, 300);
   });
@@ -172,7 +241,7 @@ describe('ImportManifestListPage', () => {
 
     expect(component.searchKeyword).toBe('');
     // loadFirstPage passes '' through getItems which does key || undefined => undefined
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined);
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined, undefined, undefined, false);
   });
 
   // ── 8. Selection mode toggle ──
@@ -267,7 +336,7 @@ describe('ImportManifestListPage', () => {
 
     component.loadNextPage(event);
 
-    expect(serviceSpy.getList).toHaveBeenCalledWith(2, 'ABC');
+    expect(serviceSpy.getList).toHaveBeenCalledWith(2, 'ABC', undefined, undefined, false);
     expect(event.target.complete).toHaveBeenCalled();
   });
 
@@ -279,7 +348,7 @@ describe('ImportManifestListPage', () => {
     component.refreshItems(event);
     tick(500);
 
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'ABC');
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, 'ABC', undefined, undefined, false);
     expect(event.target.complete).toHaveBeenCalled();
   }));
 
@@ -386,7 +455,7 @@ describe('ImportManifestListPage', () => {
     expect(serviceSpy.bulkDelete).toHaveBeenCalledWith([1, 2]);
     expect(component.selectedIds.size).toBe(0);
     expect(component.isSelectionMode).toBe(false);
-    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined);
+    expect(serviceSpy.getList).toHaveBeenCalledWith(1, undefined, undefined, undefined, false);
   });
 
   it('performBulkDelete should show skipped message and reload on partial success', () => {

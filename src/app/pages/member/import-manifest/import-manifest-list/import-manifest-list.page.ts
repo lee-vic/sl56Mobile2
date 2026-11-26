@@ -1,11 +1,11 @@
 ﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonSearchbar, IonInfiniteScroll, AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
 import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
-import { ImportManifestListItem } from 'src/app/interfaces/import-manifest';
+import { AttachmentTypeOption, ForecastBatchResult, ImportManifestListItem } from 'src/app/interfaces/import-manifest';
 
 @Component({
   selector: 'app-import-manifest-list',
@@ -28,6 +28,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   isBatchDeleting: boolean = false;
 
   private searchDebounceTimer?: ReturnType<typeof setTimeout>;
+  private listRequest?: Subscription;
   private isListRequestRunning: boolean = false;
   private readonly destroy$ = new Subject<void>();
 
@@ -40,6 +41,115 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
     private router: Router,
     private alertCtrl: AlertController
   ) {}
+
+  onlyUnprinted = false;
+  showBatchDocuments = false;
+  documentTypes: AttachmentTypeOption[] = [];
+  archive?: File;
+  documentType = 0;
+  batch?: ForecastBatchResult;
+  batchBusy = false;
+
+  openBatchDocuments() {
+    this.showBatchDocuments = !this.showBatchDocuments;
+    if (this.showBatchDocuments && !this.documentTypes.length) {
+      this.service.getAttachmentTypes().subscribe({ next: types => this.documentTypes = types,
+        error: () => this.showAlert('资料类型加载失败', '请稍后重试') });
+    }
+  }
+
+  selectArchive(event: Event) {
+    this.archive = (event.target as HTMLInputElement).files?.[0];
+    this.batch = undefined;
+  }
+
+  submitArchive(action: 'preview' | 'commit' | 'status') {
+    if (this.batchBusy) return;
+
+    const receipt = this.batch?.BatchId;
+    let request: Observable<ForecastBatchResult>;
+    if (action === 'status') {
+      // 查询只需上次检查的回执，客户无需再次选择压缩包。
+      if (!receipt) return;
+      request = this.service.batchStatus(receipt);
+    } else {
+      if (!this.archive || !this.documentType || (action === 'commit' && !receipt)) return;
+      request = this.service.batchDocuments(this.archive, this.documentType, action === 'commit' ? receipt : undefined);
+    }
+
+    this.batchBusy = true;
+    request.pipe(takeUntil(this.destroy$), finalize(() => this.batchBusy = false)).subscribe({
+      next: result => {
+        if (result.Items?.length || !result.Error) this.batch = result;
+        if (result.Error) {
+          this.showAlert('资料处理失败', result.Error);
+        } else if (result.Status === 2) {
+          this.loadFirstPage(this.searchKeyword);
+        }
+      },
+      error: () => this.showAlert('请求未完成', action === 'preview'
+        ? '请稍后重新检查压缩包。'
+        : '请点击“查询结果”，确认这批资料是否已上传。'),
+    });
+  }
+
+  labelUrl = '';
+  labelBusy = false;
+  private labelRequest?: Subscription;
+  private includedIds?: number[];
+
+  private resetLabelFile() {
+    this.labelRequest?.unsubscribe();
+    this.includedIds = undefined;
+    if (this.labelUrl) URL.revokeObjectURL(this.labelUrl);
+    this.labelUrl = '';
+  }
+
+  openPreparedLabels() {
+    if (this.labelUrl) window.open(this.labelUrl, '_blank', 'noopener');
+  }
+
+  selectedFile(kind: 'zip' | 'labels' | 'manifest') {
+    const ids = Array.from(this.selectedIds);
+    if (kind !== 'labels') {
+      this.service.openDocumentsFile(ids, kind);
+      return;
+    }
+    this.resetLabelFile();
+    this.includedIds = [];
+    this.labelBusy = true;
+    this.labelRequest = this.service.getMergedLabels(ids).pipe(finalize(() => this.labelBusy = false)).subscribe({
+      next: response => {
+        // 合并文件可能只含部分预报。登记时只使用服务端确认已放入 PDF 的单号。
+        const included = new Set((response.headers.get('X-MergePrint-Included') || '').split(',').map(Number));
+        const printableIds = ids.filter(id => included.has(id));
+        if (!response.body || !printableIds.length) {
+          this.showAlert('打印失败', '未取得可登记的标签，请重试');
+          return;
+        }
+        this.includedIds = printableIds;
+        this.labelUrl = URL.createObjectURL(response.body);
+        const failed = ids.filter(id => !included.has(id));
+        if (failed.length) this.showAlert('部分标签未生成', failed.map(id =>
+          this.items.find(item => item.Id === id)?.ObjectNo || id).join('、') + ' 将保留未打印状态');
+      }, error: () => this.showAlert('打印失败', '请重新生成打印 PDF')
+    });
+  }
+
+  async confirmPrinted() {
+    const ids = this.includedIds ?? Array.from(this.selectedIds);
+    if (!ids.length || this.labelBusy) return;
+    const dialog = await this.alertCtrl.create({header: '登记打印',
+      message: '确认所选 ' + ids.length + ' 票的入仓标签已经打印？',
+      buttons: [{ text: '取消', role: 'cancel' }, { text: '已打印', handler: () => {
+        this.service.markPrinted(ids).subscribe({next: result => {
+          if (!result.Success || result.UpdatedIds?.length !== ids.length) this.showAlert('打印登记结果', result.Message);
+          this.clearSelection();
+          this.loadFirstPage(this.searchKeyword);
+        }, error: () => this.showAlert('登记失败', '请稍后重试') });
+      }}] });
+    await dialog.present();
+  }
 
   ngOnInit() {
     this.loadFirstPage();
@@ -54,6 +164,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.resetLabelFile();
     this.destroy$.next();
     this.destroy$.complete();
     if (this.searchDebounceTimer) {
@@ -64,6 +175,8 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   // ========== Data Loading ==========
 
   loadFirstPage(key?: string) {
+    this.listRequest?.unsubscribe();
+    this.clearSelection();
     this.currentPageIndex = 1;
     this.items = [];
     this.isLoading = true;
@@ -77,10 +190,10 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
     if (this.isListRequestRunning) return;
     this.isListRequestRunning = true;
 
-    this.service
+    this.listRequest = this.service
       .getList(
         this.currentPageIndex,
-        key || undefined
+        key || undefined, undefined, undefined, this.onlyUnprinted
       )
       .pipe(
         takeUntil(this.destroy$),
@@ -156,6 +269,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   }
 
   toggleItemSelection(item: ImportManifestListItem) {
+    this.resetLabelFile();
     item.Selected = !item.Selected;
     if (item.Selected) {
       this.selectedIds.add(item.Id);
@@ -169,6 +283,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   }
 
   selectAllVisible(): void {
+    this.resetLabelFile();
     this.items.forEach((item) => {
       item.Selected = true;
       this.selectedIds.add(item.Id);
@@ -176,6 +291,7 @@ export class ImportManifestListPage implements OnInit, OnDestroy {
   }
 
   clearSelection(): void {
+    this.resetLabelFile();
     this.selectedIds.clear();
     this.items.forEach((item) => (item.Selected = false));
   }

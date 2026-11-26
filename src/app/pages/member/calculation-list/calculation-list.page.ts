@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { CalculationStateService } from 'src/app/providers/calculation-state.service';
 
 type CalculationResultItem = {
+  PriceIEType?: number;
   PriceType?: string;
   PriceCode?: string;
   Series?: string;
@@ -123,11 +124,17 @@ export class CalculationListPageComponent implements OnInit {
   onTabChange() {
     this.expandedTipKeys.clear();
   }
- 
+
   detail(item: CalculationResultItem) {
     this.calculationState.setCurrentDetail(item);
     localStorage.setItem("CalculationDetail",JSON.stringify(item));
     this.router.navigateByUrl("/member/calculation/calculation-detail");
+  }
+
+  createForecast(item: CalculationResultItem) {
+    this.router.navigate(['/member/import-manifest/form'], {
+      queryParams: { ...this.calculationState.forecastParameters, price: item.PriceCode }
+    });
   }
 
   recalculate() {

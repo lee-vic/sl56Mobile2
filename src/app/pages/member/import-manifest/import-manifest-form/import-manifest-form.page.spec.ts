@@ -394,6 +394,26 @@ describe('ImportManifestFormPage', () => {
   });
 
   // ── 20. fillForm maps detail to form values ──
+  it('keeps a PAK override on readback and sends the opened revision when changing quote', async () => {
+    fixture.detectChanges();
+    component.isEditMode = true;
+    component.id = mockDetail.ObjectId;
+    component.fillForm({...mockDetail, RequiresSeparateCustomsDeclaration: false, RequiresSpecialVatInvoice: false,
+      IsPAK: false, LastChanged: 'open-revision'});
+    const previous = {Id: 1, Code: mockDetail.CustomerPriceCode, Name: '原报价'};
+    component.priceItemClick(previous);
+    expect(component.form.get('IsPAK')?.value).toBe(false);
+    component.priceItemClick({Id: 2, Code: 'NEW-PAK', Name: '新报价'});
+    expect(component.form.get('IsPAK')?.value).toBeNull();
+    (component as any).isPriceLoading = false;
+    serviceSpy.edit.and.returnValue(of({Success: true, ErrMsg: ''}));
+    loadingCtrlSpy.create.and.returnValue(Promise.resolve(mockLoading as any));
+    await component.save();
+    expect(serviceSpy.edit).toHaveBeenCalledWith(jasmine.objectContaining({
+      CustomerPriceCode: 'NEW-PAK', IsPAK: null, LastChanged: 'open-revision'
+    }));
+  });
+
   it('fillForm should map all detail fields correctly', () => {
     fixture.detectChanges();
     // Pre-populate attachments with a customs doc so the auto-cancel guard won't reset

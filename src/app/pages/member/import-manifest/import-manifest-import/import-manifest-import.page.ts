@@ -1,4 +1,6 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { FormControl, FormGroup } from '@angular/forms';
+import { ForecastTemplate } from 'src/app/interfaces/import-manifest';
+import { Component, OnInit } from '@angular/core';
 import { AlertController, NavController, ToastController } from '@ionic/angular';
 import { ImportManifestService } from 'src/app/providers/import-manifest.service';
 import { ImportManifestDomainService } from 'src/app/providers/import-manifest-domain.service';
@@ -79,7 +81,77 @@ export class ImportManifestImportPage implements OnInit {
     private toastCtrl: ToastController
   ) {}
 
+  templates: ForecastTemplate[] = [];
+  templateId: number | null = null;
+  showTemplates = false;
+  editTemplateId: number | null = null;
+  templateBusy = false;
+  readonly templateColumns: {request: string; view: keyof ForecastTemplate; label: string}[] = [
+    { request: 'NumberColumnIndex', view: 'objectNoCol', label: '入仓单号' },
+    { request: 'CountryColumnIndex', view: 'countryCol', label: '国家' },
+    { request: 'PriceColumnIndex', view: 'priceCol', label: '报价代码' },
+    { request: 'PieceColumnIndex', view: 'pieceCol', label: '件数' },
+    { request: 'WeightColumnIndex', view: 'weightCol', label: '重量' },
+    { request: 'ProductTypeColumnIndex', view: 'contentTypeCol', label: '货物类型' },
+    { request: 'PostalcodeColumnIndex', view: 'postalCodeCol', label: '邮编' },
+    { request: 'DeclareValueColumnIndex', view: 'declaredValueCol', label: '申报价值' },
+    { request: 'CustomerExpressNoColumnIndex', view: 'customerExpressNoCol', label: '客户快递单号' },
+  ];
+  readonly templateForm = this.createTemplateForm();
+
+  private createTemplateForm() {
+    const controls: Record<string, FormControl<string | number | null>> = {Name: new FormControl('')};
+    for (const column of this.templateColumns) controls[column.request] = new FormControl<number | null>(null);
+    return new FormGroup(controls);
+  }
+
+  loadTemplates() {
+    this.service.templates().subscribe({next: res => this.templates = res.rows || [],
+      error: () => this.showAlert('加载模板失败', '请稍后重试')});
+  }
+
+  editTemplate(id: number | null) {
+    this.editTemplateId = id;
+    const row = this.templates.find(t => t.id === id);
+    this.templateForm.reset();
+    this.templateForm.controls.Name.setValue(row?.name || '');
+    for (const column of this.templateColumns)
+      this.templateForm.controls[column.request].setValue(row?.[column.view] ?? null);
+    this.showTemplates = true;
+  }
+
+  saveTemplate() {
+    if (this.templateBusy) return;
+    this.templateBusy = true;
+    this.service.saveTemplate({...this.templateForm.getRawValue(), Id: this.editTemplateId}).subscribe({
+      next: res => {
+        this.templateBusy = false;
+        if (!res.success) { this.showAlert('保存失败', res.message); return; }
+        this.templateId = res.id;
+        this.showTemplates = false;
+        this.loadTemplates();
+      }, error: () => { this.templateBusy = false; this.showAlert('保存失败', '请稍后重试'); }
+    });
+  }
+
+  async deleteTemplate() {
+    const id = this.templateId;
+    if (!id) return;
+    const dialog = await this.alertCtrl.create({header: '删除当前模板？', buttons: [
+      { text: '取消', role: 'cancel' }, {text: '删除', role: 'destructive', handler: () => {
+        this.service.deleteTemplate(id).subscribe({next: res => {
+          if (!res.success) { this.showAlert('删除失败', res.message); return; }
+          this.templateId = null;
+          this.showTemplates = false;
+          this.loadTemplates();
+        }, error: () => this.showAlert('删除失败', '请稍后重试')});
+      }}
+    ]});
+    await dialog.present();
+  }
+
   ngOnInit() {
+    this.loadTemplates();
     this.loadReferenceData();
   }
 
@@ -139,6 +211,7 @@ export class ImportManifestImportPage implements OnInit {
     this.parseError = '';
 
     const formData = new FormData();
+    if (this.templateId) formData.append('templateId', String(this.templateId));
     formData.append('file', this.selectedFile, this.selectedFile.name);
 
     this.service.parseImport(formData).subscribe({
@@ -278,6 +351,7 @@ export class ImportManifestImportPage implements OnInit {
       RequiresSeparateCustomsDeclaration: !!model.RequiresSeparateCustomsDeclaration || !!model.RequiresSpecialVatInvoice,
       RequiresDutiesAndTaxesPrepayment: !!model.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: !!model.RequiresSpecialVatInvoice,
+      IsPAK: model.IsPAK ?? null,
       BatteryModel: (model.BatteryModel || '').trim().toUpperCase(),
     };
   }
@@ -543,6 +617,15 @@ export class ImportManifestImportPage implements OnInit {
       next: (res) => {
         this.isSaving = false;
         if (!res.Success) {
+          if (res.Data?.savedNumbers?.length) {
+            const saved = new Set(validRows.slice(0, res.Data.savedNumbers.length));
+            this.previewRows = this.previewRows.filter(row => !saved.has(row));
+            this.recalculateSummary();
+            this.applyFilter('all');
+            this.service.markListDirty();
+            this.showAlert('部分导入成功', res.ErrMsg + ' 已保存：' + res.Data.savedNumbers.join('、'));
+            return;
+          }
           if (res.RowErrors || res.Rows) {
             this.applyServerValidationResult(res, true);
             this.currentStep = 2;
@@ -562,7 +645,7 @@ export class ImportManifestImportPage implements OnInit {
       },
       error: () => {
         this.isSaving = false;
-        this.showAlert('导入失败', '网络错误，请稍后重试');
+        this.showAlert('回执未收到', '请先按入仓单号核对已保存记录，再导入剩余行');
       },
     });
   }

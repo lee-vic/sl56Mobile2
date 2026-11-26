@@ -46,6 +46,8 @@ export class ImportManifestFormPage implements OnInit {
   private appliedRequiresSpecialVatInvoice: boolean = false;
   private initialPriceCode: string = '';
   private originalPriceCode: string = '';
+  private lastSelectedCode = '';
+  private editVersion: string | null = null;
   private priceCalculationTimer: ReturnType<typeof setTimeout> | null = null;
   private priceCalculationRequestNo: number = 0;
 
@@ -85,6 +87,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresDutiesAndTaxesPrepayment: [false],
       RequiresSpecialVatInvoice: [false],
       BatteryModel: [''],
+      IsPAK: [null],
     });
   }
 
@@ -118,6 +121,22 @@ export class ImportManifestFormPage implements OnInit {
         } else {
           this.isInitializing = false;
           this.resetCustomerPriceOptions('请先填写目的国、件数、重量和货物类型', true);
+          const prefill = this.route.snapshot.queryParams || {};
+          if (prefill.price && prefill.country) {
+            const country = this.countryOptions.find(c => c.Id === Number(prefill.country));
+            if (country) {
+              this.selectedCountry = country;
+              this.countryInput = country.Name + ' (' + country.Code + ')';
+              this.initialPriceCode = prefill.price;
+              this.showSpecialVat = prefill.separate === '1';
+              this.form.patchValue({ CountryId: country.Id, Piece: Number(prefill.piece) || 1,
+                Weight: Number(prefill.weight) || null, ContentType: Number(prefill.type ?? 1),
+                PostalCode: prefill.postal || '', DeclaredValue: prefill.value ? Number(prefill.value) : null,
+                CustomerPriceCode: prefill.price, RequiresDutiesAndTaxesPrepayment: prefill.prepaid === '1',
+                RequiresSeparateCustomsDeclaration: this.showSpecialVat, RequiresSpecialVatInvoice: this.showSpecialVat && prefill.vat === '1',
+                BatteryModel: prefill.battery || '' }, { emitEvent: false });
+            }
+          }
           this.scheduleAvailablePriceReload(0);
         }
       },
@@ -179,6 +198,8 @@ export class ImportManifestFormPage implements OnInit {
     this.countryInput = matched ? `${matched.Name} (${matched.Code})` : '';
     this.initialPriceCode = detail.CustomerPriceCode || '';
     this.originalPriceCode = this.initialPriceCode;
+    this.lastSelectedCode = this.initialPriceCode;
+    this.editVersion = detail.LastChanged;
     this.selectedPrice = this.initialPriceCode
       ? { Id: 0, Code: this.initialPriceCode, Name: this.initialPriceCode }
       : null;
@@ -198,6 +219,7 @@ export class ImportManifestFormPage implements OnInit {
       RequiresSeparateCustomsDeclaration: detail.RequiresSeparateCustomsDeclaration,
       RequiresDutiesAndTaxesPrepayment: detail.RequiresDutiesAndTaxesPrepayment,
       RequiresSpecialVatInvoice: detail.RequiresSpecialVatInvoice,
+      IsPAK: detail.IsPAK ?? null,
       BatteryModel: detail.BatteryModel || '',
     }, { emitEvent: false });
     this.appliedRequiresSeparateCustomsDeclaration = !!detail.RequiresSeparateCustomsDeclaration;
@@ -243,6 +265,7 @@ export class ImportManifestFormPage implements OnInit {
       'DeclaredValue',
       'RequiresDutiesAndTaxesPrepayment',
       'BatteryModel',
+      'IsPAK',
     ].forEach((controlName) => {
       this.form.get(controlName)?.valueChanges.subscribe(() => {
         this.scheduleAvailablePriceReload();
@@ -289,11 +312,12 @@ export class ImportManifestFormPage implements OnInit {
       Weight: formValue.Weight,
       ContentType: formValue.ContentType,
       PostalCode: formValue.PostalCode || '',
-      DeclaredValue: formValue.DeclaredValue || null,
+      DeclaredValue: formValue.DeclaredValue ?? null,
       CustomerExpressNo: formValue.CustomerExpressNo || '',
       RequiresSeparateCustomsDeclaration: formValue.RequiresSeparateCustomsDeclaration || false,
       RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
       RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
+      IsPAK: formValue.IsPAK ?? null,
       BatteryModel: formValue.BatteryModel || '',
     };
   }
@@ -371,7 +395,7 @@ export class ImportManifestFormPage implements OnInit {
       .find((item) => !!item) || null;
 
     if (selected) {
-      this.setSelectedPrice(selected);
+      this.setSelectedPrice(selected, false);
       this.setPriceMessage('', false);
       return;
     }
@@ -727,7 +751,12 @@ export class ImportManifestFormPage implements OnInit {
     this.hasPriceValidationError = true;
   }
 
-  private setSelectedPrice(item: DropdownOption) {
+  private setSelectedPrice(item: DropdownOption, userSelection = true) {
+    // 恢复原报价时保留手选包装；主动换报价时重新按新报价算价。
+    if (userSelection && this.lastSelectedCode.toUpperCase() !== item.Code.toUpperCase()) {
+      this.form.get('IsPAK')?.setValue(null);
+    }
+    this.lastSelectedCode = item.Code;
     this.showPriceList = false;
     this.priceInput = item.Code;
     this.form.get('CustomerPriceCode')?.setValue(item.Code, { emitEvent: false });
@@ -800,6 +829,7 @@ export class ImportManifestFormPage implements OnInit {
       : null;
     const request = {
       ObjectId: this.id,
+      LastChanged: this.editVersion,
       ObjectNo: formValue.ObjectNo?.trim().toUpperCase(),
       CountryId: formValue.CountryId,
       CustomerPriceCode: this.selectedPrice?.Code || formValue.CustomerPriceCode?.trim().toUpperCase(),
@@ -807,11 +837,12 @@ export class ImportManifestFormPage implements OnInit {
       Weight: formValue.Weight,
       ContentType: formValue.ContentType,
       PostalCode: formValue.PostalCode?.trim() || null,
-      DeclaredValue: formValue.DeclaredValue || null,
+      DeclaredValue: formValue.DeclaredValue ?? null,
       CustomerExpressNo: expressNoResult.value || null,
       RequiresSeparateCustomsDeclaration: formValue.RequiresSeparateCustomsDeclaration || false,
       RequiresDutiesAndTaxesPrepayment: formValue.RequiresDutiesAndTaxesPrepayment || false,
       RequiresSpecialVatInvoice: formValue.RequiresSpecialVatInvoice || false,
+      IsPAK: formValue.IsPAK ?? null,
       BatteryModel: formValue.BatteryModel || '',
       PendingDocumentsJson: pendingDocsJson,
       DeletedDocumentIds: this.deletedDocumentIds.length > 0 ? this.deletedDocumentIds : null,
