@@ -39,6 +39,7 @@ ion-content.calc-content {
 }
 
 .mode-card ion-card-content {
+    padding-block: 6px;
 }
 
 .mode-header {
@@ -56,28 +57,11 @@ ion-content.calc-content {
     color: var(--calc-title);
 }
 
-.mode-note {
+.inquiry-review-note {
     display: block;
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--calc-note);
-}
-
-.progress-wrap {
-    margin-top: 8px;
-}
-
-.progress-label {
-    font-size: 12px;
+    padding: 8px 0;
     color: var(--calc-subtitle);
-    margin-bottom: 4px;
-}
-
-.progress-wrap ion-progress-bar {
-    --background: rgba(148, 163, 184, 0.25);
-    --progress-background: linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%);
-    border-radius: 999px;
-    height: 6px;
+    line-height: 1.5;
 }
 
 .calc-form-list {

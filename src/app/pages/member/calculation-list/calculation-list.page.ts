@@ -32,7 +32,7 @@ export class CalculationListPageComponent implements OnInit {
   selectingForecast = false;
   private expandedTipKeys = new Set<string>();
   private highRiskTipKeywords = ['税', '关税', '收费', '仅', '限制', '失败', '拒收', '不支持'];
-  constructor(private nav: NavController, private router: Router, private calculationState: CalculationStateService) { }
+  constructor(private nav: NavController, private router: Router, public readonly calculationState: CalculationStateService) { }
 
   ngOnInit() {
     this.calculateResultList = this.calculationState.getCalculationResults() as CalculationResultItem[] | null || [];

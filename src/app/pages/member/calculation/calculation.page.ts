@@ -1,7 +1,7 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators, FormBuilder, FormArray } from '@angular/forms';
 import { AlertController } from '@ionic/angular';
-import { CalculationService } from 'src/app/providers/calculation.service';
+import { CalculationOption, CalculationProduct, CalculationService } from 'src/app/providers/calculation.service';
 import { CountryService } from 'src/app/providers/country.service';
 import { CountryAutoCompleteService } from 'src/app/providers/country-auto-complete.service';
 import { Router } from '@angular/router';
@@ -18,12 +18,12 @@ import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
   styleUrls: ["./calculation.page.scss"],
 })
 export class CalculationPage implements OnInit, OnDestroy {
-  private readonly unlimitedTransportName = "不限";
+  productOptions: CalculationProduct[] = [];
+  filterStatus: 'loading' | 'ready' | 'error' = 'loading';
   calculateMode = "1";
   countryList: Array<any> = [];
   pieceTemplateRules: Array<any> = [];
-  modeOfTransportList: Array<any> = [];
-  volumetricDivisorList: Array<any> = [];
+  modeOfTransportList: CalculationOption[] = [];
   priceRuleTemplateInfoList: Array<any> = [];
   countrySearch: Array<any> = [];
   selectedCountry: any;
@@ -42,16 +42,10 @@ export class CalculationPage implements OnInit, OnDestroy {
   calculating = false;
   inquiryError = '';
   inquiryNotice = '';
-  advancedOpen = true;
-  expressProductId: number | null = null;
+  private sizeNotice = '';
   private inquiryPieceCount: number | null = null;
-  private expressTransports: InquiryResult['Transports'] = [];
   private pendingInquiry: InquiryResult | null = null;
   private readonly cancelParsing$ = new Subject<void>();
-
-  get visibleTransports() {
-    return this.expressProductId === null ? this.modeOfTransportList : this.expressTransports;
-  }
 
   openInquiry() {
     this.inquiryError = '';
@@ -93,8 +87,7 @@ export class CalculationPage implements OnInit, OnDestroy {
     this.service.parseInquiry(text).pipe(takeUntil(this.cancelParsing$), takeUntil(this.destroy$),
       finalize(() => this.parsing = false)).subscribe({
       next: result => {
-        // 国际快递的产品编号为 0，也是有效的计价条件。
-        if (!result?.Draft || !Array.isArray(result.Draft.Sizes) || !Number.isInteger(result.ProductId) || !Array.isArray(result.Transports)) {
+        if (!result?.Draft || !Array.isArray(result.Draft.Sizes)) {
           this.inquiryError = '未能读取询价信息，请重试或手动填写。';
           return;
         }
@@ -105,7 +98,7 @@ export class CalculationPage implements OnInit, OnDestroy {
     });
   }
 
-  private applyInquiry({ Draft: draft, ProductId, Transports }: InquiryResult) {
+  private applyInquiry({ Draft: draft }: InquiryResult) {
     const issues = [...(draft.ReviewMessages || [])];
     const text = (value: string) => (value || '').trim().toUpperCase();
     const country = text(draft.CountryName);
@@ -120,22 +113,15 @@ export class CalculationPage implements OnInit, OnDestroy {
     else issues.push('请选择目的国家');
 
     this.calculationState.clearAll();
-    this.expressProductId = ProductId;
     this.inquiryPieceCount = Number.isInteger(draft.Piece) && draft.Piece > 0 ? draft.Piece : null;
-    this.expressTransports = Transports;
-    const previous = this.myForm.get('ModeOfTransportIdList').value;
-    const requested = [...new Set((draft.ModeOfTransportNames || []).map(text).filter(n => n && n !== '不限'))];
-    const channels = requested.length ? Transports.filter(t => requested.includes(text(t.Name))) :
-      Transports.filter(t => String(t.Id) === String(previous || 0));
-    const channel = requested.length <= 1 && channels.length === 1 ? channels[0] : null;
-    if (!channel) issues.push('请在运输方式中选择本票使用的渠道');
-    if (draft.ProductTypeNames?.some(n => n !== '不限' && n !== '国际快递')) issues.push('请确认这票货物适用国际快递');
+    const products = this.matchInquiryOptions(draft.ProductTypeNames, this.productOptions, '产品类型', issues);
+    this.myForm.get('ProductTypeIdList').setValue(products);
+    const channels = this.matchInquiryOptions(draft.ModeOfTransportNames, this.modeOfTransportList, '运输方式', issues);
 
     const sizes = this.inquirySizes(draft.Sizes, draft.ActualWeight, draft.Piece, issues);
     const hasExtras = !!(draft.PostalCode || draft.City || draft.DeclaredValue != null || draft.Sizes.length);
-    if (hasExtras || requested.length || !channel) this.calculateMode = '2';
+    this.calculateMode = hasExtras ? '2' : '1';
     this.applyModeRules();
-    this.advancedOpen = hasExtras;
     let dollars: number | null = null;
     if (draft.DeclaredValue != null) {
       if (text(draft.DeclaredCurrency) === 'USD' && draft.DeclaredValue >= 0) dollars = draft.DeclaredValue;
@@ -146,7 +132,7 @@ export class CalculationPage implements OnInit, OnDestroy {
     this.addSizeRow();
     this.myForm.patchValue({ piece: Math.max(1, sizes.length), isEditSize: !!sizes.length,
       postalCode: draft.PostalCode || '', city: draft.City || '', declaredValue: dollars,
-      volumeWeight: '', volumetric: '1', ModeOfTransportIdList: channel?.Id ?? '' });
+      ModeOfTransportIdList: channels });
     sizes.forEach((row, index) => {
       const group = this.sizes.at(index);
       group.get('Weight').setValidators([Validators.required, Validators.min(0.0001)]);
@@ -155,7 +141,9 @@ export class CalculationPage implements OnInit, OnDestroy {
         Weight: row.Weight > 0 ? row.Weight : null, Length: dimension(row.Length), Width: dimension(row.Width), Height: dimension(row.Height) });
     });
     // 规格模式下也保存本票实重，客户切回按实重时可以继续使用。
-    this.actualWeightControl.setValue(draft.ActualWeight > 0 ? draft.ActualWeight : '');
+    const sizeWeight = sizes.length && this.sizes.valid
+      ? sizes.reduce((sum, row) => sum + row.Piece * row.Weight, 0) : 0;
+    this.actualWeightControl.setValue(draft.ActualWeight > 0 ? draft.ActualWeight : sizeWeight || '');
     const cargo = text(draft.ProductContentTypeName);
     if (cargo === 'DOC' || cargo === 'WPX') this.myForm.get('ProductContentType').setValue(cargo === 'DOC' ? '0' : '1');
     const prepaid = draft.ExcludesDutyPrepayment && this.priceRuleTemplateInfoList.find(
@@ -165,14 +153,18 @@ export class CalculationPage implements OnInit, OnDestroy {
       this.selectRuleIds = prepaid ? [prepaid.Id] : [];
       issues.push('请核对整票属性并按需勾选：' + draft.CargoAttributeNames.join('、'));
     }
-    const note = !draft.Sizes.length && draft.Piece > 1 ? '共 ' + draft.Piece + ' 件，按整票实重查询。' : '';
-    this.inquiryNotice = issues.join('；') + (issues.length ? '。' : '') + note;
+    this.sizeNotice = draft.Sizes.length ? '' : (draft.Piece > 1 ? '识别到 ' + draft.Piece + ' 件。' : '') + 'AI 未解析出尺寸，本次按实重查价。';
+    this.inquiryNotice = issues.join('；') + (issues.length ? '。' : '') + this.sizeNotice;
     if (!issues.length && this.canSubmit) {
-      void this.doCalculate(note);
+      void this.doCalculate();
     }
   }
 
   private inquirySizes(rows: InquirySize[], weight: number, count: number, issues: string[]) {
+    if (rows.length > 100) {
+      issues.push('按件查价每票最多支持 100 件，请核对规格');
+      return [];
+    }
     let totalWeight = 0;
     let totalPieces = 0;
     let complete = true;
@@ -183,6 +175,7 @@ export class CalculationPage implements OnInit, OnDestroy {
       totalPieces += row.Piece;
       totalWeight += row.Weight * row.Piece;
     });
+    if (totalPieces > 100) issues.push('按件查价每票最多支持 100 件');
     if (!complete) issues.push('请核对每行的件数、实重和长宽高');
     else if (rows.length && ((weight > 0 && Math.round(weight * 10000) !== Math.round(totalWeight * 10000)) ||
       (count != null && totalPieces !== count))) {
@@ -204,28 +197,22 @@ export class CalculationPage implements OnInit, OnDestroy {
     public service: CalculationService
   ) {
     this.myForm = this.formBuilder.group({
-      ModeOfTransportIdList: [""],
+      ProductTypeIdList: this.formBuilder.nonNullable.control<number[]>([]),
+      ModeOfTransportIdList: this.formBuilder.nonNullable.control<number[]>([]),
       ProductContentType: ["1", Validators.required],
       countryId: ["", Validators.required],
       actualWeight: ["", Validators.required],
-      volumeWeight: [],
       declaredValue: [],
       postalCode: [],
       city: [],
-      volumetric: ["1"],
       isEditSize: [false],
       sizes: this.formBuilder.array([this.createSizeForm()]),
       piece: [1, [Validators.required, Validators.min(1)]],
     });
   }
   ngOnInit(): void {
-    this.service.getModeOfTransportList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
-      this.modeOfTransportList = Array.isArray(res) ? res : [];
-      this.applyDefaultTransportForFullMode();
-    });
-    this.service.getVolumetricDivisorList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
-      this.volumetricDivisorList = Array.isArray(res) ? res : [];
-    });
+    this.myForm.get('ProductTypeIdList').valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.updateTransportOptions());
+    this.loadFilterOptions();
     this.service.getPriceRuleTemplateInfoList().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
       this.priceRuleTemplateInfoList = Array.isArray(res) ? res : [];
     });
@@ -239,7 +226,7 @@ export class CalculationPage implements OnInit, OnDestroy {
       this.countrySearch = list;
     });
     this.myForm.get("piece")?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((piece: number) => {
-      if (piece == null || piece <= 0) {
+      if (!Number.isInteger(Number(piece)) || piece <= 0 || piece > 100) {
         return;
       }
 
@@ -298,52 +285,67 @@ export class CalculationPage implements OnInit, OnDestroy {
   }
 
   private applyModeRules() {
-    const transportControl = this.myForm.get("ModeOfTransportIdList");
-    const isEditSizeControl = this.myForm.get("isEditSize");
-
-    if (this.calculateMode === "2") {
-      transportControl?.setValidators([Validators.required]);
-      this.applyDefaultTransportForFullMode();
-      isEditSizeControl?.enable({ emitEvent: false });
+    const sizeControl = this.myForm.get('isEditSize');
+    if (this.calculateMode === '2') {
+      sizeControl.enable({ emitEvent: false });
     } else {
-      transportControl?.clearValidators();
-      transportControl?.setValue("", { emitEvent: false });
-      isEditSizeControl?.setValue(false, { emitEvent: false });
-      isEditSizeControl?.disable({ emitEvent: false });
+      sizeControl.disable({ emitEvent: false });
     }
 
-    transportControl?.updateValueAndValidity({ emitEvent: false });
-    this.applyWeightMode(!!isEditSizeControl?.value);
+    this.applyWeightMode(!!sizeControl.value);
   }
 
-  private applyDefaultTransportForFullMode() {
-    if (this.calculateMode !== "2") {
-      return;
-    }
+  loadFilterOptions() {
+    this.filterStatus = 'loading';
+    this.service.getCalculationProducts().pipe(takeUntil(this.destroy$)).subscribe({
+      next: products => {
+        this.productOptions = products;
+        this.updateTransportOptions();
+        this.filterStatus = 'ready';
+      },
+      error: () => this.filterStatus = 'error'
+    });
+  }
 
-    const transportControl = this.myForm.get("ModeOfTransportIdList");
-    const currentValue = transportControl?.value;
-    const hasValue = currentValue !== null && currentValue !== undefined && currentValue !== "";
-    if (hasValue) {
-      return;
+  private updateTransportOptions() {
+    const selected: number[] = this.myForm.get('ProductTypeIdList').value;
+    // 同一渠道可能属于多个产品，切换产品后保留仍然适用的已选渠道。
+    const options = new Map<number, CalculationOption>();
+    for (const product of this.productOptions) {
+      if (!selected.length || selected.includes(product.Id)) {
+        for (const channel of product.Transports) options.set(channel.Id, channel);
+      }
     }
+    this.modeOfTransportList = [...options.values()].sort((a, b) => a.Name.localeCompare(b.Name));
+    const channels = this.myForm.get('ModeOfTransportIdList');
+    channels.setValue(channels.value.filter((id: number) => options.has(id)));
+  }
 
-    const unlimitedOption = this.visibleTransports.find((item) => item?.Name === this.unlimitedTransportName);
-    if (unlimitedOption?.Id !== null && unlimitedOption?.Id !== undefined) {
-      transportControl?.setValue(unlimitedOption.Id, { emitEvent: false });
+  private matchInquiryOptions(names: string[] | null, options: CalculationOption[], label: string, issues: string[]) {
+    const ids: number[] = [];
+    for (const name of new Set((names || []).map(value => value.trim()).filter(value => value && value !== '不限'))) {
+      const matches = options.filter(option => option.Name.trim().toUpperCase() === name.toUpperCase());
+      if (matches.length === 1) {
+        if (!ids.includes(matches[0].Id)) ids.push(matches[0].Id);
+      } else {
+        issues.push('请核对' + label + '：' + name);
+      }
     }
+    return ids;
   }
 
   private applyWeightMode(isEditSize: boolean) {
     const actualWeightControl = this.myForm.get("actualWeight");
     const sizeMode = this.calculateMode === "2" && !!isEditSize;
 
+    const rowCount = this.myForm.get("piece");
     if (sizeMode) {
+      rowCount.enable({ emitEvent: false });
       this.sizes.enable({ emitEvent: false });
       actualWeightControl?.clearValidators();
-      if (this.expressProductId === null) actualWeightControl?.setValue("", { emitEvent: false });
       actualWeightControl?.disable({ emitEvent: false });
     } else {
+      rowCount.disable({ emitEvent: false });
       this.sizes.disable({ emitEvent: false });
       actualWeightControl?.setValidators([Validators.required, Validators.min(0.01)]);
       actualWeightControl?.enable({ emitEvent: false });
@@ -377,31 +379,6 @@ export class CalculationPage implements OnInit, OnDestroy {
     return !this.submitHint;
   }
 
-  get formProgress() {
-    const requiredSteps = this.calculateMode === "2" ? 4 : 3;
-    let completedSteps = 0;
-
-    if (this.myForm.get("ProductContentType")?.valid) {
-      completedSteps += 1;
-    }
-    if (this.selectedCountry) {
-      completedSteps += 1;
-    }
-    if (this.isSizeMode ? this.sizes.valid : this.actualWeightControl?.valid) {
-      completedSteps += 1;
-    }
-    if (this.calculateMode === "2" && this.myForm.get("ModeOfTransportIdList")?.valid) {
-      completedSteps += 1;
-    }
-
-    return Math.min(completedSteps / requiredSteps, 1);
-  }
-
-  get formProgressLabel() {
-    const percentage = Math.round(this.formProgress * 100);
-    return `资料完成度 ${percentage}%`;
-  }
-
   get isSizeMode() {
     return this.calculateMode === "2" && !!this.myForm.get("isEditSize")?.value;
   }
@@ -409,6 +386,10 @@ export class CalculationPage implements OnInit, OnDestroy {
   get submitHint() {
     if (!this.selectedCountry) {
       return "请先选择有效国家";
+    }
+    if (this.isSizeMode && (Number(this.myForm.get('piece').value) > 100 ||
+        this.sizes.controls.reduce((sum, row) => sum + Number(row.get('Piece').value || 0), 0) > 100)) {
+      return '按件查价每票最多支持 100 件。';
     }
     if (this.isSizeMode && this.sizes.invalid) {
       return "请完善规格尺寸信息";
@@ -526,32 +507,32 @@ export class CalculationPage implements OnInit, OnDestroy {
     const formValue = this.myForm.getRawValue();
     const payload: any = {
       ...formValue,
+      ProductTypeIdList: formValue.ProductTypeIdList.join(',') || '-1',
+      ModeOfTransportIdList: formValue.ModeOfTransportIdList.join(',') || '0',
       countryId: this.selectedCountry?.Id,
       SeletedTemplateRules: this.selectRuleIds,
     };
 
-    if (this.expressProductId !== null) payload.ProductTypeIdList = String(this.expressProductId);
-
     if (!this.isSizeMode || this.calculateMode === "1") {
       payload.sizes = [];
+      // 表单中的 piece 是规格行数，按整票实重计价时不能带入。
+      payload.piece = 1;
+      payload.isEditSize = false;
     } else {
       // 按件计价只提交明细重量，暂存的整票实重留给界面切换。
       payload.actualWeight = "";
     }
 
     if (this.calculateMode === "1") {
-      payload.ModeOfTransportIdList = "";
       payload.postalCode = "";
       payload.city = "";
       payload.declaredValue = "";
-      payload.volumeWeight = "";
-      payload.volumetric = "1";
     }
 
     return payload;
   }
 
-  async doCalculate(pieceNotice = '') {
+  async doCalculate() {
     if (!this.selectedCountry) {
       this.hasCountryValidationError = true;
       this.myForm.get("countryId")?.markAsTouched();
@@ -581,7 +562,7 @@ export class CalculationPage implements OnInit, OnDestroy {
     // 规格模式统计本次提交的明细，按实重时优先采用该票识别出的总件数。
     const forecastPieces = payload.sizes.length
       ? payload.sizes.reduce((sum, row) => sum + Number(row.Piece), 0)
-      : this.inquiryPieceCount ?? (payload.piece || 1);
+      : this.inquiryPieceCount ?? 1;
     this.service
       .calculate(payload)
       .pipe(
@@ -603,10 +584,10 @@ export class CalculationPage implements OnInit, OnDestroy {
               value: payload.declaredValue ?? '', prepaid: Number(selectedRules.includes('关税预付')),
               separate: Number(selectedRules.includes('单独报关')), vat: Number(selectedRules.includes('开专票')),
               battery: selectedRules.find(code => ['PI966', 'PI967', 'PI969', 'PI970'].includes(code)) || '' };
+            this.calculationState.sizeNotice = !payload.sizes.length ? this.sizeNotice : '';
             this.calculationState.setCalculationResults(res);
             this.calculationState.clearCurrentDetail();
             this.router.navigateByUrl('/member/calculation/calculation-list');
-            if (pieceNotice) void this.uiFeedback.presentToast(pieceNotice);
             return;
           }
 
@@ -693,16 +674,8 @@ export class CalculationPage implements OnInit, OnDestroy {
     this.myForm.get("piece")?.setValue(nextPiece);
   }
 
-  restoreManualScope() {
-    this.expressProductId = null;
-    this.inquiryPieceCount = null;
-    this.advancedOpen = true;
-    this.inquiryNotice = '';
-  }
-
   segmentChanged(ev: CustomEvent) {
-    this.restoreManualScope();
-    this.selectRuleIds = [];
+    this.inquiryNotice = '';
     this.showCountryList = false;
     this.hasCountryValidationError = false;
     this.calculateMode = ev.detail.value as string;

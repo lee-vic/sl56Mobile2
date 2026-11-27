@@ -26,6 +26,4 @@ export interface InquiryDraft {
 
 export interface InquiryResult {
   Draft: InquiryDraft;
-  ProductId: number;
-  Transports: { Id: number; Name: string }[];
 }

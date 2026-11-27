@@ -7,6 +7,7 @@ type CalculationRecord = Record<string, unknown>;
 })
 export class CalculationStateService {
   private calculationResults: Array<CalculationRecord> | null = null;
+  sizeNotice = '';
   forecastParameters: Record<string, string | number> | null = null;
   private currentDetail: CalculationRecord | null = null;
 
@@ -32,6 +33,7 @@ export class CalculationStateService {
 
   clearAll(): void {
     this.calculationResults = null;
+    this.sizeNotice = '';
     this.forecastParameters = null;
     this.currentDetail = null;
   }

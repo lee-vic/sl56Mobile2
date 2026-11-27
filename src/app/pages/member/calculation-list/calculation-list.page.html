@@ -11,6 +11,7 @@
 </ion-header>
 
 <ion-content class="result-content">
+  <p *ngIf="calculationState.sizeNotice" class="ion-padding-horizontal" role="note">{{ calculationState.sizeNotice }}</p>
   <div class="segment-wrap" *ngIf="tabsData?.length">
     <ion-segment [(ngModel)]="currentTabIndex" (ionChange)="onTabChange()" class="result-segment">
       <ion-segment-button *ngFor="let item of tabsData;let i=index" [value]="i">
