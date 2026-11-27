@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { apiUrl } from '../global';
+import { InquiryResult } from '../interfaces/quote-inquiry';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -8,6 +9,12 @@ import { Observable } from 'rxjs';
 })
 export class CalculationService {
   constructor(private http: HttpClient) {}
+  parseInquiry(text: string): Observable<InquiryResult> {
+    return this.http.post<InquiryResult>(apiUrl + '/Calculation/ParseInquiry', { InquiryText: text }, {
+      headers: { 'Content-Type': 'application/json' }, withCredentials: true
+    });
+  }
+
   getPriceRuleTemplateInfoList() {
     let seq = this.http.get(apiUrl + "/common/GetRuleList", {
       withCredentials: true,

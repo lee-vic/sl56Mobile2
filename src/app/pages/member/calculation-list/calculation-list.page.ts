@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 
+import { NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CalculationStateService } from 'src/app/providers/calculation-state.service';
 
@@ -28,9 +29,10 @@ export class CalculationListPageComponent implements OnInit {
   calculateResultList: CalculationResultItem[] = [];
   tabsData: CalculationResultTab[] = [];
   currentTabIndex = 0;
+  selectingForecast = false;
   private expandedTipKeys = new Set<string>();
   private highRiskTipKeywords = ['税', '关税', '收费', '仅', '限制', '失败', '拒收', '不支持'];
-  constructor(private router: Router, private calculationState: CalculationStateService) { }
+  constructor(private nav: NavController, private router: Router, private calculationState: CalculationStateService) { }
 
   ngOnInit() {
     this.calculateResultList = this.calculationState.getCalculationResults() as CalculationResultItem[] | null || [];
@@ -76,6 +78,19 @@ export class CalculationListPageComponent implements OnInit {
       return [];
     }
     return this.tabsData[this.currentTabIndex]?.PriceList || [];
+  }
+
+  get hasForecastQuotes() {
+    return this.currentPriceList.some(item => this.canForecast(item));
+  }
+
+  canForecast(item: CalculationResultItem) {
+    return !!this.calculationState.forecastParameters?.country && !!item.PriceCode && item.PriceIEType !== 1;
+  }
+
+  ionViewWillLeave() {
+    // Ionic 会缓存列表页，返回时恢复点击报价查看详情的行为。
+    this.selectingForecast = false;
   }
 
   getTabLabel(tab: CalculationResultTab) {
@@ -125,19 +140,22 @@ export class CalculationListPageComponent implements OnInit {
     this.expandedTipKeys.clear();
   }
 
-  detail(item: CalculationResultItem) {
+  openQuote(item: CalculationResultItem) {
+    if (this.selectingForecast) {
+      if (this.canForecast(item)) {
+        this.router.navigate(['/member/import-manifest/form'], {
+          queryParams: { ...this.calculationState.forecastParameters, price: item.PriceCode }
+        });
+      }
+      return;
+    }
+
     this.calculationState.setCurrentDetail(item);
     localStorage.setItem("CalculationDetail",JSON.stringify(item));
     this.router.navigateByUrl("/member/calculation/calculation-detail");
   }
 
-  createForecast(item: CalculationResultItem) {
-    this.router.navigate(['/member/import-manifest/form'], {
-      queryParams: { ...this.calculationState.forecastParameters, price: item.PriceCode }
-    });
-  }
-
   recalculate() {
-    this.router.navigateByUrl("/member/calculation");
+    this.nav.navigateBack("/member/calculation");
   }
 }

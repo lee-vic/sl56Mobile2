@@ -1,18 +1,54 @@
-<ion-header>
+﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>价格计算</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="inquiry-entry" [disabled]="calculating || !countryList.length" (click)="openInquiry()">
+        <ion-icon slot="start" name="sparkles" aria-hidden="true"></ion-icon>AI查价
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<ion-modal class="inquiry-modal" aria-labelledby="inquiry-heading" [isOpen]="inquiryOpen"
+  (willDismiss)="closeInquiry()" (didDismiss)="finishInquiryDismissal()">
+  <ng-template>
+    <section class="inquiry-panel">
+      <header class="inquiry-header">
+        <span class="inquiry-symbol" aria-hidden="true"><ion-icon name="sparkles"></ion-icon></span>
+        <h2 id="inquiry-heading">AI查价</h2>
+        <ion-button type="button" fill="clear" (click)="closeInquiry()">取消</ion-button>
+      </header>
+      <div class="inquiry-body">
+        <ion-textarea class="inquiry-input" aria-label="询价原文" fill="outline" [rows]="6"
+          placeholder="例如：美国 2 kg，DHL，邮编 02108" [formControl]="inquiryText" [readonly]="parsing"
+          [maxlength]="4000" (keydown)="inquiryKeydown($event)"></ion-textarea>
+        <aside class="inquiry-disclaimer" role="note">
+          <strong>免责声明</strong>
+          <p>请核对信息是否正确，有误请修改。</p>
+        </aside>
+        <div *ngIf="parsing || inquiryError" class="inquiry-status" [class.is-error]="!parsing" role="status">
+          <ion-icon *ngIf="!parsing" name="alert-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ parsing ? '正在识别询价…' : inquiryError }}</span>
+          <ion-progress-bar *ngIf="parsing" type="indeterminate" aria-hidden="true"></ion-progress-bar>
+        </div>
+        <ion-button class="inquiry-confirm" expand="block" (click)="parseInquiry()" [disabled]="parsing || !inquiryText.value.trim()">确认</ion-button>
+      </div>
+    </section>
+  </ng-template>
+</ion-modal>
 
 <ion-content class="calc-content">
   <form [formGroup]="myForm" novalidate>
     <div class="calc-shell">
+      <ion-note *ngIf="expressProductId !== null" role="status">产品：国际快递。{{ inquiryNotice }}
+        <ion-button aria-label="恢复手工查价范围" fill="clear" size="small" type="button" (click)="restoreManualScope()">恢复手工查价范围</ion-button>
+      </ion-note>
       <ion-card class="mode-card">
         <ion-card-content>
-          
+
           <ion-segment [(ngModel)]="calculateMode" [ngModelOptions]="{standalone: true}" (ionChange)="segmentChanged($event)">
             <ion-segment-button value="1">
               <ion-label>精简模式</ion-label>
@@ -30,14 +66,14 @@
       </ion-card>
 
       <ion-card class="panel-card">
-       
+
         <ion-card-content>
           <ion-list class="calc-form-list" lines="full">
             <ion-item *ngIf="calculateMode === '2'" class="form-item-inline" [class.invalid-field]="myForm.get('ModeOfTransportIdList')?.touched && myForm.get('ModeOfTransportIdList')?.invalid">
               <ion-label class="inline-label">运输方式 *</ion-label>
               <ion-select aria-label="运输方式" class="inline-control" formControlName="ModeOfTransportIdList" interface="popover"
                 cancelButtonText="取消" okButtonText="确定" placeholder="请选择运输方式">
-                <ion-select-option *ngFor="let item of modeOfTransportList" [value]="item.Id">{{ item.Name }}</ion-select-option>
+                <ion-select-option *ngFor="let item of visibleTransports" [value]="item.Id">{{ item.Name }}</ion-select-option>
               </ion-select>
             </ion-item>
             <div class="validation-errors" *ngIf="myForm.get('ModeOfTransportIdList')?.touched && myForm.get('ModeOfTransportIdList')?.invalid">
@@ -87,8 +123,9 @@
       <ion-card class="panel-card" *ngIf="calculateMode === '2'">
         <ion-card-header>
           <ion-card-title>高级参数</ion-card-title>
+          <ion-button *ngIf="expressProductId !== null" fill="clear" type="button" (click)="advancedOpen = !advancedOpen">{{ advancedOpen ? '收起' : '展开' }}</ion-button>
         </ion-card-header>
-        <ion-card-content>
+        <ion-card-content *ngIf="advancedOpen || expressProductId === null">
           <ion-list class="calc-form-list" lines="full">
             <ion-item class="form-item-inline">
               <ion-label class="inline-label">邮编</ion-label>
@@ -245,7 +282,7 @@
   <ion-toolbar>
     <div class="footer-inner ion-padding-start ion-padding-end ion-padding-top ion-padding-bottom">
       <ion-note color="medium" *ngIf="submitHint">{{ submitHint }}</ion-note>
-      <ion-button expand="block" [disabled]="!canSubmit" (click)="submitFromFooter()">
+      <ion-button expand="block" [disabled]="!canSubmit || calculating" (click)="submitFromFooter()">
         立即计算
       </ion-button>
     </div>

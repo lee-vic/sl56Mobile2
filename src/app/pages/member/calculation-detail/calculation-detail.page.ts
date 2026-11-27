@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import { CalculationStateService } from 'src/app/providers/calculation-state.service';
 import { UiFeedbackService } from 'src/app/providers/ui-feedback.service';
 
@@ -14,7 +14,7 @@ export class CalculationDetailPage implements OnInit {
   tab="1";
   private highRiskTipKeywords = ['税', '关税', '收费', '仅', '限制', '失败', '拒收', '不支持'];
   constructor(
-    private router: Router,
+    private nav: NavController,
     private calculationState: CalculationStateService,
     private readonly uiFeedback: UiFeedbackService
   ) { }
@@ -134,11 +134,11 @@ export class CalculationDetailPage implements OnInit {
   }
 
   backToList() {
-    this.router.navigateByUrl('/member/calculation/calculation-list');
+    this.nav.navigateBack('/member/calculation/calculation-list');
   }
 
   recalculate() {
-    this.router.navigateByUrl('/member/calculation');
+    this.nav.navigateBack('/member/calculation');
   }
- 
+
 }
