@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -40,7 +40,7 @@ describe('CalculationPage', () => {
 
     component.segmentChanged({ detail: { value: '2' } } as any);
 
-    expect(component.myForm.get('ModeOfTransportIdList')?.value).toBe(0);
+    expect(component.myForm.get('ModeOfTransportIdList')?.value).toEqual([]);
   });
 
   it('should keep selected transport when switching to full mode', () => {
@@ -48,11 +48,11 @@ describe('CalculationPage', () => {
       { Id: 0, Name: '不限' },
       { Id: 2, Name: 'FEDEX' },
     ];
-    component.myForm.get('ModeOfTransportIdList')?.setValue(2);
+    component.myForm.get('ModeOfTransportIdList')?.setValue([2]);
 
     component.segmentChanged({ detail: { value: '2' } } as any);
 
-    expect(component.myForm.get('ModeOfTransportIdList')?.value).toBe(2);
+    expect(component.myForm.get('ModeOfTransportIdList')?.value).toEqual([2]);
   });
 
   it('should update selected template rules when toggling piece rule', () => {

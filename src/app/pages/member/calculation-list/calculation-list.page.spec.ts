@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+﻿import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -84,10 +84,28 @@ describe('CalculationListPageComponent', () => {
     expect(component.isTipExpanded(item)).toBe(false);
   });
 
+  it('should only carry eligible quotes into the forecast form in selection mode', () => {
+    const navigate = spyOn(router, 'navigate');
+    calculationState.forecastParameters = { country: 1, weight: 2.5 };
+    component.selectingForecast = true;
+
+    component.openQuote({ PriceCode: 'IN-1', PriceIEType: 1 });
+    expect(navigate).not.toHaveBeenCalled();
+
+    component.openQuote({ PriceCode: 'OUT-1', PriceIEType: 0 });
+    expect(navigate).toHaveBeenCalledWith(['/member/import-manifest/form'], {
+      queryParams: { country: 1, weight: 2.5, price: 'OUT-1' }
+    });
+    expect(calculationState.setCurrentDetail).not.toHaveBeenCalled();
+
+    component.ionViewWillLeave();
+    expect(component.selectingForecast).toBe(false);
+  });
+
   it('should persist current detail and navigate to detail page', () => {
     const item = { PriceCode: 'OUT-1', Series: 'A', TotalAmount: 100 };
 
-    component.detail(item);
+    component.openQuote(item);
 
     expect(calculationState.setCurrentDetail).toHaveBeenCalledWith(item);
     expect(localStorage.getItem('CalculationDetail')).toBe(JSON.stringify(item));

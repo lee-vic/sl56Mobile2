@@ -1,13 +1,17 @@
 ﻿<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button defaultHref="/member/calculation"></ion-back-button>
     </ion-buttons>
-    <ion-title>计算结果</ion-title>
+    <ion-title>{{ selectingForecast ? '选择要预报的报价' : '计算结果' }}</ion-title>
+    <ion-buttons slot="end" *ngIf="selectingForecast || hasForecastQuotes">
+      <ion-button (click)="selectingForecast = !selectingForecast">{{ selectingForecast ? '取消' : '快速预报' }}</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="result-content">
+  <p *ngIf="calculationState.sizeNotice" class="ion-padding-horizontal" role="note">{{ calculationState.sizeNotice }}</p>
   <div class="segment-wrap" *ngIf="tabsData?.length">
     <ion-segment [(ngModel)]="currentTabIndex" (ionChange)="onTabChange()" class="result-segment">
       <ion-segment-button *ngFor="let item of tabsData;let i=index" [value]="i">
@@ -18,7 +22,7 @@
 
   <ion-list class="result-list" lines="none" *ngIf="tabsData?.length; else emptyResult">
     <div class="quote-card" *ngFor="let item of currentPriceList; let i = index" [class.recommended-card]="isRecommended(i)">
-      <ion-item class="quote-item" detail="true" (click)="detail(item)">
+      <ion-item class="quote-item" button detail="true" [disabled]="selectingForecast && !canForecast(item)" (click)="openQuote(item)">
         <ion-label class="quote-label ion-text-wrap">
           <div class="quote-header-row">
             <h2>
@@ -36,9 +40,8 @@
           <span class="price-amount">{{ item.TotalAmount | number:'1.2-2' }}</span>
         </div>
       </ion-item>
-      <ion-button *ngIf="item.PriceIEType !== 1" fill="clear" (click)="createForecast(item)">使用此报价快速预报</ion-button>
 
-      <div *ngIf="item.ImportantTip" class="tip-row" [class.tip-row-danger]="isHighRiskTip(item.ImportantTip)" (click)="detail(item)">
+      <div *ngIf="item.ImportantTip" class="tip-row" [class.tip-row-danger]="isHighRiskTip(item.ImportantTip)" (click)="openQuote(item)">
         <ion-icon [name]="isHighRiskTip(item.ImportantTip) ? 'warning-outline' : 'information-circle-outline'"></ion-icon>
         <div class="tip-main">
           <ion-text [color]="getTipColor(item.ImportantTip)" class="quote-tip" [class.tip-clamped]="isTipLong(item.ImportantTip) && !isTipExpanded(item)">
